@@ -1,8 +1,6 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
-    nginx \
-    supervisor \
     unzip \
     curl \
     git \
@@ -24,12 +22,10 @@ WORKDIR /var/www/html
 
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN php artisan key:generate
 
-COPY ./docker/nginx.conf /etc/nginx/nginx.conf
-COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN chmod -R 775 storage bootstrap/cache
 
-EXPOSE 80
+EXPOSE 8080
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
