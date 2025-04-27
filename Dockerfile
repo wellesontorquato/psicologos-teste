@@ -28,5 +28,5 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # Expondo porta 8080
 EXPOSE 8080
 
-# Usa o entrypoint que migra e serve
-CMD ["./entrypoint.sh"]
+# Comando para subir servidor Laravel
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
