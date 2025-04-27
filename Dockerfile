@@ -1,7 +1,7 @@
 # Usa a imagem PHP oficial
 FROM php:8.2-cli
 
-# Instala dependências do sistema
+# Instala dependências
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -20,11 +20,14 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY . /var/www/html
 WORKDIR /var/www/html
 
+# Dá permissão de execução ao entrypoint
+RUN chmod +x /var/www/html/entrypoint.sh
+
 # Instala dependências PHP
 RUN composer install --no-interaction --prefer-dist
 
 # Expondo porta 8080
 EXPOSE 8080
 
-# Comando para rodar o Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+# Usa o entrypoint que migra e serve
+CMD ["./entrypoint.sh"]
