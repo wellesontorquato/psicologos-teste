@@ -1,0 +1,163 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <h2 class="mb-4">Novo Paciente</h2>
+
+    <form action="{{ route('pacientes.store') }}" method="POST">
+        @csrf
+
+        {{-- Identificação --}}
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label>Nome</label>
+                <input type="text" name="nome" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label>Data de Nascimento</label>
+                <input type="date" name="data_nascimento" class="form-control">
+            </div>
+        </div>
+
+        <div class="row g-3 mt-3">
+            <div class="col-md-4">
+                <label>Sexo</label>
+                <select name="sexo" class="form-control">
+                    <option value="">Selecione</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>Telefone</label>
+                <input type="text" name="telefone" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label>Email</label>
+                <input type="email" name="email" class="form-control">
+            </div>
+        </div>
+
+        <div class="row g-3 mt-3">
+            <div class="col-md-6">
+                <label>CPF</label>
+                <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+            <input type="hidden" name="exige_nota_fiscal" value="0">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" name="exige_nota_fiscal" value="1" id="exigeNotaFiscal">
+                    <label class="form-check-label" for="exigeNotaFiscal">Exige Emissão de Nota Fiscal?</label>
+                </div>
+            </div>
+        </div>
+
+        {{-- Endereço --}}
+        <hr class="my-4">
+        <h5>Endereço</h5>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-3">
+                <label>CEP</label>
+                <input type="text" name="cep" id="cep" class="form-control" placeholder="00000-000">
+            </div>
+            <div class="col-md-5">
+                <label>Rua</label>
+                <input type="text" name="rua" id="rua" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label>Número</label>
+                <input type="text" name="numero" id="numero" class="form-control">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" name="sem_numero" id="sem_numero">
+                    <label class="form-check-label" for="sem_numero">(S/N)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-4">
+                <label>Complemento</label>
+                <input type="text" name="complemento" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label>Bairro</label>
+                <input type="text" name="bairro" id="bairro" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label>Cidade</label>
+                <input type="text" name="cidade" id="cidade" class="form-control">
+            </div>
+            <div class="col-md-1">
+                <label>UF</label>
+                <input type="text" name="uf" id="uf" class="form-control" maxlength="2">
+            </div>
+        </div>
+
+        {{-- Complementares --}}
+        <hr class="my-4">
+        <div class="mb-3">
+            <label>Observações</label>
+            <textarea name="observacoes" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label>Medicação Inicial</label>
+            <input type="text" name="medicacao_inicial" class="form-control" placeholder="Ex: Sertralina 50mg">
+            <small class="form-text text-muted">Se informado, será registrada automaticamente no histórico.</small>
+        </div>
+
+        {{-- Botões --}}
+        <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a href="{{ route('pacientes.index') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+    document.getElementById('cep').addEventListener('blur', async function () {
+        const cep = this.value.replace(/\D/g, '');
+        if (cep.length !== 8) return;
+
+        try {
+            const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await res.json();
+
+            if (!data.erro) {
+                document.getElementById('rua').value = data.logradouro || '';
+                document.getElementById('bairro').value = data.bairro || '';
+                document.getElementById('cidade').value = data.localidade || '';
+                document.getElementById('uf').value = data.uf || '';
+            }
+        } catch (err) {
+            console.warn('Erro ao buscar o CEP:', err);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkbox = document.getElementById('sem_numero');
+        const numeroInput = document.getElementById('numero');
+
+        function toggleNumero() {
+            if (checkbox.checked) {
+                numeroInput.value = 'S/N';
+                numeroInput.readOnly = true;
+            } else {
+                if (numeroInput.value === 'S/N') {
+                    numeroInput.value = '';
+                }
+                numeroInput.readOnly = false;
+            }
+        }
+
+        checkbox.addEventListener('change', toggleNumero);
+        toggleNumero();
+    });
+</script>
+@endsection
