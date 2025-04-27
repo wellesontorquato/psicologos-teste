@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,10 +12,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Cria um usuário de teste
+        // Cria um usuário admin
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Admin Teste',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('12345678'), // senha padrão
         ]);
 
         // Executa o seeder de notificações
