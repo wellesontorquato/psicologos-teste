@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libpq-dev \  # <- ESSENCIAL para PostgreSQL
+    libpq-dev \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip gd bcmath
 
 # Instala o Composer
