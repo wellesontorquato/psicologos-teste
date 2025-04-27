@@ -1,7 +1,7 @@
-# Usa imagem base do PHP com extensões necessárias
+# Usa a imagem PHP oficial
 FROM php:8.2-cli
 
-# Instala dependências do sistema
+# Instala dependências de sistema e PHP
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -11,22 +11,20 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libpq-dev \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip gd bcmath
+    && docker-php-ext-install pdo pdo_pgsql pdo_mysql zip gd bcmath
 
-# Instala Composer
+# Instala o Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Define o diretório de trabalho
+# Copia o código da aplicação
+COPY . /var/www/html
 WORKDIR /var/www/html
 
-# Copia arquivos da aplicação
-COPY . .
-
-# Instala dependências do PHP
+# Instala dependências do Laravel
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Expondo porta 8080
 EXPOSE 8080
 
-# Comando para subir servidor Laravel
+# Comando para iniciar o servidor Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
