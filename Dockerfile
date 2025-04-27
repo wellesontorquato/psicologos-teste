@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libpq-dev \ # <- para conectar no Postgres!
+    libpq-dev \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip gd bcmath
 
 # Instala Composer
@@ -28,5 +28,5 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # Expondo porta 8080
 EXPOSE 8080
 
-# Comando para subir servidor Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+# Usa o entrypoint que migra e serve
+CMD ["./entrypoint.sh"]
