@@ -1,7 +1,7 @@
-# Usa a imagem PHP oficial
+# Usa imagem base do PHP com extensões necessárias
 FROM php:8.2-cli
 
-# Instala dependências
+# Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -10,21 +10,20 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libpq-dev \
+    libpq-dev \ # <- para conectar no Postgres!
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip gd bcmath
 
-# Instala o Composer
+# Instala Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copia o código
-COPY . /var/www/html
+# Define o diretório de trabalho
 WORKDIR /var/www/html
 
-# Dá permissão de execução ao entrypoint
-RUN chmod +x /var/www/html/entrypoint.sh
+# Copia arquivos da aplicação
+COPY . .
 
-# Instala dependências PHP
-RUN composer install --no-interaction --prefer-dist
+# Instala dependências do PHP
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Expondo porta 8080
 EXPOSE 8080
