@@ -1,8 +1,19 @@
-# Usa a imagem PHP oficial
-FROM php:8.2-cli
+# Stage 1: Build Frontend
+FROM node:18 as nodebuilder
 
-# Instala dependências de sistema e PHP
+WORKDIR /app
+
+COPY package*.json vite.config.js tailwind.config.js postcss.config.js ./
+COPY resources/ resources/
+
+RUN npm install
+RUN npm run build
+
+# Stage 2: Build Backend + PHP
+FROM php:8.2-fpm
+
 RUN apt-get update && apt-get install -y \
+    nginx \
     unzip \
     git \
     curl \
@@ -10,21 +21,34 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libonig-dev \
     libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql pdo_mysql zip gd bcmath
+    libmcrypt-dev \
+    supervisor \
+    && docker-php-ext-install pdo pdo_mysql zip gd bcmath
 
-# Instala o Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copia o código da aplicação
-COPY . /var/www/html
 WORKDIR /var/www/html
 
-# Instala dependências do Laravel
+# Copia app completo
+COPY . .
+
+# Copia build gerado pelo Node
+COPY --from=nodebuilder /app/public/build /var/www/html/public/build
+
+# Instala dependências PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Expondo porta 8080
-EXPOSE 8080
+# Permissões
+RUN chmod -R 777 storage bootstrap/cache
 
-# Comando para iniciar o servidor Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+# Copia nginx.conf e supervisord.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY supervisord.conf /etc/supervisord.conf
+
+# Expõe a porta padrão 80
+EXPOSE 80
+
+# Starta o supervisor (nginx + php-fpm juntos)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
