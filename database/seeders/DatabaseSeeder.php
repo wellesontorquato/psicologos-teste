@@ -18,8 +18,5 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => bcrypt('12345678'), // senha padrão
         ]);
-
-        // Executa o seeder de notificações
-        $this->call(NotificacaoSeeder::class);
     }
 }
