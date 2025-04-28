@@ -47,8 +47,8 @@ RUN chmod -R 777 storage bootstrap/cache
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisord.conf
 
-# Expõe a porta padrão 80
-EXPOSE 80
+# Expondo a porta dinamicamente
+EXPOSE 8080
 
-# Starta o supervisor (nginx + php-fpm juntos)
+# Comando para rodar supervisord que gerencia nginx e php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
