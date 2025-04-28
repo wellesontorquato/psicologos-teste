@@ -33,14 +33,13 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # Instala dependências NPM e faz build do Vite
 RUN npm install && npm run build
 
-# Copia nginx.conf
+# Copia configurações
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copia supervisord.conf
 COPY supervisord.conf /etc/supervisord.conf
 
-# Permissões corretas
-RUN chmod -R 755 /var/www/html
+# Corrige permissões corretas apenas onde necessário
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expor porta correta
 EXPOSE 8080
