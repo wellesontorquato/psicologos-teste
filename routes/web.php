@@ -31,6 +31,10 @@ Route::get('/run-migrate', function (Request $request) {
     return Response::make('Migração executada com sucesso!', 200);
 });
 
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
 
 // 🌐 Páginas públicas
 Route::view('/', 'index')->name('home');
