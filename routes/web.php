@@ -21,6 +21,7 @@ use App\Http\Controllers\{
     AssinaturaController
 };
 use App\Http\Middleware\CheckSubscription;
+use App\Http\Middleware\EnsureUserIsAdmin;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,7 +104,7 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 
     Route::post('/sessoes-json', [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
     Route::put('/sessoes-json/{id}', [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
-    Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.edit.json');
+    Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
 
     Route::resources([
         'pacientes' => PacienteController::class,
@@ -130,7 +131,7 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     | Área exclusiva para administradores
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['can:view-auditoria'])->group(function () {
+    Route::middleware([EnsureUserIsAdmin::class])->group(function () {
         Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index');
         Route::get('/auditoria/exportar-pdf', [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
         Route::get('/auditoria/exportar-excel', [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');

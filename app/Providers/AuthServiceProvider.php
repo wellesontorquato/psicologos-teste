@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use App\Models\Paciente;
 use App\Models\Arquivo;
 use App\Policies\PacientePolicy;
@@ -28,15 +29,21 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // ✅ Corrigido para aceitar is_admin como boolean ou inteiro
+        /**
+         * Permissão para visualizar auditoria/admin
+         * Só permite acesso se o usuário estiver autenticado e for admin
+         */
         Gate::define('view-auditoria', function ($user) {
-            \Log::debug('🧠 Executando Gate view-auditoria', [
-                'user_id' => $user->id ?? null,
-                'email' => $user->email ?? null,
-                'is_admin' => $user->is_admin ?? null,
+            $isAdmin = (int) ($user->is_admin ?? 0) === 1;
+
+            Log::debug('🧠 Gate view-auditoria chamada', [
+                'user_id'     => $user->id ?? null,
+                'email'       => $user->email ?? null,
+                'is_admin'    => $user->is_admin ?? null,
+                'autorizado'  => $isAdmin,
             ]);
-        
-            return (bool) $user->is_admin;
-        });        
+
+            return $isAdmin;
+        });
     }
 }

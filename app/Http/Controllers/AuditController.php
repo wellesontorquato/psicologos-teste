@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Audit;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use PDF;
@@ -16,19 +15,12 @@ class AuditController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
-
-        // 🔍 Log detalhado para diagnóstico
-        Log::debug('🔍 Verificando acesso à auditoria', [
-            'user_id' => $user->id ?? null,
-            'email' => $user->email ?? null,
-            'is_admin' => $user->is_admin ?? null,
-            'gate_allows' => Gate::allows('view-auditoria'),
+        // (opcional) Log para conferência básica de acesso
+        Log::debug('🔍 Acessando auditoria', [
+            'user_id' => auth()->id(),
+            'email' => auth()->user()->email ?? null,
+            'rota' => request()->path(),
         ]);
-
-        if (!Gate::allows('view-auditoria')) {
-            abort(403, 'Acesso negado à auditoria.');
-        }
 
         $query = $this->filtrarLogs($request);
         $audits = $query->paginate(20);
