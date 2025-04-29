@@ -45,5 +45,11 @@ class User extends Authenticatable
             ? asset('storage/' . $this->profile_photo_path)
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
+    
+    public function isAdmin(): bool
+    {
+        return (int) $this->is_admin === 1;
+    }
+
 }
 

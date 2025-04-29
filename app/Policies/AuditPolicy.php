@@ -8,7 +8,7 @@ class AuditPolicy
 {
     public function viewAudit(User $user): bool
     {
-        return $user->is_admin === true;
+        return $user->isAdmin();
     }
 }
 
