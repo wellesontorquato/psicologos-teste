@@ -91,6 +91,7 @@ class ProfileController extends Controller
         $path = $request->file('photo')->store('profile-photos', 'public');
         $user->profile_photo_path = $path;
         $user->save();
+        $user->refresh();
 
         AuditLogger::log('updated_photo', get_class($user), $user->id, 'Atualizou a foto de perfil');
 

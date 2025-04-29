@@ -129,9 +129,10 @@
     <!-- Foto de Perfil -->
     <div class="form-section text-center">
         <img id="preview"
-            src="{{ Auth::user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
+            src="{{ auth()->user()->profile_photo_url }}"
             class="profile-photo"
             alt="Foto de Perfil" />
+
 
         <form id="photo-upload-form" method="POST" enctype="multipart/form-data">
             @csrf
