@@ -21,28 +21,28 @@ RUN apt-get update && apt-get install -y \
 # Instala Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copia arquivos da aplicação
+# Copia aplicação
 COPY . /var/www/html
 
-# Ajusta diretório
+# Define diretório de trabalho
 WORKDIR /var/www/html
 
-# Instala dependências PHP
+# Instala dependências
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Instala dependências NPM e faz build do Vite
+# Instala dependências do npm e gera build do frontend
 RUN npm install && npm run build
 
-# Copia configurações
+# Copia arquivos de configuração
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisord.conf
 
-# Corrige permissões corretas apenas onde necessário
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Permissões de pastas de cache e storage
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expor porta correta
+# Exposição de porta
 EXPOSE 8080
 
-# Comando para iniciar nginx + php-fpm
+# Inicializa supervisord (nginx + php-fpm)
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
