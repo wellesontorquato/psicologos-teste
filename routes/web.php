@@ -22,6 +22,20 @@ use App\Http\Middleware\CheckSubscription;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Response;
 
+Route::get('/_filesystem', function () {
+    $path = base_path(); // ou base_path() para toda aplicação
+    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+
+    $files = [];
+    foreach ($rii as $file) {
+        if (!$file->isDir()) {
+            $files[] = str_replace($path, '', $file->getPathname());
+        }
+    }
+
+    return view('filesystem', ['files' => $files]);
+});
+
 Route::get('/run-migrate', function (Request $request) {
     if ($request->query('token') !== env('MIGRATE_TOKEN')) {
         abort(403, 'Token inválido.');
