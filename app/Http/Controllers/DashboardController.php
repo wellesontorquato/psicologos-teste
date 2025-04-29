@@ -7,7 +7,7 @@ use App\Models\Sessao;
 use App\Models\Arquivo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\DashboardExport;
 use App\Helpers\AuditHelper;
