@@ -30,7 +30,13 @@ class AuthServiceProvider extends ServiceProvider
 
         // ✅ Corrigido para aceitar is_admin como boolean ou inteiro
         Gate::define('view-auditoria', function ($user) {
+            \Log::debug('🧠 Executando Gate view-auditoria', [
+                'user_id' => $user->id ?? null,
+                'email' => $user->email ?? null,
+                'is_admin' => $user->is_admin ?? null,
+            ]);
+        
             return (bool) $user->is_admin;
-        });
+        });        
     }
 }

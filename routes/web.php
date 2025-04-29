@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\{
     ProfileController,
     SessaoController,
@@ -19,28 +21,29 @@ use App\Http\Controllers\{
     AssinaturaController
 };
 use App\Http\Middleware\CheckSubscription;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Response;
+
+/*
+|--------------------------------------------------------------------------
+| Testes internos / Healthchecks
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/_filesystem', function () {
-    $path = base_path(); // ou base_path() para toda aplicação
+    $path = base_path();
     $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
-
     $files = [];
     foreach ($rii as $file) {
         if (!$file->isDir()) {
             $files[] = str_replace($path, '', $file->getPathname());
         }
     }
-
     return view('filesystem', ['files' => $files]);
 });
 
-Route::get('/run-migrate', function (Request $request) {
+Route::get('/run-migrate', function (\Illuminate\Http\Request $request) {
     if ($request->query('token') !== env('MIGRATE_TOKEN')) {
         abort(403, 'Token inválido.');
     }
-
     Artisan::call('migrate', ['--force' => true]);
     return Response::make('Migração executada com sucesso!', 200);
 });
@@ -49,14 +52,23 @@ Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Páginas públicas
+|--------------------------------------------------------------------------
+*/
 
-// 🌐 Páginas públicas
 Route::view('/', 'index')->name('home');
 Route::view('/funcionalidades', 'pages.funcionalidades')->name('funcionalidades');
 Route::view('/quem-somos', 'pages.quem-somos')->name('quem-somos');
 Route::view('/contato', 'pages.contato')->name('contato');
 
-// 💳 Assinaturas (acessível mesmo sem assinatura ativa)
+/*
+|--------------------------------------------------------------------------
+| Área de Assinaturas (usuário autenticado, mas sem exigir assinatura ativa)
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/assinaturas', [AssinaturaController::class, 'index'])->name('assinaturas.index');
     Route::post('/checkout', [AssinaturaController::class, 'checkout'])->name('assinatura.checkout');
@@ -64,7 +76,12 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/assinatura/cancelado', 'assinatura.cancelado')->name('assinaturas.cancelado');
 });
 
-// 👤 Perfil (apenas autenticado e verificado)
+/*
+|--------------------------------------------------------------------------
+| Perfil (usuário autenticado, verificado)
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->group(function () {
     Route::get('/', [ProfileController::class, 'edit'])->name('edit');
     Route::patch('/', [ProfileController::class, 'update'])->name('update');
@@ -74,7 +91,12 @@ Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->gr
     Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
 });
 
-// 🔐 Área autenticada + verificada + com assinatura ativa
+/*
+|--------------------------------------------------------------------------
+| Área autenticada, verificada e com assinatura ativa
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth', 'verified', CheckSubscription::class])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -103,10 +125,16 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::delete('/arquivos/{arquivo}', [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
     Route::put('/arquivos/{arquivo}/renomear', [ArquivoController::class, 'renomear'])->name('arquivos.rename');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Área exclusiva para administradores
+    |--------------------------------------------------------------------------
+    */
     Route::middleware(['can:view-auditoria'])->group(function () {
         Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index');
         Route::get('/auditoria/exportar-pdf', [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
         Route::get('/auditoria/exportar-excel', [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
+
         Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
         Route::patch('/usuarios/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('usuarios.toggleAdmin');
     });
@@ -119,5 +147,11 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::post('/notificacoes/ler-todas', [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
     Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Auth padrão do Laravel
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__.'/auth.php';
