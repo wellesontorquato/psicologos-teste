@@ -182,10 +182,10 @@
             if (!response.ok) throw new Error();
             return response.json();
         })
-        .then(() => {
-            Swal.fire('Foto atualizada!', 'Sua nova imagem foi salva com sucesso.', 'success').then(() => {
-                location.reload();
-            });
+        .then(response => {
+            Swal.fire('Foto atualizada!', 'Sua nova imagem foi salva com sucesso.', 'success');
+            // Força o recarregamento da imagem sem reload da página
+            preview.src = response.url + '?t=' + new Date().getTime();
         })
         .catch(() => {
             Swal.fire('Erro!', 'Não foi possível atualizar a foto.', 'error');
