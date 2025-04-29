@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Vite; // <-- adiciona isso
+use Illuminate\Support\Facades\Vite;
 use App\Models\Evolucao;
 use Illuminate\Pagination\Paginator;
 
@@ -23,9 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Faz o Vite usar o caminho correto para o manifest
-        Vite::useBuildDirectory('build/.vite'); // <-- adiciona isso
-
+        // NÃO precisa alterar a build directory manualmente
+        // o config/vite.php já está correto apontando para build/
+        
         Route::model('evolucao', Evolucao::class);
         Paginator::useBootstrap();
     }

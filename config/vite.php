@@ -2,14 +2,14 @@
 
 return [
 
-    'manifest_path' => 'build/manifest.json',
+    'manifest_path' => 'build/manifest.json', // Certo
 
-    'hot_file' => storage_path('app/vite.hot'),
+    'hot_file' => storage_path('app/vite.hot'), // Certo
 
-    'build_directory' => 'build',
+    'build_directory' => 'build', // Certo
 
     'dev_server' => [
-        'url' => 'http://localhost:5173',
+        'url' => env('VITE_DEV_SERVER_URL', 'http://localhost:5173'),
     ],
 
 ];
