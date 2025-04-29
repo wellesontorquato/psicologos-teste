@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Vite;
 use App\Models\Evolucao;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,9 +24,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // NÃO precisa alterar a build directory manualmente
-        // o config/vite.php já está correto apontando para build/
-        
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        // Já existentes
         Route::model('evolucao', Evolucao::class);
         Paginator::useBootstrap();
     }
