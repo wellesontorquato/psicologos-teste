@@ -27,22 +27,23 @@ COPY . /var/www/html
 # Define diretório de trabalho
 WORKDIR /var/www/html
 
-# Instala dependências
+# Instala dependências PHP e frontend
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
-# Instala dependências do npm e gera build do frontend
 RUN npm install && npm run build
 
 # Copia arquivos de configuração
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisord.conf
 
-# Permissões de pastas de cache e storage
+# Permissões necessárias
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Exposição de porta
+# Cria symlink para acesso a arquivos públicos (fotos de perfil etc)
+RUN php artisan storage:link || true
+
+# Expõe porta usada pelo nginx
 EXPOSE 8080
 
-# Inicializa supervisord (nginx + php-fpm)
+# Inicia supervisord (php-fpm + nginx)
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
