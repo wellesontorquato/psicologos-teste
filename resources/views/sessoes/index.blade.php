@@ -42,7 +42,7 @@
         <div class="col-md-3">
             <label class="form-label fw-bold">Buscar</label>
             <input type="text" name="busca" class="form-control shadow-sm"
-                placeholder="Nome, telefone ou e-mail"
+                placeholder="Nome, CPF, telefone ou e-mail"
                 value="{{ request('busca') }}">
         </div>
 
@@ -78,14 +78,21 @@
                     📋 Status: {{ ucfirst(strtolower(request('status'))) }}
                 </span>
             @endif
-            @if(request()->filled('periodo'))
-                <span class="badge bg-primary text-light me-1">
-                    📅 Período: {{ ucfirst(request('periodo')) }}
-                </span>
+            @if(!empty($filtros['periodo']))
+                @php
+                    $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
+                    $dataBadge = match($filtros['periodo']) {
+                        'hoje' => 'Hoje: ' . $hoje->format('d/m'),
+                        'semana' => 'Semana: ' . $hoje->copy()->startOfWeek()->format('d/m') . ' – ' . $hoje->copy()->endOfWeek()->format('d/m'),
+                        'proxima' => 'Próxima: ' . $hoje->copy()->addWeek()->startOfWeek()->format('d/m') . ' – ' . $hoje->copy()->addWeek()->endOfWeek()->format('d/m'),
+                        default => ucfirst($filtros['periodo']),
+                    };
+                @endphp
+                <span class="badge bg-primary">🕐 {{ $dataBadge }}</span>
             @endif
             @if(request()->filled('busca'))
                 <span class="badge bg-secondary me-1">
-                    🔍 Busca: {{ request('busca') }}
+                    🔍 Paciente: {{ request('busca') }}
                 </span>
             @endif
         </div>

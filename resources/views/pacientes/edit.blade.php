@@ -4,7 +4,7 @@
 <div class="container">
     <h2 class="mb-4">Editar Paciente</h2>
 
-    <form action="{{ route('pacientes.update', $paciente) }}" method="POST">
+    <form id="form-paciente" action="{{ route('pacientes.update', $paciente) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -46,6 +46,7 @@
                 <input type="text" name="cpf" class="form-control" value="{{ $paciente->cpf }}" placeholder="000.000.000-00">
             </div>
             <div class="col-md-6 d-flex align-items-end">
+                <input type="hidden" name="exige_nota_fiscal" value="0">
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input" type="checkbox" name="exige_nota_fiscal" id="exige_nota_fiscal" value="1" {{ $paciente->exige_nota_fiscal ? 'checked' : '' }}>
                     <label class="form-check-label" for="exige_nota_fiscal">Exige Emissão de Nota Fiscal?</label>
@@ -72,8 +73,7 @@
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" name="sem_numero" id="sem_numero"
-                        {{ $paciente->numero === 'S/N' ? 'checked' : '' }}>
+                    <input class="form-check-input" type="checkbox" name="sem_numero" id="sem_numero" {{ $paciente->numero === 'S/N' ? 'checked' : '' }}>
                     <label class="form-check-label" for="sem_numero">(S/N)</label>
                 </div>
             </div>
@@ -121,44 +121,110 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    document.getElementById('cep').addEventListener('blur', async function () {
-        const cep = this.value.replace(/\D/g, '');
-        if (cep.length !== 8) return;
+// CEP para endereço automático
+document.getElementById('cep').addEventListener('blur', async function () {
+    const cep = this.value.replace(/\D/g, '');
+    if (cep.length !== 8) return;
 
-        try {
-            const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const data = await res.json();
+    try {
+        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await res.json();
 
-            if (!data.erro) {
-                document.getElementById('rua').value = data.logradouro || '';
-                document.getElementById('bairro').value = data.bairro || '';
-                document.getElementById('cidade').value = data.localidade || '';
-                document.getElementById('uf').value = data.uf || '';
-            }
-        } catch (err) {
-            console.warn('Erro ao buscar o CEP:', err);
+        if (!data.erro) {
+            document.getElementById('rua').value = data.logradouro || '';
+            document.getElementById('bairro').value = data.bairro || '';
+            document.getElementById('cidade').value = data.localidade || '';
+            document.getElementById('uf').value = data.uf || '';
         }
-    });
+    } catch (err) {
+        console.warn('Erro ao buscar o CEP:', err);
+    }
+});
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const checkbox = document.getElementById('sem_numero');
-        const numeroInput = document.getElementById('numero');
+// Marcar número como S/N
+document.addEventListener('DOMContentLoaded', function () {
+    const checkbox = document.getElementById('sem_numero');
+    const numeroInput = document.getElementById('numero');
 
-        function toggleNumero() {
-            if (checkbox.checked) {
-                numeroInput.value = 'S/N';
-                numeroInput.readOnly = true;
+    function toggleNumero() {
+        if (checkbox.checked) {
+            numeroInput.value = 'S/N';
+            numeroInput.readOnly = true;
+        } else {
+            if (numeroInput.value === 'S/N') {
+                numeroInput.value = '';
+            }
+            numeroInput.readOnly = false;
+        }
+    }
+
+    checkbox.addEventListener('change', toggleNumero);
+    toggleNumero();
+});
+
+// Envio assíncrono do formulário com feedback
+document.getElementById('form-paciente').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+    formData.append('_method', 'PUT'); // Laravel precisa disso
+
+    // Corrige o envio do campo exige_nota_fiscal (caso desmarcado)
+    if (!form.querySelector('#exige_nota_fiscal').checked) {
+        formData.set('exige_nota_fiscal', '0');
+    }
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+
+            if (data.errors) {
+                const mensagens = Object.values(data.errors).flat().join('<br>');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro de validação',
+                    html: mensagens
+                });
             } else {
-                if (numeroInput.value === 'S/N') {
-                    numeroInput.value = '';
-                }
-                numeroInput.readOnly = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: data.message || 'Erro ao atualizar paciente.'
+                });
             }
+        } else {
+            const data = await response.json();
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: data.message || 'Paciente atualizado com sucesso!'
+            }).then(() => {
+                window.location.href = "{{ route('pacientes.index') }}";
+            });
         }
 
-        checkbox.addEventListener('change', toggleNumero);
-        toggleNumero(); // Inicializa
-    });
+    } catch (error) {
+        console.error(error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro inesperado',
+            text: 'Tente novamente mais tarde.'
+        });
+    }
+});
 </script>
 @endsection

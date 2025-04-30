@@ -9,7 +9,7 @@
     {{-- Filtro de busca --}}
     <form method="GET" class="row g-3 mb-4 align-items-end">
         <div class="col-md-6">
-            <input type="text" name="busca" value="{{ request('busca') }}" class="form-control shadow-sm" placeholder="Buscar por nome, telefone ou email">
+            <input type="text" name="busca" value="{{ request('busca') }}" class="form-control shadow-sm" placeholder="Buscar por nome, CPF, telefone ou email">
         </div>
 
         <div class="col-md-3 d-flex gap-2">

@@ -4,7 +4,7 @@
 <div class="container">
     <h2 class="mb-4">Novo Paciente</h2>
 
-    <form action="{{ route('pacientes.store') }}" method="POST">
+    <form id="form-paciente" action="{{ route('pacientes.store') }}" method="POST">
         @csrf
 
         {{-- Identificação --}}
@@ -45,7 +45,7 @@
                 <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00">
             </div>
             <div class="col-md-6 d-flex align-items-end">
-            <input type="hidden" name="exige_nota_fiscal" value="0">
+                <input type="hidden" name="exige_nota_fiscal" value="0">
                 <div class="form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="exige_nota_fiscal" value="1" id="exigeNotaFiscal">
                     <label class="form-check-label" for="exigeNotaFiscal">Exige Emissão de Nota Fiscal?</label>
@@ -120,44 +120,105 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    document.getElementById('cep').addEventListener('blur', async function () {
-        const cep = this.value.replace(/\D/g, '');
-        if (cep.length !== 8) return;
+// Preenchimento de endereço via CEP
+document.getElementById('cep').addEventListener('blur', async function () {
+    const cep = this.value.replace(/\D/g, '');
+    if (cep.length !== 8) return;
 
-        try {
-            const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const data = await res.json();
+    try {
+        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await res.json();
 
-            if (!data.erro) {
-                document.getElementById('rua').value = data.logradouro || '';
-                document.getElementById('bairro').value = data.bairro || '';
-                document.getElementById('cidade').value = data.localidade || '';
-                document.getElementById('uf').value = data.uf || '';
-            }
-        } catch (err) {
-            console.warn('Erro ao buscar o CEP:', err);
+        if (!data.erro) {
+            document.getElementById('rua').value = data.logradouro || '';
+            document.getElementById('bairro').value = data.bairro || '';
+            document.getElementById('cidade').value = data.localidade || '';
+            document.getElementById('uf').value = data.uf || '';
         }
-    });
+    } catch (err) {
+        console.warn('Erro ao buscar o CEP:', err);
+    }
+});
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const checkbox = document.getElementById('sem_numero');
-        const numeroInput = document.getElementById('numero');
+// Marcar número como S/N
+document.addEventListener('DOMContentLoaded', function () {
+    const checkbox = document.getElementById('sem_numero');
+    const numeroInput = document.getElementById('numero');
 
-        function toggleNumero() {
-            if (checkbox.checked) {
-                numeroInput.value = 'S/N';
-                numeroInput.readOnly = true;
+    function toggleNumero() {
+        if (checkbox.checked) {
+            numeroInput.value = 'S/N';
+            numeroInput.readOnly = true;
+        } else {
+            if (numeroInput.value === 'S/N') {
+                numeroInput.value = '';
+            }
+            numeroInput.readOnly = false;
+        }
+    }
+
+    checkbox.addEventListener('change', toggleNumero);
+    toggleNumero();
+});
+
+// Envio do formulário via fetch (AJAX)
+document.getElementById('form-paciente').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+
+            if (data.errors) {
+                const mensagens = Object.values(data.errors).flat().join('<br>');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro de validação',
+                    html: mensagens
+                });
             } else {
-                if (numeroInput.value === 'S/N') {
-                    numeroInput.value = '';
-                }
-                numeroInput.readOnly = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: data.message || 'Erro ao salvar paciente.'
+                });
             }
+        } else {
+            const data = await response.json();
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: data.message || 'Paciente salvo com sucesso!'
+            }).then(() => {
+                window.location.href = "{{ route('pacientes.index') }}";
+            });
         }
 
-        checkbox.addEventListener('change', toggleNumero);
-        toggleNumero();
-    });
+    } catch (error) {
+        console.error(error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro inesperado',
+            text: 'Tente novamente mais tarde.'
+        });
+    }
+});
 </script>
 @endsection

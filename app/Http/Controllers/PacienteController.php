@@ -21,13 +21,14 @@ class PacienteController extends Controller
         $query = Paciente::where('user_id', auth()->id());
 
         if ($request->filled('busca')) {
-            $busca = $request->input('busca');
+            $busca = preg_replace('/\D/', '', $request->busca);
             $query->where(function ($q) use ($busca) {
-                $q->where('nome', 'like', "%$busca%")
-                  ->orWhere('telefone', 'like', "%$busca%")
-                  ->orWhere('email', 'like', "%$busca%");
-            });
-        }
+                $q->where('nome', 'like', "%{$busca}%")
+                  ->orWhere('telefone', 'like', "%{$busca}%")
+                  ->orWhere('email', 'like', "%{$busca}%")
+                  ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
+            });            
+        } 
 
         $pacientes = $query->orderBy('nome')->paginate(10)->withQueryString();
 
@@ -41,18 +42,46 @@ class PacienteController extends Controller
 
     public function store(Request $request)
     {
-
         if ($request->filled('sem_numero')) {
             $request->merge(['numero' => 'S/N']);
-        }        
+        }
+
+        if ($request->filled('cpf')) {
+            $request->merge([
+                'cpf' => preg_replace('/\D/', '', $request->cpf),
+            ]);
+        }
 
         $request->validate([
             'nome' => 'required|string|max:255',
             'data_nascimento' => 'nullable|date',
             'sexo' => 'nullable|string|max:10',
-            'telefone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'cpf' => 'nullable|string|max:20',
+            'telefone' => [
+                'nullable', 'string', 'max:20',
+                function ($attribute, $value, $fail) {
+                    if (Paciente::where('user_id', auth()->id())->where('telefone', $value)->exists()) {
+                        $fail('Este telefone já está cadastrado para outro paciente.');
+                    }
+                },
+            ],
+            'email' => [
+                'nullable', 'email', 'max:255',
+                function ($attribute, $value, $fail) {
+                    if (Paciente::where('user_id', auth()->id())->where('email', $value)->exists()) {
+                        $fail('Este e-mail já está cadastrado para outro paciente.');
+                    }
+                },
+            ],
+            'cpf' => [
+                'nullable', 'string', 'max:20',
+                function ($attribute, $value, $fail) {
+                    if (Paciente::where('user_id', auth()->id())
+                        ->whereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?", [$value])
+                        ->exists()) {
+                        $fail('Este CPF já está cadastrado para outro paciente.');
+                    }
+                },
+            ],
             'cep' => 'nullable|string|max:10',
             'rua' => 'nullable|string|max:255',
             'numero' => 'nullable|string|max:20',
@@ -80,7 +109,7 @@ class PacienteController extends Controller
             'bairro' => $request->bairro,
             'cidade' => $request->cidade,
             'uf' => $request->uf,
-            'exige_nota_fiscal' => $request->has('exige_nota_fiscal'),
+            'exige_nota_fiscal' => (bool) $request->input('exige_nota_fiscal', false),
             'observacoes' => $request->observacoes,
         ]);
 
@@ -95,41 +124,90 @@ class PacienteController extends Controller
 
         AuditHelper::log('created_paciente', 'Criou o paciente ' . $paciente->nome);
 
-        return redirect()->route('pacientes.index')->with('success', 'Paciente cadastrado com sucesso!');
+        if ($request->ajax()) {
+            return response()->json([
+                'message' => 'Paciente cadastrado com sucesso!'
+            ]);
+        }
+        
+        return redirect()->route('pacientes.index')->with('success', 'Paciente cadastrado com sucesso!');        
     }
 
     public function edit(Paciente $paciente)
-    {
-        $this->authorize('update', $paciente);
-        return view('pacientes.edit', compact('paciente'));
-    }
+        {
+            $this->authorize('update', $paciente);
+            return view('pacientes.edit', compact('paciente'));
+        }
 
     public function update(Request $request, Paciente $paciente)
-    {
-        if ($request->filled('sem_numero')) {
-            $request->merge(['numero' => 'S/N']);
-        }      
-          
-        $this->authorize('update', $paciente);
+        {
+            if ($request->filled('sem_numero')) {
+                $request->merge(['numero' => 'S/N']);
+            }
+        
+            if ($request->filled('cpf')) {
+                $request->merge([
+                    'cpf' => preg_replace('/\D/', '', $request->cpf),
+                ]);
+            }
+        
+            $this->authorize('update', $paciente);
+        
+            $request->validate([
+                'nome' => 'required|string|max:255',
+                'data_nascimento' => 'nullable|date',
+                'sexo' => 'nullable|string|max:10',
+                'telefone' => [
+                    'nullable', 'string', 'max:20',
+                    function ($attribute, $value, $fail) use ($paciente) {
+                        if (Paciente::where('user_id', auth()->id())
+                            ->where('telefone', $value)
+                            ->where('id', '!=', $paciente->id)
+                            ->exists()) {
+                            $fail('Este telefone já está cadastrado para outro paciente.');
+                        }
+                    },
+                ],
+                'email' => [
+                    'nullable', 'email', 'max:255',
+                    function ($attribute, $value, $fail) use ($paciente) {
+                        if (Paciente::where('user_id', auth()->id())
+                            ->where('email', $value)
+                            ->where('id', '!=', $paciente->id)
+                            ->exists()) {
+                            $fail('Este e-mail já está cadastrado para outro paciente.');
+                        }
+                    },
+                ],
+                'cpf' => [
+                    'nullable', 'string', 'max:20',
+                    function ($attribute, $value, $fail) use ($paciente) {
+                        if (Paciente::where('user_id', auth()->id())
+                            ->whereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?", [$value])
+                            ->where('id', '!=', $paciente->id)
+                            ->exists()) {
+                            $fail('Este CPF já está cadastrado para outro paciente.');
+                        }
+                    },
+                ],
+                'cep' => 'nullable|string|max:10',
+                'rua' => 'nullable|string|max:255',
+                'numero' => 'nullable|string|max:20',
+                'complemento' => 'nullable|string|max:100',
+                'bairro' => 'nullable|string|max:100',
+                'cidade' => 'nullable|string|max:100',
+                'uf' => 'nullable|string|max:2',
+                'exige_nota_fiscal' => 'nullable|in:on,1,true,0,false',
+                'observacoes' => 'nullable|string',
+                'nova_medicacao' => 'nullable|string|max:255',
+            ]);
 
-        $request->validate([
-            'nome' => 'required|string|max:255',
-            'data_nascimento' => 'nullable|date',
-            'sexo' => 'nullable|string|max:10',
-            'telefone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'cpf' => 'nullable|string|max:20',
-            'cep' => 'nullable|string|max:10',
-            'rua' => 'nullable|string|max:255',
-            'numero' => 'nullable|string|max:20',
-            'complemento' => 'nullable|string|max:100',
-            'bairro' => 'nullable|string|max:100',
-            'cidade' => 'nullable|string|max:100',
-            'uf' => 'nullable|string|max:2',
-            'exige_nota_fiscal' => 'nullable|in:on,1,true,0,false',
-            'observacoes' => 'nullable|string',
-            'nova_medicacao' => 'nullable|string|max:255',
-        ]);
+        // Normaliza CPF antes de atualizar
+            if ($request->filled('cpf')) {
+                $request->merge([
+                    'cpf' => preg_replace('/\D/', '', $request->cpf),
+                ]);
+            }
 
         $paciente->update([
             'nome' => $request->nome,
@@ -145,7 +223,7 @@ class PacienteController extends Controller
             'bairro' => $request->bairro,
             'cidade' => $request->cidade,
             'uf' => $request->uf,
-            'exige_nota_fiscal' => $request->has('exige_nota_fiscal'),
+            'exige_nota_fiscal' => (bool) $request->input('exige_nota_fiscal', false),
             'observacoes' => $request->observacoes,
         ]);
 
@@ -160,7 +238,13 @@ class PacienteController extends Controller
 
         AuditHelper::log('updated_paciente', 'Atualizou o paciente ' . $paciente->nome);
 
-        return redirect()->route('pacientes.index')->with('success', 'Paciente atualizado!');
+        if ($request->ajax()) {
+            return response()->json([
+                'message' => 'Paciente atualizado com sucesso!'
+            ]);
+        }
+        
+        return redirect()->route('pacientes.index')->with('success', 'Paciente atualizado!');        
     }
 
     public function destroy(Paciente $paciente)
