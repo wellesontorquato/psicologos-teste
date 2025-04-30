@@ -27,12 +27,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Força HTTPS e domínio correto em produção
         if (app()->environment('production')) {
             URL::forceScheme('https');
-
-            // Importante: Garante que os links de verificação sejam gerados com o domínio correto
             URL::forceRootUrl(config('app.url'));
+
+            // 🔐 Força host e scheme globalmente para validação correta de assinatura
+            Request::server()->set('HTTPS', 'on');
+            Request::server()->set('HTTP_HOST', parse_url(config('app.url'), PHP_URL_HOST));
         }
 
         // Usa Bootstrap na paginação
