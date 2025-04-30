@@ -124,7 +124,34 @@ document.addEventListener('DOMContentLoaded', function () {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
+
         events: '/api/sessoes',
+
+        eventContent: function (arg) {
+            const viewType = arg.view.type;
+            const event = arg.event;
+
+            const start = event.start;
+            const end = event.end;
+
+            const formatHora = (date) =>
+                date.getHours().toString().padStart(2, '0') + ':' +
+                date.getMinutes().toString().padStart(2, '0');
+
+            const horaInicio = formatHora(start);
+            const horaFim = end ? formatHora(end) : '';
+            const titulo = event.title;
+
+            if (viewType === 'dayGridMonth') {
+                return {
+                    html: `<div>${horaInicio} - ${titulo}</div>`
+                };
+            } else {
+                return {
+                    html: `<div>${horaInicio} - ${horaFim}</div><div>${titulo}</div>`
+                };
+            }
+        },
 
         dateClick: function (info) {
             abrirModalCriar(info.dateStr);
@@ -142,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 campos.id.value = sessao.id;
                 campos.paciente.value = sessao.paciente_id;
-                campos.data_hora.value = sessao.data_hora.substring(0, 16);
+                campos.data_hora.value = sessao.data_hora.slice(0, 16);
                 campos.valor.value = sessao.valor;
                 campos.duracao.value = sessao.duracao;
                 campos.foi_pago.checked = sessao.foi_pago == true;

@@ -134,9 +134,7 @@ class SessaoController extends Controller
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
-        $sessao->data_hora = Carbon::createFromFormat('Y-m-d H:i:s', $sessao->data_hora, 'UTC')
-            ->setTimezone('America/Sao_Paulo')
-            ->format('Y-m-d\TH:i:s');
+        $sessao->data_hora = Carbon::parse($sessao->data_hora)->format('Y-m-d\TH:i');
 
         AuditHelper::log('edit_sessao_json', 'Acessou edição JSON da sessão ID ' . $id);
 
