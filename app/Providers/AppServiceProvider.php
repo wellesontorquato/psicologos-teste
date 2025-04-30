@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Support\Facades\Request; // ✅ ESTA LINHA FALTAVA
+use Illuminate\Support\Facades\Request;
 use App\Models\Evolucao;
 use App\Mail\CustomVerifyEmail;
 
@@ -33,8 +33,8 @@ class AppServiceProvider extends ServiceProvider
             URL::forceRootUrl(config('app.url'));
 
             // 🔐 Força host e scheme globalmente para validação correta de assinatura
-            Request::server()->set('HTTPS', 'on');
-            Request::server()->set('HTTP_HOST', parse_url(config('app.url'), PHP_URL_HOST));
+            $_SERVER['HTTPS'] = 'on';
+            $_SERVER['HTTP_HOST'] = parse_url(config('app.url'), PHP_URL_HOST);
         }
 
         // Usa Bootstrap na paginação
