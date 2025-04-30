@@ -29,12 +29,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (app()->environment('production')) {
+            // 🔐 Garante que tudo será https
             URL::forceScheme('https');
+
+            // 🔐 Usa exatamente a mesma URL do .env em produção
             URL::forceRootUrl(config('app.url'));
 
-            // 🔐 Força host e scheme globalmente para validação correta de assinatura
-            $_SERVER['HTTPS'] = 'on';
-            $_SERVER['HTTP_HOST'] = parse_url(config('app.url'), PHP_URL_HOST);
+            // 🔐 Garante que o host e protocolo sejam corretamente detectados por trás do proxy do Railway
+            Request::server()->set('HTTPS', 'on');
+            Request::server()->set('HTTP_HOST', parse_url(config('app.url'), PHP_URL_HOST));
         }
 
         // Usa Bootstrap na paginação
