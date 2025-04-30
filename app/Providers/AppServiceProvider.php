@@ -36,8 +36,8 @@ class AppServiceProvider extends ServiceProvider
             URL::forceRootUrl(config('app.url'));
 
             // 🔐 Garante que o host e protocolo sejam corretamente detectados por trás do proxy do Railway
-            Request::server()->set('HTTPS', 'on');
-            Request::server()->set('HTTP_HOST', parse_url(config('app.url'), PHP_URL_HOST));
+            $_SERVER['HTTPS'] = 'on';
+            $_SERVER['HTTP_HOST'] = parse_url(config('app.url'), PHP_URL_HOST);
         }
 
         // Usa Bootstrap na paginação
