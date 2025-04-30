@@ -23,13 +23,19 @@ class CustomVerifyEmail extends BaseVerifyEmail
 
     protected function verificationUrl($notifiable)
     {
+        $baseUrl = config('app.url_verification') ?? config('app.url');
+
         return URL::temporarySignedRoute(
             'verification.verify',
             Carbon::now()->addMinutes(60),
             [
                 'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
-            ]
+            ],
+            false // esse false evita que ele adicione APP_URL automaticamente
         );
+
+        // Agora substitui manualmente a base
+        return str_replace(config('app.url'), $baseUrl, $signedUrl);
     }
 }

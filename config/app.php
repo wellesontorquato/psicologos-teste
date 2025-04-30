@@ -22,6 +22,8 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'url_verification' => env('APP_URL_VERIFICATION'),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', env('APP_PREVIOUS_KEYS', ''))
