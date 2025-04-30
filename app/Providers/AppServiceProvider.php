@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Request;
 use App\Models\Evolucao;
 use App\Mail\CustomVerifyEmail;
 
