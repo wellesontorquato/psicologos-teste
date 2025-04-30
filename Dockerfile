@@ -42,6 +42,10 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Cria symlink para acesso a arquivos públicos (fotos de perfil etc)
 RUN php artisan storage:link || true
 
+# Define limites de upload do PHP corretamente (acrescenta em vez de sobrescrever)
+RUN echo "upload_max_filesize=5M" > /usr/local/etc/php/conf.d/uploads.ini && \
+    echo "post_max_size=6M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Expõe porta usada pelo nginx
 EXPOSE 8080
 
