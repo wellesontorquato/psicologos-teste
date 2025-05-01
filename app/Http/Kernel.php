@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 
+
 class Kernel extends HttpKernel
 {
     /**
