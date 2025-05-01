@@ -22,6 +22,7 @@ use App\Http\Controllers\{
 };
 use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +53,33 @@ Route::get('/run-migrate', function (\Illuminate\Http\Request $request) {
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
+
+Route::get('/logs-debug/{file}', function ($file) {
+    if (!auth()->check() || !auth()->user()->isAdmin()) {
+        abort(403, 'Acesso não autorizado.');
+    }
+
+    $allowed = [
+        'artisan-setup.log',
+        'artisan-setup-error.log',
+        'artisan-setup-out.log',
+    ];
+
+    if (!in_array($file, $allowed)) {
+        abort(404, 'Arquivo não permitido.');
+    }
+
+    $path = storage_path("logs/{$file}");
+
+    if (!file_exists($path)) {
+        return response('Log não encontrado.', 404);
+    }
+
+    return Response::make(file_get_contents($path), 200, [
+        'Content-Type' => 'text/plain',
+    ]);
+})->where('file', '.*')->name('logs.debug.dynamic');
+
 
 /*
 |--------------------------------------------------------------------------
