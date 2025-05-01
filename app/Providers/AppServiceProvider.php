@@ -4,14 +4,11 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Vite;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Support\Facades\Request;
 use App\Models\Evolucao;
-use App\Mail\CustomVerifyEmail;
+use App\Notifications\CustomVerifyEmail;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,18 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (app()->environment('production')) {
-            // 🔐 Garante que tudo será https
-            URL::forceScheme('https');
-
-            // 🔐 Usa exatamente a mesma URL do .env em produção
-            URL::forceRootUrl(config('app.url'));
-
-            // 🔐 Garante que o host e protocolo sejam corretamente detectados por trás do proxy do Railway
-            $_SERVER['HTTPS'] = 'on';
-            $_SERVER['HTTP_HOST'] = parse_url(config('app.url'), PHP_URL_HOST);
-        }
-
         // Usa Bootstrap na paginação
         Paginator::useBootstrap();
 
@@ -51,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Substitui a notificação padrão de verificação de e-mail
         VerifyEmail::toMailUsing(function ($notifiable) {
-            return (new \App\Notifications\CustomVerifyEmail)->toMail($notifiable);
-        });        
+            return (new CustomVerifyEmail)->toMail($notifiable);
+        });
     }
 }

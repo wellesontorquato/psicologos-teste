@@ -11,24 +11,30 @@ class CustomVerifyEmail extends BaseVerifyEmail
 {
     public function toMail($notifiable)
     {
-        $signedUrl = URL::temporarySignedRoute(
+        // Backup da URL atual
+        $originalUrl = config('app.url');
+
+        // Força temporariamente a URL personalizada para geração do link
+        URL::forceRootUrl(config('app.url_verification'));
+
+        // Gera o link com assinatura correta
+        $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             Carbon::now()->addMinutes(60),
             [
                 'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
-            ],
-            false // Gera sem usar o app.url
+            ]
         );
 
-        $customUrl = str_replace(config('app.url'), config('app.url_verification'), $signedUrl);
+        // Restaura a URL original para não afetar outras partes do app
+        URL::forceRootUrl($originalUrl);
 
         return (new MailMessage)
             ->subject('Confirme seu e-mail para ativar sua conta no PsiGestor')
             ->markdown('emails.verify', [
-                'verificationUrl' => $customUrl,
+                'verificationUrl' => $verificationUrl,
                 'user' => $notifiable,
             ]);
     }
 }
-
