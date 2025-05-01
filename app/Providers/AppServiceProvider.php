@@ -50,8 +50,8 @@ class AppServiceProvider extends ServiceProvider
         View::addNamespace('mail', resource_path('views/vendor/mail'));
 
         // Substitui a notificação padrão de verificação de e-mail
-        VerifyEmail::toMailUsing(function ($notifiable, $url) {
-            return (new CustomVerifyEmail($url))->to($notifiable->email);
-        });
+        VerifyEmail::toMailUsing(function ($notifiable) {
+            return (new \App\Notifications\CustomVerifyEmail)->toMail($notifiable);
+        });        
     }
 }

@@ -1,11 +1,16 @@
 @component('mail::message')
+{{-- Logo centralizada (opcional, se não usar no layout padrão) --}}
+<p style="text-align: center; margin-bottom: 20px;">
+    <img src="https://psigestor.com.br/logo.png" alt="Logo PsiGestor" style="height: 50px;">
+</p>
+
 # Bem-vindo ao PsiGestor, {{ $user->email }}!
 
 Olá! Obrigado por se cadastrar em nossa plataforma.
 
 Por favor, clique no botão abaixo para verificar seu endereço de e-mail e ativar sua conta:
 
-@component('mail::button', ['url' => $verificationUrl])
+@component('mail::button', ['url' => $verificationUrl, 'color' => 'primary'])
 Verificar E-mail
 @endcomponent
 
@@ -13,7 +18,7 @@ Se você não criou esta conta, nenhuma ação é necessária.
 
 ---
 
-**Siga-nos nas redes sociais:**
+### Siga-nos nas redes sociais:
 
 <table role="presentation" align="center" style="margin-top: 10px;">
     <tr>
