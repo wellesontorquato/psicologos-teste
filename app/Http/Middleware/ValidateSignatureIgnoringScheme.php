@@ -4,30 +4,25 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 
 class ValidateSignatureIgnoringScheme
 {
     public function handle($request, Closure $next)
     {
-        $signature = $request->query('signature');
-
-        if (!$signature) {
-            throw new InvalidSignatureException;
+        if (URL::hasValidSignature($request, false)) {
+            return $next($request);
         }
 
-        // Gera a URL sem o "signature" para validação
+        // Segunda tentativa: troca http <-> https na URL para validar assinatura ignorando scheme
         $url = $request->fullUrl();
-        $urlWithoutSignature = preg_replace('/(&|\?)signature=[^&]+/', '', $url);
+        $swappedUrl = preg_replace('/^http:/i', 'https:', $url);
+        $swappedUrl = preg_replace('/^https:/i', 'http:', $swappedUrl);
 
-        // 🔄 Remove http:// ou https:// para neutralizar esquema
-        $urlToValidate = preg_replace('/^https?:\/\//i', '', $urlWithoutSignature);
+        $temporaryRequest = $request->duplicate();
+        $temporaryRequest->server->set('REQUEST_URI', parse_url($swappedUrl, PHP_URL_PATH) . '?' . parse_url($swappedUrl, PHP_URL_QUERY));
 
-        // Recalcula a assinatura manualmente (igual Laravel faz)
-        $expectedSignature = hash_hmac('sha256', $urlToValidate, Config::get('app.key'));
-
-        if (!hash_equals($expectedSignature, $signature)) {
+        if (!URL::hasValidSignature($temporaryRequest, false)) {
             throw new InvalidSignatureException;
         }
 
