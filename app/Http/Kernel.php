@@ -61,5 +61,6 @@ class Kernel extends HttpKernel
         'signed.ignoreScheme' => \App\Http\Middleware\ValidateSignatureIgnoringScheme::class,
         'assinante' => \App\Http\Middleware\CheckSubscription::class,
         'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+        'debug.signed' => \App\Http\Middleware\DebugSignature::class,
     ];
 }
