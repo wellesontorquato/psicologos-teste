@@ -1,5 +1,7 @@
 @extends('layouts.landing')
 
+@section('title', 'Nossos planos | PsiGestor')
+
 @section('content')
 <section class="section-plans" style="background-color: #ffffff; padding: 80px 20px;">
     <div style="max-width: 1200px; margin: auto;">
