@@ -1,3 +1,6 @@
+@extends('layouts.landing')
+
+@section('content')
 <section class="section-plans" style="background-color: #ffffff; padding: 80px 20px;">
     <div style="max-width: 1200px; margin: auto;">
         <h2 style="text-align: center; font-size: 2rem; margin-bottom: 20px; font-weight: bold;">
@@ -68,3 +71,4 @@
         </div>
     </div>
 </section>
+@endsection
