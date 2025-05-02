@@ -142,6 +142,4 @@
     <img src="https://psicologos-teste-production.up.railway.app/images/whatsapp.png" alt="WhatsApp" style="width: 24px; height: 24px;">
     (82) 99112-8022
 </a>
-
-
 @endsection
