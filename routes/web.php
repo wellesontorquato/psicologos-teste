@@ -183,22 +183,13 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 |--------------------------------------------------------------------------
 */
 
-Route::get('/ajuste-cache', function () {
-    // Proteção com token simples (pode melhorar isso depois)
-    if (request()->query('token') !== 'ajustepsi2025') {
-        abort(403, 'Acesso negado.');
-    }
-
+Route::get('/force-clear', function () {
     Artisan::call('config:clear');
     Artisan::call('route:clear');
-    Artisan::call('view:clear');
     Artisan::call('cache:clear');
+    Artisan::call('view:clear');
 
-    Artisan::call('config:cache');
-    Artisan::call('route:cache');
-
-    return 'Caches limpos e recarregados com sucesso!';
+    return 'Caches TOTALMENTE limpos 🚀!';
 });
-
 
 require __DIR__.'/auth.php';
