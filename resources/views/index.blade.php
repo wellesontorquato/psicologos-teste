@@ -2,33 +2,100 @@
 
 @section('content')
 
-<section class="hero" id="inicio" style="background: linear-gradient(to right, #00aaff, #00c4ff); color: white; padding: 80px 20px;">
-    <div class="hero-container" style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;">
-        <div class="hero-text" style="flex: 1 1 400px; text-align: center; padding: 20px;">
-            <h1 style="font-size: 2.5rem; margin-bottom: 20px;">Bem-vindo ao <strong>PsiGestor</strong></h1>
-            <p style="font-size: 1.1rem; margin-bottom: 20px;">
-                Organize sua clínica com eficiência, empatia e tecnologia feita sob medida para psicólogos.<br>
+<section class="hero" id="inicio" style="
+    background: linear-gradient(to right, #00aaff, #00c4ff);
+    color: white;
+    padding: 40px 20px;
+">
+    <div class="hero-container" style="
+        max-width: 1200px;
+        margin: auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 30px;
+    ">
+        {{-- TEXTO PRINCIPAL --}}
+        <div class="hero-text" style="
+            flex: 1 1 500px;
+            text-align: left;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        ">
+            <h1 style="font-size: 2.3rem; margin-bottom: 15px; line-height: 1.2;">
+                Bem-vindo ao <strong>PsiGestor</strong>
+            </h1>
+            <p style="font-size: 1.05rem; margin-bottom: 15px; line-height: 1.5;">
+                Organize sua clínica com eficiência, empatia e tecnologia feita sob medida para psicólogos.
                 Controle sua agenda, evoluções, finanças e documentos em um só lugar — com leveza e precisão.
             </p>
-            <p><strong>PsiGestor é mais que uma plataforma.</strong><br>
-            É seu novo aliado para transformar o caos em clareza, e o cuidado em performance.<br>
-            Mais tempo pra você. Mais resultado pra sua clínica.</p>
-            <a href="{{ route('register') }}" class="btn-cta" style="margin-top: 20px; display: inline-block;">Comece agora...</a>
-            <div class="trial-box" style=" margin-top: 20px; display: inline-block; padding: 15px 20px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 12px; max-width: 320px; text-align: center; color: #ffffff; font-size: 0.95rem; backdrop-filter: blur(5px); box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-            <i class="bi bi-hourglass-split" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
-            Teste <strong>100% grátis</strong> por 10 dias<br>
-            <span style="font-size: 0.85rem; display: block; margin-top: 5px;">
-                ✅ Sem necessidade de cartão de crédito.<br>
-                ✅ Comece em segundos.
-            </span>
+            <p style="font-size: 1rem; margin-bottom: 20px;">
+                <strong>PsiGestor é mais que uma plataforma.</strong><br>
+                É seu aliado para transformar o caos em clareza e o cuidado em performance.
+            </p>
+
+            {{-- BOTÃO + BOX JUNTOS --}}
+            <div style="
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 15px;
+                flex-wrap: wrap;
+                margin-top: 10px;
+            ">
+                <a href="{{ route('register') }}" class="btn-cta" style="
+                    padding: 12px 25px;
+                    background: white;
+                    color: #00aaff;
+                    border-radius: 30px;
+                    font-weight: bold;
+                    text-decoration: none;
+                    transition: 0.3s ease;
+                    display: inline-block;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+                " onmouseover="this.style.background='#e6f7ff';" onmouseout="this.style.background='white';">
+                    Comece agora...
+                </a>
+
+                <div class="trial-box" style="
+                    padding: 12px 18px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border: 1px solid rgba(255, 255, 255, 0.4);
+                    border-radius: 10px;
+                    text-align: left;
+                    color: #ffffff;
+                    font-size: 0.9rem;
+                    backdrop-filter: blur(5px);
+                    max-width: 260px;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                ">
+                    <strong>🎁 10 dias grátis</strong><br>
+                    <small>
+                        ✅ Sem cartão de crédito<br>
+                        ✅ Acesso imediato
+                    </small>
+                </div>
+            </div>
         </div>
 
-        </div>
-        <div class="hero-img" style="flex: 1 1 400px; text-align: center;">
-            <img src="/images/ilustracao-psicologo-vetor.png" alt="PsiGestor - Psicólogo com paciente" style="max-width: 100%; height: auto;">
+        {{-- IMAGEM --}}
+        <div class="hero-img" style="
+            flex: 1 1 400px;
+            text-align: center;
+            padding: 10px;
+        ">
+            <img src="/images/ilustracao-psicologo-vetor.png" alt="PsiGestor - Psicólogo com paciente" style="
+                max-width: 100%;
+                height: auto;
+                max-height: 350px;
+            ">
         </div>
     </div>
 </section>
+
 
 {{-- FUNCIONALIDADES --}}
 @include('components.funcionalidades')
