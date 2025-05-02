@@ -129,6 +129,7 @@ Route::get('/logs-debug/{file}', function ($file) {
 
 Route::view('/', 'index')->name('home');
 Route::view('/funcionalidades', 'pages.funcionalidades')->name('funcionalidades');
+Route::view('/planos', 'pages.planos')->name('planos');
 Route::view('/quem-somos', 'pages.quem-somos')->name('quem-somos');
 Route::view('/contato', 'pages.contato')->name('contato');
 

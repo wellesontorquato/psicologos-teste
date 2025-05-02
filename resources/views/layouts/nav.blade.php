@@ -72,6 +72,7 @@
     <nav>
         <a href="{{ route('home') }}">Início</a>
         <a href="{{ route('funcionalidades') }}">Funcionalidades</a>
+        <a href="{{ route('planos') }}">Nossos Planos</a>
         <a href="{{ route('quem-somos') }}">Quem somos</a>
         <a href="{{ route('contato') }}">Contato</a>
         <a href="{{ route('login') }}" class="btn-cta">Login</a>

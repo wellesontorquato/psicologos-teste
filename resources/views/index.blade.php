@@ -29,7 +29,7 @@
                 Bem-vindo ao <strong>PsiGestor</strong>
             </h1>
             <p style="font-size: 1.05rem; margin-bottom: 15px; line-height: 1.5;">
-                Organize sua clínica com eficiência, empatia e tecnologia feita sob medida para psicólogos.
+                Organize sua clínica com eficiência, empatia e tecnologia feita sob medida para psicólogos, psicanalistas e psiquiatras.
                 Controle sua agenda, evoluções, finanças e documentos em um só lugar — com leveza e precisão.
             </p>
             <p style="font-size: 1rem; margin-bottom: 20px;">
@@ -74,7 +74,7 @@
                 ">
                     <strong>🎁 10 dias grátis</strong><br>
                     <small>
-                        ✅ Sem cartão de crédito<br>
+                        ✅ Sem cartão de crédito para o cadastro<br>
                         ✅ Acesso imediato
                     </small>
                 </div>
