@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Usuários | PsiGestor')
+
 @section('content')
 <style>
     .usuarios-container {

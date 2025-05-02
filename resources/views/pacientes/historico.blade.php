@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Histórico do Paciente | PsiGestor')
+
 @section('content')
 <div class="container">
     <div class="d-flex justify-content-between align-items-center py-3 mb-4 border-bottom">

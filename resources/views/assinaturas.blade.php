@@ -1,5 +1,7 @@
 @extends('layouts.app')
+
 @section('title', 'Assinaturas | PsiGestor')
+
 @section('content')
 <div class="container py-5">
     <h2 class="mb-5 text-center fw-bold">Escolha seu plano de assinatura</h2>

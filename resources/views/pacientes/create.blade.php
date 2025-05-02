@@ -1,5 +1,7 @@
 @extends('layouts.app')
+
 @section('title', 'Criar Paciente | PsiGestor')
+
 @section('content')
 <div class="container">
     <h2 class="mb-4">Novo Paciente</h2>

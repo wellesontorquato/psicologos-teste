@@ -1,6 +1,6 @@
 @extends('layouts.auth-layout')
 
-@section('title', 'Confirmar Senha')
+@section('title', 'Confirmar Senha | PsiGestor')
 
 @section('form')
     <div class="text-muted mb-4 text-sm">

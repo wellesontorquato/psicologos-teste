@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Arquvios | PsiGestor')
+
 @section('content')
 <div class="container">
     <h2 class="mb-4">Arquivos de {{ $paciente->nome }}</h2>

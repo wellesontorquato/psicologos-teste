@@ -1,6 +1,6 @@
 @extends('layouts.auth-layout')
 
-@section('title', 'Recuperar Senha')
+@section('title', 'Recuperar Senha | PsiGestor')
 
 @section('form')
     @if (session('status'))

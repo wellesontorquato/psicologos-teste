@@ -1,5 +1,7 @@
 @extends('layouts.app')
+
 @section('title', 'Auditoria | PsiGestor')
+
 @section('content')
 <style>
     .audit-pagination {

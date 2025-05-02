@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Agenda | PsiGestor')
+
 @section('styles')
 <style>
     /* Garante prioridade absoluta sobre o Tailwind */

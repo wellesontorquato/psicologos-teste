@@ -1,6 +1,6 @@
 @extends('layouts.auth-layout')
 
-@section('title', 'Verifique seu E-mail')
+@section('title', 'Verifique seu E-mail | PsiGestor')
 
 @section('form')
     <div class="text-muted text-center mb-4">

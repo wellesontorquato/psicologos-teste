@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Sessões | PsiGestor')
+
 @section('content')
 <div class="container">
     <h2>Sessões</h2>

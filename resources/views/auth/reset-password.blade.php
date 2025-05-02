@@ -1,6 +1,6 @@
 @extends('layouts.auth-layout')
 
-@section('title', 'Redefinir Senha')
+@section('title', 'Redefinir Senha | PsiGestor')
 
 @section('form')
     <form method="POST" action="{{ route('password.store') }}">

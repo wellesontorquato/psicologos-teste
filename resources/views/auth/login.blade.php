@@ -1,6 +1,6 @@
 @extends('layouts.auth-layout')
 
-@section('title', 'Entrar')
+@section('title', 'Entrar | PsiGestor')
 
 @section('form')
     @if (session('status'))

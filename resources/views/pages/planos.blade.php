@@ -1,5 +1,7 @@
 @extends('layouts.landing')
 
+@section('title', 'Nossos Planos | PsiGestor')
+
 @section('content')
 <section class="section-plans">
     <!-- Cabeçalho com degradê -->

@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Assinatura Cancelada | PsiGestor')
+
 @section('content')
 <div class="container py-5 text-center">
     <div class="alert alert-warning shadow-sm rounded-4 p-4">

@@ -1,6 +1,6 @@
 @extends('layouts.auth-layout')
 
-@section('title', 'Cadastrar-se')
+@section('title', 'Cadastrar-se | PsiGestor')
 
 @section('form')
     <form method="POST" action="{{ route('register') }}">
