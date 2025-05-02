@@ -1,15 +1,19 @@
 @extends('layouts.landing')
 
 @section('content')
-<section class="section-plans" style="background-color: #ffffff; padding: 80px 20px;">
-    <div style="max-width: 1200px; margin: auto;">
-        <h2 style="text-align: center; font-size: 2.2rem; margin-bottom: 20px; font-weight: bold; color: #0077cc;">
+<section class="section-plans">
+    <!-- Cabeçalho com degradê -->
+    <div style="background: linear-gradient(to right, #00aaff, #00c4ff); padding: 60px 20px; text-align: center; color: white;">
+        <h2 style="font-size: 2.2rem; margin-bottom: 15px; font-weight: bold;">
             Planos do PsiGestor
         </h2>
-        <p style="text-align: center; color: #666; max-width: 700px; margin: 0 auto 50px; font-size: 1rem;">
+        <p style="max-width: 700px; margin: 0 auto; font-size: 1rem;">
             Escolha o plano ideal para sua clínica e tenha acesso a todas as funcionalidades que tornam sua rotina mais leve e eficiente.
         </p>
+    </div>
 
+    <!-- Cards dos planos -->
+    <div style="max-width: 1200px; margin: 50px auto; padding: 0 20px;">
         <div style="
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
