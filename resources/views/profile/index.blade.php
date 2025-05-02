@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@section('title', 'Perfil | PsiGestor')
 @section('content')
 <style>
     .profile-container {

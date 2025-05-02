@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@section('title', 'Criar Evolução | PsiGestor')
 @section('content')
 <div class="container">
     <h2>Nova Evolução</h2>
