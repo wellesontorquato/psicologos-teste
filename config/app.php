@@ -22,7 +22,7 @@ return [
 
     'key' => env('APP_KEY'),
 
-    'url_verification' => env('APP_URL_VERIFICATION'),
+    'url_verification' => env('APP_URL_VERIFICATION', 'http://psicologos-teste-production.up.railway.app'),
 
     'previous_keys' => [
         ...array_filter(
