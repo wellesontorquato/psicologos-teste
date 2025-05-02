@@ -7,13 +7,13 @@
     @if (session('status') === 'email-just-verified')
         <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>
-            ✅ Seu e-mail foi verificado com sucesso! Bem-vindo(a) ao sistema PsiGestor.
+             Seu e-mail foi verificado com sucesso! Bem-vindo(a) ao sistema PsiGestor.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @elseif (session('status') === 'email-already-verified')
         <div class="alert alert-info alert-dismissible fade show d-flex align-items-center" role="alert">
             <i class="bi bi-info-circle-fill me-2"></i>
-            ℹ️ Seu e-mail já estava verificado anteriormente.
+             Seu e-mail já estava verificado anteriormente.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif

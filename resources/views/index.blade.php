@@ -14,6 +14,15 @@
             É seu novo aliado para transformar o caos em clareza, e o cuidado em performance.<br>
             Mais tempo pra você. Mais resultado pra sua clínica.</p>
             <a href="{{ route('register') }}" class="btn-cta" style="margin-top: 20px; display: inline-block;">Comece agora...</a>
+            <div class="trial-box" style=" margin-top: 20px; display: inline-block; padding: 15px 20px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 12px; max-width: 320px; text-align: center; color: #ffffff; font-size: 0.95rem; backdrop-filter: blur(5px); box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+            <i class="bi bi-hourglass-split" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
+            Teste <strong>100% grátis</strong> por 10 dias<br>
+            <span style="font-size: 0.85rem; display: block; margin-top: 5px;">
+                ✅ Sem necessidade de cartão de crédito.<br>
+                ✅ Comece em segundos.
+            </span>
+        </div>
+
         </div>
         <div class="hero-img" style="flex: 1 1 400px; text-align: center;">
             <img src="/images/ilustracao-psicologo-vetor.png" alt="PsiGestor - Psicólogo com paciente" style="max-width: 100%; height: auto;">
