@@ -34,13 +34,52 @@ Route::get('/_filesystem', function () {
     $path = base_path();
     $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
     $files = [];
+
     foreach ($rii as $file) {
         if (!$file->isDir()) {
-            $files[] = str_replace($path, '', $file->getPathname());
+            $fullPath = $file->getPathname();
+            $relativePath = str_replace($path, '', $fullPath);
+
+            $files[] = [
+                'path' => $relativePath,
+                'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
+                'size' => $file->getSize(),
+            ];
         }
     }
+
     return view('filesystem', ['files' => $files]);
-});
+})->name('filesystem.index');
+
+Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
+    $file = $request->query('file');
+    if (!$file) {
+        abort(404, 'Arquivo não especificado.');
+    }
+
+    $fullPath = base_path($file);
+
+    if (!file_exists($fullPath)) {
+        abort(404, 'Arquivo não encontrado.');
+    }
+
+    return Response::file($fullPath);
+})->name('filesystem.view');
+
+Route::get('/_filesystem/download', function (\Illuminate\Http\Request $request) {
+    $file = $request->query('file');
+    if (!$file) {
+        abort(404, 'Arquivo não especificado.');
+    }
+
+    $fullPath = base_path($file);
+
+    if (!file_exists($fullPath)) {
+        abort(404, 'Arquivo não encontrado.');
+    }
+
+    return Response::download($fullPath);
+})->name('filesystem.download');
 
 Route::get('/run-migrate', function (\Illuminate\Http\Request $request) {
     if ($request->query('token') !== env('MIGRATE_TOKEN')) {
@@ -63,6 +102,7 @@ Route::get('/logs-debug/{file}', function ($file) {
         'artisan-setup.log',
         'artisan-setup-error.log',
         'artisan-setup-out.log',
+        'laravel.log',
     ];
 
     if (!in_array($file, $allowed)) {
