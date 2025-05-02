@@ -22,9 +22,9 @@ use App\Listeners\NotificarAniversarioPaciente;
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
+        // Registered::class => [
+        //     SendEmailVerificationNotification::class,
+        // ],
 
         // Eventos personalizados do sistema PsiGestor
         SessaoConfirmada::class => [
