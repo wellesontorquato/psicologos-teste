@@ -22,20 +22,20 @@ class VerifyEmailController extends Controller
                 'id' => $request->route('id'),
                 'hash' => $request->route('hash'),
             ]);
-    
+
             if ($request->user()->hasVerifiedEmail()) {
                 Log::info('[DEBUG] Já estava verificado.');
-                return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+                return redirect()->route('dashboard')->with('status', 'email-already-verified');
             }
-    
+
             if ($request->user()->markEmailAsVerified()) {
                 Log::info('[DEBUG] Marcou como verificado com sucesso.');
                 event(new Verified($request->user()));
             }
-    
+
             Log::info('[DEBUG] Redirecionando para dashboard após verificação.');
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
-    
+            return redirect()->route('dashboard')->with('status', 'email-just-verified');
+
         } catch (\Throwable $e) {
             Log::error('[ERRO na verificação]', [
                 'message' => $e->getMessage(),
@@ -43,7 +43,7 @@ class VerifyEmailController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-    
+
             abort(500, 'Erro interno na verificação.');
         }
     }

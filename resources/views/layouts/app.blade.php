@@ -355,14 +355,16 @@
     @endif
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const trialEndsAt = @json(Auth::user()?->trial_ends_at);
-        if (trialEndsAt) {
-            const end = new Date(trialEndsAt);
-            const now = new Date();
-            const diffTime = end - now;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const trialEndsAt = @json(Auth::user()?->trial_ends_at);
+    if (trialEndsAt) {
+        const end = new Date(trialEndsAt);
+        const now = new Date();
+        const diffTime = end - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            if (diffDays <= 1) {
+        if (diffDays > 0) {
+            // Só mostra o alerta se ainda restar 1 dia ou menos
+            if (diffDays === 1) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Seu teste gratuito está acabando!',
@@ -371,6 +373,7 @@
                 });
             }
 
+            // Cria o badge apenas se ainda tem dias restantes
             const badge = document.createElement('div');
             badge.className = 'trial-badge';
             badge.innerHTML = '<i class="bi bi-hourglass-split"></i> ' + diffDays + ' dias grátis restantes';
@@ -379,8 +382,19 @@
             if (topbar) {
                 topbar.insertAdjacentElement('beforebegin', badge);
             }
+        } else {
+            // Trial expirado: cria o badge de "Teste gratuito encerrado"
+            const badge = document.createElement('div');
+            badge.className = 'trial-badge';
+            badge.innerHTML = '<i class="bi bi-x-circle-fill"></i> Teste gratuito encerrado';
+
+            const topbar = document.querySelector('.topbar > .relative');
+            if (topbar) {
+                topbar.insertAdjacentElement('beforebegin', badge);
+            }
         }
-    });
+    }
+});
 </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

@@ -2,6 +2,22 @@
 
 @section('content')
 <div class="container">
+
+    {{-- Mensagem de sucesso/aviso se o e-mail foi verificado --}}
+    @if (session('status') === 'email-just-verified')
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            ✅ Seu e-mail foi verificado com sucesso! Bem-vindo(a) ao sistema PsiGestor.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @elseif (session('status') === 'email-already-verified')
+        <div class="alert alert-info alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            ℹ️ Seu e-mail já estava verificado anteriormente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <h2 class="mb-4">
         <i class="bi bi-speedometer2"></i> Dashboard
         <small class="text-muted fs-6">Visão geral do sistema</small>
