@@ -121,4 +121,26 @@
     </p>
 </div>
 
+{{-- BOTÃO WHATSAPP FLOTANTE --}}
+<a href="https://wa.me/5582991128022" target="_blank" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #25d366;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+">
+    <img src="https://psicologos-teste-production.up.railway.app/images/whatsapp-icon.png" alt="WhatsApp" style="width: 24px; height: 24px;">
+    (11) 99999-9999
+</a>
+
 @endsection
