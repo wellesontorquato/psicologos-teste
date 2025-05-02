@@ -6,10 +6,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\CustomVerifyEmail;
 
-class User extends Authenticatable implements MustVerifyEmail 
+class User extends Authenticatable
 {
     use HasFactory, Notifiable, Billable;
 
@@ -25,7 +24,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'crp',
         'data_nascimento',
     ];
-    
 
     protected $appends = ['profile_photo_url'];
 
@@ -47,7 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
             ? asset('storage/' . $this->profile_photo_path)
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
-    
+
     public function isAdmin(): bool
     {
         return (int) $this->is_admin === 1;
@@ -58,4 +56,3 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new CustomVerifyEmail);
     }
 }
-

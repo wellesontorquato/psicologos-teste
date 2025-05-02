@@ -51,7 +51,8 @@ class RegisteredUserController extends Controller
             'trial_ends_at' => Carbon::now()->addDays(10),
         ]);        
 
-        event(new Registered($user));
+        $user->sendEmailVerificationNotification();
+
         Auth::login($user);
     
         return redirect()->route('verification.notice');
