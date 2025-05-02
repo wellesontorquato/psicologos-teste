@@ -31,7 +31,7 @@
         </p>
 
         <p style="font-size: 1.2rem; font-weight: bold; color: #00aaff;">
-            <a href="mailto:contato@psigestor.com.br" style="color: #00aaff; text-decoration: none;">
+            <a href="mailto:psigestor@devtorquato.com.br" style="color: #00aaff; text-decoration: none;">
                 psigestor@devtorquato.com.br
             </a>
         </p>
