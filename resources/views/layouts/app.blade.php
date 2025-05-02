@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
-    <title>{{ config('app.name', 'Sistema de Psicólogos/Psicanalistas/Psiquiatras') }}</title>
+    <title>@yield('title', config('app.name', 'Sistema de Psicólogos/Psicanalistas/Psiquiatras'))</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
