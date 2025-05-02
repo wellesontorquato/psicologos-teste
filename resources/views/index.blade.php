@@ -117,7 +117,7 @@
     <h2 style="text-align: center;">Fale Conosco</h2>
     <p style="text-align: center;">
         Tem dúvidas ou sugestões? Envie um e-mail para
-        <a href="mailto:contato@psigestor.com.br" style="color: #00aaff; font-weight: bold;">contato@psigestor.com.br</a>
+        <a href="mailto:psigestor@devtorquato.com.br" style="color: #00aaff; font-weight: bold;">psigestor@devtorquato.com.br</a>
     </p>
 </div>
 
