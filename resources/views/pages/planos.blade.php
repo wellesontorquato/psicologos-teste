@@ -83,15 +83,17 @@
                     <p style="font-size: 0.95rem; color: #555; margin-bottom: 30px; line-height: 1.5;">{!! $p['desc'] !!}</p>
                     
                     <a href="{{ route('register') }}" style="
-                        display: inline-block;
+                        display: block;
                         width: 100%;
                         padding: 12px 20px;
                         font-size: 1rem;
-                        border-radius: 8px;
+                        border-radius: 10px;
                         background: {{ $p['color'] }};
                         color: white;
                         text-decoration: none;
                         transition: background 0.3s ease;
+                        box-sizing: border-box;
+                        margin-top: 10px;
                     " onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='{{ $p['color'] }}'">
                         Começar agora
                     </a>
