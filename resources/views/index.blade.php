@@ -140,7 +140,7 @@
     transition: all 0.3s ease;
 ">
     <img src="https://psicologos-teste-production.up.railway.app/images/whatsapp-icon.png" alt="WhatsApp" style="width: 24px; height: 24px;">
-    (11) 99999-9999
+    (82) 99112-8022
 </a>
 
 @endsection
