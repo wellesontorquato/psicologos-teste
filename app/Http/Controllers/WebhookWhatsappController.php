@@ -43,33 +43,23 @@ class WebhookWhatsappController extends Controller
         }
 
         $numero = str_replace(['@c.us', '+'], '', $from);
-        Log::info('[Webhook] 📞 Número extraído:', ['numero' => $numero]);
+        $numeroLimpo = $this->normalizarNumero($numero);
+        Log::info('[Webhook] 📞 Número extraído e normalizado:', ['original' => $numero, 'normalizado' => $numeroLimpo]);
 
-        $paciente = Paciente::get()->first(function ($p) use ($numero) {
-            $numeroWhats = preg_replace('/^55/', '', preg_replace('/\D/', '', $numero));
-            $numeroBanco = preg_replace('/\D/', '', $p->telefone);
-            $numeroBanco = preg_replace('/^55/', '', $numeroBanco);
-        
-            // Tenta casar diretamente
-            if ($numeroWhats === $numeroBanco) {
-                return true;
-            }
-        
-            // Tenta casar removendo o nono dígito (9 depois do DDD)
-            $numeroBancoSem9 = preg_replace('/^(\d{2})9(\d{8})$/', '$1$2', $numeroBanco);
-            $numeroWhatsSem9 = preg_replace('/^(\d{2})9(\d{8})$/', '$1$2', $numeroWhats);
-        
-            if ($numeroWhatsSem9 === $numeroBancoSem9) {
-                return true;
-            }
-        
-            // Se ainda não bater, tenta uma tolerância com Levenshtein (no máximo 1 de diferença)
-            return levenshtein($numeroWhats, $numeroBanco) <= 1;
-        });        
+        // Busca mais robusta pelo número
+        $paciente = Paciente::get()->first(function ($p) use ($numeroLimpo) {
+            $telefoneBanco = preg_replace('/\D/', '', $p->telefone);
+            $telefoneBanco = preg_replace('/^55/', '', $telefoneBanco);
+
+            // Normaliza banco removendo zero após DDD, se houver
+            $telefoneBancoNormalizado = preg_replace('/^(\d{2})0?(\d{8,9})$/', '$1$2', $telefoneBanco);
+
+            return $numeroLimpo === $telefoneBancoNormalizado;
+        });
 
         if (!$paciente) {
-            Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numero]);
-            $this->responderNoWhatsapp($numero, '❌ Não encontramos seu número no sistema. Verifique com sua psicóloga.');
+            Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numeroLimpo]);
+            $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu número no sistema. Verifique com sua psicóloga.');
             return response()->json(['message' => 'Paciente não encontrado.'], 200);
         }
 
@@ -82,7 +72,7 @@ class WebhookWhatsappController extends Controller
 
         if (!isset($mapa[$bodyLimpo])) {
             Log::info('[Webhook] ⚠️ Resposta inválida do paciente', ['recebido' => $bodyLimpo]);
-            $this->responderNoWhatsapp($numero, '⚠️ Desculpe, não entendi sua resposta. Envie: CONFIRMADO, REMARCAR ou CANCELAR.');
+            $this->responderNoWhatsapp($numeroLimpo, '⚠️ Desculpe, não entendi sua resposta. Envie: CONFIRMADO, REMARCAR ou CANCELAR.');
             return response()->json(['message' => 'Mensagem inválida.'], 200);
         }
 
@@ -99,15 +89,15 @@ class WebhookWhatsappController extends Controller
         if (!$sessao) {
             Log::warning('[Webhook] ⚠️ Nenhuma sessão encontrada para atualizar.', [
                 'paciente' => $paciente->nome,
-                'numero' => $numero
+                'numero' => $numeroLimpo
             ]);
-            $this->responderNoWhatsapp($numero, "⚠️ Nenhuma sessão pendente encontrada para atualizar.");
+            $this->responderNoWhatsapp($numeroLimpo, "⚠️ Nenhuma sessão pendente encontrada para atualizar.");
             return response()->json(['message' => 'Nenhuma sessão encontrada.'], 200);
         }
 
         $sessao->status_confirmacao = $mapa[$bodyLimpo];
 
-        if (in_array($mapa[$bodyLimpo], ['REMARCAR', 'CANCELADA'])) {
+        if (in_array($sessao->status_confirmacao, ['REMARCAR', 'CANCELADA'])) {
             $sessao->data_hora = null;
         }
 
@@ -127,25 +117,24 @@ class WebhookWhatsappController extends Controller
         ]);
 
         $mensagem = "✅ Sessão marcada como *{$sessao->status_confirmacao}*.\nObrigado pela resposta, {$paciente->nome}!";
-        $this->responderNoWhatsapp($numero, $mensagem);
+        $this->responderNoWhatsapp($numeroLimpo, $mensagem);
 
         return response()->json(['message' => $mensagem], 200);
     }
 
     private function responderNoWhatsapp($numero, $mensagem)
     {
-        $numeroLimpo = preg_replace('/\D/', '', $numero);
-        if (!str_starts_with($numeroLimpo, '55')) {
-            $numeroLimpo = '55' . $numeroLimpo;
+        $numeroCompleto = preg_replace('/\D/', '', $numero);
+        if (!str_starts_with($numeroCompleto, '55')) {
+            $numeroCompleto = '55' . $numeroCompleto;
         }
 
         $token = config('services.wppconnect.token');
         $url = config('services.wppconnect.url');
         $session = config('services.wppconnect.session');
 
-        // LOG extra para debug completo:
         Log::info('[Webhook] 🚀 Preparando envio WhatsApp:', [
-            'numero' => $numeroLimpo,
+            'numero' => $numeroCompleto,
             'mensagem' => $mensagem,
             'url' => $url,
             'session' => $session,
@@ -161,23 +150,33 @@ class WebhookWhatsappController extends Controller
             'Authorization' => "Bearer {$token}",
             'Accept' => 'application/json',
         ])->post($endpoint, [
-            'phone' => $numeroLimpo,
+            'phone' => $numeroCompleto,
             'message' => $mensagem,
         ]);
 
         if ($response->successful()) {
             Log::info('[Webhook] ✅ Mensagem enviada com sucesso para o WhatsApp', [
-                'numero' => $numeroLimpo,
+                'numero' => $numeroCompleto,
                 'mensagem' => $mensagem,
             ]);
         } else {
             Log::error('[Webhook] ❌ Falha ao enviar mensagem ao WhatsApp', [
-                'numero' => $numeroLimpo,
+                'numero' => $numeroCompleto,
                 'mensagem' => $mensagem,
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
         }
+    }
+
+    private function normalizarNumero($numero)
+    {
+        // Remove caracteres não numéricos e o prefixo 55
+        $num = preg_replace('/\D/', '', $numero);
+        $num = preg_replace('/^55/', '', $num);
+
+        // Remove zero após o DDD, se houver (ex: 082 -> 82)
+        return preg_replace('/^(\d{2})0?(\d{8,9})$/', '$1$2', $num);
     }
 
     public function testeManual(Request $request)
