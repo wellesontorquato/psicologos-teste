@@ -21,6 +21,7 @@ Route::get('/executar-schedule-seguro/{token}', function ($token) {
         abort(403, 'Acesso negado');
     }
 
+    Log::info('[Scheduler] Chamou o schedule:run via webhook');
     Artisan::call('schedule:run');
 
     return response()->json(['message' => 'Schedule executado com sucesso']);
