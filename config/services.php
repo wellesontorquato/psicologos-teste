@@ -37,8 +37,9 @@ return [
 
 
     'wppconnect' => [
-        'token' => env('WPP_TOKEN'),
-        'url' => env('WPP_URL', 'http://localhost:21465/'),
-    ],
+    'url' => env('WPP_URL'),
+    'session' => env('WPP_SESSION'),
+    'token' => env('WPP_TOKEN'),
+],
 
 ];

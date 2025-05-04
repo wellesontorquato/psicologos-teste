@@ -124,12 +124,12 @@ class WebhookWhatsappController extends Controller
 
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.wppconnect.token'),
-            ])->post(app()->isLocal()
-                ? 'http://localhost:21465/api/psicologo/send-message'
-                : config('services.wppconnect.url') . '/api/psicologo/send-message', [
+        ])->post(app()->isLocal()
+            ? 'http://localhost:21465/api/psigestor/send-message'
+            : config('services.wppconnect.url') . '/api/psigestor/send-message', [
             'phone' => $numeroLimpo,
             'message' => $mensagem,
-        ]);
+        ]);        
 
         if ($response->successful()) {
             Log::info('[Webhook] 📤 Mensagem enviada com sucesso para o WhatsApp', [
