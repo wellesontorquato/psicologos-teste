@@ -128,7 +128,7 @@ class WebhookWhatsappController extends Controller
         $url = config('services.wppconnect.url');
         $session = config('services.wppconnect.session');
 
-        // LOGA tudo antes de enviar:
+        // LOG extra para debug completo:
         Log::info('[Webhook] 🚀 Preparando envio WhatsApp:', [
             'numero' => $numeroLimpo,
             'mensagem' => $mensagem,
@@ -138,12 +138,14 @@ class WebhookWhatsappController extends Controller
             'env' => app()->environment(),
         ]);
 
+        $endpoint = app()->isLocal()
+            ? "http://localhost:21465/api/{$session}/send-message"
+            : "{$url}/api/{$session}/send-message";
+
         $response = Http::withHeaders([
             'Authorization' => "Bearer {$token}",
             'Accept' => 'application/json',
-        ])->post(app()->isLocal()
-            ? "http://localhost:21465/api/{$session}/send-message"
-            : "{$url}/api/{$session}/send-message", [
+        ])->post($endpoint, [
             'phone' => $numeroLimpo,
             'message' => $mensagem,
         ]);
