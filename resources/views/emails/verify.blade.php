@@ -27,12 +27,12 @@ Se você não criou esta conta, nenhuma ação é necessária.
             </a>
         </td>
         <td>
-            <a href="https://www.facebook.com/psigestor" target="_blank">
+            <a href="https://www.facebook.com/psigestor/" target="_blank">
                 <img src="https://psicologos-teste-production.up.railway.app/images/facebook.png" alt="Facebook" width="32" height="32" style="margin-right:10px;">
             </a>
         </td>
         <td>
-            <a href="https://twitter.com/psigestor" target="_blank">
+            <a href="https://x.com/psigestor" target="_blank">
                 <img src="https://psicologos-teste-production.up.railway.app/images/twitter.png" alt="Twitter" width="32" height="32">
             </a>
         </td>
