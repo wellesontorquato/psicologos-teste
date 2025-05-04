@@ -74,12 +74,12 @@ class LembreteController extends Controller
             $url = config('services.wppconnect.url');
             $session = config('services.wppconnect.session');
 
-            Http::withHeaders([
+            $resposta = Http::withHeaders([
                 'Authorization' => "Bearer {$token}",
             ])->post("{$url}/api/{$session}/send-message", [
                 'phone' => $numero,
                 'message' => $mensagem,
-            ]);
+            ]);            
 
             $json = $resposta->json();
 
