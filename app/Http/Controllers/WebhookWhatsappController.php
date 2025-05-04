@@ -69,7 +69,7 @@ class WebhookWhatsappController extends Controller
 
         if (!$paciente) {
             Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numeroLimpo]);
-            $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu número no sistema. Verifique com sua psicóloga.');
+            $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu número no sistema. Verifique com o(a) profissional que te acompanha.');
             return response()->json(['message' => 'Paciente não encontrado.'], 200);
         }
 
