@@ -1,28 +1,42 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console;
 
-use Illuminate\Console\Command;
-use App\Http\Controllers\LembreteController;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
+use App\Console\Commands\VerificarSessoesNaoPagas;
+use App\Console\Commands\ChecarAniversariantes;
+use App\Console\Commands\EnviarLembretesDiarios; // ✅ garantir que está registrado
 
-class EnviarLembretesDiarios extends Command
+class Kernel extends ConsoleKernel
 {
-    protected $signature = 'lembretes:enviar';
-    protected $description = 'Envia lembretes automáticos de sessões do dia seguinte via WhatsApp.';
-
-    public function handle(): void
+    protected function schedule(Schedule $schedule): void
     {
-        Log::info('[Lembretes] 📅 Executando lembretes:enviar (comando agendado iniciado)');
+        Log::info('[Kernel] ✅ Entrou no método schedule() e está configurando os comandos.');
 
-        $controller = new LembreteController();
-        $resposta = $controller->enviarLembretesManualmente();
+        $schedule->command('lembretes:enviar')
+            ->everyMinute()
+            ->runInBackground();
 
-        $this->info('Envio de lembretes agendado:');
-        dump($resposta->getContent());
+        $schedule->command('checar:sessoes-nao-pagas')
+            ->everyMinute()
+            ->runInBackground();
 
-        Log::info('[Lembretes] ✅ Lembretes enviados com sucesso.', [
-            'resposta' => $resposta->getContent(),
-        ]);
+        $schedule->command('checar:aniversariantes')
+            ->everyMinute()
+            ->runInBackground();
     }
+
+    protected function commands(): void
+    {
+        $this->load(__DIR__.'/Commands');
+        require base_path('routes/console.php');
+    }
+
+    protected $commands = [
+        VerificarSessoesNaoPagas::class,
+        ChecarAniversariantes::class,
+        EnviarLembretesDiarios::class, // ✅ garantir que tá aqui também
+    ];
 }
