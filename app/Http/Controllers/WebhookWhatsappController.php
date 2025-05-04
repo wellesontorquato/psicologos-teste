@@ -46,15 +46,10 @@ class WebhookWhatsappController extends Controller
         $numeroLimpo = $this->normalizarNumero($numero);
         Log::info('[Webhook] 📞 Número extraído e normalizado:', ['original' => $numero, 'normalizado' => $numeroLimpo]);
 
-        // Busca mais robusta pelo número
+        // Busca direta pelo número já normalizado
         $paciente = Paciente::get()->first(function ($p) use ($numeroLimpo) {
             $telefoneBanco = preg_replace('/\D/', '', $p->telefone);
-            $telefoneBanco = preg_replace('/^55/', '', $telefoneBanco);
-
-            // Normaliza banco removendo zero após DDD, se houver
-            $telefoneBancoNormalizado = preg_replace('/^(\d{2})0?(\d{8,9})$/', '$1$2', $telefoneBanco);
-
-            return $numeroLimpo === $telefoneBancoNormalizado;
+            return $numeroLimpo === $telefoneBanco;
         });
 
         if (!$paciente) {
@@ -171,12 +166,12 @@ class WebhookWhatsappController extends Controller
 
     private function normalizarNumero($numero)
     {
-        // Remove caracteres não numéricos e o prefixo 55
+        // Remove caracteres não numéricos e o prefixo 55 se houver
         $num = preg_replace('/\D/', '', $numero);
-        $num = preg_replace('/^55/', '', $num);
-
-        // Remove zero após o DDD, se houver (ex: 082 -> 82)
-        return preg_replace('/^(\d{2})0?(\d{8,9})$/', '$1$2', $num);
+        if (str_starts_with($num, '55')) {
+            $num = substr($num, 2);
+        }
+        return $num;
     }
 
     public function testeManual(Request $request)
