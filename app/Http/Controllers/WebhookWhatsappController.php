@@ -49,8 +49,23 @@ class WebhookWhatsappController extends Controller
             $numeroWhats = preg_replace('/^55/', '', preg_replace('/\D/', '', $numero));
             $numeroBanco = preg_replace('/\D/', '', $p->telefone);
             $numeroBanco = preg_replace('/^55/', '', $numeroBanco);
+        
+            // Tenta casar diretamente
+            if ($numeroWhats === $numeroBanco) {
+                return true;
+            }
+        
+            // Tenta casar removendo o nono dígito (9 depois do DDD)
+            $numeroBancoSem9 = preg_replace('/^(\d{2})9(\d{8})$/', '$1$2', $numeroBanco);
+            $numeroWhatsSem9 = preg_replace('/^(\d{2})9(\d{8})$/', '$1$2', $numeroWhats);
+        
+            if ($numeroWhatsSem9 === $numeroBancoSem9) {
+                return true;
+            }
+        
+            // Se ainda não bater, tenta uma tolerância com Levenshtein (no máximo 1 de diferença)
             return levenshtein($numeroWhats, $numeroBanco) <= 1;
-        });
+        });        
 
         if (!$paciente) {
             Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numero]);
