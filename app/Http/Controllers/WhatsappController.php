@@ -17,11 +17,13 @@ class WhatsappController extends Controller
         $numero = $request->input('numero'); // Ex: 5582999405099
         $mensagem = $request->input('mensagem');
 
-        $token = '$2b$10$PKtItzgnFZpuYW1K9kVpdO_MNaKDApM5SmRQmH4O5Rz9F5n88WeHi';
+        $token = config('services.wppconnect.token');
+        $url = config('services.wppconnect.url');
+        $session = config('services.wppconnect.session');
 
-        $response = Http::withHeaders([
+        Http::withHeaders([
             'Authorization' => "Bearer {$token}",
-        ])->post('http://localhost:21465/api/psicologo/send-message', [
+        ])->post("{$url}/api/{$session}/send-message", [
             'phone' => $numero,
             'message' => $mensagem,
         ]);

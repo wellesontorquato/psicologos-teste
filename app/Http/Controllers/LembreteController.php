@@ -70,12 +70,16 @@ class LembreteController extends Controller
             $dataHoraFormatada = Carbon::parse($sessao->data_hora)->format('d/m/Y \à\s H:i');
             $mensagem = "Olá {$paciente->nome}, tudo bem? Sua sessão está marcada para {$dataHoraFormatada}. Por favor, responda com CONFIRMADO, REMARCAR ou CANCELAR.";
 
-            $resposta = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('services.wppconnect.token'),
-            ])->post(config('services.wppconnect.url') . '/api/psicologo/send-message', [
+            $token = config('services.wppconnect.token');
+            $url = config('services.wppconnect.url');
+            $session = config('services.wppconnect.session');
+
+            Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+            ])->post("{$url}/api/{$session}/send-message", [
                 'phone' => $numero,
                 'message' => $mensagem,
-            ]);            
+            ]);
 
             $json = $resposta->json();
 

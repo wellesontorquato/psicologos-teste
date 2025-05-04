@@ -31,14 +31,18 @@ class LembreteWhatsappController extends Controller
             $numero = '55' . preg_replace('/[^0-9]/', '', $sessao->paciente->telefone); // limpa e adiciona DDI
             $mensagem = "Olá {$sessao->paciente->nome}, tudo bem? Lembrando que você tem uma sessão marcada para {$sessao->data->format('d/m')} às {$sessao->hora}. Confirma sua presença?";
 
+            $token = config('services.wppconnect.token');
+            $url = config('services.wppconnect.url');
+            $session = config('services.wppconnect.session');
+
             Http::withHeaders([
-                'Authorization' => 'Bearer psicologo:$2b$10$PKtItzgnFZpuYW1K9kVpdO_MNaKDApM5SmRQmH4O5Rz9F5n88WeHi',
-            ])->post('http://localhost:21465/api/psicologo/send-message', [
+                'Authorization' => "Bearer {$token}",
+            ])->post("{$url}/api/{$session}/send-message", [
                 'phone' => $numero,
                 'message' => $mensagem,
             ]);
-        }
 
         return response()->json(['status' => 'Lembretes enviados com sucesso.']);
+        }
     }
 }
