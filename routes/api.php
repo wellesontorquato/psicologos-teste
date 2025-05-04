@@ -26,7 +26,6 @@ Route::get('/executar-schedule-seguro/{token}', function ($token) {
 
     // TESTE: roda diretamente o comando de lembretes
     Artisan::call('lembretes:enviar');
-    Artisan::call('checar:aniversariantes');
 
     return response()->json(['message' => 'Schedule e lembretes executados com sucesso']);
 });
