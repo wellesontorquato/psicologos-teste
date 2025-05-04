@@ -12,13 +12,13 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // Executa lembretes às 8h
-        $schedule->command('lembretes:enviar')->dailyAt('08:00')->runInBackground();
+        $schedule->command('lembretes:enviar')->everyMinute()->runInBackground();
 
         // Verifica sessões não pagas às 7h
-        $schedule->command('checar:sessoes-nao-pagas')->dailyAt('07:00')->runInBackground();
+        $schedule->command('checar:sessoes-nao-pagas')->everyMinute()->runInBackground();
 
         // Verifica aniversariantes às 7h30
-        $schedule->command('checar:aniversariantes')->dailyAt('07:30')->runInBackground();
+        $schedule->command('checar:aniversariantes')->everyMinute()->runInBackground();
     }
 
     protected function commands(): void
