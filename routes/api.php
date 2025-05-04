@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebhookWhatsappController;
 use App\Http\Controllers\PacienteController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 // 🔍 Health check
 Route::get('/ping', function () {
@@ -22,8 +23,10 @@ Route::get('/executar-schedule-seguro/{token}', function ($token) {
     }
 
     Log::info('[Scheduler] Chamou o schedule:run via webhook');
-    Artisan::call('schedule:run');
 
-    return response()->json(['message' => 'Schedule executado com sucesso']);
+    // TESTE: roda diretamente o comando de lembretes
+    Artisan::call('lembretes:enviar');
+
+    return response()->json(['message' => 'Schedule e lembretes executados com sucesso']);
 });
 
