@@ -14,7 +14,6 @@ use App\Events\SessaoRemarcada;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Illuminate\Support\Str;
 
-
 class WebhookWhatsappController extends Controller
 {
     public function receberMensagem(Request $request)
@@ -39,7 +38,7 @@ class WebhookWhatsappController extends Controller
         Log::info('[Webhook] 🧪 Texto limpo gerado:', ['original' => $bodyOriginal, 'limpo' => $bodyLimpo]);
 
         if (!str_contains($from, '@c.us')) {
-            Log::warning('[Webhook] Número malformado:', ['from' => $from]);
+            Log::warning('[Webhook] 🚫 Número malformado:', ['from' => $from]);
             return response()->json(['message' => 'Número inválido.'], 200);
         }
 
@@ -54,7 +53,7 @@ class WebhookWhatsappController extends Controller
         });
 
         if (!$paciente) {
-            Log::warning('[Webhook] Paciente não encontrado:', ['numero' => $numero]);
+            Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numero]);
             $this->responderNoWhatsapp($numero, '❌ Não encontramos seu número no sistema. Verifique com sua psicóloga.');
             return response()->json(['message' => 'Paciente não encontrado.'], 200);
         }
@@ -67,7 +66,7 @@ class WebhookWhatsappController extends Controller
         ];
 
         if (!isset($mapa[$bodyLimpo])) {
-            Log::info('[Webhook] ❌ Resposta inválida do paciente', ['recebido' => $bodyLimpo]);
+            Log::info('[Webhook] ⚠️ Resposta inválida do paciente', ['recebido' => $bodyLimpo]);
             $this->responderNoWhatsapp($numero, '⚠️ Desculpe, não entendi sua resposta. Envie: CONFIRMADO, REMARCAR ou CANCELAR.');
             return response()->json(['message' => 'Mensagem inválida.'], 200);
         }
@@ -83,7 +82,10 @@ class WebhookWhatsappController extends Controller
             ->first();
 
         if (!$sessao) {
-            Log::warning('⚠️ Nenhuma sessão encontrada para atualizar.', ['paciente' => $paciente->nome, 'numero' => $numero]);
+            Log::warning('[Webhook] ⚠️ Nenhuma sessão encontrada para atualizar.', [
+                'paciente' => $paciente->nome,
+                'numero' => $numero
+            ]);
             $this->responderNoWhatsapp($numero, "⚠️ Nenhuma sessão pendente encontrada para atualizar.");
             return response()->json(['message' => 'Nenhuma sessão encontrada.'], 200);
         }
@@ -126,8 +128,19 @@ class WebhookWhatsappController extends Controller
         $url = config('services.wppconnect.url');
         $session = config('services.wppconnect.session');
 
+        // LOGA tudo antes de enviar:
+        Log::info('[Webhook] 🚀 Preparando envio WhatsApp:', [
+            'numero' => $numeroLimpo,
+            'mensagem' => $mensagem,
+            'url' => $url,
+            'session' => $session,
+            'token' => $token,
+            'env' => app()->environment(),
+        ]);
+
         $response = Http::withHeaders([
             'Authorization' => "Bearer {$token}",
+            'Accept' => 'application/json',
         ])->post(app()->isLocal()
             ? "http://localhost:21465/api/{$session}/send-message"
             : "{$url}/api/{$session}/send-message", [
@@ -135,10 +148,8 @@ class WebhookWhatsappController extends Controller
             'message' => $mensagem,
         ]);
 
-        
-
         if ($response->successful()) {
-            Log::info('[Webhook] 📤 Mensagem enviada com sucesso para o WhatsApp', [
+            Log::info('[Webhook] ✅ Mensagem enviada com sucesso para o WhatsApp', [
                 'numero' => $numeroLimpo,
                 'mensagem' => $mensagem,
             ]);
@@ -153,14 +164,14 @@ class WebhookWhatsappController extends Controller
     }
 
     public function testeManual(Request $request)
-{
-    $dados = [
-        'event' => 'message',
-        'data' => [
-            'from' => '5582999405099@c.us',
-            'body' => 'Confirmado',
-        ]
-    ];
+    {
+        $dados = [
+            'event' => 'message',
+            'data' => [
+                'from' => '5582999405099@c.us',
+                'body' => 'Confirmado',
+            ]
+        ];
 
         $symfonyRequest = SymfonyRequest::create(
             '/api/webhook/whatsapp',
