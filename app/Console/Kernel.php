@@ -4,25 +4,28 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use Illuminate\Support\Facades\Log; // IMPORTANTE: adiciona essa linha!
+use Illuminate\Support\Facades\Log;
 use App\Console\Commands\VerificarSessoesNaoPagas;
 use App\Console\Commands\ChecarAniversariantes;
+use App\Console\Commands\EnviarLembretesDiarios; // ✅ garantir que está registrado
 
 class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        // Log para testar se está entrando aqui
-        Log::info('[Kernel] Entrou no método schedule() e está carregando os comandos.');
+        Log::info('[Kernel] ✅ Entrou no método schedule() e está configurando os comandos.');
 
-        // Executa lembretes às 8h (para teste, está everyMinute)
-        $schedule->command('lembretes:enviar')->everyMinute()->runInBackground();
+        $schedule->command('lembretes:enviar')
+            ->everyMinute()
+            ->runInBackground();
 
-        // Verifica sessões não pagas às 7h (para teste, está everyMinute)
-        $schedule->command('checar:sessoes-nao-pagas')->everyMinute()->runInBackground();
+        $schedule->command('checar:sessoes-nao-pagas')
+            ->everyMinute()
+            ->runInBackground();
 
-        // Verifica aniversariantes às 7h30 (para teste, está everyMinute)
-        $schedule->command('checar:aniversariantes')->everyMinute()->runInBackground();
+        $schedule->command('checar:aniversariantes')
+            ->everyMinute()
+            ->runInBackground();
     }
 
     protected function commands(): void
@@ -34,5 +37,6 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         VerificarSessoesNaoPagas::class,
         ChecarAniversariantes::class,
+        EnviarLembretesDiarios::class, // ✅ garantir que tá aqui também
     ];
 }
