@@ -49,8 +49,23 @@ class WebhookWhatsappController extends Controller
         // Busca direta pelo número já normalizado
         $paciente = Paciente::get()->first(function ($p) use ($numeroLimpo) {
             $telefoneBanco = preg_replace('/\D/', '', $p->telefone);
-            return $numeroLimpo === $telefoneBanco;
-        });
+        
+            // Tenta casar diretamente
+            if ($numeroLimpo === $telefoneBanco) {
+                return true;
+            }
+        
+            // Se o número tem 8 dígitos após o DDD (faltando o 9), tenta adicionar o 9 para comparar
+            if (preg_match('/^(\d{2})(\d{8})$/', $numeroLimpo, $matches)) {
+                $numeroComNove = $matches[1] . '9' . $matches[2];
+                if ($numeroComNove === $telefoneBanco) {
+                    Log::info('[Webhook] 🔄 Casou número adicionando 9:', ['original' => $numeroLimpo, 'ajustado' => $numeroComNove]);
+                    return true;
+                }
+            }
+        
+            return false;
+        });        
 
         if (!$paciente) {
             Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numeroLimpo]);
