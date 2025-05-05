@@ -6,6 +6,7 @@ use App\Events\SessaoConfirmada;
 use App\Models\Notificacao;
 use App\Models\Sessao;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class NotificarSessaoConfirmada
 {
@@ -37,18 +38,26 @@ class NotificarSessaoConfirmada
             return;
         }
 
+        // ✅ Monta mensagem usando data_hora_original
+        $dataOriginal = $sessao->data_hora_original
+            ? Carbon::parse($sessao->data_hora_original)->format('d/m/Y \à\s H:i')
+            : 'Data original não disponível';
+
+        $mensagem = "O paciente confirmou a sessão que estava marcada para {$dataOriginal}.";
+
         // ✅ Cria a notificação
         Notificacao::create([
             'user_id' => $sessao->paciente->user_id,
             'titulo' => 'Sessão confirmada via WhatsApp',
-            'mensagem' => 'O paciente confirmou a sessão.',
+            'mensagem' => $mensagem,
             'tipo' => 'whatsapp_confirmado',
             'relacionado_id' => $sessao->id,
             'relacionado_type' => Sessao::class,
         ]);
 
         Log::info('[Notificacao] ✅ Notificação criada com sucesso.', [
-            'sessao_id' => $sessao->id
+            'sessao_id' => $sessao->id,
+            'mensagem' => $mensagem,
         ]);
     }
 }

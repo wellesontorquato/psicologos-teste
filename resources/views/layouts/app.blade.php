@@ -272,48 +272,6 @@
     @stack('scripts')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('a[data-tipo="aniversario"]').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
-                    new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
-                });
-            });
-
-            document.querySelectorAll('a[data-tipo="whatsapp_confirmado"]').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
-                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoConfirmada'));
-                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
-                    document.getElementById('modalSessaoConfirmadaTexto').textContent = texto;
-                    modal.show();
-                });
-            });
-
-            document.querySelectorAll('a[data-tipo="whatsapp_cancelada"]').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
-                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoCancelada'));
-                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
-                    document.getElementById('modalSessaoCanceladaTexto').textContent = texto;
-                    modal.show();
-                });
-            });
-
-            document.querySelectorAll('a[data-tipo="whatsapp_remarcar"]').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
-                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoReagendada'));
-                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
-                    document.getElementById('modalSessaoReagendadaTexto').textContent = texto;
-                    modal.show();
-                });
-            });
-        });
-    </script>
-
     @if ($errors->any())
         <script>
             Swal.fire({
@@ -479,6 +437,19 @@
                             document.getElementById('modalSessaoCanceladaTexto').innerHTML = texto;
 
                             const modalEl = document.getElementById('modalSessaoCancelada');
+                            const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            instance.show();
+                        }
+
+                        // 🔄 Modal de Sessão Remarcada
+                        if (data.tipo === 'whatsapp_remarcar' && data.sessao) {
+                            const texto = `
+                                A sessão com <strong>${data.sessao.paciente}</strong>, originalmente marcada para o dia 
+                                <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong>, será reagendada.
+                            `;
+                            document.getElementById('modalSessaoReagendadaTexto').innerHTML = texto;
+
+                            const modalEl = document.getElementById('modalSessaoReagendada');
                             const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
                             instance.show();
                         }

@@ -79,6 +79,9 @@ class SessaoController extends Controller
         $dados['duracao'] = (int) $dados['duracao'];
         $dados['foi_pago'] = $request->has('foi_pago');
 
+        // Definir data_hora_original na criação
+        $dados['data_hora_original'] = $dados['data_hora'];
+
         $inicio = Carbon::parse($dados['data_hora']);
         $fim = $inicio->copy()->addMinutes($dados['duracao']);
 
@@ -109,6 +112,9 @@ class SessaoController extends Controller
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
+
+        // Definir data_hora_original na criação
+        $dados['data_hora_original'] = $dados['data_hora'];
 
         $inicio = Carbon::parse($dados['data_hora']);
         $fim = $inicio->copy()->addMinutes($dados['duracao']);
@@ -180,6 +186,11 @@ class SessaoController extends Controller
 
         $sessao->update($dados);
 
+        // Se não tiver data_hora_original ainda (dados antigos), seta a primeira vez
+        if (is_null($sessao->data_hora_original)) {
+            $sessao->update(['data_hora_original' => $dados['data_hora']]);
+        }
+
         if ($statusAntigo !== 'CONFIRMADO' && $sessao->status_confirmacao === 'CONFIRMADO') {
             event(new \App\Events\SessaoConfirmada($sessao));
         }
@@ -188,7 +199,6 @@ class SessaoController extends Controller
 
         return redirect()->route('sessoes.index')->with('success', 'Sessão atualizada!');
     }
-
 
     public function updateJson(Request $request, $id)
     {
@@ -225,6 +235,11 @@ class SessaoController extends Controller
         }
 
         $sessao->update($dados);
+
+        // Se não tiver data_hora_original ainda (dados antigos), seta a primeira vez
+        if (is_null($sessao->data_hora_original)) {
+            $sessao->update(['data_hora_original' => $dados['data_hora']]);
+        }
 
         if ($sessao->wasChanged('status_confirmacao') && $sessao->status_confirmacao === 'CONFIRMADO') {
             event(new \App\Events\SessaoConfirmada($sessao));
@@ -283,7 +298,7 @@ class SessaoController extends Controller
                     $hoje->copy()->addWeek()->endOfWeek()
                 ]);
             }
-        }                
+        }
 
         if ($request->filled('busca')) {
             $busca = preg_replace('/\D/', '', $request->busca);
@@ -293,7 +308,7 @@ class SessaoController extends Controller
                   ->orWhere('email', 'like', "%{$busca}%")
                   ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
             });
-        }             
+        }
 
         $sessoes = $query->get();
 

@@ -33,8 +33,8 @@ class NotificarSessaoCancelada
 
         // ✅ MONTAGEM DA MENSAGEM COMPLETA COM DATA ORIGINAL
         $pacienteNome = $sessao->paciente->nome ?? 'Paciente desconhecido';
-        $dataOriginal = $sessao->data_hora
-            ? Carbon::parse($sessao->data_hora)->format('d/m/Y \à\s H:i')
+        $dataOriginal = $sessao->data_hora_original
+            ? Carbon::parse($sessao->data_hora_original)->format('d/m/Y \à\s H:i')
             : 'Data original não disponível';
 
         $mensagem = "O paciente cancelou a sessão que estava marcada para {$dataOriginal}.";

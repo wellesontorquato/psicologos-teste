@@ -28,24 +28,26 @@ class NotificacaoController extends Controller
         // ✅ MODAIS ESPECIAIS (aniversário, sessão confirmada, sessão cancelada, sessão remarcar)
         if (in_array($notificacao->tipo, ['aniversario', 'whatsapp_confirmado', 'whatsapp_cancelada', 'whatsapp_remarcar'])) {
             $dadosSessao = null;
-
+        
             if ($notificacao->relacionado instanceof Sessao) {
                 $sessao = $notificacao->relacionado;
+        
+                // 🔥 AGORA SEMPRE USANDO data_hora_original
+                $dataOriginal = $sessao->data_hora_original ? Carbon::parse($sessao->data_hora_original)->format('d/m/Y') : null;
+                $horaOriginal = $sessao->data_hora_original ? Carbon::parse($sessao->data_hora_original)->format('H:i') : null;
 
-                $data = $sessao->data_hora ? Carbon::parse($sessao->data_hora)->format('d/m/Y') : null;
-                $hora = $sessao->data_hora ? Carbon::parse($sessao->data_hora)->format('H:i') : null;
-
+        
                 $dadosSessao = [
                     'id' => $sessao->id,
                     'paciente' => optional($sessao->paciente)->nome ?? 'Paciente desconhecido',
-                    'data' => $data,
-                    'hora' => $hora,
+                    'data' => $dataOriginal,
+                    'hora' => $horaOriginal,
                     'valor' => number_format($sessao->valor, 2, ',', '.'),
                     'foi_pago' => $sessao->foi_pago,
                     'mensagem' => $notificacao->mensagem,
-                ];
+                ];                
             }
-
+        
             // Se for AJAX, retorna JSON para abrir modal
             if ($request->expectsJson()) {
                 return response()->json([
@@ -54,15 +56,16 @@ class NotificacaoController extends Controller
                     'sessao' => $dadosSessao,
                 ]);
             }
-
+        
             // 👇 **Apenas para remarcar** faz fallback para redirecionamento (se não for AJAX)
             if ($notificacao->tipo === 'whatsapp_remarcar' && $notificacao->relacionado instanceof Sessao) {
                 return redirect()->route('sessoes.edit', $notificacao->relacionado_id);
             }
-
+        
             // ✅ Para confirmada e cancelada (e aniversário), não faz nada além de voltar à dashboard
             return redirect()->route('dashboard')->with('status', 'Notificação lida.');
         }
+        
 
         // 🔁 Redirecionamento padrão para outros tipos
         if ($notificacao->relacionado) {

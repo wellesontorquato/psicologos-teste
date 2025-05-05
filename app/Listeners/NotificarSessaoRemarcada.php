@@ -23,7 +23,7 @@ class NotificarSessaoRemarcada
         $existe = Notificacao::where('user_id', $sessao->paciente->user_id)
             ->where('relacionado_type', Sessao::class)
             ->where('relacionado_id', $sessao->id)
-            ->where('tipo', 'whatsapp_remarcar') // ✅ corrigido: padronizar como 'whatsapp_remarcada'
+            ->where('tipo', 'whatsapp_remarcar')
             ->exists();
 
         if ($existe) {
@@ -33,8 +33,8 @@ class NotificarSessaoRemarcada
 
         // ✅ MONTAGEM DA MENSAGEM COMPLETA COM DATA ORIGINAL
         $pacienteNome = $sessao->paciente->nome ?? 'Paciente desconhecido';
-        $dataOriginal = $sessao->data_hora 
-            ? Carbon::parse($sessao->data_hora)->format('d/m/Y \à\s H:i')
+        $dataOriginal = $sessao->data_hora_original
+            ? Carbon::parse($sessao->data_hora_original)->format('d/m/Y \à\s H:i')
             : 'Data original não disponível';
 
         $mensagem = "O paciente solicitou o reagendamento da sessão que estava marcada para {$dataOriginal}.";
