@@ -22,11 +22,12 @@ class AgendaController extends Controller
 
         $sessoes = Sessao::with('paciente')
             ->whereHas('paciente', fn ($q) => $q->where('user_id', $userId))
+            ->whereNotIn('status_confirmacao', ['CANCELADA', 'REMARCAR'])
             ->get();
 
         $eventos = $sessoes->map(function ($sessao) {
-            $start = Carbon::parse($sessao->data_hora);
-            $endReal = (clone $start)->addMinutes($sessao->duracao);
+            $start = Carbon::parse($sessao->data_hora)->setTimezone('America/Sao_Paulo');
+            $endReal = (clone $start)->addMinutes($sessao->duracao);            
 
             // Se ultrapassar a meia-noite, forçar visualmente para 23:59:59
             $endVisual = $endReal->isSameDay($start)
