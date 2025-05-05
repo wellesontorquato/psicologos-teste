@@ -300,6 +300,16 @@
                     modal.show();
                 });
             });
+
+            document.querySelectorAll('a[data-tipo="whatsapp_remarcar"]').forEach(link => {
+                link.addEventListener('click', async e => {
+                    e.preventDefault();
+                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoReagendada'));
+                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
+                    document.getElementById('modalSessaoReagendadaTexto').textContent = texto;
+                    modal.show();
+                });
+            });
         });
     </script>
 
