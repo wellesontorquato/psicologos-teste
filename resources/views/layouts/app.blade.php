@@ -274,56 +274,56 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.notificacao-link').forEach(link => {
-        link.addEventListener('click', async e => {
-            e.preventDefault();
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.notificacao-link').forEach(link => {
+                link.addEventListener('click', async e => {
+                    e.preventDefault();
 
-            const tipo = link.getAttribute('data-tipo');
-            const id = link.getAttribute('data-id');
-            const url = link.getAttribute('href');
+                    const tipo = link.getAttribute('data-tipo');
+                    const id = link.getAttribute('data-id');
+                    const url = link.getAttribute('href');
 
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Erro na requisição');
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error('Erro na requisição');
 
-                const data = await response.json();
+                        const data = await response.json();
 
-                if (data.abrir_modal) {
-                    if (tipo === 'aniversario') {
-                        new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
-                    } else if (tipo === 'whatsapp_confirmado') {
-                        const texto = `A sessão com <strong>${data.sessao.paciente}</strong> no dia <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong> foi confirmada.`;
-                        document.getElementById('modalSessaoConfirmadaTexto').innerHTML = texto;
-                        new bootstrap.Modal(document.getElementById('modalSessaoConfirmada')).show();
-                    } else if (tipo === 'whatsapp_cancelada') {
-                        const texto = `A sessão com <strong>${data.sessao.paciente}</strong> no dia <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong> foi cancelada.`;
-                        document.getElementById('modalSessaoCanceladaTexto').innerHTML = texto;
-                        new bootstrap.Modal(document.getElementById('modalSessaoCancelada')).show();
-                    } else if (tipo === 'whatsapp_remarcada') {
-                        const texto = `A sessão com <strong>${data.sessao.paciente}</strong> do dia <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong> foi solicitada para reagendamento.`;
-                        document.getElementById('modalSessaoReagendadaTexto').innerHTML = texto;
-                        // Atualiza o botão para reagendar
-                        const btn = document.getElementById('btnReagendarSessao');
-                        btn.href = `/sessoes/${data.sessao.id}/edit`;
-                        new bootstrap.Modal(document.getElementById('modalSessaoReagendada')).show();
+                        if (data.abrir_modal) {
+                            // ✅ MENSAGEM JÁ PRONTA VINDO DO BACK-END
+                            const mensagem = data.sessao?.mensagem || 'Detalhes não disponíveis no momento.';
+
+                            if (tipo === 'aniversario') {
+                                new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
+                            } else if (tipo === 'whatsapp_confirmado') {
+                                document.getElementById('modalSessaoConfirmadaTexto').innerHTML = mensagem;
+                                new bootstrap.Modal(document.getElementById('modalSessaoConfirmada')).show();
+                            } else if (tipo === 'whatsapp_cancelada') {
+                                document.getElementById('modalSessaoCanceladaTexto').innerHTML = mensagem;
+                                new bootstrap.Modal(document.getElementById('modalSessaoCancelada')).show();
+                            } else if (tipo === 'whatsapp_remarcada') {
+                                document.getElementById('modalSessaoReagendadaTexto').innerHTML = mensagem;
+                                // ✅ Atualiza o botão para reagendar
+                                const btn = document.getElementById('btnReagendarSessao');
+                                btn.href = `/sessoes/${data.sessao.id}/edit`;
+                                new bootstrap.Modal(document.getElementById('modalSessaoReagendada')).show();
+                            }
+                        } else {
+                            // Se não é modal especial, redireciona normalmente
+                            window.location.href = url;
+                        }
+                    } catch (error) {
+                        console.error('Erro ao abrir notificação:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro ao abrir notificação.',
+                            text: 'Tente novamente.'
+                        });
                     }
-                } else {
-                    // Se não é modal especial, redireciona normalmente
-                    window.location.href = url;
-                }
-            } catch (error) {
-                console.error('Erro ao abrir notificação:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro ao abrir notificação.',
-                    text: 'Tente novamente.'
                 });
-            }
+            });
         });
-    });
-});
-</script>
+    </script>
 
     @if ($errors->any())
         <script>

@@ -25,26 +25,32 @@ class NotificacaoController extends Controller
             'visto_em' => now(),
         ]);
 
-        // ✅ MODAIS ESPECIAIS (aniversário, sessão confirmada, sessão cancelada)
+        // ✅ MODAIS ESPECIAIS (aniversário, sessão confirmada, sessão cancelada, sessão remarcada)
         if (in_array($notificacao->tipo, ['aniversario', 'whatsapp_confirmado', 'whatsapp_cancelada', 'whatsapp_remarcada'])) {
             $dadosSessao = null;
 
             if ($notificacao->relacionado instanceof Sessao) {
                 $sessao = $notificacao->relacionado;
+
+                // Blindagem: usa a mensagem salva (que deve ter a data original) SE EXISTIR
+                $data = $sessao->data_hora ? Carbon::parse($sessao->data_hora)->format('d/m/Y') : null;
+                $hora = $sessao->data_hora ? Carbon::parse($sessao->data_hora)->format('H:i') : null;
+
                 $dadosSessao = [
                     'id' => $sessao->id,
                     'paciente' => optional($sessao->paciente)->nome ?? 'Paciente desconhecido',
-                    'data' => Carbon::parse($sessao->data_hora)->format('d/m/Y'),
-                    'hora' => Carbon::parse($sessao->data_hora)->format('H:i'),
+                    'data' => $data,
+                    'hora' => $hora,
                     'valor' => number_format($sessao->valor, 2, ',', '.'),
                     'foi_pago' => $sessao->foi_pago,
+                    'mensagem' => $notificacao->mensagem,  // aqui já traz mensagem personalizada (com data original)
                 ];
             }
 
             return response()->json([
                 'abrir_modal' => true,
                 'tipo' => $notificacao->tipo,
-                'sessao' => $dadosSessao, // 👈 Aqui é o nome correto
+                'sessao' => $dadosSessao,
             ]);
         }
 

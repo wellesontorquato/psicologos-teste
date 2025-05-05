@@ -6,6 +6,7 @@ use App\Events\SessaoCancelada;
 use App\Models\Notificacao;
 use App\Models\Sessao;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class NotificarSessaoCancelada
 {
@@ -30,15 +31,26 @@ class NotificarSessaoCancelada
             return;
         }
 
+        // ✅ MONTAGEM DA MENSAGEM COMPLETA COM DATA ORIGINAL
+        $pacienteNome = $sessao->paciente->nome ?? 'Paciente desconhecido';
+        $dataOriginal = $sessao->data_hora
+            ? Carbon::parse($sessao->data_hora)->format('d/m/Y \à\s H:i')
+            : 'Data original não disponível';
+
+        $mensagem = "O paciente cancelou a sessão que estava marcada para {$dataOriginal}.";
+
         Notificacao::create([
             'user_id' => $sessao->paciente->user_id,
             'titulo' => 'Sessão cancelada',
-            'mensagem' => 'O paciente cancelou a sessão agendada.',
+            'mensagem' => $mensagem,
             'tipo' => 'whatsapp_cancelada',
             'relacionado_id' => $sessao->id,
             'relacionado_type' => Sessao::class,
         ]);
 
-        Log::info('[Notificacao] ✅ Notificação de cancelamento criada.', ['sessao_id' => $sessao->id]);
+        Log::info('[Notificacao] ✅ Notificação de cancelamento criada.', [
+            'sessao_id' => $sessao->id,
+            'mensagem' => $mensagem,
+        ]);
     }
 }
