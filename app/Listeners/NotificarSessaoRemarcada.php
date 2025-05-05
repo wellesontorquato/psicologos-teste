@@ -23,7 +23,7 @@ class NotificarSessaoRemarcada
         $existe = Notificacao::where('user_id', $sessao->paciente->user_id)
             ->where('relacionado_type', Sessao::class)
             ->where('relacionado_id', $sessao->id)
-            ->where('tipo', 'whatsapp_remarcada') // ✅ corrigido: padronizar como 'whatsapp_remarcada'
+            ->where('tipo', 'whatsapp_remarcar') // ✅ corrigido: padronizar como 'whatsapp_remarcada'
             ->exists();
 
         if ($existe) {
@@ -43,7 +43,7 @@ class NotificarSessaoRemarcada
             'user_id' => $sessao->paciente->user_id,
             'titulo' => 'Sessão será remarcada',
             'mensagem' => $mensagem,
-            'tipo' => 'whatsapp_remarcada',
+            'tipo' => 'whatsapp_remarcar',
             'relacionado_id' => $sessao->id,
             'relacionado_type' => Sessao::class,
         ]);
