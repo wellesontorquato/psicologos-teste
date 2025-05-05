@@ -449,6 +449,9 @@
                             `;
                             document.getElementById('modalSessaoReagendadaTexto').innerHTML = texto;
 
+                            const btn = document.getElementById('btnReagendarSessao');
+                            btn.href = `/sessoes/${data.sessao.id}/edit`;
+                        
                             const modalEl = document.getElementById('modalSessaoReagendada');
                             const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
                             instance.show();
