@@ -9,12 +9,12 @@ class Sessao extends Model
 {
     use HasFactory;
 
-    // 👇 isso aqui resolve o problema de nome da tabela
     protected $table = 'sessoes';
 
     protected $fillable = [
         'paciente_id',
         'data_hora',
+        'data_hora_original',
         'duracao',
         'valor',
         'foi_pago',
@@ -24,6 +24,7 @@ class Sessao extends Model
     protected $casts = [
         'foi_pago' => 'boolean',
         'data_hora' => 'datetime',
+        'data_hora_original' => 'datetime',
     ];
 
     public function paciente()
