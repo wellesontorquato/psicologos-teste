@@ -266,6 +266,7 @@
     @include('components.modal-aniversariantes')
     @include('components.modal-sessao-confirmada')
     @include('components.modal-sessao-cancelada')
+    @include('components.modal-sessao-reagendada')
 
     @yield('scripts')
     @stack('scripts')
