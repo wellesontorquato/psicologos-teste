@@ -276,68 +276,74 @@
     <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ✅ 1. GESTÃO DE NOTIFICAÇÕES (clique nas notificações)
-    document.querySelectorAll('.notificacao-link').forEach(link => {
-        link.addEventListener('click', async e => {
-            e.preventDefault();
+// ✅ 1. GESTÃO DE NOTIFICAÇÕES (clique nas notificações)
+document.querySelectorAll('.notificacao-link').forEach(link => {
+    link.addEventListener('click', async e => {
+        e.preventDefault();
 
-            const tipo = link.getAttribute('data-tipo');
-            console.log('Clique interceptado:', tipo);
-            const url = link.getAttribute('href');
+        const tipo = link.getAttribute('data-tipo');
+        console.log('🔔 Clique interceptado:', tipo);
+        const url = link.getAttribute('href');
 
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (!response.ok) throw new Error('Erro na requisição');
-
-                const data = await response.json();
-
-                if (data.abrir_modal) {
-                    const mensagem = data.sessao?.mensagem || 'Detalhes não disponíveis no momento.';
-
-                    switch (tipo) {
-                        case 'aniversario':
-                            new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
-                            break;
-                        case 'whatsapp_confirmado':
-                            document.getElementById('modalSessaoConfirmadaTexto').innerHTML = mensagem;
-                            new bootstrap.Modal(document.getElementById('modalSessaoConfirmada')).show();
-                            break;
-                        case 'whatsapp_cancelada':
-                            document.getElementById('modalSessaoCanceladaTexto').innerHTML = mensagem;
-                            new bootstrap.Modal(document.getElementById('modalSessaoCancelada')).show();
-                            break;
-                        case 'whatsapp_remarcada':
-                            document.getElementById('modalSessaoReagendadaTexto').innerHTML = mensagem;
-                            const btn = document.getElementById('btnReagendarSessao');
-                            if (btn && data.sessao?.id) {
-                                btn.href = `/sessoes/${data.sessao.id}/edit`;
-                            }
-                            new bootstrap.Modal(document.getElementById('modalSessaoReagendada')).show();
-                            break;
-                        default:
-                            console.warn('Tipo de notificação desconhecido:', tipo);
-                    }
-                } else {
-                    // Se não abrir modal, redireciona normalmente
-                    window.location.href = url;
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 }
-            } catch (error) {
-                console.error('Erro ao abrir notificação:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro ao abrir notificação.',
-                    text: 'Tente novamente.',
-                    confirmButtonColor: '#00aaff'
-                });
+            });
+
+            if (!response.ok) throw new Error('Erro na requisição');
+
+            const data = await response.json();
+            console.log('🔄 Resposta recebida:', data);
+
+            if (data.abrir_modal) {
+                const mensagem = data.sessao?.mensagem || 'Detalhes não disponíveis no momento.';
+
+                switch (tipo) {
+                    case 'aniversario':
+                        new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
+                        break;
+                    case 'whatsapp_confirmado':
+                        document.getElementById('modalSessaoConfirmadaTexto').innerHTML = mensagem;
+                        new bootstrap.Modal(document.getElementById('modalSessaoConfirmada')).show();
+                        break;
+                    case 'whatsapp_cancelada':
+                        document.getElementById('modalSessaoCanceladaTexto').innerHTML = mensagem;
+                        new bootstrap.Modal(document.getElementById('modalSessaoCancelada')).show();
+                        break;
+                    case 'whatsapp_remarcada':
+                        document.getElementById('modalSessaoReagendadaTexto').innerHTML = mensagem;
+                        const btn = document.getElementById('btnReagendarSessao');
+                        if (btn && data.sessao?.id) {
+                            btn.href = `/sessoes/${data.sessao.id}/edit`;
+                        }
+                        new bootstrap.Modal(document.getElementById('modalSessaoReagendada')).show();
+                        break;
+                    default:
+                        console.warn('⚠️ Tipo de notificação desconhecido:', tipo);
+                }
+            } else if (data.redirect_to) {
+                // ✅ Redirecionamento controlado vindo do backend
+                console.log('➡️ Redirecionando para:', data.redirect_to);
+                window.location.href = data.redirect_to;
+            } else {
+                // Fallback: se não veio abrir modal nem redirect, segue a URL padrão
+                console.log('↩️ Fallback: redirecionando para o href padrão:', url);
+                window.location.href = url;
             }
-        });
+        } catch (error) {
+            console.error('❌ Erro ao abrir notificação:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro ao abrir notificação.',
+                text: 'Tente novamente.',
+                confirmButtonColor: '#00aaff'
+            });
+        }
     });
+});
 
     // ✅ 2. MENSAGENS DE ERRO E STATUS (validação de formulários e atualizações)
     @if ($errors->any())

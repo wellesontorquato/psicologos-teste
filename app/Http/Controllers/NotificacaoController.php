@@ -67,16 +67,24 @@ class NotificacaoController extends Controller
         // 🔁 Redirecionamento padrão para outros tipos
         if ($notificacao->relacionado) {
             $tipo = class_basename($notificacao->relacionado_type);
-
-            switch ($tipo) {
-                case 'Sessao':
-                    return redirect()->route('sessoes.edit', $notificacao->relacionado_id);
-                case 'Paciente':
-                    return redirect()->route('pacientes.edit', $notificacao->relacionado_id);
-                default:
-                    return redirect()->route('dashboard')->with('status', 'Notificação lida.');
+        
+            $route = match ($tipo) {
+                'Sessao' => route('sessoes.edit', $notificacao->relacionado_id),
+                'Paciente' => route('pacientes.edit', $notificacao->relacionado_id),
+                default => route('dashboard'),
+            };
+        
+            // ✅ Se for AJAX (JSON), devolve a URL para o front redirecionar
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'abrir_modal' => false,
+                    'redirect_to' => $route,
+                ]);
             }
-        }
+        
+            // Caso não seja AJAX (fallback)
+            return redirect($route);
+        }       
 
         return redirect()->route('dashboard')->with('status', 'Notificação lida.');
     }
