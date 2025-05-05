@@ -284,6 +284,7 @@ document.querySelectorAll('.notificacao-link').forEach(link => {
         const tipo = link.getAttribute('data-tipo');
         console.log('🔔 Clique interceptado:', tipo);
         const url = link.getAttribute('href');
+        console.log('🔗 Link clicado:', link, 'Tipo:', tipo, 'URL:', url);
 
         try {
             const response = await fetch(url, {
