@@ -117,13 +117,13 @@ document.addEventListener('DOMContentLoaded', function () {
             window.FullCalendar.bootstrap5Plugin
         ],
         themeSystem: 'bootstrap5',
-        timezone: 'local',
+        timezone: "{{ config('app.timezone') }}",
         height: 650,
         locale: window.FullCalendar.ptBr,
         initialView: 'dayGridMonth',
         headerToolbar: {
             left: 'prev,next today',
-            center: 'title',a
+            center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
 
