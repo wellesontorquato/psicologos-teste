@@ -274,56 +274,96 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.notificacao-link').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.notificacao-link').forEach(link => {
+        link.addEventListener('click', async e => {
+            e.preventDefault();
 
-                    const tipo = link.getAttribute('data-tipo');
-                    const id = link.getAttribute('data-id');
-                    const url = link.getAttribute('href');
+            const tipo = link.getAttribute('data-tipo');
+            const url = link.getAttribute('href');
 
-                    try {
-                        const response = await fetch(url);
-                        if (!response.ok) throw new Error('Erro na requisição');
-
-                        const data = await response.json();
-
-                        if (data.abrir_modal) {
-                            // ✅ MENSAGEM JÁ PRONTA VINDO DO BACK-END
-                            const mensagem = data.sessao?.mensagem || 'Detalhes não disponíveis no momento.';
-
-                            if (tipo === 'aniversario') {
-                                new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
-                            } else if (tipo === 'whatsapp_confirmado') {
-                                document.getElementById('modalSessaoConfirmadaTexto').innerHTML = mensagem;
-                                new bootstrap.Modal(document.getElementById('modalSessaoConfirmada')).show();
-                            } else if (tipo === 'whatsapp_cancelada') {
-                                document.getElementById('modalSessaoCanceladaTexto').innerHTML = mensagem;
-                                new bootstrap.Modal(document.getElementById('modalSessaoCancelada')).show();
-                            } else if (tipo === 'whatsapp_remarcada') {
-                                document.getElementById('modalSessaoReagendadaTexto').innerHTML = mensagem;
-                                // ✅ Atualiza o botão para reagendar
-                                const btn = document.getElementById('btnReagendarSessao');
-                                btn.href = `/sessoes/${data.sessao.id}/edit`;
-                                new bootstrap.Modal(document.getElementById('modalSessaoReagendada')).show();
-                            }
-                        } else {
-                            // Se não é modal especial, redireciona normalmente
-                            window.location.href = url;
-                        }
-                    } catch (error) {
-                        console.error('Erro ao abrir notificação:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro ao abrir notificação.',
-                            text: 'Tente novamente.'
-                        });
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
                     }
                 });
-            });
+                if (!response.ok) throw new Error('Erro na requisição');
+
+                const data = await response.json();
+
+                if (data.abrir_modal) {
+                    const sessao = data.sessao;
+                    const mensagem = sessao?.mensagem || 'Detalhes não disponíveis no momento.';
+
+                    // 🎂 Modal de Aniversário
+                    if (tipo === 'aniversario') {
+                        const lista = document.getElementById('lista-aniversariantes');
+                        lista.innerHTML = '';  // Limpa a lista
+
+                        // 🔄 Busca a lista atualizada
+                        const resposta = await fetch('/api/aniversariantes-hoje');
+                        const aniversariantes = await resposta.json();
+
+                        aniversariantes.forEach(p => {
+                            const li = document.createElement('li');
+                            li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                            li.innerHTML = `
+                                <span><i class="bi bi-heart-fill text-danger me-2"></i><strong>${p.nome}</strong></span>
+                                <span class="badge rounded-pill bg-success">
+                                    🎂 Está fazendo ${p.idade} anos
+                                </span>`;
+                            lista.appendChild(li);
+                        });
+
+                        new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
+                        document.getElementById('modalAniversariantes').addEventListener('hidden.bs.modal', () => {
+                            const backdrops = document.querySelectorAll('.modal-backdrop');
+                            backdrops.forEach(b => b.remove());
+
+                            document.body.classList.remove('modal-open');
+                            document.body.style = '';
+                        });
+                    }
+
+                    // ✅ Modal de Sessão Confirmada
+                    else if (tipo === 'whatsapp_confirmado') {
+                        document.getElementById('modalSessaoConfirmadaTexto').innerHTML = mensagem;
+                        new bootstrap.Modal(document.getElementById('modalSessaoConfirmada')).show();
+                    }
+
+                    // ❌ Modal de Sessão Cancelada
+                    else if (tipo === 'whatsapp_cancelada') {
+                        document.getElementById('modalSessaoCanceladaTexto').innerHTML = mensagem;
+                        new bootstrap.Modal(document.getElementById('modalSessaoCancelada')).show();
+                    }
+
+                    // 🔁 Modal de Sessão Remarcada
+                    else if (tipo === 'whatsapp_remarcada') {
+                        document.getElementById('modalSessaoReagendadaTexto').innerHTML = mensagem;
+                        const btn = document.getElementById('btnReagendarSessao');
+                        btn.href = `/sessoes/${sessao.id}/edit`;
+                        new bootstrap.Modal(document.getElementById('modalSessaoReagendada')).show();
+                    }
+                } else {
+                    // Se não é modal especial, redireciona normalmente
+                    window.location.href = url;
+                }
+            } catch (error) {
+                console.error('Erro ao abrir notificação:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao abrir notificação.',
+                    text: 'Tente novamente.',
+                    confirmButtonColor: '#00aaff'
+                });
+            }
         });
-    </script>
+    });
+});
+</script>
+
 
     @if ($errors->any())
         <script>
@@ -418,94 +458,6 @@
         }
     }
 });
-</script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('a[data-tipo]').forEach(link => {
-                link.addEventListener('click', async function (e) {
-                    e.preventDefault();
-                    const tipo = this.getAttribute('data-tipo');
-                    const url = this.getAttribute('href');
-
-                    try {
-                        const resposta = await fetch(url, {
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json'
-                            }
-                        });
-
-                        if (!resposta.ok) throw new Error('Erro ao processar notificação');
-
-                        const data = await resposta.json();
-
-                        // 🎂 Modal de Aniversário
-                        if (data.tipo === 'aniversario') {
-                            document.getElementById('lista-aniversariantes').innerHTML = '';
-                            const lista = document.getElementById('lista-aniversariantes');
-                            const resposta = await fetch('/api/aniversariantes-hoje');
-                            const aniversariantes = await resposta.json();
-
-                            aniversariantes.forEach(p => {
-                                const li = document.createElement('li');
-                                li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-                                li.innerHTML = `
-                                    <span><i class="bi bi-heart-fill text-danger me-2"></i><strong>${p.nome}</strong></span>
-                                    <span class="badge rounded-pill bg-success">
-                                        🎂 Está fazendo ${p.idade} anos
-                                    </span>`;
-                                lista.appendChild(li);
-                            });
-
-                            new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
-                            document.getElementById('modalAniversariantes').addEventListener('hidden.bs.modal', () => {
-                                const backdrops = document.querySelectorAll('.modal-backdrop');
-                                backdrops.forEach(b => b.remove());
-
-                                document.body.classList.remove('modal-open');
-                                document.body.style = '';
-                            });
-                        }
-
-                        // ✅ Modal de Sessão Confirmada
-                        if (data.tipo === 'whatsapp_confirmado' && data.sessao) {
-                            const texto = `
-                                A sessão com <strong>${data.sessao.paciente}</strong> foi confirmada para o dia 
-                                <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong>.
-                            `;
-                            document.getElementById('modalSessaoConfirmadaTexto').innerHTML = texto;
-
-                            const modalEl = document.getElementById('modalSessaoConfirmada');
-                            const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                            instance.show();
-                        }
-
-                        // ❌ Modal de Sessão Cancelada
-                        if (data.tipo === 'whatsapp_cancelada' && data.sessao) {
-                            const texto = `
-                                A sessão com <strong>${data.sessao.paciente}</strong> marcada para o dia 
-                                <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong> foi 
-                                <span class="text-danger fw-bold">cancelada</span>.
-                            `;
-                            document.getElementById('modalSessaoCanceladaTexto').innerHTML = texto;
-
-                            const modalEl = document.getElementById('modalSessaoCancelada');
-                            const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                            instance.show();
-                        }
-
-                    } catch (error) {
-                        console.error(error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro ao abrir notificação.',
-                            text: 'Tente novamente.',
-                            confirmButtonColor: '#00aaff'
-                        });
-                    }
-                });
-            });
-        });
 </script>
 </body>
 </html>
