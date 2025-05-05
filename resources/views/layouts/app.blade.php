@@ -266,7 +266,6 @@
     @include('components.modal-aniversariantes')
     @include('components.modal-sessao-confirmada')
     @include('components.modal-sessao-cancelada')
-    @include('components.modal-sessao-reagendada')
 
     @yield('scripts')
     @stack('scripts')
@@ -275,121 +274,88 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            document.body.addEventListener('click', async (e) => {
-                const link = e.target.closest('.notificacao-link');
-                if (!link) return;  // 👉 ignora se não for uma notificação
+            document.querySelectorAll('a[data-tipo="aniversario"]').forEach(link => {
+                link.addEventListener('click', async e => {
+                    e.preventDefault();
+                    new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
+                });
+            });
 
-                e.preventDefault();
+            document.querySelectorAll('a[data-tipo="whatsapp_confirmado"]').forEach(link => {
+                link.addEventListener('click', async e => {
+                    e.preventDefault();
+                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoConfirmada'));
+                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
+                    document.getElementById('modalSessaoConfirmadaTexto').textContent = texto;
+                    modal.show();
+                });
+            });
 
-                const tipo = link.getAttribute('data-tipo');
-                console.log('🔔 Clique interceptado:', tipo);
-                const url = link.getAttribute('href');
-                console.log('🔗 Link clicado:', link, 'Tipo:', tipo, 'URL:', url);
-
-                try {
-                    const response = await fetch(url, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) throw new Error('Erro na requisição');
-
-                    const data = await response.json();
-                    console.log('🔄 Resposta recebida:', data);
-
-                    if (data.abrir_modal) {
-                        const mensagem = data.sessao?.mensagem || 'Detalhes não disponíveis no momento.';
-
-                        switch (tipo) {
-                            case 'aniversario':
-                                new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
-                                break;
-                            case 'whatsapp_confirmado':
-                                document.getElementById('modalSessaoConfirmadaTexto').innerHTML = mensagem;
-                                new bootstrap.Modal(document.getElementById('modalSessaoConfirmada')).show();
-                                break;
-                            case 'whatsapp_cancelada':
-                                document.getElementById('modalSessaoCanceladaTexto').innerHTML = mensagem;
-                                new bootstrap.Modal(document.getElementById('modalSessaoCancelada')).show();
-                                break;
-                            case 'whatsapp_remarcada':
-                                document.getElementById('modalSessaoReagendadaTexto').innerHTML = mensagem;
-                                const btn = document.getElementById('btnReagendarSessao');
-                                if (btn && data.sessao?.id) {
-                                    btn.href = `/sessoes/${data.sessao.id}/edit`;
-                                }
-                                new bootstrap.Modal(document.getElementById('modalSessaoReagendada')).show();
-                                break;
-                            default:
-                                console.warn('⚠️ Tipo de notificação desconhecido:', tipo);
-                        }
-                    } else if (data.redirect_to) {
-                        console.log('➡️ Redirecionando para:', data.redirect_to);
-                        window.location.href = data.redirect_to;
-                    } else {
-                        console.log('↩️ Fallback: redirecionando para o href padrão:', url);
-                        window.location.href = url;
-                    }
-                } catch (error) {
-                    console.error('❌ Erro ao abrir notificação:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro ao abrir notificação.',
-                        text: 'Tente novamente.',
-                        confirmButtonColor: '#00aaff'
-                    });
-                }
+            document.querySelectorAll('a[data-tipo="whatsapp_cancelada"]').forEach(link => {
+                link.addEventListener('click', async e => {
+                    e.preventDefault();
+                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoCancelada'));
+                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
+                    document.getElementById('modalSessaoCanceladaTexto').textContent = texto;
+                    modal.show();
+                });
             });
         });
+    </script>
 
-    // ✅ 2. MENSAGENS DE ERRO E STATUS (validação de formulários e atualizações)
     @if ($errors->any())
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro ao atualizar informações',
-            customClass: {
-                title: 'swal2-title-custom',
-                htmlContainer: 'swal2-html-custom'
-            },
-            html: `<ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>`,
-            confirmButtonColor: '#00aaff'
-        });
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro ao atualizar informações',
+                customClass: {
+                    title: 'swal2-title-custom',
+                    htmlContainer: 'swal2-html-custom'
+                },
+                html: `<ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>`,
+                confirmButtonColor: '#00aaff'
+            });
+        </script>
     @endif
 
     @if (session('status') === 'profile-updated')
-        Swal.fire({
-            icon: 'success',
-            title: 'Sucesso!',
-            text: 'Perfil atualizado com sucesso.',
-            confirmButtonColor: '#00aaff'
-        });
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: 'Perfil atualizado com sucesso.',
+                confirmButtonColor: '#00aaff'
+            });
+        </script>
     @endif
 
     @if (session('status') === 'password-updated')
-        Swal.fire({
-            icon: 'success',
-            title: 'Senha atualizada!',
-            text: 'Sua senha foi alterada com sucesso.',
-            confirmButtonColor: '#00aaff'
-        });
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Senha atualizada!',
+                text: 'Sua senha foi alterada com sucesso.',
+                confirmButtonColor: '#00aaff'
+            });
+        </script>
     @endif
 
     @if (session('status') === 'photo-updated')
-        Swal.fire({
-            icon: 'success',
-            title: 'Foto atualizada!',
-            text: 'Sua foto de perfil foi atualizada com sucesso.',
-            confirmButtonColor: '#00aaff'
-        });
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Foto atualizada!',
+                text: 'Sua foto de perfil foi atualizada com sucesso.',
+                confirmButtonColor: '#00aaff'
+            });
+        </script>
     @endif
-
-    // ✅ 3. AVISO DE TRIAL GRATUITO (badge + alerta)
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
     const trialEndsAt = @json(Auth::user()?->trial_ends_at);
     if (trialEndsAt) {
         const end = new Date(trialEndsAt);
@@ -398,7 +364,7 @@
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays > 0) {
-            // Só mostra alerta quando faltar 1 dia
+            // Só mostra o alerta se ainda restar 1 dia ou menos
             if (diffDays === 1) {
                 Swal.fire({
                     icon: 'warning',
@@ -408,7 +374,7 @@
                 });
             }
 
-            // Cria badge de dias restantes
+            // Cria o badge apenas se ainda tem dias restantes
             const badge = document.createElement('div');
             badge.className = 'trial-badge';
             badge.innerHTML = '<i class="bi bi-hourglass-split"></i> ' + diffDays + ' dias grátis restantes';
@@ -418,7 +384,7 @@
                 topbar.insertAdjacentElement('beforebegin', badge);
             }
         } else {
-            // Trial expirado: badge "encerrado"
+            // Trial expirado: cria o badge de "Teste gratuito encerrado"
             const badge = document.createElement('div');
             badge.className = 'trial-badge';
             badge.innerHTML = '<i class="bi bi-x-circle-fill"></i> Teste gratuito encerrado';
@@ -429,6 +395,95 @@
             }
         }
     }
+});
+</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('a[data-tipo]').forEach(link => {
+                link.addEventListener('click', async function (e) {
+                    e.preventDefault();
+                    const tipo = this.getAttribute('data-tipo');
+                    const url = this.getAttribute('href');
+
+                    try {
+                        const resposta = await fetch(url, {
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!resposta.ok) throw new Error('Erro ao processar notificação');
+
+                        const data = await resposta.json();
+
+                        // 🎂 Modal de Aniversário
+                        if (data.tipo === 'aniversario') {
+                            document.getElementById('lista-aniversariantes').innerHTML = '';
+                            const lista = document.getElementById('lista-aniversariantes');
+                            const resposta = await fetch('/api/aniversariantes-hoje');
+                            const aniversariantes = await resposta.json();
+
+                            aniversariantes.forEach(p => {
+                                const li = document.createElement('li');
+                                li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                                li.innerHTML = `
+                                    <span><i class="bi bi-heart-fill text-danger me-2"></i><strong>${p.nome}</strong></span>
+                                    <span class="badge rounded-pill bg-success">
+                                        🎂 Está fazendo ${p.idade} anos
+                                    </span>`;
+                                lista.appendChild(li);
+                            });
+
+                            new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
+                            document.getElementById('modalAniversariantes').addEventListener('hidden.bs.modal', () => {
+                                const backdrops = document.querySelectorAll('.modal-backdrop');
+                                backdrops.forEach(b => b.remove());
+
+                                document.body.classList.remove('modal-open');
+                                document.body.style = '';
+                            });
+                        }
+
+                        // ✅ Modal de Sessão Confirmada
+                        if (data.tipo === 'whatsapp_confirmado' && data.sessao) {
+                            const texto = `
+                                A sessão com <strong>${data.sessao.paciente}</strong> foi confirmada para o dia 
+                                <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong>.
+                            `;
+                            document.getElementById('modalSessaoConfirmadaTexto').innerHTML = texto;
+
+                            const modalEl = document.getElementById('modalSessaoConfirmada');
+                            const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            instance.show();
+                        }
+
+                        // ❌ Modal de Sessão Cancelada
+                        if (data.tipo === 'whatsapp_cancelada' && data.sessao) {
+                            const texto = `
+                                A sessão com <strong>${data.sessao.paciente}</strong> marcada para o dia 
+                                <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong> foi 
+                                <span class="text-danger fw-bold">cancelada</span>.
+                            `;
+                            document.getElementById('modalSessaoCanceladaTexto').innerHTML = texto;
+
+                            const modalEl = document.getElementById('modalSessaoCancelada');
+                            const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            instance.show();
+                        }
+
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro ao abrir notificação.',
+                            text: 'Tente novamente.',
+                            confirmButtonColor: '#00aaff'
+                        });
+                    }
+                });
+            });
+        });
 </script>
 </body>
 </html>
