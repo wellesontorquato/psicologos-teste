@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 campos.id.value = sessao.id;
                 campos.paciente.value = sessao.paciente_id;
-                campos.data_hora.value = sessao.data_hora.slice(0, 16);
+                campos.data_hora.value = sessao.data_hora;
                 campos.valor.value = sessao.valor;
                 campos.duracao.value = sessao.duracao;
                 campos.foi_pago.checked = sessao.foi_pago == true;

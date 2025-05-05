@@ -160,7 +160,14 @@ class SessaoController extends Controller
 
         AuditHelper::log('edit_sessao_json', 'Acessou edição JSON da sessão ID ' . $id);
 
-        return response()->json($sessao);
+        return response()->json([
+            'id' => $sessao->id,
+            'paciente_id' => $sessao->paciente_id,
+            'data_hora' => $sessao->data_hora->timezone(config('app.timezone'))->format('Y-m-d\TH:i'), // ✅ já formatado para datetime-local
+            'valor' => $sessao->valor,
+            'duracao' => $sessao->duracao,
+            'foi_pago' => $sessao->foi_pago,
+        ]);        
     }
 
     public function update(Request $request, $id)
