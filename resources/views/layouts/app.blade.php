@@ -282,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             const tipo = link.getAttribute('data-tipo');
+            console.log('Clique interceptado:', tipo);
             const url = link.getAttribute('href');
 
             try {
