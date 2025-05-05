@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class NotificacaoController extends Controller
 {
-    public function acao($id)
+    public function acao($id, Request $request)
     {
         $notificacao = Notificacao::findOrFail($id);
 
@@ -32,7 +32,6 @@ class NotificacaoController extends Controller
             if ($notificacao->relacionado instanceof Sessao) {
                 $sessao = $notificacao->relacionado;
 
-                // Blindagem: usa a mensagem salva (que deve ter a data original) SE EXISTIR
                 $data = $sessao->data_hora ? Carbon::parse($sessao->data_hora)->format('d/m/Y') : null;
                 $hora = $sessao->data_hora ? Carbon::parse($sessao->data_hora)->format('H:i') : null;
 
@@ -43,18 +42,26 @@ class NotificacaoController extends Controller
                     'hora' => $hora,
                     'valor' => number_format($sessao->valor, 2, ',', '.'),
                     'foi_pago' => $sessao->foi_pago,
-                    'mensagem' => $notificacao->mensagem,  // aqui já traz mensagem personalizada (com data original)
+                    'mensagem' => $notificacao->mensagem, // usa mensagem personalizada
                 ];
             }
 
-            return response()->json([
-                'abrir_modal' => true,
-                'tipo' => $notificacao->tipo,
-                'sessao' => $dadosSessao,
-            ]);
+            // ✅ Se for AJAX (fetch), retorna JSON
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'abrir_modal' => true,
+                    'tipo' => $notificacao->tipo,
+                    'sessao' => $dadosSessao,
+                ]);
+            }
+
+            // 🚨 Se não for AJAX, faz fallback: redireciona para editar sessão diretamente
+            if ($notificacao->relacionado && $notificacao->relacionado instanceof Sessao) {
+                return redirect()->route('sessoes.edit', $notificacao->relacionado_id);
+            }
         }
 
-        // 🔁 Redirecionamento padrão
+        // 🔁 Redirecionamento padrão se não for modal especial
         if ($notificacao->relacionado) {
             $tipo = class_basename($notificacao->relacionado_type);
 
