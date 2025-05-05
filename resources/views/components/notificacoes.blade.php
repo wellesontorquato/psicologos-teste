@@ -21,7 +21,7 @@
         <ul class="max-h-96 overflow-y-auto divide-y">
             @forelse($notificacoes as $notificacao)
                 <li class="p-3 hover:bg-gray-100 text-sm">
-                    <a href="{{ route('notificacoes.acao', $notificacao->id) }}"
+                    <a href="{{ route('notificacoes.acao', ['id' => $notificacao->id]) }}"
                     class="notificacao-link flex items-start gap-2"
                     data-tipo="{{ $notificacao->tipo }}"
                     data-id="{{ $notificacao->id }}">

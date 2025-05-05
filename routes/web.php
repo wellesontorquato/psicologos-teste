@@ -213,7 +213,7 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::resource('sessoes', SessaoController::class)->except(['show']);
 
     Route::get('/notificacoes', [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
-    Route::get('/notificacoes/acao/{id}', [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
+    Route::get('/notificacoes/{id}/acao', [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
     Route::post('/notificacoes/ler-todas', [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
     Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
 });
