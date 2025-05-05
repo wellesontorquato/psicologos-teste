@@ -266,6 +266,7 @@
     @include('components.modal-aniversariantes')
     @include('components.modal-sessao-confirmada')
     @include('components.modal-sessao-cancelada')
+    @include('components.modal-sessao-reagendada')
 
     @yield('scripts')
     @stack('scripts')
@@ -273,35 +274,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('a[data-tipo="aniversario"]').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
-                    new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
-                });
-            });
-
-            document.querySelectorAll('a[data-tipo="whatsapp_confirmado"]').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
-                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoConfirmada'));
-                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
-                    document.getElementById('modalSessaoConfirmadaTexto').textContent = texto;
-                    modal.show();
-                });
-            });
-
-            document.querySelectorAll('a[data-tipo="whatsapp_cancelada"]').forEach(link => {
-                link.addEventListener('click', async e => {
-                    e.preventDefault();
-                    const modal = new bootstrap.Modal(document.getElementById('modalSessaoCancelada'));
-                    const texto = link.querySelector('.text-gray-800')?.textContent || '';
-                    document.getElementById('modalSessaoCanceladaTexto').textContent = texto;
-                    modal.show();
-                });
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('a[data-tipo="aniversario"]').forEach(link => {
+            link.addEventListener('click', async e => {
+                e.preventDefault();
+                new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
             });
         });
-    </script>
+
+        document.querySelectorAll('a[data-tipo="whatsapp_confirmado"]').forEach(link => {
+            link.addEventListener('click', async e => {
+                e.preventDefault();
+                const modal = new bootstrap.Modal(document.getElementById('modalSessaoConfirmada'));
+                const texto = link.querySelector('.text-gray-800')?.textContent || '';
+                document.getElementById('modalSessaoConfirmadaTexto').textContent = texto;
+                modal.show();
+            });
+        });
+
+        document.querySelectorAll('a[data-tipo="whatsapp_cancelada"]').forEach(link => {
+            link.addEventListener('click', async e => {
+                e.preventDefault();
+                const modal = new bootstrap.Modal(document.getElementById('modalSessaoCancelada'));
+                const texto = link.querySelector('.text-gray-800')?.textContent || '';
+                document.getElementById('modalSessaoCanceladaTexto').textContent = texto;
+                modal.show();
+            });
+        });
+
+        // ✅ NOVO BLOCO: tratar whatsapp_remarcar
+        document.querySelectorAll('a[data-tipo="whatsapp_remarcar"]').forEach(link => {
+            link.addEventListener('click', async e => {
+                e.preventDefault();
+                const modal = new bootstrap.Modal(document.getElementById('modalSessaoReagendada'));
+
+                const texto = link.querySelector('.text-gray-800')?.textContent || '';
+                document.getElementById('modalSessaoReagendadaTexto').textContent = texto;
+
+                // 👇 Pega o ID da sessão via data-id no link (ajuste se precisar)
+                const sessaoId = link.getAttribute('data-sessao-id');
+
+                if (sessaoId) {
+                    document.getElementById('btnReagendarSessao').setAttribute('href', `/sessoes/${sessaoId}/edit`);
+                    document.getElementById('btnReagendarSessao').classList.remove('d-none'); // Se quiser esconder caso não tenha
+                } else {
+                    document.getElementById('btnReagendarSessao').classList.add('d-none');
+                }
+
+                modal.show();
+            });
+        });
+    });
+</script>
 
     @if ($errors->any())
         <script>

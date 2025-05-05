@@ -29,7 +29,7 @@ class NotificacaoController extends Controller
         if (in_array($notificacao->tipo, ['aniversario', 'whatsapp_confirmado', 'whatsapp_cancelada', 'whatsapp_remarcada'])) {
             $dadosSessao = null;
 
-            if ($notificacao->relacionado instanceof Sessao) {
+            if ($notificacao->relacionado_type === Sessao::class && $notificacao->relacionado) {
                 $sessao = $notificacao->relacionado;
 
                 // ✅ Blindagem para quando data_hora está NULL (especialmente em REMARCAR)

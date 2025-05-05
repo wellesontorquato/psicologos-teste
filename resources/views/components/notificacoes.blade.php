@@ -22,7 +22,9 @@
             @forelse($notificacoes as $notificacao)
                 <li class="p-3 hover:bg-gray-100 text-sm">
                     <a href="{{ route('notificacoes.acao', $notificacao->id) }}"
-                       class="flex items-start gap-2">
+                        data-tipo="{{ $notificacao->tipo }}"
+                        data-sessao-id="{{ $notificacao->relacionado_id }}"
+                        class="flex items-start gap-2">
                         <div>
                             <span class="font-medium">{{ $notificacao->titulo }}</span><br>
                             <span class="text-gray-500 text-xs">{{ $notificacao->created_at->diffForHumans() }}</span>
