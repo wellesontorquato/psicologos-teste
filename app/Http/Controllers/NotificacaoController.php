@@ -25,7 +25,7 @@ class NotificacaoController extends Controller
             'visto_em' => now(),
         ]);
 
-        // ✅ MODAIS ESPECIAIS (aniversário, sessão confirmada, sessão cancelada, sessão remarcada)
+        // ✅ MODAIS ESPECIAIS (aniversário, sessão confirmada, sessão cancelada, sessão remarcar)
         if (in_array($notificacao->tipo, ['aniversario', 'whatsapp_confirmado', 'whatsapp_cancelada', 'whatsapp_remarcar'])) {
             $dadosSessao = null;
 
@@ -42,11 +42,11 @@ class NotificacaoController extends Controller
                     'hora' => $hora,
                     'valor' => number_format($sessao->valor, 2, ',', '.'),
                     'foi_pago' => $sessao->foi_pago,
-                    'mensagem' => $notificacao->mensagem, // usa mensagem personalizada
+                    'mensagem' => $notificacao->mensagem,
                 ];
             }
 
-            // ✅ Se for AJAX (fetch), retorna JSON
+            // Se for AJAX, retorna JSON para abrir modal
             if ($request->expectsJson()) {
                 return response()->json([
                     'abrir_modal' => true,
@@ -55,13 +55,16 @@ class NotificacaoController extends Controller
                 ]);
             }
 
-            // 🚨 Se não for AJAX, faz fallback: redireciona para editar sessão diretamente
-            if ($notificacao->relacionado && $notificacao->relacionado instanceof Sessao) {
+            // 👇 **Apenas para remarcar** faz fallback para redirecionamento (se não for AJAX)
+            if ($notificacao->tipo === 'whatsapp_remarcar' && $notificacao->relacionado instanceof Sessao) {
                 return redirect()->route('sessoes.edit', $notificacao->relacionado_id);
             }
+
+            // ✅ Para confirmada e cancelada (e aniversário), não faz nada além de voltar à dashboard
+            return redirect()->route('dashboard')->with('status', 'Notificação lida.');
         }
 
-        // 🔁 Redirecionamento padrão se não for modal especial
+        // 🔁 Redirecionamento padrão para outros tipos
         if ($notificacao->relacionado) {
             $tipo = class_basename($notificacao->relacionado_type);
 
