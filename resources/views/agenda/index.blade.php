@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
             window.FullCalendar.bootstrap5Plugin
         ],
         themeSystem: 'bootstrap5',
-        timeZone: "{{ config('app.timezone') }}",
+        timeZone: 'local',
         height: 650,
         locale: window.FullCalendar.ptBr,
         initialView: 'dayGridMonth',
