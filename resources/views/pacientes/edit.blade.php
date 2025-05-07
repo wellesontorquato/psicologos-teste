@@ -47,11 +47,20 @@
                 <label>CPF</label>
                 <input type="text" name="cpf" class="form-control" value="{{ $paciente->cpf }}" placeholder="000.000.000-00">
             </div>
-            <div class="col-md-6 d-flex align-items-end">
+            <div class="col-md-6 d-flex align-items-end flex-column">
+                {{-- Tooltip explicativo --}}
+                <small 
+                    class="text-muted mb-2 d-block" 
+                    data-bs-toggle="tooltip" 
+                    data-bs-placement="top" 
+                    title="Este site não realiza a emissão direta de notas fiscais pelo Receita Saúde. O processo deve ser concluído manualmente pelo profissional.">
+                    ℹ️ Informativo sobre Receita Saúde
+                </small>
+                {{-- Switch atualizado --}}
                 <input type="hidden" name="exige_nota_fiscal" value="0">
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input" type="checkbox" name="exige_nota_fiscal" id="exige_nota_fiscal" value="1" {{ $paciente->exige_nota_fiscal ? 'checked' : '' }}>
-                    <label class="form-check-label" for="exige_nota_fiscal">Exige Emissão de Nota Fiscal?</label>
+                    <label class="form-check-label" for="exige_nota_fiscal">Emissão de Nota Fiscal Receita Saúde</label>
                 </div>
             </div>
         </div>
@@ -227,6 +236,14 @@ document.getElementById('form-paciente').addEventListener('submit', async functi
             text: 'Tente novamente mais tarde.'
         });
     }
+});
+
+// Ativar tooltips do Bootstrap
+document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl)
+    });
 });
 </script>
 @endsection

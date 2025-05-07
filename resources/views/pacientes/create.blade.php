@@ -46,11 +46,20 @@
                 <label>CPF</label>
                 <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00">
             </div>
-            <div class="col-md-6 d-flex align-items-end">
+            <div class="col-md-6 d-flex align-items-end flex-column">
+                {{-- Tooltip explicativo --}}
+                <small 
+                    class="text-muted mb-2 d-block" 
+                    data-bs-toggle="tooltip" 
+                    data-bs-placement="top" 
+                    title="O PsiGestor não realiza a emissão direta de notas fiscais pelo Receita Saúde. O processo deve ser concluído manualmente pelo profissional.">
+                    ℹ️ Informativo sobre Receita Saúde
+                </small>
+                {{-- Switch atualizado --}}
                 <input type="hidden" name="exige_nota_fiscal" value="0">
                 <div class="form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="exige_nota_fiscal" value="1" id="exigeNotaFiscal">
-                    <label class="form-check-label" for="exigeNotaFiscal">Exige Emissão de Nota Fiscal?</label>
+                    <label class="form-check-label" for="exigeNotaFiscal">Emissão de Nota Fiscal Receita Saúde</label>
                 </div>
             </div>
         </div>
@@ -180,7 +189,6 @@ document.getElementById('form-paciente').addEventListener('submit', async functi
                 'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
-
             },
             body: formData
         });
@@ -221,6 +229,14 @@ document.getElementById('form-paciente').addEventListener('submit', async functi
             text: 'Tente novamente mais tarde.'
         });
     }
+});
+
+// Ativar tooltips do Bootstrap
+document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl)
+    });
 });
 </script>
 @endsection
