@@ -26,7 +26,7 @@ class NotificacaoController extends Controller
         ]);
 
         // ✅ MODAIS ESPECIAIS (aniversário, sessão confirmada, sessão cancelada, sessão remarcar)
-        if (in_array($notificacao->tipo, ['aniversario', 'whatsapp_confirmado', 'whatsapp_cancelada', 'whatsapp_remarcar'])) {
+        if (in_array($notificacao->tipo, ['aniversario', 'whatsapp_confirmado', 'whatsapp_cancelada', 'whatsapp_remarcar', 'sessao_nao_paga'])) {
             $dadosSessao = null;
         
             if ($notificacao->relacionado instanceof Sessao) {
