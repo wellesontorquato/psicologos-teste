@@ -3,12 +3,12 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// 🗂️ Diretório onde ficarão os lock files
-const lockDir = path.join(__dirname, 'locks');
+// 🗂️ Diretório seguro dentro do Laravel para os arquivos de lock
+const lockDir = '/var/www/html/storage/app/locks';
 
 // Certifica que o diretório existe
 if (!fs.existsSync(lockDir)) {
-    fs.mkdirSync(lockDir);
+    fs.mkdirSync(lockDir, { recursive: true });
 }
 
 // Função genérica com lock para qualquer comando
@@ -40,18 +40,15 @@ function runWithLock(commandName, artisanCommand) {
 
 // 🚀 Sessões não pagas - EXECUTA A CADA MINUTO para teste
 cron.schedule('* * * * *', () => {
-    console.log('🟢 [TESTE] Disparando checar:sessoes-nao-pagas');
     runWithLock('checar-sessoes-nao-pagas', 'checar:sessoes-nao-pagas');
 });
 
 // 🚀 Lembretes - EXECUTA A CADA MINUTO para teste
 cron.schedule('* * * * *', () => {
-    console.log('🟢 [TESTE] Disparando lembretes:enviar');
     runWithLock('lembretes-enviar', 'lembretes:enviar');
 });
 
 // 🚀 Aniversariantes - EXECUTA A CADA MINUTO para teste
 cron.schedule('* * * * *', () => {
-    console.log('🟢 [TESTE] Disparando checar:aniversariantes');
     runWithLock('checar-aniversariantes', 'checar:aniversariantes');
 });
