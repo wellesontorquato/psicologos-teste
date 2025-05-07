@@ -15,20 +15,20 @@ class Kernel extends ConsoleKernel
     {
         Log::info('[Kernel] ✅ Entrou no método schedule() e está configurando os comandos.');
 
-        // 🕗 Lembretes - todos os dias às 08:00
-        $schedule->command('lembretes:enviar')
-            ->dailyAt('08:00')
-            ->runInBackground();
+        // // 🕗 Lembretes - todos os dias às 08:00
+        // $schedule->command('lembretes:enviar')
+        //     ->dailyAt('08:00')
+        //     ->runInBackground();
 
-        // 🕠 Sessões não pagas - todos os dias às 07:30
-        $schedule->command('checar:sessoes-nao-pagas')
-            ->dailyAt('07:30')
-            ->runInBackground();
+        // // 🕠 Sessões não pagas - todos os dias às 07:30
+        // $schedule->command('checar:sessoes-nao-pagas')
+        //     ->dailyAt('07:30')
+        //     ->runInBackground();
 
-        // 🕖 Aniversariantes - todos os dias às 07:00
-        $schedule->command('checar:aniversariantes')
-            ->dailyAt('07:00')
-            ->runInBackground();
+        // // 🕖 Aniversariantes - todos os dias às 07:00
+        // $schedule->command('checar:aniversariantes')
+        //     ->dailyAt('07:00')
+        //     ->runInBackground();
     }
 
     protected function commands(): void
