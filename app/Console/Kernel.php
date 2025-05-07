@@ -7,7 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
 use App\Console\Commands\VerificarSessoesNaoPagas;
 use App\Console\Commands\ChecarAniversariantes;
-use App\Console\Commands\EnviarLembretesDiarios; // ✅ garantir que está registrado
+use App\Console\Commands\EnviarLembretesDiarios;
 
 class Kernel extends ConsoleKernel
 {
