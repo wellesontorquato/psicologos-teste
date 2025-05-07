@@ -7,7 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
 use App\Console\Commands\VerificarSessoesNaoPagas;
 use App\Console\Commands\ChecarAniversariantes;
-use App\Console\Commands\EnviarLembretesDiarios; // ✅ garantir que está registrado
+use App\Console\Commands\EnviarLembretesDiarios;
 
 class Kernel extends ConsoleKernel
 {
@@ -15,16 +15,19 @@ class Kernel extends ConsoleKernel
     {
         Log::info('[Kernel] ✅ Entrou no método schedule() e está configurando os comandos.');
 
+        // 🔔 Enviar lembretes todo dia às 08:00 (horário padrão)
         $schedule->command('lembretes:enviar')
-            ->everyMinute()
+            ->dailyAt('08:00')
             ->runInBackground();
 
+        // 💰 Checar sessões não pagas todos os dias às 18:00
         $schedule->command('checar:sessoes-nao-pagas')
-            ->everyMinute()
+            ->dailyAt('18:00')
             ->runInBackground();
 
+        // 🎉 Checar aniversariantes todos os dias às 07:30
         $schedule->command('checar:aniversariantes')
-            ->everyMinute()
+            ->dailyAt('07:30')
             ->runInBackground();
     }
 
@@ -37,6 +40,6 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         VerificarSessoesNaoPagas::class,
         ChecarAniversariantes::class,
-        EnviarLembretesDiarios::class, // ✅ garantir que tá aqui também
+        EnviarLembretesDiarios::class,
     ];
 }

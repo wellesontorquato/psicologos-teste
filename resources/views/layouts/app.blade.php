@@ -267,6 +267,7 @@
     @include('components.modal-sessao-confirmada')
     @include('components.modal-sessao-cancelada')
     @include('components.modal-sessao-reagendada')
+    @include('components.modal-sessao-nao-paga')
 
     @yield('scripts')
     @stack('scripts')
@@ -456,6 +457,20 @@
                             const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
                             instance.show();
                         }
+
+                        // ⚠️ Modal de Sessão Não Paga
+                        if (data.tipo === 'sessao_nao_paga' && data.sessao) {
+                            const texto = `
+                                <strong>${data.sessao.paciente}</strong><br>
+                                Sessão realizada em <strong>${data.sessao.data}</strong> às <strong>${data.sessao.hora}</strong> ainda está <span class="text-danger fw-bold">pendente de pagamento</span>.
+                            `;
+                            document.getElementById('modalSessaoNaoPagaTexto').innerHTML = texto;
+
+                            const modalEl = document.getElementById('modalSessaoNaoPaga');
+                            const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            instance.show();
+                        }
+
 
                     } catch (error) {
                         console.error(error);

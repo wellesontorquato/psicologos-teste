@@ -32,15 +32,22 @@ class NotificarSessaoNaoPaga
             return;
         }
 
+        $pacienteNome = $sessao->paciente->nome ?? 'Paciente desconhecido';
+        $dataHora = optional($sessao->data_hora)->format('d/m/Y \à\s H:i') ?? 'Data não disponível';
+
         Notificacao::create([
             'user_id' => $sessao->paciente->user_id,
             'titulo' => 'Sessão ainda não foi paga',
-            'mensagem' => 'A sessão realizada ainda está com pagamento pendente.',
+            'mensagem' => "A sessão de *{$pacienteNome}*, realizada em *{$dataHora}*, ainda está com pagamento pendente.",
             'tipo' => 'sessao_nao_paga',
             'relacionado_id' => $sessao->id,
             'relacionado_type' => Sessao::class,
         ]);
 
-        Log::info('[Notificacao] ⚠️ Notificação de sessão não paga criada.', ['sessao_id' => $sessao->id]);
+        Log::info('[Notificacao] ⚠️ Notificação de sessão não paga criada.', [
+            'sessao_id' => $sessao->id,
+            'paciente' => $pacienteNome,
+            'data_hora' => $dataHora,
+        ]);
     }
 }
