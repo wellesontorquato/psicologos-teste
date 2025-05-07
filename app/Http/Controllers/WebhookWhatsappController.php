@@ -34,7 +34,6 @@ class WebhookWhatsappController extends Controller
         $from = $data['from'];
         $bodyOriginal = $data['body'];
         $bodyLimpo = strtoupper(Str::ascii(trim($bodyOriginal)));
-        $bodyLimpo = explode(' ', $bodyLimpo)[0];
         Log::info('[Webhook] 🧪 Texto limpo gerado:', ['original' => $bodyOriginal, 'limpo' => $bodyLimpo]);
 
         if (!str_contains($from, '@c.us')) {
@@ -49,12 +48,12 @@ class WebhookWhatsappController extends Controller
         // Busca direta pelo número já normalizado
         $paciente = Paciente::get()->first(function ($p) use ($numeroLimpo) {
             $telefoneBanco = preg_replace('/\D/', '', $p->telefone);
-        
+
             // Tenta casar diretamente
             if ($numeroLimpo === $telefoneBanco) {
                 return true;
             }
-        
+
             // Se o número tem 8 dígitos após o DDD (faltando o 9), tenta adicionar o 9 para comparar
             if (preg_match('/^(\d{2})(\d{8})$/', $numeroLimpo, $matches)) {
                 $numeroComNove = $matches[1] . '9' . $matches[2];
@@ -63,9 +62,9 @@ class WebhookWhatsappController extends Controller
                     return true;
                 }
             }
-        
+
             return false;
-        });        
+        });
 
         if (!$paciente) {
             Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numeroLimpo]);
@@ -74,15 +73,53 @@ class WebhookWhatsappController extends Controller
         }
 
         $mapa = [
-            'CONFIRMADO' => 'CONFIRMADA',
-            'CONFIRMAR'  => 'CONFIRMADA',
-            'REMARCAR'   => 'REMARCAR',
-            'CANCELAR'   => 'CANCELADA',
+            // CONFIRMAR
+            'CONFIRMADO'    => 'CONFIRMADA',
+            'CONFIRMAR'     => 'CONFIRMADA',
+            'CONFIRMADA'    => 'CONFIRMADA',
+            'OK'            => 'CONFIRMADA',
+            'CERTO'         => 'CONFIRMADA',
+            'SIM'           => 'CONFIRMADA',
+            'VOU'           => 'CONFIRMADA',
+            'ESTAREI'       => 'CONFIRMADA',
+            'CONFIRMEI'     => 'CONFIRMADA',
+
+            // REMARCAR
+            'REMARCAR'      => 'REMARCAR',
+            'REMARCAÇÃO'    => 'REMARCAR',
+            'REAGENDAR'     => 'REMARCAR',
+            'REAGENDAMENTO' => 'REMARCAR',
+            'REMARQUE'      => 'REMARCAR',
+            'REMARCARÁ'     => 'REMARCAR',
+            'MUDAR'         => 'REMARCAR',
+            'TROCAR'        => 'REMARCAR',
+            'ADIAR'         => 'REMARCAR',
+
+            // CANCELAR
+            'CANCELAR'      => 'CANCELADA',
+            'CANCELADO'     => 'CANCELADA',
+            'CANCELADA'     => 'CANCELADA',
+            'DESMARCAR'     => 'CANCELADA',
+            'DESMARQUE'     => 'CANCELADA',
+            'NAO VOU'       => 'CANCELADA',
+            'NÃO VOU'       => 'CANCELADA',
+            'CANCELE'       => 'CANCELADA',
         ];
 
-        if (!isset($mapa[$bodyLimpo])) {
+        // 🔍 Busca inteligente pela primeira palavra-chave que bate
+        $status = null;
+        foreach ($mapa as $chave => $valor) {
+            if (Str::contains($bodyLimpo, $chave)) {
+                $status = $valor;
+                Log::info('[Webhook] ✅ Palavra-chave detectada:', ['chave' => $chave, 'status' => $valor]);
+                break;
+            }
+        }
+
+        if (!$status) {
             Log::info('[Webhook] ⚠️ Resposta inválida do paciente', ['recebido' => $bodyLimpo]);
-            $this->responderNoWhatsapp($numeroLimpo, '⚠️ Desculpe, não entendi sua resposta. Envie: CONFIRMADO, REMARCAR ou CANCELAR.');
+            $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nPara confirmar sua sessão, responda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
+            $this->responderNoWhatsapp($numeroLimpo, $mensagemErro);
             return response()->json(['message' => 'Mensagem inválida.'], 200);
         }
 
@@ -105,7 +142,7 @@ class WebhookWhatsappController extends Controller
             return response()->json(['message' => 'Nenhuma sessão encontrada.'], 200);
         }
 
-        $sessao->status_confirmacao = $mapa[$bodyLimpo];
+        $sessao->status_confirmacao = $status;
 
         if (in_array($sessao->status_confirmacao, ['REMARCAR', 'CANCELADA'])) {
             $sessao->data_hora = null;
