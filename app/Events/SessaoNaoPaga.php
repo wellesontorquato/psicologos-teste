@@ -17,3 +17,4 @@ class SessaoNaoPaga
         $this->sessao = $sessao;
     }
 }
+

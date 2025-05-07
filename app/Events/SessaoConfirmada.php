@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Sessao; // ✅ IMPORTANTE: isso precisa estar aqui!
+use App\Models\Sessao;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\InteractsWithSockets;
