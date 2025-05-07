@@ -239,4 +239,21 @@ Route::get('/force-clear', function () {
         return 'Permissões corrigidas!';
     });    
 
+    // routes/web.php (temporário)
+Route::get('/check-logs', function() {
+    $logFile = storage_path('logs/laravel.log');
+    $owner = posix_getpwuid(fileowner($logFile));
+    $group = posix_getgrgid(filegroup($logFile));
+    return response()->json([
+        'current_user' => get_current_user(),
+        'effective_user' => posix_getpwuid(posix_geteuid()),
+        'log_file' => $logFile,
+        'file_owner' => $owner,
+        'file_group' => $group,
+        'file_perms' => substr(sprintf('%o', fileperms($logFile)), -4),
+        'is_writable' => is_writable($logFile),
+    ]);
+});
+
+
 require __DIR__.'/auth.php';
