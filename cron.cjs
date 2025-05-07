@@ -1,50 +1,57 @@
 const cron = require('node-cron');
 const { exec } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+// 🗂️ Diretório onde ficarão os lock files
+const lockDir = path.join(__dirname, 'locks');
+
+// Certifica que o diretório existe
+if (!fs.existsSync(lockDir)) {
+    fs.mkdirSync(lockDir);
+}
+
+// Função genérica com lock para qualquer comando
+function runWithLock(commandName, artisanCommand) {
+    const lockFile = path.join(lockDir, `${commandName}.lock`);
+
+    if (fs.existsSync(lockFile)) {
+        console.log(`⛔ ${commandName} já está rodando. Abortando para evitar duplicação.`);
+        return;
+    }
+
+    // Cria o lock
+    fs.writeFileSync(lockFile, 'locked');
+    console.log(`🚀 Executando ${artisanCommand}`);
+
+    exec(`php artisan ${artisanCommand}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`❌ Erro ${artisanCommand}: ${error.message}`);
+        }
+        if (stderr) {
+            console.error(`⚠️ Stderr ${artisanCommand}: ${stderr}`);
+        }
+        console.log(`✅ Resultado ${artisanCommand}: ${stdout}`);
+
+        // Remove o lock
+        fs.unlinkSync(lockFile);
+    });
+}
 
 // 🚀 Sessões não pagas - EXECUTA A CADA MINUTO para teste
 cron.schedule('* * * * *', () => {
-    console.log('🟢 [TESTE] Executando checar:sessoes-nao-pagas');
-    exec('php artisan checar:sessoes-nao-pagas', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`❌ Erro checar:sessoes-nao-pagas: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`⚠️ Stderr checar:sessoes-nao-pagas: ${stderr}`);
-            return;
-        }
-        console.log(`✅ Resultado checar:sessoes-nao-pagas: ${stdout}`);
-    });
+    console.log('🟢 [TESTE] Disparando checar:sessoes-nao-pagas');
+    runWithLock('checar-sessoes-nao-pagas', 'checar:sessoes-nao-pagas');
 });
 
 // 🚀 Lembretes - EXECUTA A CADA MINUTO para teste
 cron.schedule('* * * * *', () => {
-    console.log('🟢 [TESTE] Executando lembretes:enviar');
-    exec('php artisan lembretes:enviar', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`❌ Erro lembretes:enviar: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`⚠️ Stderr lembretes:enviar: ${stderr}`);
-            return;
-        }
-        console.log(`✅ Resultado lembretes:enviar: ${stdout}`);
-    });
+    console.log('🟢 [TESTE] Disparando lembretes:enviar');
+    runWithLock('lembretes-enviar', 'lembretes:enviar');
 });
 
 // 🚀 Aniversariantes - EXECUTA A CADA MINUTO para teste
 cron.schedule('* * * * *', () => {
-    console.log('🟢 [TESTE] Executando checar:aniversariantes');
-    exec('php artisan checar:aniversariantes', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`❌ Erro checar:aniversariantes: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`⚠️ Stderr checar:aniversariantes: ${stderr}`);
-            return;
-        }
-        console.log(`✅ Resultado checar:aniversariantes: ${stdout}`);
-    });
+    console.log('🟢 [TESTE] Disparando checar:aniversariantes');
+    runWithLock('checar-aniversariantes', 'checar:aniversariantes');
 });
