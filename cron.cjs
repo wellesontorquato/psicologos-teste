@@ -38,17 +38,17 @@ function runWithLock(commandName, artisanCommand) {
     });
 }
 
-// 🚀 Sessões não pagas - EXECUTA A CADA MINUTO para teste
-cron.schedule('* * * * *', () => {
+// 🚀 Sessões não pagas - Todos os dias às 07:30
+cron.schedule('30 7 * * *', () => {
     runWithLock('checar-sessoes-nao-pagas', 'checar:sessoes-nao-pagas');
 });
 
-// 🚀 Lembretes - EXECUTA A CADA MINUTO para teste
-cron.schedule('* * * * *', () => {
+// 🚀 Lembretes - Todos os dias às 08:00
+cron.schedule('0 8 * * *', () => {
     runWithLock('lembretes-enviar', 'lembretes:enviar');
 });
 
-// 🚀 Aniversariantes - EXECUTA A CADA MINUTO para teste
-cron.schedule('* * * * *', () => {
+// 🚀 Aniversariantes - Todos os dias às 07:00
+cron.schedule('0 7 * * *', () => {
     runWithLock('checar-aniversariantes', 'checar:aniversariantes');
 });
