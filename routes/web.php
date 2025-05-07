@@ -233,4 +233,10 @@ Route::get('/force-clear', function () {
     return 'Caches TOTALMENTE limpos 🚀!';
 });
 
+// Crie rapidamente um comando em routes/web.php só para forçar isso:
+    Route::get('/fix-perms', function() {
+        exec('chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache');
+        return 'Permissões corrigidas!';
+    });    
+
 require __DIR__.'/auth.php';
