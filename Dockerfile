@@ -38,13 +38,13 @@ RUN npm install && npm run build
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisord.conf
 
-# Permissões necessárias
+# Cria o entrypoint reforçando permissões em toda inicialização
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Permissões iniciais durante o build
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Cria symlink para acesso a arquivos públicos (fotos de perfil etc)
-# IMPORTANTE: não execute mais os comandos Artisan aqui. Eles rodam via supervisord.
-# REMOVIDO: php artisan config:cache, route:cache etc.
 
 # Define limites de upload do PHP corretamente (acrescenta em vez de sobrescrever)
 RUN echo "upload_max_filesize=5M" > /usr/local/etc/php/conf.d/uploads.ini && \
@@ -53,5 +53,5 @@ RUN echo "upload_max_filesize=5M" > /usr/local/etc/php/conf.d/uploads.ini && \
 # Expõe porta usada pelo nginx
 EXPOSE 8080
 
-# Inicia supervisord (php-fpm + nginx + artisan setup)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Usa o entrypoint para garantir permissões sempre que sobe
+ENTRYPOINT ["/entrypoint.sh"]
