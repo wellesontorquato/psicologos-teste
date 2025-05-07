@@ -1,45 +1,50 @@
-import cron from 'node-cron';
-import { exec } from 'child_process';
+const cron = require('node-cron');
+const { exec } = require('child_process');
 
-console.log('⏰ cron.js está rodando...');
-
-cron.schedule('* * * * *', () => {
-    console.log('🚀 Executando lembretes:enviar...');
-    exec('php artisan lembretes:enviar', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`❌ Erro em lembretes:enviar: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`⚠️ STDERR lembretes:enviar: ${stderr}`);
-            return;
-        }
-        console.log(`✅ lembretes:enviar output:\n${stdout}`);
-    });
-
-    console.log('🚀 Executando checar:sessoes-nao-pagas...');
+// 🕑 Sessões não pagas - Roda todo dia às 07:30
+cron.schedule('30 7 * * *', () => {
+    console.log('🚀 Executando checar:sessoes-nao-pagas');
     exec('php artisan checar:sessoes-nao-pagas', (error, stdout, stderr) => {
         if (error) {
-            console.error(`❌ Erro em checar:sessoes-nao-pagas: ${error.message}`);
+            console.error(`❌ Erro: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.error(`⚠️ STDERR checar:sessoes-nao-pagas: ${stderr}`);
+            console.error(`⚠️ Stderr: ${stderr}`);
             return;
         }
-        console.log(`✅ checar:sessoes-nao-pagas output:\n${stdout}`);
+        console.log(`✅ Resultado sessoes-nao-pagas: ${stdout}`);
     });
+});
 
-    console.log('🚀 Executando checar:aniversariantes...');
+// 🕑 Lembretes - Roda todo dia às 08:00
+cron.schedule('0 8 * * *', () => {
+    console.log('🚀 Executando lembretes:enviar');
+    exec('php artisan lembretes:enviar', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`❌ Erro: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`⚠️ Stderr: ${stderr}`);
+            return;
+        }
+        console.log(`✅ Resultado lembretes: ${stdout}`);
+    });
+});
+
+// 🕑 Aniversariantes - Roda todo dia às 07:00
+cron.schedule('0 7 * * *', () => {
+    console.log('🚀 Executando checar:aniversariantes');
     exec('php artisan checar:aniversariantes', (error, stdout, stderr) => {
         if (error) {
-            console.error(`❌ Erro em checar:aniversariantes: ${error.message}`);
+            console.error(`❌ Erro: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.error(`⚠️ STDERR checar:aniversariantes: ${stderr}`);
+            console.error(`⚠️ Stderr: ${stderr}`);
             return;
         }
-        console.log(`✅ checar:aniversariantes output:\n${stdout}`);
+        console.log(`✅ Resultado aniversariantes: ${stdout}`);
     });
 });
