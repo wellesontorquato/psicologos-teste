@@ -6,5 +6,11 @@ echo "✅ Ajustando permissões antes de iniciar supervisord..."
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage/logs /var/www/html/storage/app /var/www/html/bootstrap/cache
 
+# Refaz link do storage (evita problema em ambientes Railway/Docker)
+if [ ! -L "/var/www/html/public/storage" ]; then
+    echo "🔗 Criando symlink do storage..."
+    php artisan storage:link
+fi
+
 # Inicia supervisord normalmente (nginx + php-fpm + artisan etc)
 exec /usr/bin/supervisord -c /etc/supervisord.conf

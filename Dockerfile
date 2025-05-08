@@ -24,26 +24,25 @@ RUN ln -snf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && echo "Americ
 # Instala Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copia aplicação html 
+# Copia arquivos de configuração primeiro (antes da app inteira para otimizar cache)
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY supervisord.conf /etc/supervisord.conf
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Copia aplicação html
 COPY . /var/www/html
 
 # Define diretório de trabalho
 WORKDIR /var/www/html
 
 # Instala dependências PHP e frontend + garante logs & permissões desde o build
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader && \
-    npm install && npm run build && \
-    mkdir -p /var/www/html/storage/logs && \
-    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Copia arquivos de configuração
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY supervisord.conf /etc/supervisord.conf
-
-# Cria o entrypoint reforçando permissões em toda inicialização
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader \
+    && npm install \
+    && npm run build \
+    && mkdir -p /var/www/html/storage/logs \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Define limites de upload do PHP corretamente (acrescenta em vez de sobrescrever)
 RUN echo "upload_max_filesize=5M" > /usr/local/etc/php/conf.d/uploads.ini && \
