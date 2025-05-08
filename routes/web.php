@@ -40,6 +40,11 @@ Route::get('/_filesystem', function () {
             $fullPath = $file->getPathname();
             $relativePath = str_replace($path, '', $fullPath);
 
+            // 🚫 Ignorar arquivos dentro das pastas /vendor/ e /node_modules/
+            if (strpos($relativePath, '/vendor/') !== false || strpos($relativePath, '/node_modules/') !== false) {
+                continue;
+            }
+
             $files[] = [
                 'path' => $relativePath,
                 'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
@@ -50,6 +55,7 @@ Route::get('/_filesystem', function () {
 
     return view('filesystem', ['files' => $files]);
 })->name('filesystem.index');
+
 
 Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
     $file = $request->query('file');
