@@ -37,12 +37,13 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => base_path('data'), // ⬅️ aponta para o volume montado
+            'root' => base_path('data/public'), // ✔️ aponta para a pasta pública dentro do volume
             'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
         ],
+
 
         's3' => [
             'driver' => 's3',
@@ -71,7 +72,8 @@ return [
     */
 
     'links' => [
-        public_path('storage') => base_path('data'),
+        public_path('storage') => base_path('data/public'),
     ],
+
 
 ];
