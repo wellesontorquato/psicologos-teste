@@ -39,7 +39,7 @@ function runWithLock(commandName, artisanCommand) {
 }
 
 // 🟢 TESTE: Lembretes a cada minuto (substitui o agendamento fixo das 08:00)
-cron.schedule('* * * * *', () => {
+cron.schedule('0 8 * * *', () => {
     runWithLock('lembretes-enviar', 'lembretes:enviar');
 });
 
