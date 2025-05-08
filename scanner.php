@@ -1,56 +1,41 @@
 <?php
 
-// scanner.php
+// Caminho base do projeto
+$baseDir = __DIR__;
 
-require __DIR__ . '/vendor/autoload.php';
+// Extensões de arquivos que queremos buscar (para não pegar lixo)
+$allowedExtensions = ['php'];
 
-use Dotenv\Dotenv;
+// Palavra-chave a ser buscada
+$needle = 'lembretes:enviar';
 
-// Carrega o .env manualmente:
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+// Função para percorrer recursivamente
+function searchInFiles($dir, $needle, $allowedExtensions)
+{
+    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
 
-// Pega configs manualmente:
-$url = $_ENV['WPP_URL'] ?? 'NÃO DEFINIDO';
-$token = $_ENV['WPP_TOKEN'] ?? 'NÃO DEFINIDO';
-$session = $_ENV['WPP_SESSION'] ?? 'NÃO DEFINIDO';
+    foreach ($rii as $file) {
+        if ($file->isDir()) {
+            continue;
+        }
 
-// Mostra tudo:
-echo "\n========= SCANNER =========\n";
-echo "URL: {$url}\n";
-echo "Session: {$session}\n";
-echo "Token: {$token}\n";
-echo "===========================\n";
+        $ext = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
+        if (!in_array($ext, $allowedExtensions)) {
+            continue;
+        }
 
-// Monta dados:
-$numero = '5582999405099';
-$mensagem = '🛠 Teste via scanner.php';
-$endpoint = "{$url}/api/{$session}/send-message";
+        $lines = file($file->getPathname());
+        foreach ($lines as $num => $line) {
+            if (stripos($line, $needle) !== false) {
+                echo "\n📂 Arquivo: " . $file->getPathname() . " (linha " . ($num + 1) . ")\n";
+                echo "👉 " . trim($line) . "\n";
+            }
+        }
+    }
+}
 
-echo "Enviando para: {$endpoint}\n";
+// Executa a busca
+echo "🔎 Procurando por '{$needle}' em arquivos PHP...\n";
+searchInFiles($baseDir, $needle, $allowedExtensions);
 
-// Prepara cURL:
-$ch = curl_init($endpoint);
-
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json',
-    'Authorization: Bearer ' . $token,
-]);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-    'phone' => $numero,
-    'message' => $mensagem,
-]));
-
-// Executa:
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-// Fecha:
-curl_close($ch);
-
-// Resultado:
-echo "Status: {$httpCode}\n";
-echo "Body: {$response}\n";
-echo "======= FIM DO SCANNER =======\n";
+echo "\n✅ Scan finalizado.\n";

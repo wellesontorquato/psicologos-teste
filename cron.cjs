@@ -38,17 +38,15 @@ function runWithLock(commandName, artisanCommand) {
     });
 }
 
-// 🚀 Sessões não pagas - Todos os dias às 07:30
-cron.schedule('30 7 * * *', () => {
-    runWithLock('checar-sessoes-nao-pagas', 'checar:sessoes-nao-pagas');
-});
-
-// 🚀 Lembretes - Todos os dias às 08:00
-cron.schedule('0 8 * * *', () => {
+// 🟢 TESTE: Lembretes a cada minuto (substitui o agendamento fixo das 08:00)
+cron.schedule('* * * * *', () => {
     runWithLock('lembretes-enviar', 'lembretes:enviar');
 });
 
-// 🚀 Aniversariantes - Todos os dias às 07:00
+// ✅ (mantém os demais agendamentos normais)
+cron.schedule('30 7 * * *', () => {
+    runWithLock('checar-sessoes-nao-pagas', 'checar:sessoes-nao-pagas');
+});
 cron.schedule('0 7 * * *', () => {
     runWithLock('checar-aniversariantes', 'checar:aniversariantes');
 });

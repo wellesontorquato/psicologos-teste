@@ -25,7 +25,7 @@ Route::get('/executar-schedule-seguro/{token}', function ($token) {
     Log::info('[Scheduler] Chamou o schedule:run via webhook');
 
     // TESTE: roda diretamente o comando de lembretes
-    Artisan::call('lembretes:enviar');
+    // Artisan::call('lembretes:enviar');
 
     return response()->json(['message' => 'Schedule e lembretes executados com sucesso']);
 });

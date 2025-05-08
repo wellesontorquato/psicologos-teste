@@ -11,8 +11,9 @@ Artisan::command('inspire', function () {
 
 // ✅ Agendamento funcional direto via routes/console.php
 
-Schedule::command('lembretes:enviar')
-    ->dailyAt('08:00')
-    ->runInBackground()
-    ->onSuccess(fn () => logger('✅ lembretes:enviar executado com sucesso'))
-    ->onFailure(fn () => logger('❌ lembretes:enviar falhou'));
+// ✅ ESTE AGENDAMENTO FOI TRANSFERIDO PARA cron.cjs
+// Schedule::command('lembretes:enviar')
+//     ->dailyAt('08:00')
+//     ->runInBackground()
+//     ->onSuccess(fn () => logger('✅ lembretes:enviar executado com sucesso'))
+//     ->onFailure(fn () => logger('❌ lembretes:enviar falhou'));
