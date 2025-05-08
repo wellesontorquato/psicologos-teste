@@ -50,7 +50,7 @@ Route::get('/_filesystem', function () {
                     return false;
                 }
 
-                // Se não conseguir ler o diretório, ignora tambémm
+                // Se não conseguir ler o diretório, ignora tambémmm
                 if ($current->isDir() && !is_readable($pathname)) {
                     return false;
                 }
