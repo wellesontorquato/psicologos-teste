@@ -7,13 +7,13 @@ chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage/logs /var/www/html/storage/app /var/www/html/bootstrap/cache
 
 # Novo: se /data está montado, cria estrutura padrão completa dentro dele
-if mountpoint -q /var/www/html/data; then
+if mountpoint -q /data; then
     echo "🔗 Montagem detectada em /data - verificando estrutura"
 
     # Cria estrutura completa
-    mkdir -p /var/www/html/data/public/profile-photos
-    mkdir -p /var/www/html/data/private
-    mkdir -p /var/www/html/data/logs
+    mkdir -p /data/public/profile-photos
+    mkdir -p /data/private
+    mkdir -p /data/logs
 
     echo "✅ Estrutura criada:"
     echo " - /data/public/profile-photos"
@@ -21,19 +21,19 @@ if mountpoint -q /var/www/html/data; then
     echo " - /data/logs"
 
     # Permissões
-    chown -R www-data:www-data /var/www/html/data
-    chmod -R 775 /var/www/html/data
+    chown -R www-data:www-data /data
+    chmod -R 775 /data
 
     # Recria symlink de storage -> /data/public
     if [ -L "/var/www/html/storage/app/public" ]; then
         rm /var/www/html/storage/app/public
     fi
-    ln -s /var/www/html/data/public /var/www/html/storage/app/public
+    ln -s /data/public /var/www/html/storage/app/public
 
     # Opcional: recria public/storage para garantir link correto
     if [ ! -L "/var/www/html/public/storage" ]; then
         echo "🔗 Criando symlink do storage público web..."
-        ln -s /var/www/html/storage/app/public /var/www/html/public/storage
+        ln -s /data/public /var/www/html/public/storage
     fi
 
 else
