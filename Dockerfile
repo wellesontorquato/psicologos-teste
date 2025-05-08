@@ -30,9 +30,12 @@ COPY . /var/www/html
 # Define diretório de trabalho
 WORKDIR /var/www/html
 
-# Instala dependências PHP e frontend
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-RUN npm install && npm run build
+# Instala dependências PHP e frontend + garante logs & permissões desde o build
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader && \
+    npm install && npm run build && \
+    mkdir -p /var/www/html/storage/logs && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Copia arquivos de configuração
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -41,10 +44,6 @@ COPY supervisord.conf /etc/supervisord.conf
 # Cria o entrypoint reforçando permissões em toda inicialização
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
-# Permissões iniciais durante o build
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Define limites de upload do PHP corretamente (acrescenta em vez de sobrescrever)
 RUN echo "upload_max_filesize=5M" > /usr/local/etc/php/conf.d/uploads.ini && \
