@@ -2,7 +2,7 @@
 
 echo "✅ Ajustando permissões antes de iniciar supervisord..."
 
-# Ajusta permissões normais
+# Ajusta permissões normais do Laravel (sempre bom)
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage/logs /var/www/html/storage/app /var/www/html/bootstrap/cache
 
@@ -10,17 +10,13 @@ chmod -R 775 /var/www/html/storage/logs /var/www/html/storage/app /var/www/html/
 if mountpoint -q /data; then
     echo "🔗 Montagem detectada em /data - verificando estrutura"
 
-    # Cria estrutura completa
+    # Cria estrutura completa SE não existir
     mkdir -p /data/public/profile-photos
     mkdir -p /data/private
     mkdir -p /data/logs
 
-    echo "✅ Estrutura criada:"
-    echo " - /data/public/profile-photos"
-    echo " - /data/private"
-    echo " - /data/logs"
-
-    # Permissões
+    # ⚠️ REFORÇA as permissões TODA VEZ (mesmo que já exista)
+    echo "🔧 Ajustando permissões do volume /data..."
     chown -R www-data:www-data /data
     chmod -R 775 /data
 
@@ -39,12 +35,15 @@ if mountpoint -q /data; then
 else
     echo "⚠️ Volume /data não montado. Usando storage local padrão."
 
-    # Faz o link normal se não tiver volume
     if [ ! -L "/var/www/html/public/storage" ]; then
         echo "🔗 Criando symlink do storage padrão..."
         php artisan storage:link
     fi
 fi
+
+# ✅ Log para confirmar antes de rodar supervisord
+echo "📂 Conteúdo atual de /data/public:"
+ls -l /data/public || echo "❌ /data/public não encontrado"
 
 # Inicia supervisord normalmente
 exec /usr/bin/supervisord -c /etc/supervisord.conf
