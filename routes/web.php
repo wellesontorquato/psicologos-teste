@@ -31,6 +31,34 @@ use Illuminate\Support\Facades\Storage;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/check-data-public', function () {
+    $path = '/data/public';
+    $files = [];
+
+    if (!is_dir($path)) {
+        return response()->json(['message' => '❌ Diretório /data/public não existe ou não está montado.']);
+    }
+
+    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+
+    foreach ($rii as $file) {
+        if (!$file->isDir()) {
+            $files[] = [
+                'path' => str_replace($path, '', $file->getPathname()),
+                'size' => $file->getSize(),
+                'last_modified' => date('Y-m-d H:i:s', filemtime($file->getPathname()))
+            ];
+        }
+    }
+
+    return response()->json([
+        'message' => '✅ Arquivos encontrados em /data/public:',
+        'total_files' => count($files),
+        'files' => $files,
+    ]);
+});
+
+
 Route::get('/_filesystem', function () {
     $path = base_path();
     $files = [];
