@@ -22,6 +22,6 @@ if [ ! -L "/var/www/html/public/storage" ]; then
     php artisan storage:link
 fi
 
-# Inicializa supervisord normalmente (nginx + php-fpm + artisan etc)
+# Inicializa supervisord normalmente (nginx + php-fpm + artisan etc...)
 echo "🚀 Iniciando supervisord..."
 exec /usr/bin/supervisord -c /etc/supervisord.conf
