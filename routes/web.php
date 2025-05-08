@@ -31,6 +31,17 @@ use Illuminate\Support\Facades\Storage;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/force-test-upload', function () {
+    $path = Storage::disk('public')->put('profile-photos/teste-remote.txt', 'Arquivo criado no container remoto 🚀');
+
+    return response()->json([
+        'message' => 'Arquivo criado remotamente!',
+        'path' => $path,
+        'full_path' => Storage::disk('public')->path('profile-photos/teste-remote.txt'),
+    ]);
+});
+
+
 Route::get('/check-data-public', function () {
     $path = '/data/public';
     $files = [];
