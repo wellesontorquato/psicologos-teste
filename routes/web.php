@@ -33,45 +33,55 @@ use Illuminate\Support\Facades\Storage;
 
 Route::get('/_filesystem', function () {
     $path = base_path();
-    $rii = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+    $files = [];
+
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveCallbackFilterIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            function ($current, $key, $iterator) {
+                // 🔒 Ignorar vendor, node_modules, data/lost+found e tudo que começa com ponto
+                $pathname = $current->getPathname();
+                if (
+                    strpos($pathname, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
+                    strpos($pathname, DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
+                    strpos($pathname, DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false ||
+                    strpos($current->getFilename(), '.') === 0 // ignora arquivos ocultos e .git etc
+                ) {
+                    return false;
+                }
+
+                // Se não conseguir ler o diretório, ignora também
+                if ($current->isDir() && !is_readable($pathname)) {
+                    return false;
+                }
+
+                return true;
+            }
+        ),
         RecursiveIteratorIterator::SELF_FIRST
     );
 
-    $files = [];
+    foreach ($iterator as $file) {
+        if ($file->isFile()) {
+            try {
+                $fullPath = $file->getPathname();
+                $relativePath = str_replace($path, '', $fullPath);
 
-    foreach ($rii as $file) {
-        try {
-            // Ignorar vendor, node_modules e qualquer pasta não acessível
-            if (
-                strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
-                strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
-                strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false
-            ) {
+                $files[] = [
+                    'path' => $relativePath,
+                    'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
+                    'size' => $file->getSize(),
+                ];
+            } catch (Exception $e) {
+                // Se não conseguir acessar, ignora silenciosamente
                 continue;
             }
-
-            if ($file->isDir()) {
-                continue;
-            }
-
-            $fullPath = $file->getPathname();
-            $relativePath = str_replace($path, '', $fullPath);
-
-            $files[] = [
-                'path' => $relativePath,
-                'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
-                'size' => $file->getSize(),
-            ];
-        } catch (UnexpectedValueException $e) {
-            // Apenas loga o erro se quiser depurar, mas ignora silenciosamente no loop
-            // Log::warning("Ignorado diretório inacessível: " . $file->getPathname());
-            continue;
         }
     }
 
     return view('filesystem', ['files' => $files]);
 })->name('filesystem.index');
+
 
 Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
     $file = $request->query('file');
