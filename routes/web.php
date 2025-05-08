@@ -33,30 +33,45 @@ use Illuminate\Support\Facades\Storage;
 
 Route::get('/_filesystem', function () {
     $path = base_path();
-    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+    $rii = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
     $files = [];
 
     foreach ($rii as $file) {
-        if (!$file->isDir()) {
-            $fullPath = $file->getPathname();
-            $relativePath = str_replace($path, '', $fullPath);
-
-            // 🚫 Ignorar arquivos dentro das pastas /vendor/ e /node_modules/
-            if (strpos($relativePath, '/vendor/') !== false || strpos($relativePath, '/node_modules/') !== false) {
+        try {
+            // Ignorar vendor, node_modules e qualquer pasta não acessível
+            if (
+                strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
+                strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
+                strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false
+            ) {
                 continue;
             }
+
+            if ($file->isDir()) {
+                continue;
+            }
+
+            $fullPath = $file->getPathname();
+            $relativePath = str_replace($path, '', $fullPath);
 
             $files[] = [
                 'path' => $relativePath,
                 'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
                 'size' => $file->getSize(),
             ];
+        } catch (UnexpectedValueException $e) {
+            // Apenas loga o erro se quiser depurar, mas ignora silenciosamente no loop
+            // Log::warning("Ignorado diretório inacessível: " . $file->getPathname());
+            continue;
         }
     }
 
     return view('filesystem', ['files' => $files]);
 })->name('filesystem.index');
-
 
 Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
     $file = $request->query('file');
