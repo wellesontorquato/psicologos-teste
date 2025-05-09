@@ -87,7 +87,7 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Foto atualizada com sucesso!',
-            'url' => Storage::disk('s3')->url($path),
+            'url' => $user->profile_photo_url,
         ], 200);
     }
 
