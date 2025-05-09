@@ -486,30 +486,41 @@
 </script>
 
 <!-- Spinner Global (Tailwind) -->
-<div id="global-spinner" class="hidden fixed inset-0 bg-white/70 z-[9999] flex items-center justify-center">
-    <svg class="animate-spin h-16 w-16 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-    </svg>
-</div>
+    <div id="global-spinner" class="hidden fixed inset-0 bg-white/70 z-[9999] flex items-center justify-center">
+        <svg class="animate-spin h-16 w-16 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+    </div>
 
-<script>
-// Spinner global (Tailwind-friendly)
-window.showSpinner = function() {
-    document.getElementById('global-spinner')?.classList.remove('hidden');
-};
-window.hideSpinner = function() {
-    document.getElementById('global-spinner')?.classList.add('hidden');
-};
+    <script>
+    window.showSpinner = function() {
+        document.getElementById('global-spinner')?.classList.remove('hidden');
+    };
+    window.hideSpinner = function() {
+        document.getElementById('global-spinner')?.classList.add('hidden');
+    };
 
-document.addEventListener('DOMContentLoaded', () => {
-    // ✅ SOMENTE forms normais (que NÃO têm .no-spinner) acionam automaticamente o spinner
-    document.querySelectorAll('form:not(.no-spinner)').forEach(form => {
-        form.addEventListener('submit', function() {
-            showSpinner();
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('form:not(.no-spinner)').forEach(form => {
+            form.addEventListener('submit', function() {
+                showSpinner();
+            });
         });
     });
-});
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('a');
+
+        if (link && link.href && !link.classList.contains('no-spinner')) {
+            const isSamePageAnchor = link.getAttribute('href').startsWith('#');
+            const isNewTab = link.target === '_blank';
+            const isExternal = link.hostname !== window.location.hostname;
+
+            if (!isSamePageAnchor && !isNewTab && !isExternal) {
+                showSpinner();
+            }
+        }
+    });
 </script>
 </body>
 </html>
