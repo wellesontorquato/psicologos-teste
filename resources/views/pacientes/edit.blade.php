@@ -5,6 +5,9 @@
 @section('content')
 <div class="container">
     <h2 class="mb-4">Editar Paciente</h2>
+    <a href="{{ route('pacientes.index') }}" class="btn btn-outline-secondary mb-3">
+        <i class="bi bi-arrow-left"></i> Voltar para lista de pacientes
+    </a>
 
     <form id="form-paciente" action="{{ route('pacientes.update', $paciente) }}" method="POST">
         @csrf
@@ -62,6 +65,34 @@
                     <input class="form-check-input" type="checkbox" name="exige_nota_fiscal" id="exige_nota_fiscal" value="1" {{ $paciente->exige_nota_fiscal ? 'checked' : '' }}>
                     <label class="form-check-label" for="exige_nota_fiscal">Emissão de Nota Fiscal Receita Saúde</label>
                 </div>
+            </div>
+        </div>
+
+        {{-- Contato de Emergência --}}
+        <hr class="my-4">
+        <h5>Contato de Emergência</h5>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <label>Nome do Contato</label>
+                <input type="text" name="nome_contato_emergencia" class="form-control" placeholder="Nome completo" value="{{ $paciente->nome_contato_emergencia }}">
+            </div>
+            <div class="col-md-3">
+                <label>Telefone do Contato</label>
+                <input type="text" name="telefone_contato_emergencia" class="form-control" placeholder="(00) 00000-0000" value="{{ $paciente->telefone_contato_emergencia }}">
+            </div>
+            <div class="col-md-3">
+                <label>Parentesco</label>
+                <select name="parentesco_contato_emergencia" class="form-control">
+                    <option value="">Selecione</option>
+                    <option value="Pai" {{ $paciente->parentesco_contato_emergencia === 'Pai' ? 'selected' : '' }}>Pai</option>
+                    <option value="Mãe" {{ $paciente->parentesco_contato_emergencia === 'Mãe' ? 'selected' : '' }}>Mãe</option>
+                    <option value="Cônjuge" {{ $paciente->parentesco_contato_emergencia === 'Cônjuge' ? 'selected' : '' }}>Cônjuge</option>
+                    <option value="Filho(a)" {{ $paciente->parentesco_contato_emergencia === 'Filho(a)' ? 'selected' : '' }}>Filho(a)</option>
+                    <option value="Irmão(ã)" {{ $paciente->parentesco_contato_emergencia === 'Irmão(ã)' ? 'selected' : '' }}>Irmão(ã)</option>
+                    <option value="Amigo(a)" {{ $paciente->parentesco_contato_emergencia === 'Amigo(a)' ? 'selected' : '' }}>Amigo(a)</option>
+                    <option value="Outro" {{ $paciente->parentesco_contato_emergencia === 'Outro' ? 'selected' : '' }}>Outro</option>
+                </select>
             </div>
         </div>
 

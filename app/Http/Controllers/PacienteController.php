@@ -58,6 +58,12 @@ class PacienteController extends Controller
             ]);
         }
 
+        if ($request->filled('telefone_contato_emergencia')) {
+            $request->merge([
+                'telefone_contato_emergencia' => preg_replace('/\D/', '', $request->telefone_contato_emergencia),
+            ]);
+        }        
+
         $request->validate([
             'nome' => 'required|string|max:255',
             'data_nascimento' => 'nullable|date',
@@ -100,6 +106,9 @@ class PacienteController extends Controller
             'exige_nota_fiscal' => 'nullable|in:on,1,true,0,false',
             'observacoes' => 'nullable|string',
             'medicacao_inicial' => 'nullable|string|max:255',
+            'nome_contato_emergencia' => 'nullable|string|max:255',
+            'telefone_contato_emergencia' => 'nullable|string|max:20',
+            'parentesco_contato_emergencia' => 'nullable|string|max:50',
         ]);
 
         $paciente = Paciente::create([
@@ -119,7 +128,11 @@ class PacienteController extends Controller
             'uf' => $request->uf,
             'exige_nota_fiscal' => (bool) $request->input('exige_nota_fiscal', false),
             'observacoes' => $request->observacoes,
+            'nome_contato_emergencia' => $request->nome_contato_emergencia,
+            'telefone_contato_emergencia' => $request->telefone_contato_emergencia,
+            'parentesco_contato_emergencia' => $request->parentesco_contato_emergencia,
         ]);
+        
 
         if ($request->filled('medicacao_inicial')) {
             Evolucao::create([
@@ -164,6 +177,12 @@ class PacienteController extends Controller
                 'telefone' => preg_replace('/\D/', '', $request->telefone),
             ]);
         }
+
+        if ($request->filled('telefone_contato_emergencia')) {
+            $request->merge([
+                'telefone_contato_emergencia' => preg_replace('/\D/', '', $request->telefone_contato_emergencia),
+            ]);
+        }        
 
         $this->authorize('update', $paciente);
 
@@ -214,6 +233,9 @@ class PacienteController extends Controller
             'exige_nota_fiscal' => 'nullable|in:on,1,true,0,false',
             'observacoes' => 'nullable|string',
             'nova_medicacao' => 'nullable|string|max:255',
+            'nome_contato_emergencia' => 'nullable|string|max:255',
+            'telefone_contato_emergencia' => 'nullable|string|max:20',
+            'parentesco_contato_emergencia' => 'nullable|string|max:50',
         ]);
 
         $paciente->update([
@@ -232,6 +254,9 @@ class PacienteController extends Controller
             'uf' => $request->uf,
             'exige_nota_fiscal' => (bool) $request->input('exige_nota_fiscal', false),
             'observacoes' => $request->observacoes,
+            'nome_contato_emergencia' => $request->nome_contato_emergencia,
+            'telefone_contato_emergencia' => $request->telefone_contato_emergencia,
+            'parentesco_contato_emergencia' => $request->parentesco_contato_emergencia,
         ]);
 
         if ($request->filled('nova_medicacao')) {

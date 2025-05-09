@@ -64,6 +64,34 @@
             </div>
         </div>
 
+        {{-- Contato de Emergência --}}
+        <hr class="my-4">
+        <h5>Contato de Emergência</h5>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <label>Nome do Contato</label>
+                <input type="text" name="nome_contato_emergencia" class="form-control" placeholder="Nome completo">
+            </div>
+            <div class="col-md-3">
+                <label>Telefone do Contato</label>
+                <input type="text" name="telefone_contato_emergencia" class="form-control" placeholder="(00) 00000-0000">
+            </div>
+            <div class="col-md-3">
+                <label>Parentesco</label>
+                <select name="parentesco_contato_emergencia" class="form-control">
+                    <option value="">Selecione</option>
+                    <option value="Pai">Pai</option>
+                    <option value="Mãe">Mãe</option>
+                    <option value="Cônjuge">Cônjuge</option>
+                    <option value="Filho(a)">Filho(a)</option>
+                    <option value="Irmão(ã)">Irmão(ã)</option>
+                    <option value="Amigo(a)">Amigo(a)</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+        </div>
+
         {{-- Endereço --}}
         <hr class="my-4">
         <h5>Endereço</h5>
