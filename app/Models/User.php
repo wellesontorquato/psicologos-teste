@@ -44,20 +44,14 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute()
     {
         if ($this->profile_photo_path) {
-            // Se o disco configurado é s3, retorna do S3
-            if (Storage::disk('s3')->exists($this->profile_photo_path)) {
-                return Storage::disk('s3')->url($this->profile_photo_path);
-            }
-
-            // Caso esteja local (fallback)
-            if (Storage::disk('public')->exists($this->profile_photo_path)) {
-                return Storage::disk('public')->url($this->profile_photo_path);
-            }
+            // Só tenta buscar do S3 agora (nada de fallback)
+            return Storage::disk('s3')->url($this->profile_photo_path);
         }
 
-        // Caso não tenha foto, retorna um avatar padrão
+        // Se não houver foto, gera o avatar padrão
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
+
 
     public function isAdmin(): bool
     {
