@@ -113,6 +113,10 @@
                 confirmButtonText: 'Sim, excluir!'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // ✅ Mostra o spinner SÓ após confirmação
+                    if (typeof showSpinner === 'function') {
+                        showSpinner();
+                    }
                     this.submit();
                 }
             });
@@ -120,3 +124,4 @@
     });
 </script>
 @endsection
+
