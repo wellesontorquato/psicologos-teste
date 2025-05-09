@@ -517,7 +517,10 @@
             const isExternal = link.hostname !== window.location.hostname;
 
             if (!isSamePageAnchor && !isNewTab && !isExternal) {
-                showSpinner();
+                // Se for link de download, NÃO mostra o spinner
+                if (!link.classList.contains('no-spinner-on-download')) {
+                    showSpinner();
+                }
             }
         }
     });

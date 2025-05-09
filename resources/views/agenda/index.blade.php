@@ -244,6 +244,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     Swal.fire('Erro', resData.message || 'Erro ao salvar a sessão.', 'error');
                 }
+
+                if (typeof hideSpinner === 'function') hideSpinner();
                 return;
             }
 
@@ -256,12 +258,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!',
                 timer: 1800,
                 showConfirmButton: false
+            }).then(() => {
+                if (typeof hideSpinner === 'function') hideSpinner();
             });
 
         } catch (error) {
-            Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error');
-        }
-    });
+            Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error')
+                .then(() => {
+                    if (typeof hideSpinner === 'function') hideSpinner();
+                });
+
+                    }
+        });
 });
 </script>
 @endsection

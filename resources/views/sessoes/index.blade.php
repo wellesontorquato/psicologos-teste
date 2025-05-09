@@ -57,11 +57,11 @@
     {{-- Botões de Exportação --}}
     <div class="mb-4">
         <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'pdf'])) }}"
-           class="btn btn-danger me-2 shadow-sm">
+           class="btn btn-danger me-2 shadow-sm no-spinner-on-download">
             <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
         </a>
         <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'excel'])) }}"
-           class="btn btn-success shadow-sm">
+           class="btn btn-success shadow-sm no-spinner-on-download">
             <i class="bi bi-file-earmark-excel"></i> Exportar Excel
         </a>
     </div>

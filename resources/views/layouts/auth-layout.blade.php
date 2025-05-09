@@ -23,6 +23,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
+    <!-- (Opcional) Tailwind + Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
     <style>
         body {
             background-color: #f0f4f8;
@@ -51,8 +54,8 @@
 
         .auth-box {
             width: 100%;
-            max-width: 600px; /* ← aqui aumentamos a largura */
-            padding: 40px 50px; /* ← mais espaçamento horizontal */
+            max-width: 600px;
+            padding: 40px 50px;
             background-color: #fff;
             border-radius: 16px;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
@@ -101,6 +104,26 @@
             border-radius: 5px;
             margin-bottom: 1rem;
         }
+
+        /* Spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #global-spinner {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        #global-spinner .spin {
+            animation: spin 1s linear infinite;
+            height: 64px;
+            width: 64px;
+            color: #00aaff;
+        }
     </style>
 </head>
 <body>
@@ -113,6 +136,72 @@
             </div>
         </div>
     </div>
+
+        <!-- Spinner Global -->
+        <div id="global-spinner">
+        <svg class="spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity: 0.25;"></circle>
+            <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" style="opacity: 0.75;"></path>
+        </svg>
+    </div>
+
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #global-spinner {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        #global-spinner .spin {
+            animation: spin 1s linear infinite;
+            height: 64px;
+            width: 64px;
+            color: #00aaff;
+        }
+    </style>
+
+    <script>
+        window.showSpinner = function() {
+            document.getElementById('global-spinner')?.style.setProperty('display', 'flex', 'important');
+        };
+        window.hideSpinner = function() {
+            document.getElementById('global-spinner')?.style.setProperty('display', 'none', 'important');
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            hideSpinner();
+
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function() {
+                    showSpinner();
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (link && link.href && !link.classList.contains('no-spinner')) {
+                    const isSamePageAnchor = link.getAttribute('href')?.startsWith('#');
+                    const isNewTab = link.target === '_blank';
+                    const isExternal = link.hostname !== window.location.hostname;
+
+                    if (!isSamePageAnchor && !isNewTab && !isExternal) {
+                        showSpinner();
+                    }
+                }
+            });
+
+            window.addEventListener('beforeunload', function() {
+                showSpinner();
+            });
+        });
+    </script>
+
     @yield('scripts')
 </body>
 </html>

@@ -26,10 +26,10 @@
     </h2>
 
     <div class="text-end mb-4">
-        <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-danger me-2">
+        <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-danger me-2 no-spinner-on-download">
             <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
         </a>
-        <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-success">
+        <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-success no-spinner-on-download">
             <i class="bi bi-file-earmark-excel"></i> Exportar Excel
         </a>
     </div>
