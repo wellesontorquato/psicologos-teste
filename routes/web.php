@@ -218,7 +218,11 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
 
     Route::resource('pacientes', PacienteController::class);
-    Route::resource('evolucoes', EvolucaoController::class)->except(['show']);
+    
+    Route::resource('evolucoes', EvolucaoController::class)->parameters([
+        'evolucoes' => 'evolucao',
+    ]);
+    
 
 
     Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
