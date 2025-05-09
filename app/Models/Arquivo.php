@@ -24,7 +24,7 @@ class Arquivo extends Model
     {
         $publicPrefix = env('CONTABO_PUBLIC_PREFIX');
 
-        // Monta a URL com o namespace correto do Contabo
+        // URL CONTABO
         return 'https://usc1.contabostorage.com/' . $publicPrefix . '/' . ltrim($this->caminho, '/');
     }
 }
