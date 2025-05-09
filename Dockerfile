@@ -47,8 +47,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Define limites de upload do PHP corretamente (acrescenta em vez de sobrescrever)
-RUN echo "upload_max_filesize=5M" > /usr/local/etc/php/conf.d/uploads.ini && \
-    echo "post_max_size=6M" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "upload_max_filesize=15M" > /usr/local/etc/php/conf.d/uploads.ini && \
+    echo "post_max_size=16M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Expõe porta usada pelo nginx
 EXPOSE 8080
