@@ -38,11 +38,13 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute()
     {
         if ($this->profile_photo_path) {
-            return Storage::disk('s3')->url($this->profile_photo_path);
+            $prefix = rtrim(env('CONTABO_PUBLIC_PREFIX'), '/');
+            return $prefix . '/' . ltrim($this->profile_photo_path, '/');
         }
 
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
+ 
 
     public function isAdmin(): bool
     {
