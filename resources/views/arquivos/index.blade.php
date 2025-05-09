@@ -42,14 +42,14 @@
             @foreach ($paciente->arquivos as $arquivo)
                 <div class="list-group-item d-flex justify-content-between align-items-start flex-wrap">
                     <div class="me-auto">
-                        <a href="{{ asset('storage/' . $arquivo->caminho) }}" target="_blank" class="fw-bold">
+                        <a href="{{ $arquivo->url }}" target="_blank" class="fw-bold">
                             {{ $arquivo->nome }}
                         </a>
                         <div class="text-muted small">Enviado em: {{ $arquivo->created_at->format('d/m/Y H:i') }}</div>
                     </div>
 
                     <div class="d-flex gap-2 align-items-center">
-                        <a href="{{ asset('storage/' . $arquivo->caminho) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ $arquivo->url }}" target="_blank" class="btn btn-outline-primary btn-sm">
                             Visualizar
                         </a>
 

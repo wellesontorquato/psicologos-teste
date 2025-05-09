@@ -129,7 +129,7 @@
                 @foreach($ultimosArquivos as $arquivo)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>{{ $arquivo->nome }}</span>
-                        <a href="{{ asset('storage/' . $arquivo->caminho) }}" target="_blank" class="btn btn-sm btn-outline-primary">Abrir</a>
+                        <a href="{{ $arquivo->url }}" target="_blank" class="btn btn-sm btn-outline-primary">Abrir</a>
                     </li>
                 @endforeach
             </ul>

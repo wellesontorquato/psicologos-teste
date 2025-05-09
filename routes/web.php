@@ -32,43 +32,14 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::get('/force-test-upload', function () {
-    $path = Storage::disk('public')->put('profile-photos/teste-remote.txt', 'Arquivo criado no container remoto 🚀');
+    $path = Storage::disk('s3')->put('profile-photos/teste-remote.txt', 'Arquivo criado no container remoto 🚀');
 
     return response()->json([
         'message' => 'Arquivo criado remotamente!',
         'path' => $path,
-        'full_path' => Storage::disk('public')->path('profile-photos/teste-remote.txt'),
+        'full_path' => Storage::disk('s3')->path('profile-photos/teste-remote.txt'),
     ]);
 });
-
-
-Route::get('/check-data-public', function () {
-    $path = '/data/public';
-    $files = [];
-
-    if (!is_dir($path)) {
-        return response()->json(['message' => '❌ Diretório /data/public não existe ou não está montado.']);
-    }
-
-    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
-
-    foreach ($rii as $file) {
-        if (!$file->isDir()) {
-            $files[] = [
-                'path' => str_replace($path, '', $file->getPathname()),
-                'size' => $file->getSize(),
-                'last_modified' => date('Y-m-d H:i:s', filemtime($file->getPathname()))
-            ];
-        }
-    }
-
-    return response()->json([
-        'message' => '✅ Arquivos encontrados em /data/public:',
-        'total_files' => count($files),
-        'files' => $files,
-    ]);
-});
-
 
 Route::get('/_filesystem', function () {
     $path = base_path();

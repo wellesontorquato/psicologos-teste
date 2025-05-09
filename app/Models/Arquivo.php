@@ -19,4 +19,9 @@ class Arquivo extends Model
     {
         return $this->belongsTo(Paciente::class);
     }
+
+    public function getUrlAttribute()
+    {
+        return Storage::disk('s3')->url($this->caminho);
+    }
 }
