@@ -16,9 +16,6 @@
     <!-- Vite -->
     {{ Vite::useBuildDirectory('build')->withEntryPoints(['resources/css/app.css', 'resources/js/app.js']) }}
 
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -486,6 +483,30 @@
                 });
             });
         });
+</script>
+
+<!-- Spinner Global (Tailwind) -->
+<div id="global-spinner" class="hidden fixed inset-0 bg-white/70 z-[9999] flex items-center justify-center">
+    <svg class="animate-spin h-16 w-16 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+    </svg>
+</div>
+<script>
+// Spinner global (Tailwind-friendly)
+window.showSpinner = function() {
+    document.getElementById('global-spinner')?.classList.remove('hidden');
+};
+window.hideSpinner = function() {
+    document.getElementById('global-spinner')?.classList.add('hidden');
+};
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            showSpinner();
+        });
+    });
+});
 </script>
 </body>
 </html>
