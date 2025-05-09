@@ -26,7 +26,11 @@ class Paciente extends Model
         'uf',
         'exige_nota_fiscal',
         'observacoes',
+        'nome_contato_emergencia',
+        'telefone_contato_emergencia',
+        'parentesco_contato_emergencia',
     ];
+    
 
     public function sessoes()
     {
