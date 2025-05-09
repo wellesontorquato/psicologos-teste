@@ -82,7 +82,7 @@
                         </div>
 
                         <!-- Botão Excluir -->
-                        <form method="POST" action="{{ route('arquivos.destroy', $arquivo) }}" class="d-inline delete-form">
+                        <form method="POST" action="{{ route('arquivos.destroy', $arquivo) }}" class="d-inline delete-form no-spinner">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Excluir</button>

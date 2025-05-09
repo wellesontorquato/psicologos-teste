@@ -492,6 +492,7 @@
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
     </svg>
 </div>
+
 <script>
 // Spinner global (Tailwind-friendly)
 window.showSpinner = function() {
@@ -500,8 +501,10 @@ window.showSpinner = function() {
 window.hideSpinner = function() {
     document.getElementById('global-spinner')?.classList.add('hidden');
 };
+
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('form').forEach(form => {
+    // ✅ SOMENTE forms normais (que NÃO têm .no-spinner) acionam automaticamente o spinner
+    document.querySelectorAll('form:not(.no-spinner)').forEach(form => {
         form.addEventListener('submit', function() {
             showSpinner();
         });

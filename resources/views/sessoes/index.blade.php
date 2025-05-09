@@ -155,7 +155,7 @@
                     </td>
                     <td>
                         <a href="{{ route('sessoes.edit', $sessao) }}" class="btn btn-warning btn-sm">Editar</a>
-                        <form action="{{ route('sessoes.destroy', $sessao) }}" method="POST" class="form-excluir d-inline">
+                        <form action="{{ route('sessoes.destroy', $sessao) }}" method="POST" class="form-excluir d-inline no-spinner">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                         </form>
