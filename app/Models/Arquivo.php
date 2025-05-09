@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
-
 
 class Arquivo extends Model
 {
@@ -24,6 +22,9 @@ class Arquivo extends Model
 
     public function getUrlAttribute()
     {
-        return Storage::disk('s3')->url($this->caminho);
+        $publicPrefix = env('CONTABO_PUBLIC_PREFIX');
+
+        // Monta a URL com o namespace correto do Contabo
+        return 'https://usc1.contabostorage.com/' . $publicPrefix . '/' . ltrim($this->caminho, '/');
     }
 }
