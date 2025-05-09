@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Cashier\Billable;
 use App\Notifications\CustomVerifyEmail;
+
 
 class User extends Authenticatable
 {
@@ -41,9 +43,20 @@ class User extends Authenticatable
 
     public function getProfilePhotoUrlAttribute()
     {
-        return $this->profile_photo_path
-            ? asset('storage/' . $this->profile_photo_path)
-            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+        if ($this->profile_photo_path) {
+            // Se o disco configurado é s3, retorna do S3
+            if (Storage::disk('s3')->exists($this->profile_photo_path)) {
+                return Storage::disk('s3')->url($this->profile_photo_path);
+            }
+
+            // Caso esteja local (fallback)
+            if (Storage::disk('public')->exists($this->profile_photo_path)) {
+                return Storage::disk('public')->url($this->profile_photo_path);
+            }
+        }
+
+        // Caso não tenha foto, retorna um avatar padrão
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
     public function isAdmin(): bool
