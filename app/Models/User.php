@@ -39,7 +39,7 @@ class User extends Authenticatable
     {
         if ($this->profile_photo_path) {
             $prefix = rtrim(env('CONTABO_PUBLIC_PREFIX'), '/');
-            return $prefix . '/' . ltrim($this->profile_photo_path, '/');
+            return 'https://usc1.contabostorage.com/' . $prefix . '/' . ltrim($this->profile_photo_path, '/');
         }
 
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
