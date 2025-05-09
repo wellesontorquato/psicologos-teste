@@ -37,7 +37,7 @@ class User extends Authenticatable
 
     public function getProfilePhotoUrlAttribute()
     {
-        if ($this->profile_photo_path && Storage::disk('s3')->exists($this->profile_photo_path)) {
+        if ($this->profile_photo_path) {
             return Storage::disk('s3')->url($this->profile_photo_path);
         }
 

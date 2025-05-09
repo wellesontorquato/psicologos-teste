@@ -99,11 +99,13 @@
 
         @auth
             <div style="text-align: center; margin-top: 25px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px;">
-                <div style="display: flex; justify-content: center;">
-                    <img src="{{ Auth::user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
-                         alt="Foto de Perfil"
-                         style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 0 8px rgba(0,0,0,0.2);" />
-                </div>
+            <div style="display: flex; justify-content: center;">
+                <img src="{{ Auth::user()->profile_photo_url }}"
+                    alt="Foto de Perfil"
+                    class="sidebar-profile-photo"
+                    style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 0 8px rgba(0,0,0,0.2);" />
+            </div>
+
                 <div style="margin-top: 10px; font-weight: bold; font-size: 1rem; color: #fff;">
                     {{ Auth::user()->name }}
                 </div>

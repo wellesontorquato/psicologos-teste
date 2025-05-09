@@ -133,7 +133,6 @@
             class="profile-photo"
             alt="Foto de Perfil" />
 
-
         <form id="photo-upload-form" method="POST" enctype="multipart/form-data">
             @csrf
             <label for="photo" class="file-input-label">
@@ -172,26 +171,31 @@
 
             const formData = new FormData(form);
             fetch("{{ route('profile.update.photo') }}", {
-            method: "POST",
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json' // 👈 Ajuda Laravel a entender que queremos JSON
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) throw new Error();
-            return response.json();
-        })
-        .then(response => {
-            Swal.fire('Foto atualizada!', 'Sua nova imagem foi salva com sucesso.', 'success');
-            // Força o recarregamento da imagem sem reload da página
-            preview.src = response.url + '?t=' + new Date().getTime();
-        })
-        .catch(() => {
-            Swal.fire('Erro!', 'Não foi possível atualizar a foto.', 'error');
-        });
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) throw new Error();
+                return response.json();
+            })
+            .then(response => {
+                Swal.fire('Foto atualizada!', 'Sua nova imagem foi salva com sucesso.', 'success');
+                // Atualiza o preview na página
+                preview.src = response.url + '?t=' + new Date().getTime();
 
+                // Atualiza a foto do menu lateral também
+                const menuPhoto = document.querySelector('.sidebar-profile-photo');
+                if (menuPhoto) {
+                    menuPhoto.src = response.url + '?t=' + new Date().getTime();
+                }
+            })
+            .catch(() => {
+                Swal.fire('Erro!', 'Não foi possível atualizar a foto.', 'error');
+            });
         }
     }
 
