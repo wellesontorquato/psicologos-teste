@@ -88,7 +88,7 @@ class ProfileController extends Controller
             Storage::disk('public')->delete($user->profile_photo_path);
         }
 
-        $path = $request->file('photo')->store('profile-photos', 'public');
+        $path = $request->file('photo')->store('profile-photos', 's3');
         $user->profile_photo_path = $path;
         $user->save();
         $user->refresh();
@@ -98,7 +98,7 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Foto atualizada com sucesso!',
-            'url' => asset('storage/' . $path)
+            'url' => Storage::disk('s3')->url($path),
         ], 200);
     }
 
