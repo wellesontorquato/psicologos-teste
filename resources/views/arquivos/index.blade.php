@@ -113,15 +113,21 @@
                 confirmButtonText: 'Sim, excluir!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // ✅ Mostra o spinner SÓ após confirmação
-                    if (typeof showSpinner === 'function') {
-                        showSpinner();
-                    }
-                    this.submit();
+                    // ✅ Primeiro fecha o SweetAlert
+                    Swal.close();
+
+                    // ✅ Aguarda fechar suavemente, depois ativa spinner + submit
+                    setTimeout(() => {
+                        if (typeof showSpinner === 'function') {
+                            showSpinner();
+                        }
+                        form.submit();
+                    }, 300); // Delay de ~300ms para a animação fechar antes de iniciar o spinner
                 }
             });
         });
     });
 </script>
 @endsection
+
 

@@ -199,10 +199,20 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    form.submit();
+                    // ✅ Primeiro fecha o modal suavemente
+                    Swal.close();
+
+                    // ✅ Dá um leve delay para garantir que o SweetAlert fechou antes do spinner
+                    setTimeout(() => {
+                        if (typeof showSpinner === 'function') {
+                            showSpinner();
+                        }
+                        form.submit();
+                    }, 300);  // 300ms dá tempo da animação do SweetAlert fechar bonito
                 }
             });
         });
     });
 </script>
 @endsection
+
