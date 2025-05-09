@@ -27,7 +27,7 @@
                     <td>{{ Str::limit($evolucao->texto, 50) }}</td>
                     <td>
                         <a href="{{ route('evolucoes.edit', $evolucao) }}" class="btn btn-warning btn-sm">Editar</a>
-                        <form action="{{ route('evolucoes.destroy', $evolucao) }}" method="POST" class="form-excluir d-inline">
+                        <form action="{{ route('evolucoes.destroy', $evolucao) }}" method="POST" class="form-excluir d-inline no-spinner">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                         </form>
