@@ -16,9 +16,6 @@ use Illuminate\Http\JsonResponse;
 
 class ProfileController extends Controller
 {
-    /**
-     * Exibe o formulário de edição do perfil do usuário.
-     */
     public function edit(Request $request): View
     {
         return view('profile.index', [
@@ -26,9 +23,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Atualiza as informações do perfil do usuário.
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
@@ -61,9 +55,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Atualiza a senha do usuário.
-     */
     public function updatePassword(PasswordUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
@@ -75,19 +66,17 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'password-updated');
     }
 
-    /**
-     * Atualiza a foto de perfil do usuário.
-     */
     public function updatePhoto(Request $request): JsonResponse
     {
         $request->validate(['photo' => 'required|image|max:2048']);
-
         $user = $request->user();
 
+        // 🔥 Exclui a foto antiga do S3 se existir
         if ($user->profile_photo_path) {
-            Storage::disk('public')->delete($user->profile_photo_path);
+            Storage::disk('s3')->delete($user->profile_photo_path);
         }
 
+        // 🚀 Faz upload direto pro S3 (bucket Contabo)
         $path = $request->file('photo')->store('profile-photos', 's3');
         $user->profile_photo_path = $path;
         $user->save();
@@ -102,15 +91,12 @@ class ProfileController extends Controller
         ], 200);
     }
 
-    /**
-     * Remove a foto de perfil do usuário.
-     */
     public function deletePhoto(Request $request): RedirectResponse
     {
         $user = $request->user();
 
-        if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
-            Storage::disk('public')->delete($user->profile_photo_path);
+        if ($user->profile_photo_path && Storage::disk('s3')->exists($user->profile_photo_path)) {
+            Storage::disk('s3')->delete($user->profile_photo_path);
             $user->profile_photo_path = null;
             $user->save();
 
@@ -120,9 +106,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'photo-deleted');
     }
 
-    /**
-     * Exclui a conta do usuário.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -134,7 +117,6 @@ class ProfileController extends Controller
         AuditLogger::log('deleted_account', get_class($user), $user->id, 'Conta excluída');
 
         Auth::logout();
-
         $user->delete();
 
         $request->session()->invalidate();

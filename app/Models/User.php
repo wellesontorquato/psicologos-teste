@@ -5,10 +5,9 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Cashier\Billable;
+use Illuminate\Support\Facades\Storage;
 use App\Notifications\CustomVerifyEmail;
-
 
 class User extends Authenticatable
 {
@@ -36,22 +35,14 @@ class User extends Authenticatable
         'data_nascimento' => 'date',
     ];
 
-    public function pacientes()
-    {
-        return $this->hasMany(Paciente::class);
-    }
-
     public function getProfilePhotoUrlAttribute()
     {
-        if ($this->profile_photo_path) {
-            // Só tenta buscar do S3 agora (nada de fallback)
+        if ($this->profile_photo_path && Storage::disk('s3')->exists($this->profile_photo_path)) {
             return Storage::disk('s3')->url($this->profile_photo_path);
         }
 
-        // Se não houver foto, gera o avatar padrão
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
-
 
     public function isAdmin(): bool
     {
