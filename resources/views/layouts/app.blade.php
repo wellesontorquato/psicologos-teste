@@ -31,24 +31,62 @@
             color: white;
             position: fixed;
             padding: 20px 15px;
+            transition: width 0.3s ease;
+            overflow-y: auto;
+            scrollbar-width: thin;
         }
         .sidebar a {
             color: white;
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             padding: 10px;
             margin-bottom: 10px;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .sidebar a:hover,
         .sidebar .active {
             background-color: rgba(255, 255, 255, 0.2);
         }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
         .main-content {
             margin-left: 260px;
             padding: 30px;
+            transition: margin-left 0.3s ease;
         }
+
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .main-content {
+                margin-left: 90px;
+            }
+
+            .sidebar a span {
+                display: none;
+            }
+
+            .sidebar a i {
+                margin: 0 auto;
+            }
+        }
+
         .topbar {
             background: white;
             padding: 15px 30px;
@@ -138,24 +176,35 @@
 
         <hr>
 
-        <a href="{{ route('dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a>
-        <a href="{{ route('pacientes.index') }}" class="{{ request()->is('pacientes*') ? 'active' : '' }}">Pacientes</a>
-        <a href="{{ route('sessoes.index') }}" class="{{ request()->is('sessoes*') ? 'active' : '' }}">Sessões</a>
-        <a href="{{ route('evolucoes.index') }}" class="{{ request()->is('evolucoes*') ? 'active' : '' }}">Evoluções</a>
-        <a href="{{ route('agenda') }}" class="{{ request()->is('agenda*') ? 'active' : '' }}">Agenda</a>
+        <a href="{{ route('dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">
+            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+        </a>
+        <a href="{{ route('pacientes.index') }}" class="{{ request()->is('pacientes*') ? 'active' : '' }}">
+            <i class="bi bi-people-fill"></i> <span>Pacientes</span>
+        </a>
+        <a href="{{ route('sessoes.index') }}" class="{{ request()->is('sessoes*') ? 'active' : '' }}">
+            <i class="bi bi-calendar-check-fill"></i> <span>Sessões</span>
+        </a>
+        <a href="{{ route('evolucoes.index') }}" class="{{ request()->is('evolucoes*') ? 'active' : '' }}">
+            <i class="bi bi-journal-medical"></i> <span>Evoluções</span>
+        </a>
+        <a href="{{ route('agenda') }}" class="{{ request()->is('agenda*') ? 'active' : '' }}">
+            <i class="bi bi-calendar4-week"></i> <span>Agenda</span>
+        </a>
         <a href="{{ route('assinaturas.index') }}" class="{{ request()->is('assinaturas') ? 'active' : '' }}">
-            <i class="bi bi-credit-card-fill"></i> Assinatura 
+            <i class="bi bi-credit-card-fill"></i> <span>Assinatura</span>
             <span class="badge bg-light text-primary ms-2">Novo</span>
         </a>
+
         
         @auth
             @if (Auth::user()->is_admin)
-                <a href="{{ route('auditoria.index') }}" class="{{ request()->is('auditoria*') ? 'active' : '' }}">
-                    <i class="bi bi-shield-lock"></i> Auditoria
-                </a>
-                <a href="{{ route('usuarios.index') }}" class="{{ request()->is('usuarios*') ? 'active' : '' }}">
-                    <i class="bi bi-people-fill"></i> Usuários
-                </a>
+            <a href="{{ route('auditoria.index') }}" class="{{ request()->is('auditoria*') ? 'active' : '' }}">
+                <i class="bi bi-shield-lock"></i> <span>Auditoria</span>
+            </a>
+            <a href="{{ route('usuarios.index') }}" class="{{ request()->is('usuarios*') ? 'active' : '' }}">
+                <i class="bi bi-people-fill"></i> <span>Usuários</span>
+            </a>
             @endif
         @endauth
 
