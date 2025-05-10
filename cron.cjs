@@ -50,3 +50,11 @@ cron.schedule('30 7 * * *', () => {
 cron.schedule('0 7 * * *', () => {
     runWithLock('checar-aniversariantes', 'checar:aniversariantes');
 });
+
+cron.schedule('10 4 * * *', () => {
+    runWithLock('limpar-auditoria-antiga', 'auditoria:limpar-antigos');
+});
+
+cron.schedule('0 3 * * *', () => {
+    runWithLock('backup-mysql-diario', 'backup:mysql');
+});
