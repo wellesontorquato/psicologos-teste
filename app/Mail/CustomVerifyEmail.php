@@ -20,6 +20,8 @@ class CustomVerifyEmail extends Mailable
     public function build()
     {
         return $this->subject('Confirme seu e-mail')
-                    ->markdown('emails.verify');
+                    ->markdown('emails.verify-email', [
+                        'verificationUrl' => $this->verificationUrl,
+                    ]);
     }
 }

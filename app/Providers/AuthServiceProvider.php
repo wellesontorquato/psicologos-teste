@@ -9,6 +9,8 @@ use App\Models\Paciente;
 use App\Models\Arquivo;
 use App\Policies\PacientePolicy;
 use App\Policies\ArquivoPolicy;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Mail\CustomVerifyEmail;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -29,10 +31,11 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        /**
-         * Permissão para visualizar auditoria/admin
-         * Só permite acesso se o usuário estiver autenticado e for admin
-         */
+        // Substitui o e-mail padrão de verificação por um customizado
+        \Illuminate\Auth\Notifications\VerifyEmail::toMailUsing(function ($notifiable, $url) {
+            return new \App\Mail\CustomVerifyEmail($url);
+        });
+
         Gate::define('view-auditoria', function ($user) {
             $isAdmin = (int) ($user->is_admin ?? 0) === 1;
 
