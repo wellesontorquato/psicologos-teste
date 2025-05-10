@@ -65,14 +65,17 @@
 
             {{-- Assunto --}}
             <div class="form-group">
-                <select name="assunto" required class="input-field">
-                    <option value="">Selecione um assunto *</option>
-                    <option value="Demonstracao">Gostaria de agendar uma demonstração do sistema</option>
-                    <option value="Suporte">Preciso de suporte técnico</option>
-                    <option value="Duvida">Tenho uma dúvida</option>
-                    <option value="Sugestao">Gostaria de enviar uma sugestão</option>
-                    <option value="Outro">Outro assunto</option>
-                </select>
+            <select name="assunto" required class="input-field">
+                <option value="">Selecione um assunto *</option>
+                <option value="Agendar demonstração">Gostaria de agendar uma demonstração do sistema</option>
+                <option value="Suporte técnico">Preciso de suporte técnico</option>
+                <option value="Dúvida geral">Tenho uma dúvida</option>
+                <option value="Sugestão de melhoria">Gostaria de enviar uma sugestão</option>
+                <option value="Problemas com pagamento">Estou com problemas no pagamento</option>
+                <option value="Ajuda com cadastro">Preciso de ajuda para me cadastrar</option>
+                <option value="Interesse em parceria">Tenho interesse em parcerias</option>
+                <option value="Outro assunto">Outro assunto</option>
+            </select>
             </div>
 
             {{-- Mensagem --}}
