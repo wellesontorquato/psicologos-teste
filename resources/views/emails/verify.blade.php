@@ -7,7 +7,7 @@ Olá! Obrigado por se cadastrar em nossa plataforma.
 Por favor, clique no botão abaixo para verificar seu endereço de e-mail e ativar sua conta:
 
 <p style="text-align: center; margin: 20px 0;">
-    <a href="{{ $verificationUrl }}"
+    <a href="{{ $url }}"
        style="background-color: #00aaff; color: #ffffff; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
         Verificar E-mail
     </a>
