@@ -39,7 +39,7 @@
 <body>
 
     <div class="header">
-        <img src="{{ asset('images/logo-psigestor.png') }}" alt="PsiGestor Logo" class="logo">
+        <img src="{{ asset('images/logo-psigestor-branca.png') }}" alt="PsiGestor Logo" class="logo">
         <h2>Novo contato via PsiGestor</h2>
     </div>
 
