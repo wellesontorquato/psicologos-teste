@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\ContatoMail;
 use Illuminate\Support\Facades\Http;
+
 
 class ContatoController extends Controller
 {
