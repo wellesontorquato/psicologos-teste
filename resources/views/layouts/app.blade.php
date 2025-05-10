@@ -171,17 +171,19 @@
                     @if ($registro && $tipo)
                         @php $tipoLower = \Illuminate\Support\Str::lower($tipo); @endphp
 
-                        @if (\Illuminate\Support\Str::contains($tipoLower, 'psiquiatra'))
+                        @if ($tipoLower === 'psiquiatra')
                             <small class="d-block text-white-50">
                                 CRM {{ preg_replace('/\D/', '', $registro) }}
                             </small>
-                        @elseif (\Illuminate\Support\Str::contains($tipoLower, 'psicologo') || \Illuminate\Support\Str::contains($tipoLower, 'psicologa'))
+                        @elseif ($tipoLower === 'psicologo')
                             <small class="d-block text-white-50">
                                 CRP {{ preg_replace('/(\d{2})(\d{5})/', '$1/$2', preg_replace('/\D/', '', $registro)) }}
                             </small>
                         @endif
+                        {{-- Psicanalista não exibe nada --}}
                     @endif
                 </div>
+
 
                 <div style="margin-top: 10px; text-align: center;">
                     <a href="{{ route('profile.edit') }}" style="color: #ffffff; font-size: 0.85rem; text-decoration: underline; display: inline-block;">
