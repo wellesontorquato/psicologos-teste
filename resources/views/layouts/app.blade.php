@@ -128,10 +128,10 @@
 </head>
 <body class="font-sans antialiased">
     <div class="sidebar">
-        <div style="text-align: center;">
+        <div style="display: flex; justify-content: center; align-items: center; height: 80px;">
             <img src="/images/logo-psigestor-branca.png" alt="PsiGestor Logo" style="max-height: 50px;">
         </div>
-
+        
         @auth
             <div style="text-align: center; margin-top: 25px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px;">
                 <div style="display: flex; justify-content: center;">
@@ -347,7 +347,9 @@
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                     <strong>Atenção:</strong> Seu e-mail ainda não foi verificado.
                 </div>
-                <button id="btn-reenviar-email" class="btn btn-sm btn-outline-warning">Reenviar verificação</button>
+                <button id="btn-reenviar-email" class="btn btn-sm btn-warning text-white fw-bold">
+                    Reenviar verificação
+                </button>
             </div>
 
             <script>
