@@ -131,9 +131,9 @@ use Illuminate\Support\Facades\Storage;
 //     return Response::make('Migração executada com sucesso!', 200);
 // });
 
-// Route::get('/health', function () {
-//     return response()->json(['status' => 'ok']);
-// });
+Route::get('/health', function () {
+     return response()->json(['status' => 'ok']);
+ });
 
 // Route::get('/logs-debug/{file}', function ($file) {
 //     if (!auth()->check() || !auth()->user()->isAdmin()) {
