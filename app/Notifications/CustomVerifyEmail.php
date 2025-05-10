@@ -28,7 +28,7 @@ class CustomVerifyEmail extends BaseVerifyEmail
 
         return (new MailMessage)
             ->subject('Confirme seu e-mail para ativar sua conta no PsiGestor')
-            ->markdown('emails.verify', [
+            ->markdown('emails.verify-email', [
                 'verificationUrl' => $verificationUrl,
                 'user' => $notifiable,
             ]);
