@@ -37,8 +37,20 @@
 
             <div class="col-md-6">
                 <div class="form-floating">
-                    <input type="text" name="crp" id="crp" class="form-control rounded-xl" placeholder="CRP" value="{{ old('crp') }}" required>
-                    <label for="crp">CRP</label>
+                    <select name="tipo_profissional" id="tipo_profissional" class="form-select rounded-xl" required>
+                        <option value="" disabled {{ old('tipo_profissional') == '' ? 'selected' : '' }}>Selecione</option>
+                        <option value="psicologo" {{ old('tipo_profissional') == 'psicologo' ? 'selected' : '' }}>Psicólogo(a)</option>
+                        <option value="psiquiatra" {{ old('tipo_profissional') == 'psiquiatra' ? 'selected' : '' }}>Psiquiatra</option>
+                        <option value="psicanalista" {{ old('tipo_profissional') == 'psicanalista' ? 'selected' : '' }}>Psicanalista</option>
+                    </select>
+                    <label for="tipo_profissional">Tipo de Profissional</label>
+                </div>
+            </div>
+            
+            <div class="col-md-12" id="registro_profissional_container" style="display: none;">
+                <div class="form-floating">
+                    <input type="text" name="registro_profissional" id="registro_profissional" class="form-control rounded-xl" placeholder="Registro Profissional" value="{{ old('registro_profissional') }}">
+                    <label for="registro_profissional">Registro Profissional</label>
                 </div>
             </div>
 
@@ -99,6 +111,28 @@
         value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
         e.target.value = value;
     });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const tipoProfissional = document.getElementById('tipo_profissional');
+    const registroContainer = document.getElementById('registro_profissional_container');
+    const registroInput = document.getElementById('registro_profissional');
+
+    function toggleRegistroField() {
+        const selected = tipoProfissional.value;
+        if (selected === 'psicologo' || selected === 'psiquiatra') {
+            registroContainer.style.display = 'block';
+            registroInput.required = true;
+        } else {
+            registroContainer.style.display = 'none';
+            registroInput.required = false;
+            registroInput.value = '';
+        }
+    }
+
+    tipoProfissional.addEventListener('change', toggleRegistroField);
+    toggleRegistroField(); // para caso o form volte com old()
+});
 </script>
 <script>
     function togglePassword(inputId, iconId) {

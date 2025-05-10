@@ -251,11 +251,16 @@ document.getElementById('form-paciente').addEventListener('submit', async functi
 
     } catch (error) {
         console.error(error);
+        hideSpinner();
         Swal.fire({
             icon: 'error',
             title: 'Erro inesperado',
             text: 'Tente novamente mais tarde.'
         });
+    } 
+    
+    finally {
+        hideSpinner(); // <-- Garante que o spinner é desligado SEMPRE no final
     }
 });
 

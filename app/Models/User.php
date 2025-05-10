@@ -22,9 +22,11 @@ class User extends Authenticatable
         'trial_ends_at',
         'genero',
         'cpf',
-        'crp',
         'data_nascimento',
+        'tipo_profissional',
+        'registro_profissional',
     ];
+    
 
     protected $appends = ['profile_photo_url'];
 

@@ -53,7 +53,7 @@
                     </a>
 
                     <form action="{{ route('pacientes.destroy', $paciente->id) }}" method="POST"
-                          class="d-inline delete-form">
+                          class="d-inline delete-form no-spinner">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
@@ -87,6 +87,7 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    showSpinner();
                     this.submit();
                 }
             });

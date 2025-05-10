@@ -267,6 +267,10 @@ document.getElementById('form-paciente').addEventListener('submit', async functi
             text: 'Tente novamente mais tarde.'
         });
     }
+
+    finally {
+        hideSpinner(); // <-- Garante que o spinner é desligado SEMPRE no final
+    }
 });
 
 // Ativar tooltips do Bootstrap

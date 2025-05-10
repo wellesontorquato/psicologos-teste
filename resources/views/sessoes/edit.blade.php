@@ -5,6 +5,9 @@
 @section('content')
 <div class="container">
     <h2 class="mb-4">Editar Sessão</h2>
+    <a href="{{ route('sessoes.index') }}" class="btn btn-outline-secondary mb-3">
+        <i class="bi bi-arrow-left"></i> Voltar para lista de sessões
+    </a>
 
     <form method="POST" action="{{ route('sessoes.update', $sessao->id) }}">
         @csrf

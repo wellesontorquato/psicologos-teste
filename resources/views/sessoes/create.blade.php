@@ -5,9 +5,8 @@
 @section('content')
 <div class="container">
     <h2 class="mb-3">Nova Sessão</h2>
-
-    <a href="{{ route('agenda') }}" class="btn btn-outline-secondary mb-4">
-        ← Voltar para Agenda
+    <a href="{{ route('sessoes.index') }}" class="btn btn-outline-secondary mb-3">
+        <i class="bi bi-arrow-left"></i> Voltar para lista de sessões
     </a>
 
     @if(session('error'))
