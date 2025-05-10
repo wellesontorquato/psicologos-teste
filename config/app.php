@@ -8,7 +8,7 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
-    'url' => env('APP_URL', 'https://psicologos-teste-production.up.railway.app'),
+    'url' => env('APP_URL', 'https://www.psigestor.com'),
 
     'timezone' => env('APP_TIMEZONE', 'UTC'),
 
@@ -22,7 +22,7 @@ return [
 
     'key' => env('APP_KEY'),
 
-    'url_verification' => env('APP_URL_VERIFICATION', 'http://psicologos-teste-production.up.railway.app'),
+    'url_verification' => env('APP_URL_VERIFICATION', 'https://www.psigestor.com'),
 
     'previous_keys' => [
         ...array_filter(
