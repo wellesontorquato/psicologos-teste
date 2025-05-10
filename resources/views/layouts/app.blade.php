@@ -133,63 +133,70 @@
         </div>
 
         @auth
-    <div style="text-align: center; margin-top: 25px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px;">
-        <div style="display: flex; justify-content: center;">
-            <img src="{{ Auth::user()->profile_photo_url }}"
-                alt="Foto de Perfil"
-                class="sidebar-profile-photo"
-                style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 0 8px rgba(0,0,0,0.2);" />
-        </div>
+            <div style="text-align: center; margin-top: 25px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px;">
+                <div style="display: flex; justify-content: center;">
+                    <img src="{{ Auth::user()->profile_photo_url }}"
+                        alt="Foto de Perfil"
+                        class="sidebar-profile-photo"
+                        style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 0 8px rgba(0,0,0,0.2);" />
+                </div>
 
-        <div style="margin-top: 10px; font-weight: bold; font-size: 1rem; color: #fff;">
-            {{ Auth::user()->name }}
-        </div>
+                <div style="margin-top: 10px; font-weight: bold; font-size: 1rem; color: #fff;">
+                    {{ Auth::user()->name }}
+                </div>
 
-        <div style="font-size: 0.9rem; color: #e6faff;">
-            @if (Auth::user()->is_admin)
-                <i class="bi bi-shield-lock-fill" style="color: #ffc107;"></i> Administrador
-            @else
-                <i class="bi bi-person-circle" style="color: #ffffff;"></i>
-                @switch(Auth::user()->genero)
-                    @case('feminino')
-                        Psicóloga
-                        @break
-                    @case('masculino')
-                        Psicólogo
-                        @break
-                    @default
-                        Psicólogo(a)
-                @endswitch
-            @endif
+                <div style="font-size: 0.9rem; color: #e6faff; margin-top: 4px;">
+                    @if (Auth::user()->is_admin)
+                        <i class="bi bi-shield-lock-fill" style="color: #ffc107;"></i> Administrador
+                    @else
+                        <i class="bi bi-person-circle" style="color: #ffffff;"></i>
+                        @switch(Auth::user()->genero)
+                            @case('feminino')
+                                Psicóloga
+                                @break
+                            @case('masculino')
+                                Psicólogo
+                                @break
+                            @default
+                                Psicólogo(a)
+                        @endswitch
+                    @endif
 
-            {{-- Registro Profissional --}}
-            @php
-                $tipo = Auth::user()->tipo_profissional;
-                $registro = Auth::user()->registro_profissional;
-            @endphp
+                    {{-- Registro Profissional --}}
+                    @php
+                        use Illuminate\Support\Str;
 
-            @if ($registro && $tipo)
-                @if (strtolower($tipo) === 'psiquiatra')
-                    <small class="d-block text-white-50">
-                        CRM {{ preg_replace('/\D/', '', $registro) }}
-                    </small>
-                @elseif (strtolower($tipo) === 'psicólogo' || strtolower($tipo) === 'psicologa' || strtolower($tipo) === 'psicólogo(a)')
-                    <small class="d-block text-white-50">
-                        CRP {{ preg_replace('/(\d{2})(\d{5})/', '$1/$2', preg_replace('/\D/', '', $registro)) }}
-                    </small>
-                @endif
-                {{-- Se for psicanalista, não exibe nada --}}
-            @endif
-        </div>
+                        $tipo = Auth::user()->tipo_profissional;
+                        $registro = Auth::user()->registro_profissional;
+                    @endphp
 
-        <div style="margin-top: 6px;">
-            <a href="{{ route('profile.edit') }}" style="color: #ffffff; font-size: 0.85rem; text-decoration: underline;">
-                Meu perfil
-            </a>
-        </div>
-    </div>
-@endauth
+                    @if ($registro && $tipo)
+                        @php $tipoLower = Str::lower($tipo); @endphp
 
+                        @if (Str::contains($tipoLower, 'psiquiatra'))
+                            <div style="margin-top: 3px;">
+                                <small class="d-block text-white-50">
+                                    CRM {{ preg_replace('/\D/', '', $registro) }}
+                                </small>
+                            </div>
+                        @elseif (Str::contains($tipoLower, 'psicolog'))
+                            <div style="margin-top: 3px;">
+                                <small class="d-block text-white-50">
+                                    CRP {{ preg_replace('/(\d{2})(\d{5})/', '$1/$2', preg_replace('/\D/', '', $registro)) }}
+                                </small>
+                            </div>
+                        @endif
+                        {{-- Se for psicanalista ou outro, não exibe --}}
+                    @endif
+                </div>
+
+                <div style="margin-top: 10px; text-align: center;">
+                    <a href="{{ route('profile.edit') }}" style="color: #ffffff; font-size: 0.85rem; text-decoration: underline; display: inline-block;">
+                        Meu perfil
+                    </a>
+                </div>
+            </div>
+        @endauth
         <hr>
 
         <a href="{{ route('dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">
