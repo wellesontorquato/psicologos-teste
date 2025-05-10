@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Sessao;
 use App\Models\Arquivo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\DashboardExport;
@@ -31,8 +30,17 @@ class DashboardController extends Controller
 
     public function exportarExcel(Request $request)
     {
+        $dados = $this->obterDadosDashboard($request);
+
         AuditHelper::log('export_dashboard_excel', 'Exportou relatório do dashboard em Excel');
-        return Excel::download(new DashboardExport($request), 'relatorio-dashboard.xlsx');
+
+        return Excel::download(
+            new DashboardExport($dados),
+            'relatorio-dashboard.xlsx',
+            \Maatwebsite\Excel\Excel::XLSX,
+            ['with_chart']
+        );
+        
     }
 
     public function obterDadosDashboard(Request $request)
@@ -40,13 +48,13 @@ class DashboardController extends Controller
         $userId = auth()->id();
         $hoje = Carbon::today();
 
-        // Filtro de período
+        // 🔎 Filtro de período
         $periodo = $request->get('periodo');
         $dataInicial = $request->get('de') ? Carbon::parse($request->get('de')) : null;
         $dataFinal = $request->get('ate') ? Carbon::parse($request->get('ate'))->endOfDay() : null;
 
         if ($dataInicial && $dataFinal) {
-            // datas manuais
+            // datas manuais aplicadas
         } elseif ($periodo) {
             $dataInicial = $hoje->copy()->subDays($periodo);
             $dataFinal = $hoje->copy()->endOfDay();
@@ -55,7 +63,7 @@ class DashboardController extends Controller
             $dataFinal = $hoje->copy()->endOfDay();
         }
 
-        // Totais
+        // 📊 Totais
         $totais = [
             'sessoes' => Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
                 ->whereBetween('data_hora', [$dataInicial, $dataFinal])
@@ -69,7 +77,7 @@ class DashboardController extends Controller
                 ->sum('valor'),
         ];
 
-        // Sessões por mês
+        // 📅 Sessões por mês
         $sessaoPorMes = Sessao::selectRaw("DATE_FORMAT(data_hora, '%Y-%m') as mes, count(*) as total")
             ->whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
@@ -77,7 +85,7 @@ class DashboardController extends Controller
             ->orderBy('mes')
             ->get();
 
-        // Valor por mês
+        // 💰 Valor recebido por mês
         $valorPorMes = Sessao::selectRaw("DATE_FORMAT(data_hora, '%Y-%m') as mes, sum(valor) as total")
             ->whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
@@ -86,7 +94,7 @@ class DashboardController extends Controller
             ->orderBy('mes')
             ->get();
 
-        // Valor por dia
+        // 📈 Valor por dia
         $valoresPorDia = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
             ->where('foi_pago', true)
@@ -94,46 +102,46 @@ class DashboardController extends Controller
             ->groupBy(fn ($s) => Carbon::parse($s->data_hora)->format('Y-m-d'))
             ->map(fn ($group) => $group->sum('valor'));
 
-        // Sessões de hoje
+        // 🗓️ Sessões de hoje
         $sessoesHoje = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereDate('data_hora', $hoje)
             ->count();
 
-        // Pendências
+        // ⚠️ Pendências (não pagas)
         $pendencias = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->where('foi_pago', false)
             ->count();
 
-        // Total no mês atual
+        // 💸 Total no mês atual
         $totalMesAtual = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$hoje->copy()->startOfMonth(), $hoje->copy()->endOfMonth()])
             ->where('foi_pago', true)
             ->sum('valor');
 
-        // Últimos arquivos
+        // 📂 Últimos arquivos enviados
         $ultimosArquivos = Arquivo::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->latest()->take(5)->get();
 
-        // Próximas sessões
+        // 📅 Próximas sessões (7 dias à frente)
         $proximasSessoes = Sessao::with('paciente')
             ->whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$hoje, $hoje->copy()->addDays(7)->endOfDay()])
             ->orderBy('data_hora')
             ->get();
 
-        return compact(
-            'totais',
-            'valores',
-            'sessaoPorMes',
-            'valorPorMes',
-            'valoresPorDia',
-            'dataInicial',
-            'dataFinal',
-            'sessoesHoje',
-            'pendencias',
-            'totalMesAtual',
-            'ultimosArquivos',
-            'proximasSessoes'
-        );
+        return [
+            'totais' => $totais,
+            'valores' => $valores,
+            'sessaoPorMes' => $sessaoPorMes,
+            'valorPorMes' => $valorPorMes,
+            'valoresPorDia' => $valoresPorDia,
+            'dataInicial' => $dataInicial,
+            'dataFinal' => $dataFinal,
+            'sessoesHoje' => $sessoesHoje,
+            'pendencias' => $pendencias,
+            'totalMesAtual' => $totalMesAtual,
+            'ultimosArquivos' => $ultimosArquivos,
+            'proximasSessoes' => $proximasSessoes,
+        ];
     }
 }

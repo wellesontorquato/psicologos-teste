@@ -128,10 +128,10 @@
         <a href="{{ route('auditoria.index') }}" class="btn btn-secondary">Limpar</a>
     </form>
         <div class="flex flex-wrap gap-2 mb-4">
-        <a href="{{ route('auditoria.exportar.pdf', request()->query()) }}" class="btn btn-sm btn-danger">
+        <a href="{{ route('auditoria.exportar.pdf', request()->query()) }}" class="btn btn-sm btn-danger no-spinner">
             📄 Exportar PDF
         </a>
-        <a href="{{ route('auditoria.exportar.excel', request()->query()) }}" class="btn btn-sm btn-success">
+        <a href="{{ route('auditoria.exportar.excel', request()->query()) }}" class="btn btn-sm btn-success no-spinner">
             📊 Exportar Excel
         </a>
     </div>
