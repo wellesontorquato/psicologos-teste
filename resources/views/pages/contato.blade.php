@@ -21,22 +21,26 @@
         {{-- Mensagens de sucesso/erro --}}
         @if (session('success'))
             <script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Mensagem enviada!',
-                    text: '{{ session('success') }}',
-                    confirmButtonColor: '#00aaff'
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Mensagem enviada!',
+                        text: @json(session('success')),
+                        confirmButtonColor: '#00aaff'
+                    });
                 });
             </script>
         @endif
 
         @if (session('error'))
             <script>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Ops...',
-                    text: '{{ session('error') }}',
-                    confirmButtonColor: '#00aaff'
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ops...',
+                        text: @json(session('error')),
+                        confirmButtonColor: '#00aaff'
+                    });
                 });
             </script>
         @endif
@@ -169,4 +173,5 @@
 
 @push('scripts')
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endpush
