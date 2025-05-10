@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Response;
+use App\Http\Middleware\CheckSubscription;
+use App\Http\Middleware\EnsureUserIsAdmin;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\{
     ProfileController,
     SessaoController,
@@ -20,10 +24,6 @@ use App\Http\Controllers\{
     NotificacaoController,
     AssinaturaController
 };
-use App\Http\Middleware\CheckSubscription;
-use App\Http\Middleware\EnsureUserIsAdmin;
-use Illuminate\Support\Facades\Storage;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -190,6 +190,14 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/assinatura/cancelado', 'assinatura.cancelado')->name('assinaturas.cancelado');
 });
 
+Route::post('/email/verification-notification', function () {
+    if (Auth::user() && !Auth::user()->hasVerifiedEmail()) {
+        Auth::user()->sendEmailVerificationNotification();
+    }
+    
+    return response()->json(['message' => 'E-mail de verificação reenviado com sucesso.']);
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
 /*
 |--------------------------------------------------------------------------
 | Perfil (usuário autenticado, verificado)
@@ -225,8 +233,6 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
         'evolucoes' => 'evolucao',
     ]);
     
-
-
     Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
     Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
     Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');

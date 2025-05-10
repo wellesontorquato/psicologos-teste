@@ -341,6 +341,45 @@
                 </div>
             </div>
         </div>
+        @if (Auth::check() && !Auth::user()->hasVerifiedEmail())
+            <div id="alert-verificacao-email" class="alert alert-warning d-flex justify-content-between align-items-center shadow-sm" role="alert" style="border-left: 5px solid #ffc107; padding: 10px 20px; margin-bottom: 20px;">
+                <div>
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Atenção:</strong> Seu e-mail ainda não foi verificado.
+                </div>
+                <button id="btn-reenviar-email" class="btn btn-sm btn-outline-warning">Reenviar verificação</button>
+            </div>
+
+            <script>
+                document.getElementById('btn-reenviar-email').addEventListener('click', async () => {
+                    try {
+                        const resposta = await fetch('{{ route('verification.send') }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        const data = await resposta.json();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Verificação enviada!',
+                            text: data.message || 'Um novo link de verificação foi enviado para seu e-mail.',
+                            confirmButtonColor: '#00aaff'
+                        });
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro ao reenviar verificação',
+                            text: 'Tente novamente mais tarde.',
+                            confirmButtonColor: '#00aaff'
+                        });
+                    }
+                });
+            </script>
+        @endif
 
         <main>
             @yield('content')
@@ -510,6 +549,7 @@
                             const modalEl = document.getElementById('modalSessaoConfirmada');
                             const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
                             instance.show();
+                            hideSpinner();
                         }
 
                         // ❌ Modal de Sessão Cancelada
@@ -524,6 +564,7 @@
                             const modalEl = document.getElementById('modalSessaoCancelada');
                             const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
                             instance.show();
+                            hideSpinner();
                         }
 
                         // 🔄 Modal de Sessão Remarcada
@@ -540,6 +581,7 @@
                             const modalEl = document.getElementById('modalSessaoReagendada');
                             const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
                             instance.show();
+                            hideSpinner();
                         }
 
                         // ⚠️ Modal de Sessão Não Paga
@@ -553,11 +595,13 @@
                             const modalEl = document.getElementById('modalSessaoNaoPaga');
                             const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
                             instance.show();
+                            hideSpinner();
                         }
 
 
                     } catch (error) {
                         console.error(error);
+                        hideSpinner();
                         Swal.fire({
                             icon: 'error',
                             title: 'Erro ao abrir notificação.',
