@@ -164,29 +164,22 @@
 
                     {{-- Registro Profissional --}}
                     @php
-                        use Illuminate\Support\Str;
-
                         $tipo = Auth::user()->tipo_profissional;
                         $registro = Auth::user()->registro_profissional;
                     @endphp
 
                     @if ($registro && $tipo)
-                        @php $tipoLower = Str::lower($tipo); @endphp
+                        @php $tipoLower = \Illuminate\Support\Str::lower($tipo); @endphp
 
-                        @if (Str::contains($tipoLower, 'psiquiatra'))
-                            <div style="margin-top: 3px;">
-                                <small class="d-block text-white-50">
-                                    CRM {{ preg_replace('/\D/', '', $registro) }}
-                                </small>
-                            </div>
-                        @elseif (Str::contains($tipoLower, 'psicolog'))
-                            <div style="margin-top: 3px;">
-                                <small class="d-block text-white-50">
-                                    CRP {{ preg_replace('/(\d{2})(\d{5})/', '$1/$2', preg_replace('/\D/', '', $registro)) }}
-                                </small>
-                            </div>
+                        @if (\Illuminate\Support\Str::contains($tipoLower, 'psiquiatra'))
+                            <small class="d-block text-white-50">
+                                CRM {{ preg_replace('/\D/', '', $registro) }}
+                            </small>
+                        @elseif (\Illuminate\Support\Str::contains($tipoLower, 'psicólogo') || \Illuminate\Support\Str::contains($tipoLower, 'psicologa'))
+                            <small class="d-block text-white-50">
+                                CRP {{ preg_replace('/(\d{2})(\d{5})/', '$1/$2', preg_replace('/\D/', '', $registro)) }}
+                            </small>
                         @endif
-                        {{-- Se for psicanalista ou outro, não exibe --}}
                     @endif
                 </div>
 
