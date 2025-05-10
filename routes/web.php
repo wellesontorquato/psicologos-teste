@@ -174,6 +174,8 @@ Route::view('/funcionalidades', 'pages.funcionalidades')->name('funcionalidades'
 Route::view('/planos', 'pages.planos')->name('planos');
 Route::view('/quem-somos', 'pages.quem-somos')->name('quem-somos');
 Route::view('/contato', 'pages.contato')->name('contato');
+Route::post('/contato/enviar', [App\Http\Controllers\ContatoController::class, 'enviar'])->name('contato.enviar');
+
 
 /*
 |--------------------------------------------------------------------------

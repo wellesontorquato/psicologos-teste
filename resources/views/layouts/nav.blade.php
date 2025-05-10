@@ -1,5 +1,4 @@
-<header class="top-nav">
-    <style>
+<style>
         .top-nav {
             background-color: #ffffff;
             display: flex;
@@ -7,31 +6,41 @@
             justify-content: space-between;
             padding: 15px 40px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            position: sticky;
+            position: fixed;
+            width: 100%;
             top: 0;
             z-index: 999;
+            box-sizing: border-box;
         }
+
 
         .top-nav img {
             max-height: 55px;
+            height: 55px; /* 👈 força altura visível */
+            width: auto;
         }
 
         .top-nav nav {
             display: flex;
             align-items: center;
-            transition: max-height 0.3s ease-out;
+            justify-content: flex-end;
         }
 
         .top-nav nav a {
-            margin-left: 25px;
-            text-decoration: none;
+            background: white;
             color: #333;
-            font-weight: 500;
-            transition: color 0.3s;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-decoration: none;
+            border: none;
+            transition: 0.3s;
+            cursor: pointer;
         }
 
         .top-nav nav a:hover {
             color: #00aaff;
+            background: #f0f8ff;
         }
 
         .top-nav .btn-cta {
@@ -64,9 +73,18 @@
             transition: 0.3s;
         }
 
+        .nav-container {
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
         @media (max-width: 768px) {
             .top-nav {
                 flex-wrap: wrap;
+                max-width: 100%;
                 padding: 15px 20px;
             }
 
@@ -87,28 +105,34 @@
             }
 
             .top-nav nav a {
-                margin: 10px 0;
-                width: 100%;
+                text-decoration: none;
+                color: #333;
+                font-weight: 500;
+                transition: color 0.3s;
             }
         }
-    </style>
+</style>
+<header class="top-nav">
+    <div class="nav-container">
+        <img src="/images/logo-psigestor.png" alt="PsiGestor Logo">
 
-    <img src="/images/logo-psigestor.png" alt="PsiGestor Logo">
+        <div class="menu-toggle" id="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
 
-    <div class="menu-toggle" id="menu-toggle">
-        <span></span>
-        <span></span>
-        <span></span>
+        <nav id="nav-menu">
+            <a href="{{ route('home') }}">Início</a>
+            <a href="{{ route('funcionalidades') }}">Funcionalidades</a>
+            <a href="{{ route('planos') }}">Nossos Planos</a>
+            <a href="{{ route('quem-somos') }}">Quem somos</a>
+            <a href="{{ route('contato') }}">Contato</a>
+            <a href="{{ route('login') }}" class="btn-cta">Login</a>
+        </nav>
     </div>
+</header>
 
-    <nav id="nav-menu">
-        <a href="{{ route('home') }}">Início</a>
-        <a href="{{ route('funcionalidades') }}">Funcionalidades</a>
-        <a href="{{ route('planos') }}">Nossos Planos</a>
-        <a href="{{ route('quem-somos') }}">Quem somos</a>
-        <a href="{{ route('contato') }}">Contato</a>
-        <a href="{{ route('login') }}" class="btn-cta">Login</a>
-    </nav>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -120,4 +144,3 @@
             });
         });
     </script>
-</header>

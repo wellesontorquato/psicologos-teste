@@ -12,7 +12,7 @@
     
     {{-- Estilos personalizados da landing --}}
     <style>
-        html, body {
+         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
@@ -24,6 +24,7 @@
 
         body > main {
             flex: 1;
+            padding-top: 85px;
         }
 
         .btn-cta {

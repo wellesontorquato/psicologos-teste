@@ -4,43 +4,93 @@
 
 @section('content')
 
-{{-- Título com fundo gradiente --}}
-<section style="background: linear-gradient(to right, #00aaff, #00c4ff); padding: 60px 20px;">
-    <h1 style="text-align: center; color: white; font-size: 2rem; margin: 0;">
+{{-- Título --}}
+<section style="background: linear-gradient(to right, #00aaff, #00c4ff); padding: 60px 20px; margin-top: 85px;">
+    <h1 style="text-align: center; color: white; font-size: 2.2rem; margin: 0;">
         Fale Conosco
     </h1>
 </section>
 
-{{-- Conteúdo expandido --}}
-<section style="padding: 60px 20px;">
-    <div style="max-width: 900px; margin: auto; text-align: center;">
-        <p style="font-size: 1.1rem; color: #333; margin-bottom: 25px;">
-            Estamos aqui para ouvir você! Seja para tirar dúvidas, enviar sugestões, relatar alguma dificuldade ou compartilhar elogios — nossa equipe terá o maior prazer em responder.
+{{-- Formulário --}}
+<section style="padding: 30px 20px;">
+    <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.07);">
+        <p style="font-size: 1rem; color: #555; margin-bottom: 25px; text-align: center;">
+            Estamos aqui para ajudar você! Preencha o formulário abaixo e nossa equipe entrará em contato o mais breve possível.
         </p>
 
-        <p style="font-size: 1.1rem; color: #333; margin-bottom: 25px;">
-            O <strong>PsiGestor</strong> foi criado para facilitar o dia a dia de psicólogos e clínicas, e cada contato que recebemos é uma oportunidade de evoluir junto com quem confia em nosso trabalho.
-        </p>
+        {{-- Mensagens de sucesso/erro --}}
+        @if (session('success'))
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Mensagem enviada!',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#00aaff'
+                });
+            </script>
+        @endif
 
-        <p style="font-size: 1.1rem; color: #333; margin-bottom: 25px;">
-            Nosso suporte funciona em horário comercial, mas você pode escrever a qualquer momento. Respondemos sempre o mais rápido possível.
-        </p>
+        @if (session('error'))
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ops...',
+                    text: '{{ session('error') }}',
+                    confirmButtonColor: '#00aaff'
+                });
+            </script>
+        @endif
 
-        <p style="font-size: 1.1rem; color: #333;">
-            Envie um e-mail para:
-        </p>
+        <form action="{{ route('contato.enviar') }}" method="POST">
+            @csrf
 
-        <p style="font-size: 1.2rem; font-weight: bold; color: #00aaff;">
-            <a href="mailto:psigestor@devtorquato.com.br" style="color: #00aaff; text-decoration: none;">
-                psigestor@devtorquato.com.br
-            </a>
-        </p>
+            {{-- Nome --}}
+            <div class="form-group">
+                <input type="text" name="nome" placeholder="Nome Completo *" required class="input-field">
+            </div>
 
-        <p style="font-size: 1.1rem; color: #333; margin-top: 40px;">
-            Juntos, podemos construir um PsiGestor ainda mais completo, eficiente e acolhedor. Conte conosco sempre!
-        </p>
+            {{-- Email --}}
+            <div class="form-group">
+                <input type="email" name="email" placeholder="E-mail *" required class="input-field">
+            </div>
+
+            {{-- Telefone --}}
+            <div class="form-group">
+                <input type="text" name="telefone" placeholder="Telefone (opcional)" class="input-field">
+            </div>
+
+            {{-- Assunto --}}
+            <div class="form-group">
+                <select name="assunto" required class="input-field">
+                    <option value="">Selecione um assunto *</option>
+                    <option value="Demonstracao">Gostaria de agendar uma demonstração do sistema</option>
+                    <option value="Suporte">Preciso de suporte técnico</option>
+                    <option value="Duvida">Tenho uma dúvida</option>
+                    <option value="Sugestao">Gostaria de enviar uma sugestão</option>
+                    <option value="Outro">Outro assunto</option>
+                </select>
+            </div>
+
+            {{-- Mensagem --}}
+            <div class="form-group">
+                <textarea name="mensagem" placeholder="Mensagem *" rows="4" required class="input-field"></textarea>
+            </div>
+
+            {{-- reCAPTCHA --}}
+            <div class="form-group" style="text-align: center;">
+                <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+            </div>
+
+            {{-- Botão --}}
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="submit" class="submit-btn">
+                    Enviar Mensagem
+                </button>
+            </div>
+        </form>
     </div>
 </section>
+
 {{-- BOTÃO WHATSAPP FLOTANTE --}}
 <a href="https://wa.me/5582991128022?text=Ol%C3%A1%2C%20tenho%20interesse%20no%20PsiGestor%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20planos!" target="_blank" style="
     position: fixed;
@@ -62,4 +112,61 @@
     <img src="https://psicologos-teste-production.up.railway.app/images/whatsapp.png" alt="WhatsApp" style="width: 24px; height: 24px;">
     (82) 99112-8022
 </a>
-@endsection
+
+@push('styles')
+<style>
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .input-field:focus {
+        border-color: #00aaff;
+        box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.15);
+        outline: none;
+    }
+
+    select.input-field {
+        background: #fff;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .submit-btn {
+        background: #00aaff;
+        color: #fff;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        background: #0095d8;
+    }
+
+    /* 👇 CENTRALIZAÇÃO do reCAPTCHA */
+    .g-recaptcha {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+@endpush
