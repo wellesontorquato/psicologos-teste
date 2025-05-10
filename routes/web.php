@@ -190,14 +190,6 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/assinatura/cancelado', 'assinatura.cancelado')->name('assinaturas.cancelado');
 });
 
-Route::post('/email/verification-notification', function () {
-    if (Auth::user() && !Auth::user()->hasVerifiedEmail()) {
-        Auth::user()->sendEmailVerificationNotification();
-    }
-    
-    return response()->json(['message' => 'E-mail de verificação reenviado com sucesso.']);
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
 /*
 |--------------------------------------------------------------------------
 | Perfil (usuário autenticado, verificado)
