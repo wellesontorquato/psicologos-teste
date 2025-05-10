@@ -31,136 +31,136 @@ use Illuminate\Support\Facades\Storage;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/force-test-upload', function () {
-    $path = Storage::disk('s3')->put('profile-photos/teste-remote.txt', 'Arquivo criado no container remoto 🚀');
+// Route::get('/force-test-upload', function () {
+//     $path = Storage::disk('s3')->put('profile-photos/teste-remote.txt', 'Arquivo criado no container remoto 🚀');
 
-    return response()->json([
-        'message' => 'Arquivo criado remotamente!',
-        'path' => $path,
-        'full_path' => Storage::disk('s3')->path('profile-photos/teste-remote.txt'),
-    ]);
-});
+//     return response()->json([
+//         'message' => 'Arquivo criado remotamente!',
+//         'path' => $path,
+//         'full_path' => Storage::disk('s3')->path('profile-photos/teste-remote.txt'),
+//     ]);
+// });
 
-Route::get('/_filesystem', function () {
-    $path = base_path();
-    $files = [];
+// Route::get('/_filesystem', function () {
+//     $path = base_path();
+//     $files = [];
 
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveCallbackFilterIterator(
-            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
-            function ($current, $key, $iterator) {
-                // 🔒 Ignorar vendor, node_modules, data/lost+found e tudo que começa com ponto
-                $pathname = $current->getPathname();
-                if (
-                    strpos($pathname, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
-                    strpos($pathname, DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
-                    strpos($pathname, DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false ||
-                    strpos($current->getFilename(), '.') === 0 // ignora arquivos ocultos e .git etc
-                ) {
-                    return false;
-                }
+//     $iterator = new RecursiveIteratorIterator(
+//         new RecursiveCallbackFilterIterator(
+//             new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+//             function ($current, $key, $iterator) {
+//                 // 🔒 Ignorar vendor, node_modules, data/lost+found e tudo que começa com ponto
+//                 $pathname = $current->getPathname();
+//                 if (
+//                     strpos($pathname, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
+//                     strpos($pathname, DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
+//                     strpos($pathname, DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false ||
+//                     strpos($current->getFilename(), '.') === 0 // ignora arquivos ocultos e .git etc
+//                 ) {
+//                     return false;
+//                 }
 
-                // Se não conseguir ler o diretório, ignora tambémmm
-                if ($current->isDir() && !is_readable($pathname)) {
-                    return false;
-                }
+//                 // Se não conseguir ler o diretório, ignora tambémmm
+//                 if ($current->isDir() && !is_readable($pathname)) {
+//                     return false;
+//                 }
 
-                return true;
-            }
-        ),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
+//                 return true;
+//             }
+//         ),
+//         RecursiveIteratorIterator::SELF_FIRST
+//     );
 
-    foreach ($iterator as $file) {
-        if ($file->isFile()) {
-            try {
-                $fullPath = $file->getPathname();
-                $relativePath = str_replace($path, '', $fullPath);
+//     foreach ($iterator as $file) {
+//         if ($file->isFile()) {
+//             try {
+//                 $fullPath = $file->getPathname();
+//                 $relativePath = str_replace($path, '', $fullPath);
 
-                $files[] = [
-                    'path' => $relativePath,
-                    'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
-                    'size' => $file->getSize(),
-                ];
-            } catch (Exception $e) {
-                // Se não conseguir acessar, ignora silenciosamente
-                continue;
-            }
-        }
-    }
+//                 $files[] = [
+//                     'path' => $relativePath,
+//                     'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
+//                     'size' => $file->getSize(),
+//                 ];
+//             } catch (Exception $e) {
+//                 // Se não conseguir acessar, ignora silenciosamente
+//                 continue;
+//             }
+//         }
+//     }
 
-    return view('filesystem', ['files' => $files]);
-})->name('filesystem.index');
+//     return view('filesystem', ['files' => $files]);
+// })->name('filesystem.index');
 
 
-Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
-    $file = $request->query('file');
-    if (!$file) {
-        abort(404, 'Arquivo não especificado.');
-    }
+// Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
+//     $file = $request->query('file');
+//     if (!$file) {
+//         abort(404, 'Arquivo não especificado.');
+//     }
 
-    $fullPath = base_path($file);
+//     $fullPath = base_path($file);
 
-    if (!file_exists($fullPath)) {
-        abort(404, 'Arquivo não encontrado.');
-    }
+//     if (!file_exists($fullPath)) {
+//         abort(404, 'Arquivo não encontrado.');
+//     }
 
-    return Response::file($fullPath);
-})->name('filesystem.view');
+//     return Response::file($fullPath);
+// })->name('filesystem.view');
 
-Route::get('/_filesystem/download', function (\Illuminate\Http\Request $request) {
-    $file = $request->query('file');
-    if (!$file) {
-        abort(404, 'Arquivo não especificado.');
-    }
+// Route::get('/_filesystem/download', function (\Illuminate\Http\Request $request) {
+//     $file = $request->query('file');
+//     if (!$file) {
+//         abort(404, 'Arquivo não especificado.');
+//     }
 
-    $fullPath = base_path($file);
+//     $fullPath = base_path($file);
 
-    if (!file_exists($fullPath)) {
-        abort(404, 'Arquivo não encontrado.');
-    }
+//     if (!file_exists($fullPath)) {
+//         abort(404, 'Arquivo não encontrado.');
+//     }
 
-    return Response::download($fullPath);
-})->name('filesystem.download');
+//     return Response::download($fullPath);
+// })->name('filesystem.download');
 
-Route::get('/run-migrate', function (\Illuminate\Http\Request $request) {
-    if ($request->query('token') !== env('MIGRATE_TOKEN')) {
-        abort(403, 'Token inválido.');
-    }
-    Artisan::call('migrate', ['--force' => true]);
-    return Response::make('Migração executada com sucesso!', 200);
-});
+// Route::get('/run-migrate', function (\Illuminate\Http\Request $request) {
+//     if ($request->query('token') !== env('MIGRATE_TOKEN')) {
+//         abort(403, 'Token inválido.');
+//     }
+//     Artisan::call('migrate', ['--force' => true]);
+//     return Response::make('Migração executada com sucesso!', 200);
+// });
 
-Route::get('/health', function () {
-    return response()->json(['status' => 'ok']);
-});
+// Route::get('/health', function () {
+//     return response()->json(['status' => 'ok']);
+// });
 
-Route::get('/logs-debug/{file}', function ($file) {
-    if (!auth()->check() || !auth()->user()->isAdmin()) {
-        abort(403, 'Acesso não autorizado.');
-    }
+// Route::get('/logs-debug/{file}', function ($file) {
+//     if (!auth()->check() || !auth()->user()->isAdmin()) {
+//         abort(403, 'Acesso não autorizado.');
+//     }
 
-    $allowed = [
-        'artisan-setup.log',
-        'artisan-setup-error.log',
-        'artisan-setup-out.log',
-        'laravel.log',
-    ];
+//     $allowed = [
+//         'artisan-setup.log',
+//         'artisan-setup-error.log',
+//         'artisan-setup-out.log',
+//         'laravel.log',
+//     ];
 
-    if (!in_array($file, $allowed)) {
-        abort(404, 'Arquivo não permitido.');
-    }
+//     if (!in_array($file, $allowed)) {
+//         abort(404, 'Arquivo não permitido.');
+//     }
 
-    $path = storage_path("logs/{$file}");
+//     $path = storage_path("logs/{$file}");
 
-    if (!file_exists($path)) {
-        return response('Log não encontrado.', 404);
-    }
+//     if (!file_exists($path)) {
+//         return response('Log não encontrado.', 404);
+//     }
 
-    return Response::make(file_get_contents($path), 200, [
-        'Content-Type' => 'text/plain',
-    ]);
-})->where('file', '.*')->name('logs.debug.dynamic');
+//     return Response::make(file_get_contents($path), 200, [
+//         'Content-Type' => 'text/plain',
+//     ]);
+// })->where('file', '.*')->name('logs.debug.dynamic');
 
 
 /*
@@ -269,36 +269,36 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 |--------------------------------------------------------------------------
 */
 
-Route::get('/force-clear', function () {
-    Artisan::call('config:clear');
-    Artisan::call('route:clear');
-    Artisan::call('cache:clear');
-    Artisan::call('view:clear');
+// Route::get('/force-clear', function () {
+//     Artisan::call('config:clear');
+//     Artisan::call('route:clear');
+//     Artisan::call('cache:clear');
+//     Artisan::call('view:clear');
 
-    return 'Caches TOTALMENTE limpos 🚀!';
-});
+//     return 'Caches TOTALMENTE limpos 🚀!';
+// });
 
-// Crie rapidamente um comando em routes/web.php só para forçar isso:
-    Route::get('/fix-perms', function() {
-        exec('chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache');
-        return 'Permissões corrigidas!';
-    });    
+// // Crie rapidamente um comando em routes/web.php só para forçar isso:
+//     Route::get('/fix-perms', function() {
+//         exec('chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache');
+//         return 'Permissões corrigidas!';
+//     });    
 
-    // routes/web.php (temporário)
-Route::get('/check-logs', function() {
-    $logFile = storage_path('logs/laravel.log');
-    $owner = posix_getpwuid(fileowner($logFile));
-    $group = posix_getgrgid(filegroup($logFile));
-    return response()->json([
-        'current_user' => get_current_user(),
-        'effective_user' => posix_getpwuid(posix_geteuid()),
-        'log_file' => $logFile,
-        'file_owner' => $owner,
-        'file_group' => $group,
-        'file_perms' => substr(sprintf('%o', fileperms($logFile)), -4),
-        'is_writable' => is_writable($logFile),
-    ]);
-});
+//     // routes/web.php (temporário)
+// Route::get('/check-logs', function() {
+//     $logFile = storage_path('logs/laravel.log');
+//     $owner = posix_getpwuid(fileowner($logFile));
+//     $group = posix_getgrgid(filegroup($logFile));
+//     return response()->json([
+//         'current_user' => get_current_user(),
+//         'effective_user' => posix_getpwuid(posix_geteuid()),
+//         'log_file' => $logFile,
+//         'file_owner' => $owner,
+//         'file_group' => $group,
+//         'file_perms' => substr(sprintf('%o', fileperms($logFile)), -4),
+//         'is_writable' => is_writable($logFile),
+//     ]);
+// });
 
 
 require __DIR__.'/auth.php';
