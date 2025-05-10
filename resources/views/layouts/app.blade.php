@@ -146,11 +146,24 @@
                 </div>
 
                 <div style="font-size: 0.9rem; color: #e6faff; margin-top: 4px;">
-                    @if (Auth::user()->is_admin)
-                        <i class="bi bi-shield-lock-fill" style="color: #ffc107;"></i> Administrador
-                    @else
-                        <i class="bi bi-person-circle" style="color: #ffffff;"></i>
-                        @switch(Auth::user()->genero)
+                @if (Auth::user()->is_admin)
+                    <i class="bi bi-shield-lock-fill" style="color: #ffc107;"></i> Administrador
+                @else
+                    <i class="bi bi-person-circle" style="color: #ffffff;"></i>
+
+                    @php
+                        $tipo = strtolower(Auth::user()->tipo_profissional);
+                        $genero = Auth::user()->genero;
+                    @endphp
+
+                    @if ($tipo === 'psiquiatra')
+                        @if ($genero === 'feminino')
+                            Psiquiatra
+                        @else
+                            Psiquiatra
+                        @endif
+                    @elseif ($tipo === 'psicologo')
+                        @switch($genero)
                             @case('feminino')
                                 Psicóloga
                                 @break
@@ -160,7 +173,12 @@
                             @default
                                 Psicólogo(a)
                         @endswitch
+                    @elseif ($tipo === 'psicanalista')
+                        Psicanalista
+                    @else
+                        Profissional
                     @endif
+                @endif
 
                     {{-- Registro Profissional --}}
                     @php
