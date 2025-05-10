@@ -175,7 +175,7 @@
                             <small class="d-block text-white-50">
                                 CRM {{ preg_replace('/\D/', '', $registro) }}
                             </small>
-                        @elseif (\Illuminate\Support\Str::contains($tipoLower, 'psicólogo') || \Illuminate\Support\Str::contains($tipoLower, 'psicologa'))
+                        @elseif (\Illuminate\Support\Str::contains($tipoLower, 'psicologo') || \Illuminate\Support\Str::contains($tipoLower, 'psicologa'))
                             <small class="d-block text-white-50">
                                 CRP {{ preg_replace('/(\d{2})(\d{5})/', '$1/$2', preg_replace('/\D/', '', $registro)) }}
                             </small>
