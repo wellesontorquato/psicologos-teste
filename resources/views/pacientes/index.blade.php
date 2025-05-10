@@ -32,6 +32,7 @@
                 <th>Nome</th>
                 <th>Telefone</th>
                 <th>Email</th>
+                <th>Receita Saúde</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -41,6 +42,7 @@
                 <td>{{ $paciente->nome }}</td>
                 <td>{{ $paciente->telefone }}</td>
                 <td>{{ $paciente->email }}</td>
+                <td>{{ $paciente->exige_nota_fiscal ? 'Sim' : 'Não' }}</td>
                 <td>
                     <a href="{{ route('pacientes.edit', $paciente->id) }}" class="btn btn-sm btn-secondary">Editar</a>
 
@@ -62,7 +64,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="4" class="text-center">Nenhum paciente encontrado.</td>
+                <td colspan="5" class="text-center">Nenhum paciente encontrado.</td>
             </tr>
         @endforelse
         </tbody>
