@@ -31,17 +31,13 @@ class ContatoController extends Controller
         }
 
         // Enviar email
-        Mail::raw("
-            Nome: {$dados['nome']}
-            E-mail: {$dados['email']}
-            Telefone: {$dados['telefone']}
-            Assunto: {$dados['assunto']}
-            Mensagem:
-            {$dados['mensagem']}
-        ", function ($message) use ($dados) {
-            $message->to('psigestor@devtorquato.com.br')
-                    ->subject('Novo contato via site: ' . $dados['assunto']);
-        });
+        Mail::to('psigestor@devtorquato.com.br')->send(new ContatoMail([
+            'nome' => $request->nome,
+            'email' => $request->email,
+            'telefone' => $request->telefone,
+            'assunto' => $request->assunto,
+            'mensagem' => $request->mensagem,
+        ]));
 
         return back()->with('success', 'Mensagem enviada com sucesso! Em breve retornaremos.');
     }
