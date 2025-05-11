@@ -40,7 +40,8 @@
         <div class="testimonial-carousel">
             <div class="testimonial-container" style="display: flex; width: max-content; animation: scrollDepoimentos 180s linear infinite;">
                 @foreach(array_merge($depoimentos, $depoimentos) as $d)
-                    <div class="testimonial-card" style="min-width: 320px; max-width: 320px; margin: 0 15px; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="testimonial-card" style="min-width: 320px; max-width: 320px; margin: 0 15px; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($d['nome']) }}&background=random&color=ffffff&size=70&rounded=true" alt="{{ $d['nome'] }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; margin-bottom: 12px; margin-left: auto; margin-right: auto;">    
                         <p style="font-style: italic; margin-bottom: 12px; font-size: 0.95rem; line-height: 1.5;">“{{ $d['texto'] }}”</p>
                         <strong style="font-weight: 600; display: block; margin-bottom: 4px; margin-top: 6px;">{{ formatarNome($d) }}</strong>
                         <span>{{ getTituloProfissional($d['profissao'], $d['genero']) }} – {{ $d['registro'] }}</span>
