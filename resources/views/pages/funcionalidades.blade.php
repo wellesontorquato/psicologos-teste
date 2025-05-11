@@ -23,11 +23,11 @@
                 $features = [
                     ['icon' => 'calendar-check', 'title' => 'Agenda Visual', 'desc' => 'Drag & drop, notificações, e visualização por semana ou dia.'],
                     ['icon' => 'file-lines', 'title' => 'Evoluções', 'desc' => 'Linha do tempo com registros detalhados de cada sessão.'],
-                    ['icon' => 'coins', 'title' => 'Financeiro', 'desc' => 'Controle de pagamentos, relatórios e recibos automáticos.'],
+                    ['icon' => 'coins', 'title' => 'Financeiro', 'desc' => 'Controle de pagamentos, envio de notificações de sessões anteriores não pagas.'],
                     ['icon' => 'cloud-upload-alt', 'title' => 'Arquivos', 'desc' => 'Documentos organizados por tipo: exames, contratos, relatórios.'],
                     ['icon' => 'whatsapp', 'title' => 'Confirmação por WhatsApp', 'desc' => 'Envio automático de lembretes e confirmações de sessão.'],
                     ['icon' => 'chart-line', 'title' => 'Painel de Indicadores', 'desc' => 'Gráficos com estatísticas por período e evolução da clínica.'],
-                    ['icon' => 'user-shield', 'title' => 'Permissões por Usuário', 'desc' => 'Controle por perfil: psicólogo, secretária.'],
+                    ['icon' => 'user-shield', 'title' => 'Banco de dados robusto', 'desc' => 'Não se preocupe, conosco seus arquivos estarão sempre bem guardados.'],
                     ['icon' => 'file-export', 'title' => 'Exportações em PDF e Excel', 'desc' => 'Relatórios completos com filtros por data, status e pagamento.'],
                 ];
             @endphp
