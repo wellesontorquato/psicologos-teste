@@ -326,4 +326,51 @@ class SessaoController extends Controller
         $pdf = Pdf::loadView('sessoes.export-pdf', compact('sessoes'));
         return $pdf->download('sessoes.pdf');
     }
+
+    public function gerarRecorrencias(Request $request)
+    {
+        $request->validate([
+            'sessao_id' => 'required|exists:sessoes,id',
+            'semanas' => 'required|integer|min:1',
+        ]);
+
+        $sessaoOriginal = Sessao::with('paciente')->findOrFail($request->sessao_id);
+
+        // Verifica se o usuário logado é dono da sessão
+        if (!$sessaoOriginal->paciente || $sessaoOriginal->paciente->user_id !== auth()->id()) {
+            abort(403, 'Acesso não autorizado à sessão.');
+        }
+
+        $semanas = (int) $request->semanas;
+        $criadas = 0;
+
+        for ($i = 1; $i <= $semanas; $i++) {
+            $novaDataHora = Carbon::parse($sessaoOriginal->data_hora)->addWeeks($i);
+            $inicio = $novaDataHora->copy();
+            $fim = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
+
+            // Verifica se já existe sessão nesse horário para o mesmo psicólogo
+            $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+                ->where('data_hora', '<', $fim)
+                ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
+                ->exists();
+
+            if (!$conflito) {
+                Sessao::create([
+                    'paciente_id' => $sessaoOriginal->paciente_id,
+                    'data_hora' => $novaDataHora,
+                    'data_hora_original' => $novaDataHora,
+                    'duracao' => $sessaoOriginal->duracao,
+                    'valor' => $sessaoOriginal->valor,
+                    'foi_pago' => false,
+                    'observacoes' => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
+                ]);
+                $criadas++;
+            }
+        }
+
+        AuditHelper::log('gerou_recorrencias', "Criou {$criadas} recorrências a partir da sessão ID {$sessaoOriginal->id}");
+
+        return redirect()->route('sessoes.index')->with('success', "{$criadas} sessão(ões) recorrente(s) criada(s) com sucesso!");
+    }
 }

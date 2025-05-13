@@ -116,16 +116,14 @@
             @foreach($sessoes as $sessao)
             @php
                 $status = $sessao->status_confirmacao ?? 'PENDENTE';
-
+                $icone = match($status) {
+                    'CONFIRMADA' => ['✅', 'text-success', 'Confirmada'],
+                    'CANCELADA'  => ['❌', 'text-danger', 'Cancelada'],
+                    'REMARCAR'   => ['🔄', 'text-warning', 'Remarcar'],
+                    default      => ['⏳', 'text-secondary', 'Pendente'],
+                };
                 if ($status === 'REMARCAR' && !is_null($sessao->data_hora)) {
                     $icone = ['📅', 'text-info', 'Remarcado'];
-                } else {
-                    $icone = match($status) {
-                        'CONFIRMADA' => ['✅', 'text-success', 'Confirmada'],
-                        'CANCELADA'  => ['❌', 'text-danger', 'Cancelada'],
-                        'REMARCAR'   => ['🔄', 'text-warning', 'Remarcar'],
-                        default      => ['⏳', 'text-secondary', 'Pendente'],
-                    };
                 }
             @endphp
                 <tr>
@@ -159,6 +157,15 @@
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                         </form>
+
+                        {{-- Botão Recorrência --}}
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm mt-1"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalRecorrencia"
+                                data-sessao-id="{{ $sessao->id }}">
+                            Recorrências
+                        </button>
                     </td>
                 </tr>
             @endforeach
@@ -168,6 +175,30 @@
     {{-- Paginação --}}
     <div class="mt-4">
         {{ $sessoes->withQueryString()->links() }}
+    </div>
+</div>
+
+{{-- Modal Recorrência --}}
+<div class="modal fade" id="modalRecorrencia" tabindex="-1" aria-labelledby="modalRecorrenciaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('sessoes.gerarRecorrencias') }}">
+            @csrf
+            <input type="hidden" name="sessao_id" id="inputSessaoId">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalRecorrenciaLabel">Criar Sessões Recorrentes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="semanas" class="form-label fw-bold">Quantas semanas deseja repetir?</label>
+                    <input type="number" name="semanas" id="semanas" class="form-control" min="1" required placeholder="Ex: 4">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Recorrências</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
@@ -199,18 +230,25 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // ✅ Primeiro fecha o modal suavemente
                     Swal.close();
-
-                    // ✅ Dá um leve delay para garantir que o SweetAlert fechou antes do spinner
                     setTimeout(() => {
                         if (typeof showSpinner === 'function') {
                             showSpinner();
                         }
                         form.submit();
-                    }, 300);  // 300ms dá tempo da animação do SweetAlert fechar bonito
+                    }, 300);
                 }
             });
+        });
+    });
+
+    // Preenche o ID da sessão no modal
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('modalRecorrencia');
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const sessaoId = button.getAttribute('data-sessao-id');
+            document.getElementById('inputSessaoId').value = sessaoId;
         });
     });
 </script>

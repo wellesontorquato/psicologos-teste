@@ -255,6 +255,7 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     });
 
     Route::get('/sessoes/export', [SessaoController::class, 'export'])->name('sessoes.export');
+    Route::post('/sessoes/gerar-recorrencias', [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
     Route::resource('sessoes', SessaoController::class)->except(['show']);
 
     Route::get('/notificacoes', [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
