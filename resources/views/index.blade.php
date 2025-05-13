@@ -81,17 +81,33 @@
             </div>
         </div>
 
-        {{-- IMAGEM --}}
-        <div class="hero-img" style="
-            flex: 1 1 400px;
-            text-align: center;
-            padding: 10px;
-        ">
-            <img src="/images/ilustracao-psicologo-vetor.png" alt="PsiGestor - Psicólogo com paciente" style="
-                max-width: 100%;
-                height: auto;
-                max-height: 350px;
+        {{-- IMAGEM COM CARROSSEL E EFEITO MOCKUP VIA JS --}}
+        <div class="hero-img" style="flex: 1 1 480px; padding: 10px; text-align: center;">
+            <p style="font-size: 1rem; font-weight: 500; color: #ffffff; margin-bottom: 10px;">
+                🖥️ Veja como é o painel do <strong>PsiGestor</strong>
+            </p>
+
+            <div class="carousel-tilt" id="carouselTilt" style="
+                width: 100%;
+                max-width: 580px;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+                transform-style: preserve-3d;
+                transition: transform 0.4s ease;
             ">
+                <img id="carouselImage" src="/images/demo1.png" alt="Mockup PsiGestor" style="
+                    width: 100%;
+                    display: block;
+                    transition: transform 0.4s ease;
+                ">
+            </div>
+
+            <div id="carouselDots" style="margin-top: 10px; text-align: center;">
+                <span class="dot active" data-index="0"></span>
+                <span class="dot" data-index="1"></span>
+                <span class="dot" data-index="2"></span>
+            </div>
         </div>
     </div>
 </section>
@@ -257,12 +273,80 @@
         width: 100% !important;
         margin: 0 auto !important;
     }
+
+    .dot {
+        height: 10px;
+        width: 10px;
+        margin: 0 6px;
+        background-color: #ccc;
+        border-radius: 50%;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+
+    .dot.active {
+        background-color: #00aaff;
+    }
 </style>
 @endpush
+
 
 @push('scripts')
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@endpush
+
+@push('scripts')
+<script>
+    const images = [
+        '/images/demo1.png',
+        '/images/demo2.png',
+        '/images/demo3.png'
+    ];
+
+    let currentIndex = 0;
+    const imageEl = document.getElementById('carouselImage');
+    const dots = document.querySelectorAll('#carouselDots .dot');
+    const tiltEl = document.getElementById('carouselTilt');
+
+    function showImage(index) {
+        currentIndex = index;
+        imageEl.src = images[index];
+        dots.forEach(dot => dot.classList.remove('active'));
+        dots[index].classList.add('active');
+    }
+
+    // Clique nos pontinhos
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            showImage(Number(dot.dataset.index));
+        });
+    });
+
+    // Autoplay
+    setInterval(() => {
+        currentIndex = (currentIndex + 1) % images.length;
+        showImage(currentIndex);
+    }, 5000);
+
+    // Forçar propriedades CSS que podem estar ausentes
+    if (tiltEl) {
+        tiltEl.style.transition = 'transform 0.4s ease';
+        tiltEl.style.transformStyle = 'preserve-3d';
+        tiltEl.style.willChange = 'transform';
+        tiltEl.style.backfaceVisibility = 'hidden';
+    }
+
+    // Efeito mockup + zoom ao passar o mouse
+    tiltEl.addEventListener('mouseenter', () => {
+        tiltEl.style.transform = 'rotateX(4deg) rotateY(-16deg)';
+    });
+
+    tiltEl.addEventListener('mouseleave', () => {
+        tiltEl.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    });
+</script>
 @endpush
 
 {{-- BOTÃO WHATSAPP FLOTANTE --}}
