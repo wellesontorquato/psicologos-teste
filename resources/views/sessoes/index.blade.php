@@ -191,7 +191,14 @@
                 </div>
                 <div class="modal-body">
                     <label for="semanas" class="form-label fw-bold">Quantas semanas deseja repetir?</label>
-                    <input type="number" name="semanas" id="semanas" class="form-control" min="1" required placeholder="Ex: 4">
+                    <input type="number" name="semanas" id="semanas" class="form-control mb-3" min="1" required placeholder="Ex: 4">
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="foi_pago" id="foi_pago">
+                        <label class="form-check-label fw-bold" for="foi_pago">
+                            Marcar sessões como pagas?
+                        </label>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

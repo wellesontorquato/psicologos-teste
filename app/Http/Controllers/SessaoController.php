@@ -336,12 +336,13 @@ class SessaoController extends Controller
 
         $sessaoOriginal = Sessao::with('paciente')->findOrFail($request->sessao_id);
 
-        // Verifica se o usuário logado é dono da sessão
         if (!$sessaoOriginal->paciente || $sessaoOriginal->paciente->user_id !== auth()->id()) {
             abort(403, 'Acesso não autorizado à sessão.');
         }
 
         $semanas = (int) $request->semanas;
+        $foiPago = $request->has('foi_pago'); // Novo: checkbox
+
         $criadas = 0;
 
         for ($i = 1; $i <= $semanas; $i++) {
@@ -349,7 +350,6 @@ class SessaoController extends Controller
             $inicio = $novaDataHora->copy();
             $fim = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
 
-            // Verifica se já existe sessão nesse horário para o mesmo psicólogo
             $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
                 ->where('data_hora', '<', $fim)
                 ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
@@ -362,7 +362,7 @@ class SessaoController extends Controller
                     'data_hora_original' => $novaDataHora,
                     'duracao' => $sessaoOriginal->duracao,
                     'valor' => $sessaoOriginal->valor,
-                    'foi_pago' => false,
+                    'foi_pago' => $foiPago,
                     'observacoes' => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
                 ]);
                 $criadas++;
