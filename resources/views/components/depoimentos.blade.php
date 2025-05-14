@@ -44,7 +44,11 @@
                         <img src="https://ui-avatars.com/api/?name={{ urlencode($d['nome']) }}&background=random&color=ffffff&size=70&rounded=true" alt="{{ $d['nome'] }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; margin-bottom: 12px; margin-left: auto; margin-right: auto;">    
                         <p style="font-style: italic; margin-bottom: 12px; font-size: 0.95rem; line-height: 1.5;">“{{ $d['texto'] }}”</p>
                         <strong style="font-weight: 600; display: block; margin-bottom: 4px; margin-top: 6px;">{{ formatarNome($d) }}</strong>
-                        <span>{{ getTituloProfissional($d['profissao'], $d['genero']) }} – {{ $d['registro'] }}</span>
+                        @if ($d['profissao'] === 'psicanalista')
+                            <span style="display: block;">{{ getTituloProfissional($d['profissao'], $d['genero']) }}</span>
+                        @else
+                            <span>{{ getTituloProfissional($d['profissao'], $d['genero']) }} – {{ $d['registro'] }}</span>
+                        @endif
                     </div>
                 @endforeach
             </div>
