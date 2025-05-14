@@ -1,11 +1,12 @@
 {{-- resources/views/layouts/nav.blade.php --}}
+
 <style>
 .top-nav {
     background-color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 15px 40px;
+    padding: 15px 20px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     position: fixed;
     width: 100%;
@@ -23,10 +24,12 @@
 
 .nav-container {
     width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 15px;
 }
 
 nav {
@@ -65,7 +68,6 @@ nav a:hover {
     text-decoration: none;
 }
 
-/* CONTROLE DE VISIBILIDADE */
 .nav-desktop {
     display: flex;
 }
@@ -73,10 +75,9 @@ nav a:hover {
     display: none;
 }
 
-/* MOBILE */
 @media (max-width: 768px) {
     .top-nav {
-        padding: 10px 20px;
+        padding: 10px 10px;
     }
 
     .top-nav img {
@@ -92,6 +93,7 @@ nav a:hover {
     }
 }
 </style>
+
 
 {{-- Inclusão condicional via CSS --}}
 @include('layouts.partials.nav-desktop')

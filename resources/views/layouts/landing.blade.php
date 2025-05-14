@@ -9,20 +9,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    
+
     {{-- Estilos personalizados da landing --}}
     <style>
-         html, body {
-            height: 100%;
+        html, body {
+    overflow-x: hidden;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', sans-serif;
             background-color: #fff;
+            width: 100%;
+        }
+
+        .page-wrapper {
+    max-width: 100%;
+    padding: 0;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        body > main {
+        .page-wrapper > main {
             flex: 1;
             padding-top: 85px;
         }
@@ -46,17 +53,18 @@
     @stack('styles')
 </head>
 <body>
+    <div class="page-wrapper">
+        {{-- NAVBAR --}}
+        @include('layouts.nav')
 
-    {{-- NAVBAR --}}
-    @include('layouts.nav')
+        {{-- CONTEÚDO PRINCIPAL --}}
+        <main>
+            @yield('content')
+        </main>
 
-    {{-- CONTEÚDO PRINCIPAL --}}
-    <main>
-        @yield('content')
-    </main>
-
-    {{-- FOOTER --}}
-    @include('layouts.footer')
+        {{-- FOOTER --}}
+        @include('layouts.footer')
+    </div>
 
     {{-- JS --}}
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
