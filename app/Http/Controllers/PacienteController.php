@@ -66,10 +66,10 @@ class PacienteController extends Controller
 
         $request->validate([
             'nome' => 'required|string|max:255',
-            'data_nascimento' => 'nullable|date',
-            'sexo' => 'nullable|string|max:10',
+            'data_nascimento' => 'required|date',
+            'sexo' => 'required|string|in:M,F,Outro',
             'telefone' => [
-                'nullable', 'string', 'max:20',
+                'required', 'string', 'max:20',
                 function ($attribute, $value, $fail) {
                     if (Paciente::where('user_id', auth()->id())
                         ->whereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(telefone, '(', ''), ')', ''), '-', ''), ' ', ''), '+', '') = ?", [preg_replace('/\D/', '', $value)])
@@ -79,7 +79,7 @@ class PacienteController extends Controller
                 },
             ],
             'email' => [
-                'nullable', 'email', 'max:255',
+                'required', 'email', 'max:255',
                 function ($attribute, $value, $fail) {
                     if (Paciente::where('user_id', auth()->id())->where('email', $value)->exists()) {
                         $fail('Este e-mail já está cadastrado para outro paciente.');
@@ -87,7 +87,7 @@ class PacienteController extends Controller
                 },
             ],
             'cpf' => [
-                'nullable', 'string', 'max:20',
+                'required', 'string', 'max:20',
                 function ($attribute, $value, $fail) {
                     if (Paciente::where('user_id', auth()->id())
                         ->whereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?", [$value])

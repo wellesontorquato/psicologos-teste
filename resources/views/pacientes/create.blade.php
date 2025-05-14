@@ -17,14 +17,14 @@
             </div>
             <div class="col-md-4">
                 <label>Data de Nascimento</label>
-                <input type="date" name="data_nascimento" class="form-control">
+                <input type="date" name="data_nascimento" class="form-control" required>
             </div>
         </div>
 
         <div class="row g-3 mt-3">
             <div class="col-md-4">
                 <label>Sexo</label>
-                <select name="sexo" class="form-control">
+                <select name="sexo" class="form-control" required>
                     <option value="">Selecione</option>
                     <option value="M">Masculino</option>
                     <option value="F">Feminino</option>
@@ -33,18 +33,18 @@
             </div>
             <div class="col-md-4">
                 <label>Telefone</label>
-                <input type="text" name="telefone" class="form-control">
+                <input type="text" name="telefone" class="form-control" required>
             </div>
             <div class="col-md-4">
                 <label>Email</label>
-                <input type="email" name="email" class="form-control">
+                <input type="email" name="email" class="form-control" required>
             </div>
         </div>
 
         <div class="row g-3 mt-3">
             <div class="col-md-6">
                 <label>CPF</label>
-                <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00">
+                <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00" required>
             </div>
             <div class="col-md-6 d-flex align-items-end flex-column">
                 {{-- Tooltip explicativo --}}
