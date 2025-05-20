@@ -5,9 +5,22 @@
     <div style="max-width: 800px; margin: auto;">
         {{-- Categoria --}}
         @if ($news->category)
-            <p style="font-size: 0.8rem; color: #00aaff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                {{ $news->category }}
+            <p style="
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                color: #00aaff;
+                letter-spacing: 1px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border-left: 4px solid #00aaff;
+                padding-left: 10px;
+                margin-bottom: 12px;
+            ">
+                <i class="bi bi-tag-fill" style="font-size: 0.85rem;"></i> {{ $news->category }}
             </p>
+
         @endif
 
         {{-- Título --}}
@@ -42,6 +55,41 @@
         <div class="noticia-conteudo">
             {!! $news->content !!}
         </div>
+
+        @if ($related->count())
+            <div style="margin-top: 60px;">
+                <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: #111;">📰 Notícias Relacionadas</h3>
+
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    @foreach ($related as $item)
+                        <a href="{{ route('blog.show', $item->slug) }}" style="
+                            display: flex;
+                            gap: 16px;
+                            align-items: flex-start;
+                            background: #f9f9f9;
+                            padding: 12px;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            color: inherit;
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                            transition: box-shadow 0.3s ease;
+                        " onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.05)'">
+                            @if ($item->image)
+                                <img src="{{ $item->image_url }}" alt="{{ $item->title }}" style="width: 100px; height: 80px; object-fit: cover; border-radius: 6px;">
+                            @endif
+                            <div style="flex: 1;">
+                                <h4 style="font-size: 1rem; font-weight: 600; color: #222; margin-bottom: 6px;">
+                                    {{ $item->title }}
+                                </h4>
+                                <p style="font-size: 0.9rem; color: #555; line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                                    {{ $item->excerpt }}
+                                </p>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         {{-- Voltar --}}
         <div style="margin-top: 40px;">

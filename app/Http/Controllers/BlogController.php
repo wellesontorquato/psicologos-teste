@@ -10,11 +10,20 @@ class BlogController extends Controller
     /**
      * Exibe a lista de notícias publicadas no blog (/blog)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $news = News::latest()->paginate(6); // paginação simples
+        $query = News::query();
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $query->where('title', 'LIKE', '%' . $searchTerm . '%');
+        }
+
+        $news = $query->latest()->paginate(6);
+
         return view('pages.blog', compact('news'));
     }
+
 
     /**
      * Exibe uma notícia individual pelo slug (/blog/{slug})
@@ -22,6 +31,13 @@ class BlogController extends Controller
     public function show($slug)
     {
         $news = News::where('slug', $slug)->firstOrFail();
-        return view('news.show', compact('news'));
+
+        $related = News::where('id', '!=', $news->id)
+                    ->where('category', $news->category)
+                    ->latest()
+                    ->take(3)
+                    ->get();
+
+        return view('news.show', compact('news', 'related'));
     }
 }
