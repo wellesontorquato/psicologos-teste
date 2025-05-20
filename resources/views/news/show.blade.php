@@ -62,7 +62,7 @@
         {{-- Notícias Relacionadas --}}
         @if ($related->count())
             <div style="margin-top: 60px;">
-                <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: #111;">📰 Notícias Relacionadas</h3>
+                <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: #111;">📰 Leia também...</h3>
 
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     @foreach ($related as $item)
