@@ -1,7 +1,9 @@
 {{-- resources/views/layouts/partials/nav-desktop.blade.php --}}
 <header class="top-nav nav-desktop">
     <div class="nav-container">
-        <img src="/images/logo-psigestor.png" alt="PsiGestor Logo">
+        <a href="https://www.psigestor.com/">
+            <img src="/images/logo-psigestor.png" alt="PsiGestor Logo">
+        </a>
         <nav>
             <a href="{{ route('home') }}">Início</a>
             <a href="{{ route('funcionalidades') }}">Funcionalidades</a>
