@@ -25,10 +25,12 @@ class NewsController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'subtitle' => 'nullable|string|max:255',
+            'category' => 'required|string|max:100',
             'content' => 'required',
             'image' => 'nullable|mimes:jpg,jpeg,png,bmp,gif,svg,webp,avif|max:5120',
         ]);
-
+        
         $imagePath = null;
 
         if ($request->hasFile('image')) {
@@ -39,10 +41,13 @@ class NewsController extends Controller
         News::create([
             'title' => $request->title,
             'slug' => Str::slug($request->title) . '-' . uniqid(),
+            'subtitle' => $request->subtitle,
+            'category' => $request->category,
             'excerpt' => Str::limit(strip_tags($request->content), 150),
             'content' => $request->content,
             'image' => $imagePath,
         ]);
+
 
         return redirect()->route('admin.news.index')->with('success', 'Notícia criada com sucesso!');
     }
@@ -74,9 +79,11 @@ class NewsController extends Controller
         $news->update([
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']) . '-' . uniqid(),
+            'subtitle' => $request->subtitle,
+            'category' => $request->category,
             'excerpt' => Str::limit(strip_tags($validated['content']), 150),
             'content' => $validated['content'],
-            'image' => $news->image, // mantém a anterior se nenhuma nova for enviada
+            'image' => $news->image,
         ]);
 
         return redirect()->route('admin.news.index')->with('success', 'Notícia atualizada com sucesso!');
