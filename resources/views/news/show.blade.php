@@ -82,7 +82,7 @@
                                     {{ $item->title }}
                                 </h4>
                                 <p style="font-size: 0.9rem; color: #555; line-height: 1.4; max-height: 2.8em; overflow: hidden;">
-                                    {{ $item->excerpt }}
+                                    {!! $item->excerpt !!}
                                 </p>
                             </div>
                         </a>
