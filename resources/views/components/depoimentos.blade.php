@@ -1,5 +1,8 @@
-<div class="section testimonial-section" id="depoimentos" data-aos="fade-up">
-    <h2 style="text-align:center; margin-bottom: 40px;">O que dizem os profissionais...</h2>
+<div class="section testimonial-section" id="depoimentos" data-aos="fade-up" style="padding: 0 20px 10px 20px; margin-top: 10px;">
+    <h2 style="text-align: center; margin-bottom: 20px; font-size: 1.8rem;">
+        O que dizem os profissionais...
+    </h2>
+
 
     @php
         $depoimentos = [

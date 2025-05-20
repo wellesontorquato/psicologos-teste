@@ -13,7 +13,7 @@
     {{-- Estilos personalizados da landing --}}
     <style>
         html, body {
-    overflow-x: hidden;
+            overflow-x: hidden;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', sans-serif;
@@ -22,8 +22,8 @@
         }
 
         .page-wrapper {
-    max-width: 100%;
-    padding: 0;
+            max-width: 100%;
+            padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -31,7 +31,7 @@
 
         .page-wrapper > main {
             flex: 1;
-            padding-top: 85px;
+            padding-top: 20px;
         }
 
         .btn-cta {
@@ -48,7 +48,13 @@
         .btn-cta:hover {
             background: #f0f8ff;
         }
+
+        .bi-newspaper {
+            font-size: 1.4rem;
+            color: #333;
+        }
     </style>
+
 
     @stack('styles')
 </head>
@@ -61,7 +67,7 @@
         <main>
             @yield('content')
         </main>
-
+    
         {{-- FOOTER --}}
         @include('layouts.footer')
     </div>

@@ -1,9 +1,9 @@
-<section class="section-features" style="background-color: #ffffff; padding: 80px 20px;">
+<section class="section-features" style="background-color: #ffffff; padding: 5px 20px 10px 20px;">
     <div style="max-width: 1200px; margin: auto;">
-        <h2 style="text-align: center; font-size: 2rem; margin-bottom: 20px; font-weight: bold;">
+        <h2 style="text-align: center; font-size: 1.8rem; margin-bottom: 12px; font-weight: bold;">
             Funcionalidades do PsiGestor
         </h2>
-        <p style="text-align: center; color: #666; max-width: 700px; margin: 0 auto 40px;">
+        <p style="text-align: center; color: #666; max-width: 700px; margin: 0 auto 20px;">
             Descubra os recursos que tornam sua clínica mais eficiente, organizada e conectada.
         </p>
 

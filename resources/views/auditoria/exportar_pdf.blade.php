@@ -77,7 +77,7 @@
                 @foreach ($registros as $log)
                     <tr>
                         <td>{{ optional($log->user)->name ?? 'Desconhecido' }}</td>
-                        <td>{{ $log->event }}</td>
+                        <td>{{ $log->action ?? '-' }}</td>
                         <td>{{ $log->description ?? '-' }}</td>
                         <td>{{ $log->ip_address ?? '-' }}</td>
                         <td>{{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i') }}</td>

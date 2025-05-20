@@ -235,14 +235,18 @@
         
         @auth
             @if (Auth::user()->is_admin)
-            <a href="{{ route('auditoria.index') }}" class="{{ request()->is('auditoria*') ? 'active' : '' }}">
-                <i class="bi bi-shield-lock"></i> <span>Auditoria</span>
-            </a>
-            <a href="{{ route('usuarios.index') }}" class="{{ request()->is('usuarios*') ? 'active' : '' }}">
-                <i class="bi bi-people-fill"></i> <span>Usuários</span>
-            </a>
+                <a href="{{ route('admin.auditoria.index') }}" class="{{ request()->is('auditoria*') ? 'active' : '' }}">
+                    <i class="bi bi-shield-lock"></i> <span>Auditoria</span>
+                </a>
+                <a href="{{ route('admin.usuarios.index') }}" class="{{ request()->is('usuarios*') ? 'active' : '' }}">
+                    <i class="bi bi-people-fill"></i> <span>Usuários</span>
+                </a>
+                <a href="{{ route('admin.news.index') }}" class="{{ request()->is('admin/news*') ? 'active' : '' }}">
+                    <i class="bi bi-newspaper"></i> <span>Notícias do Blog</span>
+                </a>
             @endif
         @endauth
+
 
         <hr>
         <form method="POST" action="{{ route('logout') }}">

@@ -127,7 +127,7 @@
                     </td>
                     <td>
                         @if ($user->id !== auth()->id())
-                            <form method="POST" action="{{ route('usuarios.toggleAdmin', $user) }}">
+                            <form method="POST" action="{{ route('admin.usuarios.toggleAdmin', $user) }}">
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit"

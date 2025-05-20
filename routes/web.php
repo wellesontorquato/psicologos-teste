@@ -7,6 +7,7 @@ use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\{
     ProfileController,
     SessaoController,
@@ -22,7 +23,8 @@ use App\Http\Controllers\{
     WebhookWhatsappController,
     WppconnectDiagnosticoController,
     NotificacaoController,
-    AssinaturaController
+    AssinaturaController,
+    BlogController
 };
 
 /*
@@ -30,6 +32,184 @@ use App\Http\Controllers\{
 | Testes internos / Healthchecks
 |--------------------------------------------------------------------------
 */
+
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Páginas públicas
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    $news = \App\Models\News::latest()->take(3)->get();
+    return view('index', compact('news'));
+})->name('home');
+
+Route::view('/funcionalidades', 'pages.funcionalidades')->name('funcionalidades');
+Route::view('/planos', 'pages.planos')->name('planos');
+Route::view('/quem-somos', 'pages.quem-somos')->name('quem-somos');
+Route::view('/contato', 'pages.contato')->name('contato');
+Route::post('/contato/enviar', [App\Http\Controllers\ContatoController::class, 'enviar'])->name('contato.enviar');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+/*
+|--------------------------------------------------------------------------
+| Área de Assinaturas (usuário autenticado, mas sem exigir assinatura ativa)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/assinaturas', [AssinaturaController::class, 'index'])->name('assinaturas.index');
+    Route::post('/checkout', [AssinaturaController::class, 'checkout'])->name('assinatura.checkout');
+    Route::view('/assinatura/sucesso', 'assinatura.sucesso')->name('assinaturas.sucesso');
+    Route::view('/assinatura/cancelado', 'assinatura.cancelado')->name('assinaturas.cancelado');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Perfil (usuário autenticado, verificado)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->group(function () {
+    Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+    Route::patch('/', [ProfileController::class, 'update'])->name('update');
+    Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+    Route::post('/photo', [ProfileController::class, 'updatePhoto'])->name('update.photo');
+    Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
+    Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Área autenticada, verificada e com assinatura ativa
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'verified', CheckSubscription::class])->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::post('/sessoes-json', [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
+    Route::put('/sessoes-json/{id}', [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
+    Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
+
+    Route::resource('pacientes', PacienteController::class);
+    
+    Route::resource('evolucoes', EvolucaoController::class)->parameters([
+        'evolucoes' => 'evolucao',
+    ]);
+    
+    Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
+    Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
+    Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');
+    Route::get('/pacientes/{paciente}/historico/pdf', [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');
+
+    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
+    Route::get('/api/sessoes', [AgendaController::class, 'eventos'])->name('agenda.eventos');
+
+    Route::prefix('pacientes/{paciente}/arquivos')->group(function () {
+        Route::get('/', [ArquivoController::class, 'index'])->name('arquivos.index');
+        Route::post('/', [ArquivoController::class, 'store'])->name('arquivos.store');
+    });
+    Route::delete('/arquivos/{arquivo}', [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
+    Route::put('/arquivos/{arquivo}/renomear', [ArquivoController::class, 'renomear'])->name('arquivos.rename');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Área exclusiva para administradores
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware([EnsureUserIsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index');
+        Route::get('/auditoria/exportar-pdf', [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
+        Route::get('/auditoria/exportar-excel', [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
+
+        Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
+        Route::patch('/usuarios/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('usuarios.toggleAdmin');
+
+        // ✅ Aqui as rotas de news ganham prefixo admin e nome admin.news.*
+        Route::resource('news', NewsController::class);
+    });
+
+    Route::get('/sessoes/export', [SessaoController::class, 'export'])->name('sessoes.export');
+    Route::post('/sessoes/gerar-recorrencias', [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
+    Route::resource('sessoes', SessaoController::class)->except(['show']);
+
+    Route::get('/notificacoes', [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
+    Route::get('/notificacoes/{id}/acao', [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
+    Route::post('/notificacoes/ler-todas', [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
+    Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Auth padrão do Laravel
+|--------------------------------------------------------------------------
+*/
+
+// Route::get('/force-clear', function () {
+//     Artisan::call('config:clear');
+//     Artisan::call('route:clear');
+//     Artisan::call('cache:clear');
+//     Artisan::call('view:clear');
+
+//     return 'Caches TOTALMENTE limpos 🚀!';
+// });
+
+// // Crie rapidamente um comando em routes/web.php só para forçar isso:
+//     Route::get('/fix-perms', function() {
+//         exec('chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache');
+//         return 'Permissões corrigidas!';
+//     });    
+
+//     // routes/web.php (temporário)
+// Route::get('/check-logs', function() {
+//     $logFile = storage_path('logs/laravel.log');
+//     $owner = posix_getpwuid(fileowner($logFile));
+//     $group = posix_getgrgid(filegroup($logFile));
+//     return response()->json([
+//         'current_user' => get_current_user(),
+//         'effective_user' => posix_getpwuid(posix_geteuid()),
+//         'log_file' => $logFile,
+//         'file_owner' => $owner,
+//         'file_group' => $group,
+//         'file_perms' => substr(sprintf('%o', fileperms($logFile)), -4),
+//         'is_writable' => is_writable($logFile),
+//     ]);
+// });
+
+// Route::get('/logs-debug/{file}', function ($file) {
+//     if (!auth()->check() || !auth()->user()->isAdmin()) {
+//         abort(403, 'Acesso não autorizado.');
+//     }
+
+//     $allowed = [
+//         'artisan-setup.log',
+//         'artisan-setup-error.log',
+//         'artisan-setup-out.log',
+//         'laravel.log',
+//     ];
+
+//     if (!in_array($file, $allowed)) {
+//         abort(404, 'Arquivo não permitido.');
+//     }
+
+//     $path = storage_path("logs/{$file}");
+
+//     if (!file_exists($path)) {
+//         return response('Log não encontrado.', 404);
+//     }
+
+//     return Response::make(file_get_contents($path), 200, [
+//         'Content-Type' => 'text/plain',
+//     ]);
+// })->where('file', '.*')->name('logs.debug.dynamic');
 
 // Route::get('/force-test-upload', function () {
 //     $path = Storage::disk('s3')->put('profile-photos/teste-remote.txt', 'Arquivo criado no container remoto 🚀');
@@ -129,176 +309,6 @@ use App\Http\Controllers\{
 //     }
 //     Artisan::call('migrate', ['--force' => true]);
 //     return Response::make('Migração executada com sucesso!', 200);
-// });
-
-Route::get('/health', function () {
-     return response()->json(['status' => 'ok']);
- });
-
-// Route::get('/logs-debug/{file}', function ($file) {
-//     if (!auth()->check() || !auth()->user()->isAdmin()) {
-//         abort(403, 'Acesso não autorizado.');
-//     }
-
-//     $allowed = [
-//         'artisan-setup.log',
-//         'artisan-setup-error.log',
-//         'artisan-setup-out.log',
-//         'laravel.log',
-//     ];
-
-//     if (!in_array($file, $allowed)) {
-//         abort(404, 'Arquivo não permitido.');
-//     }
-
-//     $path = storage_path("logs/{$file}");
-
-//     if (!file_exists($path)) {
-//         return response('Log não encontrado.', 404);
-//     }
-
-//     return Response::make(file_get_contents($path), 200, [
-//         'Content-Type' => 'text/plain',
-//     ]);
-// })->where('file', '.*')->name('logs.debug.dynamic');
-
-
-/*
-|--------------------------------------------------------------------------
-| Páginas públicas
-|--------------------------------------------------------------------------
-*/
-
-Route::view('/', 'index')->name('home');
-Route::view('/funcionalidades', 'pages.funcionalidades')->name('funcionalidades');
-Route::view('/planos', 'pages.planos')->name('planos');
-Route::view('/quem-somos', 'pages.quem-somos')->name('quem-somos');
-Route::view('/contato', 'pages.contato')->name('contato');
-Route::post('/contato/enviar', [App\Http\Controllers\ContatoController::class, 'enviar'])->name('contato.enviar');
-
-
-/*
-|--------------------------------------------------------------------------
-| Área de Assinaturas (usuário autenticado, mas sem exigir assinatura ativa)
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/assinaturas', [AssinaturaController::class, 'index'])->name('assinaturas.index');
-    Route::post('/checkout', [AssinaturaController::class, 'checkout'])->name('assinatura.checkout');
-    Route::view('/assinatura/sucesso', 'assinatura.sucesso')->name('assinaturas.sucesso');
-    Route::view('/assinatura/cancelado', 'assinatura.cancelado')->name('assinaturas.cancelado');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Perfil (usuário autenticado, verificado)
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->group(function () {
-    Route::get('/', [ProfileController::class, 'edit'])->name('edit');
-    Route::patch('/', [ProfileController::class, 'update'])->name('update');
-    Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
-    Route::post('/photo', [ProfileController::class, 'updatePhoto'])->name('update.photo');
-    Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
-    Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Área autenticada, verificada e com assinatura ativa
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'verified', CheckSubscription::class])->group(function () {
-
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    Route::post('/sessoes-json', [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
-    Route::put('/sessoes-json/{id}', [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
-    Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
-
-    Route::resource('pacientes', PacienteController::class);
-    
-    Route::resource('evolucoes', EvolucaoController::class)->parameters([
-        'evolucoes' => 'evolucao',
-    ]);
-    
-    Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
-    Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
-    Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');
-    Route::get('/pacientes/{paciente}/historico/pdf', [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');
-
-    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
-    Route::get('/api/sessoes', [AgendaController::class, 'eventos'])->name('agenda.eventos');
-
-    Route::prefix('pacientes/{paciente}/arquivos')->group(function () {
-        Route::get('/', [ArquivoController::class, 'index'])->name('arquivos.index');
-        Route::post('/', [ArquivoController::class, 'store'])->name('arquivos.store');
-    });
-    Route::delete('/arquivos/{arquivo}', [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
-    Route::put('/arquivos/{arquivo}/renomear', [ArquivoController::class, 'renomear'])->name('arquivos.rename');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Área exclusiva para administradores
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware([EnsureUserIsAdmin::class])->group(function () {
-        Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index');
-        Route::get('/auditoria/exportar-pdf', [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
-        Route::get('/auditoria/exportar-excel', [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
-
-        Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
-        Route::patch('/usuarios/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('usuarios.toggleAdmin');
-    });
-
-    Route::get('/sessoes/export', [SessaoController::class, 'export'])->name('sessoes.export');
-    Route::post('/sessoes/gerar-recorrencias', [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
-    Route::resource('sessoes', SessaoController::class)->except(['show']);
-
-    Route::get('/notificacoes', [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
-    Route::get('/notificacoes/{id}/acao', [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
-    Route::post('/notificacoes/ler-todas', [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
-    Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Auth padrão do Laravel
-|--------------------------------------------------------------------------
-*/
-
-// Route::get('/force-clear', function () {
-//     Artisan::call('config:clear');
-//     Artisan::call('route:clear');
-//     Artisan::call('cache:clear');
-//     Artisan::call('view:clear');
-
-//     return 'Caches TOTALMENTE limpos 🚀!';
-// });
-
-// // Crie rapidamente um comando em routes/web.php só para forçar isso:
-//     Route::get('/fix-perms', function() {
-//         exec('chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache');
-//         return 'Permissões corrigidas!';
-//     });    
-
-//     // routes/web.php (temporário)
-// Route::get('/check-logs', function() {
-//     $logFile = storage_path('logs/laravel.log');
-//     $owner = posix_getpwuid(fileowner($logFile));
-//     $group = posix_getgrgid(filegroup($logFile));
-//     return response()->json([
-//         'current_user' => get_current_user(),
-//         'effective_user' => posix_getpwuid(posix_geteuid()),
-//         'log_file' => $logFile,
-//         'file_owner' => $owner,
-//         'file_group' => $group,
-//         'file_perms' => substr(sprintf('%o', fileperms($logFile)), -4),
-//         'is_writable' => is_writable($logFile),
-//     ]);
 // });
 
 

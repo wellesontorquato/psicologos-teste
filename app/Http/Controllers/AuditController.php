@@ -33,11 +33,12 @@ class AuditController extends Controller
     {
         $logs = $this->filtrarLogs($request)->get();
 
-        $pdf = PDF::loadView('auditoria.exportar_pdf', compact('logs'))
-                  ->setPaper('a4', 'portrait');
+        $pdf = PDF::loadView('auditoria.exportar_pdf', ['registros' => $logs])
+                ->setPaper('a4', 'portrait');
 
         return $pdf->download('auditoria.pdf');
     }
+
 
     public function exportarExcel(Request $request)
     {
