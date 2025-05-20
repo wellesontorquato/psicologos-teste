@@ -20,7 +20,6 @@
             ">
                 <i class="bi bi-tag-fill" style="font-size: 0.85rem;"></i> {{ $news->category }}
             </p>
-
         @endif
 
         {{-- Título --}}
@@ -56,6 +55,7 @@
             {!! $news->content !!}
         </div>
 
+        {{-- Notícias Relacionadas --}}
         @if ($related->count())
             <div style="margin-top: 60px;">
                 <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: #111;">📰 Notícias Relacionadas</h3>
@@ -119,7 +119,17 @@
         overflow: hidden;
     }
 
-    /* Aplica estilo flutuante às duas primeiras imagens do conteúdo */
+    .noticia-conteudo a {
+        color: #00aaff;
+        font-weight: 500;
+        text-decoration: underline;
+        transition: color 0.3s ease;
+    }
+
+    .noticia-conteudo a:hover {
+        color: #008ecc;
+    }
+
     .noticia-conteudo img:nth-of-type(1),
     .noticia-conteudo img:nth-of-type(2) {
         float: left;
@@ -129,7 +139,6 @@
         object-fit: cover;
     }
 
-    /* Responsividade: imagens 100% em telas menores */
     @media (max-width: 768px) {
         .noticia-conteudo img:nth-of-type(1),
         .noticia-conteudo img:nth-of-type(2) {
@@ -141,4 +150,19 @@
         }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    // Garante que todos os links no conteúdo abram em nova aba
+    document.addEventListener('DOMContentLoaded', function () {
+        const content = document.querySelector('.noticia-conteudo');
+        if (content) {
+            content.querySelectorAll('a').forEach(link => {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
+        }
+    });
+</script>
 @endpush
