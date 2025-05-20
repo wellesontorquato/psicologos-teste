@@ -4,7 +4,7 @@
             📰 Últimas Notícias
         </h2>
         <p style="text-align: center; color: #666; max-width: 700px; margin: 0 auto 20px;">
-            Fique por dentro das novidades e atualizações do PsiGestor.
+            Saúde mental, bem-estar e inovações do universo PsiGestor, em um só lugar.
         </p>
 
         @if($news->count() > 0)
