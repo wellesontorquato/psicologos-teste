@@ -31,7 +31,7 @@
 
         .page-wrapper > main {
             flex: 1;
-            padding-top: 20px;
+            padding-top: 65px;
         }
 
         .btn-cta {
