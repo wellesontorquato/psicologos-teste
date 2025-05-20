@@ -134,17 +134,6 @@
         color: #008ecc;
     }
 
-    /* Alterna esquerda e direita para imagens pares e ímpares */
-    .noticia-conteudo img:nth-of-type(odd) {
-        float: left;
-        margin: 0 20px 20px
-    }
-
-    .noticia-conteudo img:nth-of-type(even) {
-        float: right;
-        margin: 0 0 20px 20px;
-    }
-
     .noticia-conteudo img {
         max-width: 280px;
         border-radius: 10px;
@@ -179,3 +168,20 @@
     });
 </script>
 @endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const imgs = document.querySelectorAll('.noticia-conteudo img');
+
+        imgs.forEach((img, index) => {
+            img.style.maxWidth = '280px';
+            img.style.borderRadius = '10px';
+            img.style.objectFit = 'cover';
+            img.style.margin = '0 20px 20px 0';
+            img.style.float = (index % 2 === 0) ? 'left' : 'right';
+        });
+    });
+</script>
+@endpush
+
