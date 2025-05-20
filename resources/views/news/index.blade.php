@@ -58,27 +58,32 @@
             <tbody>
                 @forelse ($news as $article)
                     <tr>
-                        <td>
+                        <td class="text-center align-middle">
                             @if ($article->image)
                                 <img src="{{ $article->image_url }}" class="rounded shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
                             @endif
                         </td>
-                        <td><strong>{{ $article->title }}</strong></td>
-                        <td>{{ $article->subtitle ?? '—' }}</td>
-                        <td>
+
+                        <td class="align-middle"><strong>{{ $article->title }}</strong></td>
+                        <td class="align-middle">{{ $article->subtitle ?? '—' }}</td>
+
+                        <td class="text-center align-middle">
                             <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1">
                                 {{ $article->category ?? 'Sem categoria' }}
                             </span>
                         </td>
-                        <td>{{ $article->created_at->format('d/m/Y') }}</td>
-                        <td>
+
+                        <td class="text-center align-middle">{{ $article->created_at->format('d/m/Y') }}</td>
+
+                        <td class="text-center align-middle">
                             @if($article->updated_at->ne($article->created_at))
                                 {{ $article->updated_at->diffForHumans() }}
                             @else
                                 —
                             @endif
                         </td>
-                        <td>
+
+                        <td class="text-center align-middle">
                             <a href="{{ route('admin.news.edit', $article) }}" class="btn btn-sm btn-warning me-1">
                                 <i class="bi bi-pencil-fill"></i>
                             </a>
