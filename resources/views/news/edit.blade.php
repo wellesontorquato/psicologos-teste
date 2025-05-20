@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@section('title', 'Editar Notícia | PsiGestor')
 @section('content')
 <div class="container py-6 max-w-3xl">
     <h2 class="text-2xl font-bold mb-4">✏️ Editar Notícia</h2>

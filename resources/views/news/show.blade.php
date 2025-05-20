@@ -1,3 +1,7 @@
+@php
+    $title = $news->title . ' | PsiGestor';
+@endphp
+
 @extends('layouts.landing')
 
 @section('content')

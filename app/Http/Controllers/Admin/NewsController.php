@@ -10,9 +10,28 @@ use Illuminate\Support\Facades\Storage;
 
 class NewsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $news = News::latest()->paginate(10);
+        $query = News::query();
+
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        $news = $query->latest()->paginate(10);
+
         return view('news.index', compact('news'));
     }
 
@@ -30,7 +49,7 @@ class NewsController extends Controller
             'content' => 'required',
             'image' => 'nullable|mimes:jpg,jpeg,png,bmp,gif,svg,webp,avif|max:5120',
         ]);
-        
+
         $imagePath = null;
 
         if ($request->hasFile('image')) {

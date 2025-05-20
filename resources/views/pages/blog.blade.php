@@ -1,3 +1,7 @@
+@php
+    $title = ' Blog | PsiGestor';
+@endphp
+
 @extends('layouts.landing')
 
 @section('content')
