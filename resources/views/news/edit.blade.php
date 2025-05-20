@@ -14,6 +14,35 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label">Subtítulo</label>
+            <input type="text" name="subtitle" value="{{ old('subtitle', $news->subtitle) }}" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoria</label>
+            <select name="category" class="form-control" required>
+                <option disabled {{ !$news->category ? 'selected' : '' }}>Selecione uma categoria</option>
+                @php
+                    $categorias = [
+                        'Saúde Mental',
+                        'Bem-estar',
+                        'Psicologia Clínica',
+                        'Tecnologia',
+                        'Atualidades',
+                        'Sociedade',
+                        'Carreira & Trabalho',
+                        'PsiGestor'
+                    ];
+                @endphp
+                @foreach($categorias as $categoria)
+                    <option value="{{ $categoria }}" {{ old('category', $news->category) === $categoria ? 'selected' : '' }}>
+                        {{ $categoria }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="mb-3">
             <label class="form-label">Imagem de Capa</label>
             <input type="file" name="image" class="form-control" accept="image/*">
             @if ($news->image)

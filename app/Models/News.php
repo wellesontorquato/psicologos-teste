@@ -12,6 +12,8 @@ class News extends Model
     // Campos que podem ser preenchidos em massa
     protected $fillable = [
         'title',
+        'subtitle',
+        'category',
         'slug',
         'excerpt',
         'content',

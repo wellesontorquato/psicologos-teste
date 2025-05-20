@@ -3,10 +3,24 @@
 @section('content')
 <section style="padding: 40px 20px; background: #fff;">
     <div style="max-width: 800px; margin: auto;">
+        {{-- Categoria --}}
+        @if ($news->category)
+            <p style="font-size: 0.8rem; color: #00aaff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                {{ $news->category }}
+            </p>
+        @endif
+
         {{-- Título --}}
         <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 10px; color: #111;">
             {{ $news->title }}
         </h1>
+
+        {{-- Subtítulo --}}
+        @if ($news->subtitle)
+            <p style="font-size: 1.15rem; color: #444; margin-top: -5px; margin-bottom: 20px;">
+                {{ $news->subtitle }}
+            </p>
+        @endif
 
         {{-- Metadados --}}
         <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
@@ -17,11 +31,11 @@
             @endif
         </p>
 
-        {{-- Imagem de capa (opcional) --}}
+        {{-- Imagem de capa --}}
         @if ($news->image)
-                <img src="{{ $news->image_url }}"
-                    alt="{{ $news->title }}"
-                    style="width: 100%; border-radius: 10px; margin-bottom: 30px;">
+            <img src="{{ $news->image_url }}"
+                 alt="{{ $news->title }}"
+                 style="width: 100%; border-radius: 10px; margin-bottom: 30px;">
         @endif
 
         {{-- Conteúdo --}}
