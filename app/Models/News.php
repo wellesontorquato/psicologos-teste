@@ -18,9 +18,20 @@ class News extends Model
         'image',
     ];
 
-    // Opcional: rotas usam o slug em vez do ID
+    // Rotas usam o slug no lugar do ID
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    // Accessor para retornar a URL pública da imagem (Contabo)
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            $prefix = rtrim(env('CONTABO_PUBLIC_PREFIX'), '/');
+            return 'https://usc1.contabostorage.com/' . $prefix . '/' . ltrim($this->image, '/');
+        }
+
+        return null;
     }
 }

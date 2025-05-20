@@ -22,10 +22,11 @@
                         transition: background 0.3s ease;
                     " onmouseover="this.style.background='#f1faff'" onmouseout="this.style.background='#f9f9f9'">
                         @if ($article->image)
-                            <img src="{{ Storage::disk('s3')->url($article->image) }}"
-                                 alt="{{ $article->title }}"
-                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <img src="{{ $article->image_url }}"
+                                alt="{{ $article->title }}"
+                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                         @endif
+
                         <div style="flex: 1">
                             <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 6px; line-height: 1.3; color: #333;">
                                 {{ $article->title }}

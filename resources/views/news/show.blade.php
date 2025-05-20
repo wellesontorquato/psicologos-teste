@@ -19,9 +19,9 @@
 
         {{-- Imagem de capa (opcional) --}}
         @if ($news->image)
-            <img src="{{ Storage::disk('s3')->url($news->image) }}"
-                 alt="{{ $news->title }}"
-                 style="width: 100%; border-radius: 10px; margin-bottom: 30px;">
+                <img src="{{ $news->image_url }}"
+                    alt="{{ $news->title }}"
+                    style="width: 100%; border-radius: 10px; margin-bottom: 30px;">
         @endif
 
         {{-- Conteúdo --}}

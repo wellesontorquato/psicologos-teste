@@ -22,9 +22,10 @@
                     transition: box-shadow 0.3s ease;
                 " onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.05)'">
                     @if ($article->image)
-                        <img src="{{ Storage::disk('s3')->url($article->image) }}"
-                             alt="{{ $article->title }}"
-                             style="width: 160px; height: 100px; object-fit: cover; border-radius: 8px;">
+                        <img src="{{ $article->image_url }}"
+                            alt="{{ $article->title }}"
+                            style="width: 160px; height: 100px; object-fit: cover; border-radius: 8px;">
+
                     @endif
                     <div style="flex: 1;">
                         <h2 style="font-size: 1.1rem; font-weight: 600; color: #222; margin-bottom: 8px;">
