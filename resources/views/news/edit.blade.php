@@ -18,7 +18,7 @@
             <input type="file" name="image" class="form-control" accept="image/*">
             @if ($news->image)
                 <div class="mt-2">
-                    <img src="{{ Storage::disk('s3')->url($news->image) }}" alt="Capa atual" class="w-32 rounded shadow">
+                    <img src="{{ $news->image_url }}" alt="Capa atual" class="w-32 rounded shadow">
                 </div>
             @endif
         </div>

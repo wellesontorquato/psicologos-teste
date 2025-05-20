@@ -22,7 +22,7 @@
                     <td>{{ $article->title }}</td>
                     <td>
                         @if ($article->image)
-                            <img src="{{ Storage::disk('s3')->url($article->image) }}" class="w-16 rounded">
+                            <img src="{{ $article->image_url }}" class="w-16 rounded">
                         @endif
                     </td>
                     <td>{{ $article->created_at->format('d/m/Y') }}</td>
