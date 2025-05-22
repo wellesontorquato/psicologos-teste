@@ -286,4 +286,17 @@
 </script>
 @endpush
 
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const cta = document.querySelector('.btn-cta');
+    if (cta) {
+      cta.addEventListener('click', function () {
+        fbq('track', 'Lead');
+      });
+    }
+  });
+</script>
+@endpush
+
 @endsection
