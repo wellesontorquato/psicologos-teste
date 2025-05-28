@@ -54,12 +54,12 @@
             <div class="col-md-2">
                 <label class="form-label small text-muted fw-semibold mb-1">Buscar</label>
                 <input type="text" name="busca" class="form-control form-control-sm"
-                    placeholder="Nome, CPF, etc" value="{{ request('busca') }}">
+                    placeholder="Nome, CPF, telefone ou e-mail" value="{{ request('busca') }}">
             </div>
 
             <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-sm btn-outline-secondary w-100">🔍</button>
-                <a href="{{ route('sessoes.index') }}" class="btn btn-sm btn-outline-dark w-100">❌</a>
+                <button type="submit" class="btn btn-sm btn-outline-secondary w-100" title="Aplicar filtros">🔍</button>
+                <a href="{{ route('sessoes.index') }}" class="btn btn-sm btn-outline-dark w-100" title="Limpar filtros">❌</a>
             </div>
 
         </form>
