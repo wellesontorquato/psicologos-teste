@@ -10,6 +10,38 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <div class="card p-3 mb-4 shadow-sm">
+        <form method="GET" class="row g-3 mb-4 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Paciente ou anotação</label>
+                <input type="text" name="busca" value="{{ request('busca') }}" class="form-control shadow-sm" placeholder="Buscar por nome ou conteúdo">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-bold">Período</label>
+                <select name="periodo" class="form-select shadow-sm">
+                    <option value="">Todos</option>
+                    <option value="hoje" {{ request('periodo') == 'hoje' ? 'selected' : '' }}>Hoje</option>
+                    <option value="semana" {{ request('periodo') == 'semana' ? 'selected' : '' }}>Esta semana</option>
+                    <option value="mes" {{ request('periodo') == 'mes' ? 'selected' : '' }}>Este mês</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Tipo de evolução</label>
+                <select name="tipo" class="form-select shadow-sm">
+                    <option value="">Todos</option>
+                    <option value="evolucao" {{ request('tipo') == 'evolucao' ? 'selected' : '' }}>Evolução</option>
+                    <option value="medicacao" {{ request('tipo') == 'medicacao' ? 'selected' : '' }}>Medicação</option>            </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-outline-primary w-100" title="Aplicar filtros">🔍</button>
+                <a href="{{ route('evolucoes.index') }}" class="btn btn-outline-dark w-100" title="Limpar filtros">❌</a>
+            </div>
+        </form>
+    </div>
+
     <table class="table table-bordered shadow-sm bg-white">
         <thead class="table-light">
             <tr>
@@ -36,6 +68,9 @@
             @endforeach
         </tbody>
     </table>
+    <div class="mt-4">
+        {{ $evolucoes->withQueryString()->links() }}
+    </div>
 </div>
 @endsection
 

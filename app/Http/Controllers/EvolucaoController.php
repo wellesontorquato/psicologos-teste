@@ -5,20 +5,42 @@ namespace App\Http\Controllers;
 use App\Models\Evolucao;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
-use App\Helpers\AuditHelper; // ✅ Importa o helper
+use App\Helpers\AuditHelper;
 
 class EvolucaoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $evolucoes = Evolucao::with('paciente')
-            ->whereHas('paciente', function ($q) {
-                $q->where('user_id', auth()->id());
-            })
-            ->orderBy('data', 'desc')
-            ->get();
+        $query = Evolucao::with('paciente')
+            ->whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()));
 
-        AuditHelper::log('view_evolucoes', 'Visualizou a lista de evoluções clínicas'); // ✅ Loga acesso
+        if ($request->filled('busca')) {
+            $busca = $request->busca;
+            $query->where(function ($q) use ($busca) {
+                $q->where('texto', 'like', "%$busca%")
+                ->orWhereHas('paciente', fn($sub) => $sub->where('nome', 'like', "%$busca%"));
+            });
+        }
+
+        if ($request->filled('tipo')) {
+            $query->where('tipo', $request->tipo);
+        }
+
+        if ($request->filled('periodo')) {
+            $hoje = now()->startOfDay();
+
+            if ($request->periodo === 'hoje') {
+                $query->whereDate('data', $hoje);
+            } elseif ($request->periodo === 'semana') {
+                $query->whereBetween('data', [$hoje->copy()->startOfWeek(), $hoje->copy()->endOfWeek()]);
+            } elseif ($request->periodo === 'mes') {
+                $query->whereBetween('data', [$hoje->copy()->startOfMonth(), $hoje->copy()->endOfMonth()]);
+            }
+        }
+
+        $evolucoes = $query->orderBy('data', 'desc')->paginate(10)->withQueryString();
+
+        AuditHelper::log('view_evolucoes', 'Visualizou a lista de evoluções clínicas');
 
         return view('evolucoes.index', compact('evolucoes'));
     }
