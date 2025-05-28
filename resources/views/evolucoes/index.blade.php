@@ -36,8 +36,8 @@
             </div>
 
             <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-outline-primary w-100" title="Aplicar filtros">🔍</button>
-                <a href="{{ route('evolucoes.index') }}" class="btn btn-outline-dark w-100" title="Limpar filtros">❌</a>
+                <button type="submit" class="btn btn-outline-primary w-100" title="Aplicar filtros">🔍 Buscar</button>
+                <a href="{{ route('evolucoes.index') }}" class="btn btn-outline-dark w-100" title="Limpar filtros">❌ Limpar</a>
             </div>
         </form>
     </div>
