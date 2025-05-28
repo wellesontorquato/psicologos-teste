@@ -9,17 +9,19 @@
     <a href="{{ route('pacientes.create') }}" class="btn btn-primary mb-4">Novo Paciente</a>
 
     {{-- Filtro de busca --}}
-    <form method="GET" class="row g-3 mb-4 align-items-end">
-        <div class="col-md-6">
-            <input type="text" name="busca" value="{{ request('busca') }}" class="form-control shadow-sm" placeholder="Buscar por nome, CPF, telefone ou email">
-        </div>
+    <div class="card p-3 mb-4 shadow-sm">
+        <form method="GET" class="row g-3 mb-4 align-items-end">
+            <div class="col-md-6">
+                <input type="text" name="busca" value="{{ request('busca') }}" class="form-control shadow-sm" placeholder="Buscar por nome, CPF, telefone ou email">
+            </div>
 
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-outline-secondary shadow-sm w-100">🔍 Buscar</button>
-            <a href="{{ route('pacientes.index') }}" class="btn btn-outline-dark shadow-sm w-100">❌ Limpar</a>
-        </div>
-    </form>
-
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-outline-secondary shadow-sm w-100">🔍 Buscar</button>
+                <a href="{{ route('pacientes.index') }}" class="btn btn-outline-dark shadow-sm w-100">❌ Limpar</a>
+            </div>
+        </form>
+    </div>
+    
     {{-- Mensagem de sucesso --}}
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
