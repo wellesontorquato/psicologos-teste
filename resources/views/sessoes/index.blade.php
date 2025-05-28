@@ -9,62 +9,61 @@
     <a href="{{ route('sessoes.create') }}" class="btn btn-primary mb-3">Nova Sessão</a>
 
     {{-- Filtros --}}
-    <form method="GET" class="row g-2 mb-3 align-items-end">
-        <div class="col-md-2">
-            <label class="form-label fw-bold">Pago?</label>
-            <select name="foi_pago" class="form-select form-select-sm shadow-sm">
-                <option value="">Todos</option>
-                <option value="Sim" {{ request('foi_pago') == 'Sim' ? 'selected' : '' }}>Sim</option>
-                <option value="Não" {{ request('foi_pago') == 'Não' ? 'selected' : '' }}>Não</option>
-            </select>
-        </div>
+    <div class="card p-3 mb-4 shadow-sm">
+        <form method="GET" class="row g-2 align-items-end">
 
-        <div class="col-md-2">
-            <label class="form-label fw-bold">Status</label>
-            <select name="status" class="form-select form-select-sm shadow-sm">
-                <option value="Todos">Todos</option>
-                <option value="CONFIRMADA" {{ request('status') == 'CONFIRMADA' ? 'selected' : '' }}>Confirmada</option>
-                <option value="REMARCAR" {{ request('status') == 'REMARCAR' ? 'selected' : '' }}>Remarcar</option>
-                <option value="REMARCADO" {{ request('status') == 'REMARCADO' ? 'selected' : '' }}>Remarcado</option>
-                <option value="CANCELADA" {{ request('status') == 'CANCELADA' ? 'selected' : '' }}>Cancelada</option>
-                <option value="PENDENTE" {{ request('status') == 'PENDENTE' ? 'selected' : '' }}>Pendente</option>
-            </select>
-        </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted fw-semibold mb-1">Pago?</label>
+                <select name="foi_pago" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="Sim" {{ request('foi_pago') == 'Sim' ? 'selected' : '' }}>Sim</option>
+                    <option value="Não" {{ request('foi_pago') == 'Não' ? 'selected' : '' }}>Não</option>
+                </select>
+            </div>
 
-        <div class="col-md-2">
-            <label class="form-label fw-bold">Período</label>
-            <select name="periodo" class="form-select form-select-sm shadow-sm">
-                <option value="">Todos</option>
-                <option value="hoje" {{ request('periodo') == 'hoje' ? 'selected' : '' }}>Hoje</option>
-                <option value="semana" {{ request('periodo') == 'semana' ? 'selected' : '' }}>Esta semana</option>
-                <option value="proxima" {{ request('periodo') == 'proxima' ? 'selected' : '' }}>Próxima semana</option>
-            </select>
-        </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted fw-semibold mb-1">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="Todos">Todos</option>
+                    <option value="CONFIRMADA" {{ request('status') == 'CONFIRMADA' ? 'selected' : '' }}>Confirmada</option>
+                    <option value="REMARCAR" {{ request('status') == 'REMARCAR' ? 'selected' : '' }}>Remarcar</option>
+                    <option value="REMARCADO" {{ request('status') == 'REMARCADO' ? 'selected' : '' }}>Remarcado</option>
+                    <option value="CANCELADA" {{ request('status') == 'CANCELADA' ? 'selected' : '' }}>Cancelada</option>
+                    <option value="PENDENTE" {{ request('status') == 'PENDENTE' ? 'selected' : '' }}>Pendente</option>
+                </select>
+            </div>
 
-        <div class="col-md-2">
-            <label class="form-label fw-bold">Ordenar por</label>
-            <select name="ordenar" class="form-select form-select-sm shadow-sm">
-                <option value="mais_recente" {{ request('ordenar') == 'mais_recente' ? 'selected' : '' }}>
-                    Mais recente
-                </option>
-                <option value="mais_antigo" {{ request('ordenar') == 'mais_antigo' ? 'selected' : '' }}>
-                    Mais antigo
-                </option>
-            </select>
-        </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted fw-semibold mb-1">Período</label>
+                <select name="periodo" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="hoje" {{ request('periodo') == 'hoje' ? 'selected' : '' }}>Hoje</option>
+                    <option value="semana" {{ request('periodo') == 'semana' ? 'selected' : '' }}>Esta semana</option>
+                    <option value="proxima" {{ request('periodo') == 'proxima' ? 'selected' : '' }}>Próxima semana</option>
+                </select>
+            </div>
 
-        <div class="col-md-2">
-            <label class="form-label fw-bold">Buscar</label>
-            <input type="text" name="busca" class="form-control shadow-sm"
-                placeholder="Nome, CPF, telefone ou e-mail"
-                value="{{ request('busca') }}">
-        </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted fw-semibold mb-1">Ordenar por</label>
+                <select name="ordenar" class="form-select form-select-sm">
+                    <option value="mais_recente" {{ request('ordenar') == 'mais_recente' ? 'selected' : '' }}>Mais recente</option>
+                    <option value="mais_antigo" {{ request('ordenar') == 'mais_antigo' ? 'selected' : '' }}>Mais antigo</option>
+                </select>
+            </div>
 
-        <div class="col-md-2 d-flex gap-2">
-            <button type="submit" class="btn btn-outline-secondary shadow-sm w-100">🔍 Filtrar</button>
-            <a href="{{ route('sessoes.index') }}" class="btn btn-outline-dark shadow-sm w-100">❌ Limpar</a>
-        </div>
-    </form>
+            <div class="col-md-2">
+                <label class="form-label small text-muted fw-semibold mb-1">Buscar</label>
+                <input type="text" name="busca" class="form-control form-control-sm"
+                    placeholder="Nome, CPF, etc" value="{{ request('busca') }}">
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-outline-secondary w-100">🔍</button>
+                <a href="{{ route('sessoes.index') }}" class="btn btn-sm btn-outline-dark w-100">❌</a>
+            </div>
+
+        </form>
+    </div>
 
     {{-- Botões de Exportação --}}
     <div class="mb-4">
