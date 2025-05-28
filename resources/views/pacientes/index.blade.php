@@ -12,6 +12,7 @@
     <div class="card p-3 mb-4 shadow-sm">
         <form method="GET" class="row g-3 mb-4 align-items-end">
             <div class="col-md-6">
+                <label class="form-label small text-muted fw-semibold mb-1">Buscar</label>
                 <input type="text" name="busca" value="{{ request('busca') }}" class="form-control shadow-sm" placeholder="Buscar por nome, CPF, telefone ou email">
             </div>
 
@@ -21,7 +22,7 @@
             </div>
         </form>
     </div>
-    
+
     {{-- Mensagem de sucesso --}}
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
