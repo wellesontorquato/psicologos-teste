@@ -69,6 +69,9 @@
         @endforelse
         </tbody>
     </table>
+    <div class="mt-4">
+        {{ $pacientes->withQueryString()->links() }}
+    </div>
 </div>
 @endsection
 
