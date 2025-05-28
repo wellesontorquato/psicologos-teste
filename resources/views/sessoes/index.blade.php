@@ -42,6 +42,18 @@
         </div>
 
         <div class="col-md-3">
+            <label class="form-label fw-bold">Ordenar por</label>
+            <select name="ordenar" class="form-select shadow-sm">
+                <option value="mais_recente" {{ request('ordenar') == 'mais_recente' ? 'selected' : '' }}>
+                    Mais recente primeiro
+                </option>
+                <option value="mais_antigo" {{ request('ordenar') == 'mais_antigo' ? 'selected' : '' }}>
+                    Mais antigo primeiro
+                </option>
+            </select>
+        </div>
+        
+        <div class="col-md-3">
             <label class="form-label fw-bold">Buscar</label>
             <input type="text" name="busca" class="form-control shadow-sm"
                 placeholder="Nome, CPF, telefone ou e-mail"

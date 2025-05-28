@@ -30,15 +30,14 @@ class SessaoController extends Controller
             $busca = preg_replace('/\D/', '', $request->busca);
             $query->whereHas('paciente', function ($q) use ($busca) {
                 $q->where('nome', 'like', "%{$busca}%")
-                  ->orWhere('telefone', 'like', "%{$busca}%")
-                  ->orWhere('email', 'like', "%{$busca}%")
-                  ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
+                ->orWhere('telefone', 'like', "%{$busca}%")
+                ->orWhere('email', 'like', "%{$busca}%")
+                ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
             });
         }
 
         if ($request->filled('periodo')) {
             $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
-
             if ($request->periodo === 'hoje') {
                 $query->whereBetween('data_hora', [$hoje, $hoje->copy()->endOfDay()]);
             } elseif ($request->periodo === 'semana') {
@@ -51,7 +50,14 @@ class SessaoController extends Controller
             }
         }
 
-        $sessoes = $query->orderBy('data_hora', 'desc')->paginate(10);
+        // 🔽 Nova ordenação dinâmica
+        if ($request->ordenar === 'mais_antigo') {
+            $query->orderBy('data_hora', 'asc');
+        } else {
+            $query->orderByRaw('ISNULL(data_hora), data_hora DESC');
+        }
+
+        $sessoes = $query->paginate(10)->withQueryString();
 
         AuditHelper::log('view_sessoes', 'Visualizou a lista de sessões');
 
