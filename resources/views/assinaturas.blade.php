@@ -14,7 +14,7 @@
                     Plano Mensal
                 </div>
                 <div class="card-body text-center">
-                    <h3 class="card-title mb-3">R$ 59,90</h3>
+                    <h3 class="card-title mb-3">R$ 39,90</h3>
                     <p class="text-muted">Assinatura mensal com <strong>10 dias grátis</strong></p>
                     <form action="{{ route('assinatura.checkout') }}" method="POST">
                         @csrf
@@ -32,8 +32,8 @@
                     Plano Trimestral
                 </div>
                 <div class="card-body text-center">
-                    <h3 class="card-title mb-3">R$ 149,90</h3>
-                    <p class="text-muted">Economize <strong>17%</strong> com pagamento trimestral</p>
+                    <h3 class="card-title mb-3">R$ 104,90</h3>
+                    <p class="text-muted">Economize <strong>12,36%(R$ 14,80)</strong> com pagamento trimestral</p>
                     <form action="{{ route('assinatura.checkout') }}" method="POST">
                         @csrf
                         <input type="hidden" name="price_id" value="{{ $precos['trimestral'] }}">
@@ -50,8 +50,8 @@
                     Plano Anual
                 </div>
                 <div class="card-body text-center">
-                    <h3 class="card-title mb-3">R$ 499,90</h3>
-                    <p class="text-muted">Economize <strong>30%</strong> por ano</p>
+                    <h3 class="card-title mb-3">R$ 374,90</h3>
+                    <p class="text-muted">Economize <strong>21,71%(R$ 103,90)</strong> por ano</p>
                     <form action="{{ route('assinatura.checkout') }}" method="POST">
                         @csrf
                         <input type="hidden" name="price_id" value="{{ $precos['anual'] }}">

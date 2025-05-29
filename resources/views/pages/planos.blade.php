@@ -25,7 +25,7 @@
                 $plans = [
                     [
                         'title' => 'Plano Mensal',
-                        'price' => 'R$ 59,90',
+                        'price' => 'R$ 39,90',
                         'desc' => 'Assinatura mensal com <strong>10 dias grátis</strong>.',
                         'highlight' => 'primary',
                         'color' => '#007bff',
@@ -33,16 +33,16 @@
                     ],
                     [
                         'title' => 'Plano Trimestral',
-                        'price' => 'R$ 149,90',
-                        'desc' => 'Economize <strong>17%</strong> com pagamento trimestral.',
+                        'price' => 'R$ 104,90',
+                        'desc' => 'Economize <strong>12,36%(R$ 14,80)</strong> com pagamento trimestral.',
                         'highlight' => 'success',
                         'color' => '#28a745',
                         'savings' => 'Mais popular',
                     ],
                     [
                         'title' => 'Plano Anual',
-                        'price' => 'R$ 499,90',
-                        'desc' => 'Economize <strong>30%</strong> com pagamento anual.',
+                        'price' => 'R$ 374,90',
+                        'desc' => 'Economize <strong>21,71%(R$ 103,90)</strong> com pagamento anual.',
                         'highlight' => 'warning',
                         'color' => '#ffc107',
                         'savings' => null,
