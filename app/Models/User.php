@@ -6,12 +6,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\CustomVerifyEmail;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Billable;
+    use HasApiTokens, HasFactory, Notifiable, Billable;
 
     protected $fillable = [
         'name',
@@ -26,7 +27,6 @@ class User extends Authenticatable
         'tipo_profissional',
         'registro_profissional',
     ];
-    
 
     protected $appends = ['profile_photo_url'];
 
@@ -46,7 +46,6 @@ class User extends Authenticatable
 
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
- 
 
     public function isAdmin(): bool
     {

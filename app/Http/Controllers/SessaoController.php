@@ -278,6 +278,21 @@ class SessaoController extends Controller
         return redirect()->route('sessoes.index')->with('success', 'Sessão excluída.');
     }
 
+    public function destroyJson($id)
+    {
+        $sessao = Sessao::with('paciente')->findOrFail($id);
+
+        if (!$sessao->paciente || $sessao->paciente->user_id !== auth()->id()) {
+            return response()->json(['message' => 'ACESSO NEGADO À SESSÃO.'], 403);
+        }
+
+        $sessao->delete();
+
+        \App\Helpers\AuditHelper::log('deleted_sessao', 'Excluiu sessão ID ' . $id);
+
+        return response()->json(['message' => 'Sessão excluída com sucesso.'], 200);
+    }
+
     public function export(Request $request)
     {
         $format = $request->get('format', 'pdf');
@@ -347,8 +362,7 @@ class SessaoController extends Controller
         }
 
         $semanas = (int) $request->semanas;
-        $foiPago = $request->has('foi_pago'); // Novo: checkbox
-
+        $foiPago = $request->has('foi_pago');
         $criadas = 0;
 
         for ($i = 1; $i <= $semanas; $i++) {
@@ -378,5 +392,65 @@ class SessaoController extends Controller
         AuditHelper::log('gerou_recorrencias', "Criou {$criadas} recorrências a partir da sessão ID {$sessaoOriginal->id}");
 
         return redirect()->route('sessoes.index')->with('success', "{$criadas} sessão(ões) recorrente(s) criada(s) com sucesso!");
+    }
+
+    public function gerarRecorrenciasJson(Request $request)
+    {
+        $dados = $request->validate([
+            'sessao_id' => 'required|exists:sessoes,id',
+            'semanas' => 'required|integer|min:1',
+            'foi_pago' => 'boolean',
+        ]);
+
+        $sessaoOriginal = Sessao::with('paciente')->findOrFail($dados['sessao_id']);
+
+        if (!$sessaoOriginal->paciente || $sessaoOriginal->paciente->user_id !== auth()->id()) {
+            return response()->json(['message' => 'Acesso não autorizado.'], 403);
+        }
+
+        $semanas = (int) $dados['semanas'];
+        $foiPago = $dados['foi_pago'] ?? false;
+        $criadas = 0;
+
+        for ($i = 1; $i <= $semanas; $i++) {
+            $novaDataHora = Carbon::parse($sessaoOriginal->data_hora)->addWeeks($i);
+            $inicio = $novaDataHora->copy();
+            $fim = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
+
+            $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+                ->where('data_hora', '<', $fim)
+                ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
+                ->exists();
+
+            if (!$conflito) {
+                Sessao::create([
+                    'paciente_id' => $sessaoOriginal->paciente_id,
+                    'data_hora' => $novaDataHora,
+                    'data_hora_original' => $novaDataHora,
+                    'duracao' => $sessaoOriginal->duracao,
+                    'valor' => $sessaoOriginal->valor,
+                    'foi_pago' => $foiPago,
+                    'observacoes' => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
+                ]);
+                $criadas++;
+            }
+        }
+
+        AuditHelper::log('gerou_recorrencias_json', "Criou {$criadas} recorrências via API para a sessão ID {$sessaoOriginal->id}");
+
+        return response()->json([
+            'message' => "{$criadas} sessão(ões) recorrente(s) criada(s) com sucesso!"
+        ], 201);
+    }
+
+
+        public function indexJson(Request $request)
+    {
+        $sessoes = Sessao::with('paciente')
+            ->whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))
+            ->orderBy('data_hora', 'desc')
+            ->get();
+
+        return response()->json($sessoes);
     }
 }
