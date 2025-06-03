@@ -14,7 +14,7 @@ class WhatsappController extends Controller
 
     public function enviar(Request $request)
     {
-        $numero = $request->input('numero'); // Ex: 5582999405099
+        $numero = $request->input('numero'); //
         $mensagem = $request->input('mensagem');
 
         $token = config('services.wppconnect.token');

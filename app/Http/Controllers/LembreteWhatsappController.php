@@ -14,7 +14,7 @@ class LembreteWhatsappController extends Controller
         $sextaFeira = $hoje->copy()->next(Carbon::FRIDAY);
         $sabado = $hoje->copy()->next(Carbon::SATURDAY);
 
-        $sessoes = Sessao::with('paciente')
+        $sessoes = Sessao::with(['paciente', 'usuario']) // garante o usuário carregado
             ->whereDate('data', $hoje)
             ->orWhere(function ($query) use ($sextaFeira, $hoje) {
                 if ($hoje->isFriday()) {
@@ -24,12 +24,16 @@ class LembreteWhatsappController extends Controller
             ->get();
 
         foreach ($sessoes as $sessao) {
-            if (!$sessao->paciente || !$sessao->paciente->telefone) {
+            if (!$sessao->paciente || !$sessao->paciente->telefone || !$sessao->usuario) {
                 continue;
             }
 
-            $numero = '55' . preg_replace('/[^0-9]/', '', $sessao->paciente->telefone); // limpa e adiciona DDI
-            $mensagem = "Olá {$sessao->paciente->nome}, tudo bem? Lembrando que você tem uma sessão marcada para {$sessao->data->format('d/m')} às {$sessao->hora}. Confirma sua presença?";
+            $numero = '55' . preg_replace('/[^0-9]/', '', $sessao->paciente->telefone);
+
+            $nomeProfissional = $sessao->usuario->name;
+            $profissao = $sessao->usuario->tipo_profissional;
+
+            $mensagem = "👋 Olá {$sessao->paciente->nome}, tudo bem? 😊 Lembrando que você tem uma sessão marcada para 📅 {$sessao->data->format('d/m')} às 🕒 {$sessao->hora}, com 🧑‍⚕️ {$nomeProfissional} ({$profissao}). Confirma sua presença? ✅";
 
             $token = config('services.wppconnect.token');
             $url = config('services.wppconnect.url');
@@ -41,8 +45,8 @@ class LembreteWhatsappController extends Controller
                 'phone' => $numero,
                 'message' => $mensagem,
             ]);
+        }
 
         return response()->json(['status' => 'Lembretes enviados com sucesso.']);
-        }
     }
 }
