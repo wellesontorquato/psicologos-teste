@@ -26,7 +26,7 @@
                     [
                         'title' => 'Plano Mensal',
                         'price' => 'R$ 39,90',
-                        'desc' => 'Assinatura mensal com <strong>10 dias grátis</strong>.',
+                        'desc' => 'Assinatura mensal recorrente com <strong>10 dias grátis</strong>.',
                         'highlight' => 'primary',
                         'color' => '#007bff',
                         'savings' => null,
@@ -34,7 +34,7 @@
                     [
                         'title' => 'Plano Trimestral',
                         'price' => 'R$ 104,90',
-                        'desc' => 'Economize <strong>12,36%(R$ 14,80)</strong> com pagamento trimestral.',
+                        'desc' => 'Economize <strong>12,36%(R$ 14,80)</strong> com pagamento trimestral recorrente.',
                         'highlight' => 'success',
                         'color' => '#28a745',
                         'savings' => 'Mais popular',
@@ -42,7 +42,7 @@
                     [
                         'title' => 'Plano Anual',
                         'price' => 'R$ 374,90',
-                        'desc' => 'Economize <strong>21,71%(R$ 103,90)</strong> com pagamento anual.',
+                        'desc' => 'Economize <strong>21,71%(R$ 103,90)</strong> com pagamento anual recorrente.',
                         'highlight' => 'warning',
                         'color' => '#ffc107',
                         'savings' => null,

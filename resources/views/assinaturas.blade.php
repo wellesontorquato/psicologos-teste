@@ -15,7 +15,7 @@
                 </div>
                 <div class="card-body text-center">
                     <h3 class="card-title mb-3">R$ 39,90</h3>
-                    <p class="text-muted">Assinatura mensal com <strong>10 dias grátis</strong></p>
+                    <p class="text-muted">Assinatura mensal recorrente com <strong>10 dias grátis</strong></p>
                     <form action="{{ route('assinatura.checkout') }}" method="POST">
                         @csrf
                         <input type="hidden" name="price_id" value="{{ $precos['mensal'] }}">
@@ -33,7 +33,7 @@
                 </div>
                 <div class="card-body text-center">
                     <h3 class="card-title mb-3">R$ 104,90</h3>
-                    <p class="text-muted">Economize <strong>12,36%(R$ 14,80)</strong> com pagamento trimestral</p>
+                    <p class="text-muted">Economize <strong>12,36%(R$ 14,80)</strong> com pagamento trimestral recorrente</p>
                     <form action="{{ route('assinatura.checkout') }}" method="POST">
                         @csrf
                         <input type="hidden" name="price_id" value="{{ $precos['trimestral'] }}">
@@ -51,7 +51,7 @@
                 </div>
                 <div class="card-body text-center">
                     <h3 class="card-title mb-3">R$ 374,90</h3>
-                    <p class="text-muted">Economize <strong>21,71%(R$ 103,90)</strong> por ano</p>
+                    <p class="text-muted">Economize <strong>21,71%(R$ 103,90)</strong> por ano, assinatura recorrente</p>
                     <form action="{{ route('assinatura.checkout') }}" method="POST">
                         @csrf
                         <input type="hidden" name="price_id" value="{{ $precos['anual'] }}">
