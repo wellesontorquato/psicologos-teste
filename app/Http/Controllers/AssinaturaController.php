@@ -11,9 +11,9 @@ class AssinaturaController extends Controller
     {
         return view('assinaturas', [
             'precos' => [
-                'mensal' => 'price_1RTtx2Fj0xelD5PUJlbowvRb',
-                'trimestral' => 'price_1RTtxlFj0xelD5PUmhRGYz8D',
-                'anual' => 'price_1RTtyKFj0xelD5PUU8G8XVfN',
+                'mensal' => 'price_1RVxueC1nNYXXNDRXZRHr2N3',
+                'trimestral' => 'price_1RVxv5C1nNYXXNDRYJlrrwG5',
+                'anual' => 'price_1RVxvdC1nNYXXNDR2URxfXFz',
             ]
         ]);
     }
@@ -23,9 +23,9 @@ class AssinaturaController extends Controller
         $user = Auth::user();
 
         $validPrices = [
-            'price_1RTtx2Fj0xelD5PUJlbowvRb', // mensal
-            'price_1RTtxlFj0xelD5PUmhRGYz8D', // trimestral
-            'price_1RTtyKFj0xelD5PUU8G8XVfN', // anual
+            'price_1RVxueC1nNYXXNDRXZRHr2N3', // mensal
+            'price_1RVxv5C1nNYXXNDRYJlrrwG5', // trimestral
+            'price_1RVxvdC1nNYXXNDR2URxfXFz', // anual
         ];
 
         if (!in_array($request->price_id, $validPrices)) {
