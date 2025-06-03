@@ -244,12 +244,19 @@
         <a href="{{ route('agenda') }}" class="{{ request()->is('agenda*') ? 'active' : '' }}">
             <i class="bi bi-calendar4-week"></i> <span>Agenda</span>
         </a>
-        <a href="{{ route('assinaturas.index') }}" class="{{ request()->is('assinaturas') ? 'active' : '' }}">
-            <i class="bi bi-credit-card-fill"></i> <span>Assinatura</span>
-            <span class="badge bg-light text-primary ms-2">Novo</span>
-        </a>
+        @auth
+            @if (auth()->user()->subscribed('default'))
+                <a href="{{ route('assinaturas.minha') }}" class="{{ request()->is('minha-assinatura') ? 'active' : '' }}">
+                    <i class="bi bi-credit-card-fill"></i> <span>Minha Assinatura</span>
+                </a>
+            @else
+                <a href="{{ route('assinaturas.index') }}" class="{{ request()->is('assinaturas') ? 'active' : '' }}">
+                    <i class="bi bi-credit-card-fill"></i> <span>Assinatura</span>
+                    <span class="badge bg-light text-primary ms-2">Novo</span>
+                </a>
+            @endif
+        @endauth
 
-        
         @auth
             @if (Auth::user()->is_admin)
                 <a href="{{ route('admin.auditoria.index') }}" class="{{ request()->is('auditoria*') ? 'active' : '' }}">

@@ -38,4 +38,30 @@ class AssinaturaController extends Controller
                 'cancel_url' => route('assinaturas.cancelado'),
             ]);
     }
+
+    public function minha()
+    {
+        $user = Auth::user();
+        $assinatura = $user->subscription('default');
+
+        if (!$assinatura) {
+            return redirect()->route('assinaturas.index')->with('error', 'Você ainda não possui uma assinatura ativa.');
+        }
+
+        $faturas = $user->invoices(); // Laravel Cashier pega via Stripe
+
+        return view('assinatura.minha', compact('assinatura', 'faturas'));
+    }
+
+    public function cancelar()
+    {
+        $user = Auth::user();
+
+        if ($user->subscribed('default')) {
+            $user->subscription('default')->cancel();
+            return redirect()->route('assinaturas.minha')->with('success', 'Assinatura cancelada com sucesso.');
+        }
+
+        return redirect()->route('assinaturas.index')->with('error', 'Você não possui uma assinatura ativa.');
+    }
 }

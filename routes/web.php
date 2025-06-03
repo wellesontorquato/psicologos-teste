@@ -7,6 +7,7 @@ use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Laravel\Cashier\Http\Controllers\WebhookController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\{
     ProfileController,
@@ -68,6 +69,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/checkout', [AssinaturaController::class, 'checkout'])->name('assinatura.checkout');
     Route::view('/assinatura/sucesso', 'assinatura.sucesso')->name('assinaturas.sucesso');
     Route::view('/assinatura/cancelado', 'assinatura.cancelado')->name('assinaturas.cancelado');
+
+    Route::get('/minha-assinatura', [AssinaturaController::class, 'minha'])->name('assinaturas.minha');
+    Route::post('/cancelar-assinatura', [AssinaturaController::class, 'cancelar'])->name('assinatura.cancelar');
+
 });
 
 /*
@@ -146,6 +151,15 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::post('/notificacoes/ler-todas', [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
     Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Stripe Webhook
+|--------------------------------------------------------------------------
+| Responsável por receber os eventos da Stripe e salvar as assinaturas no banco.
+| Não requer autenticação.
+*/
+    Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 
 /*
 |--------------------------------------------------------------------------
