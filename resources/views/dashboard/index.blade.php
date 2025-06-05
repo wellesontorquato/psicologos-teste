@@ -36,36 +36,54 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card text-white bg-primary card-hover">
-                <div class="card-body">
-                    <h6 class="card-title">Sessões de Hoje</h6>
-                    <h3 class="card-text">{{ $sessoesHoje }}</h3>
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-wrapper bg-primary text-white me-3">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Sessões de Hoje</p>
+                        <h4 class="fw-bold mb-0">{{ $sessoesHoje }}</h4>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-success card-hover">
-                <div class="card-body">
-                    <h6 class="card-title">Recebido no Mês</h6>
-                    <h3 class="card-text">R$ {{ number_format($totalMesAtual, 2, ',', '.') }}</h3>
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-wrapper bg-success text-white me-3">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Recebido no Período</p>
+                        <h4 class="fw-bold mb-0">R$ {{ number_format($totalMesAtual, 2, ',', '.') }}</h4>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-danger card-hover">
-                <div class="card-body">
-                    <h6 class="card-title">Pendências</h6>
-                    <h3 class="card-text">{{ $pendencias }}</h3>
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-wrapper bg-danger text-white me-3">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Pendências</p>
+                        <h4 class="fw-bold mb-0">{{ $pendencias }}</h4>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-light border card-hover">
-                <div class="card-body">
-                    <h6 class="card-title">Período Selecionado</h6>
-                    <span class="badge bg-secondary">
-                        {{ $dataInicial->format('d/m/Y') }} a {{ $dataFinal->format('d/m/Y') }}
-                    </span>
+        <div class="col-md-3 d-flex">
+            <div class="card shadow-sm border-0 h-100 w-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-wrapper bg-dark text-white me-3">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Período Selecionado</p>
+                        <h6 class="fw-semibold mb-0">{{ $dataInicial->format('d/m/Y') }} a {{ $dataFinal->format('d/m/Y') }}</h6>
+                    </div>
                 </div>
             </div>
         </div>
@@ -177,6 +195,21 @@
         background-color: white;
         border-radius: 10px;
         padding: 10px;
+    }
+    .icon-circle {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .card-hover:hover {
+        transform: scale(1.02);
+        transition: 0.3s ease;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.12);
     }
 </style>
 @endsection

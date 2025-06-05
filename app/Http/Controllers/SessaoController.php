@@ -15,20 +15,20 @@ class SessaoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Sessao::with('paciente')
+        $baseQuery = Sessao::with('paciente')
             ->whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()));
 
         if ($request->filled('foi_pago')) {
-            $query->where('foi_pago', $request->foi_pago === 'Sim');
+            $baseQuery->where('foi_pago', $request->foi_pago === 'Sim');
         }
 
         if ($request->filled('status') && $request->status !== 'Todos') {
-            $query->where('status_confirmacao', $request->status);
+            $baseQuery->where('status_confirmacao', $request->status);
         }
 
         if ($request->filled('busca')) {
             $busca = preg_replace('/\D/', '', $request->busca);
-            $query->whereHas('paciente', function ($q) use ($busca) {
+            $baseQuery->whereHas('paciente', function ($q) use ($busca) {
                 $q->where('nome', 'like', "%{$busca}%")
                 ->orWhere('telefone', 'like', "%{$busca}%")
                 ->orWhere('email', 'like', "%{$busca}%")
@@ -39,30 +39,59 @@ class SessaoController extends Controller
         if ($request->filled('periodo')) {
             $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
             if ($request->periodo === 'hoje') {
-                $query->whereBetween('data_hora', [$hoje, $hoje->copy()->endOfDay()]);
+                $baseQuery->whereBetween('data_hora', [$hoje, $hoje->copy()->endOfDay()]);
             } elseif ($request->periodo === 'semana') {
-                $query->whereBetween('data_hora', [$hoje->copy()->startOfWeek(), $hoje->copy()->endOfWeek()]);
+                $baseQuery->whereBetween('data_hora', [$hoje->copy()->startOfWeek(), $hoje->copy()->endOfWeek()]);
             } elseif ($request->periodo === 'proxima') {
-                $query->whereBetween('data_hora', [
+                $baseQuery->whereBetween('data_hora', [
                     $hoje->copy()->addWeek()->startOfWeek(),
                     $hoje->copy()->addWeek()->endOfWeek()
                 ]);
             }
         }
 
-        // 🔽 Nova ordenação dinâmica
+        // Ordenação personalizada
         if ($request->ordenar === 'mais_antigo') {
-            $query->orderBy('data_hora', 'asc');
+            $baseQuery->orderByRaw("
+                CASE
+                    WHEN status_confirmacao IN ('CANCELADA', 'CONFIRMADA', 'REMARCAR', 'REMARCADO') THEN 0
+                    ELSE 1
+                END,
+                ISNULL(data_hora),
+                data_hora ASC
+            ");
         } else {
-            $query->orderByRaw('ISNULL(data_hora), data_hora DESC');
+            $baseQuery->orderByRaw("
+                CASE
+                    WHEN status_confirmacao IN ('CANCELADA', 'CONFIRMADA', 'REMARCAR', 'REMARCADO') THEN 0
+                    ELSE 1
+                END,
+                ISNULL(data_hora),
+                data_hora DESC
+            ");
         }
 
-        $sessoes = $query->paginate(10)->withQueryString();
+        // 🔽 Separando as sessões em duas queries independentes com paginação
+        $agora = \Carbon\Carbon::now('America/Sao_Paulo');
+
+        $sessoesMarcadas = (clone $baseQuery)
+            ->where(function ($q) use ($agora) {
+                $q->whereNull('data_hora')
+                ->orWhere('data_hora', '>=', $agora);
+            })
+            ->paginate(10, ['*'], 'marcadas')
+            ->withQueryString();
+
+        $sessoesRealizadas = (clone $baseQuery)
+            ->where('data_hora', '<', $agora)
+            ->paginate(10, ['*'], 'realizadas')
+            ->withQueryString();
 
         AuditHelper::log('view_sessoes', 'Visualizou a lista de sessões');
 
         return view('sessoes.index', [
-            'sessoes' => $sessoes,
+            'sessoesMarcadas' => $sessoesMarcadas,
+            'sessoesRealizadas' => $sessoesRealizadas,
             'filtros' => $request->only(['foi_pago', 'status', 'busca', 'periodo']),
         ]);
     }
@@ -263,7 +292,7 @@ class SessaoController extends Controller
         return response()->json(['message' => 'Sessão atualizada com sucesso']);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $sessao = Sessao::with('paciente')->findOrFail($id);
 
@@ -275,7 +304,18 @@ class SessaoController extends Controller
 
         AuditHelper::log('deleted_sessao', 'Excluiu sessão ID ' . $id);
 
-        return redirect()->route('sessoes.index')->with('success', 'Sessão excluída.');
+        $fragmento = $request->input('aba', 'futuras');
+        $queryString = $request->input('query_string');
+
+        $redirect = redirect()->route('sessoes.index');
+
+        if ($queryString) {
+            $redirect->setTargetUrl(route('sessoes.index') . '?' . $queryString . '#' . $fragmento);
+        } else {
+            $redirect->withFragment($fragmento);
+        }
+
+        return $redirect->with('success', 'Sessão excluída.');
     }
 
     public function destroyJson($id)

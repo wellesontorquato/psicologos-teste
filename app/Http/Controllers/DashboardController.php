@@ -114,9 +114,10 @@ class DashboardController extends Controller
 
         // 💸 Total no mês atual
         $totalMesAtual = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
-            ->whereBetween('data_hora', [$hoje->copy()->startOfMonth(), $hoje->copy()->endOfMonth()])
+            ->whereBetween('data_hora', [$dataInicial, $dataFinal])
             ->where('foi_pago', true)
             ->sum('valor');
+
 
         // 📂 Últimos arquivos enviados
         $ultimosArquivos = Arquivo::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
