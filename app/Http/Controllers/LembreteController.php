@@ -24,10 +24,12 @@ class LembreteController extends Controller
                     $query->orWhereDate('data_hora', $segunda);
                 }
             })
+            // <-- AJUSTE 1: Adicionado 'usuario' para carregar os dados do profissional.
             ->with('paciente', 'usuario') 
             ->get();
 
         $detalhes = $sessoes->map(function ($sessao) {
+            // <-- AJUSTE 2: Adicionado o nome do profissional aos logs para facilitar a depuração.
             return [
                 'sessao_id' => $sessao->id,
                 'data_hora' => $sessao->data_hora,
@@ -57,8 +59,10 @@ class LembreteController extends Controller
 
         foreach ($sessoes as $sessao) {
             $paciente = $sessao->paciente;
+            // <-- AJUSTE 3: Definida a variável $usuario para ser usada logo abaixo.
             $usuario = $sessao->usuario;
 
+            // <-- AJUSTE 4: Adicionada verificação para garantir que o profissional existe.
             if (!$paciente || !$paciente->telefone || !$usuario) {
                 $erros[] = "Dados incompletos (paciente, telefone ou profissional não encontrado): Sessão ID {$sessao->id}";
                 continue;
@@ -69,6 +73,7 @@ class LembreteController extends Controller
                 $numero = '55' . $numero;
             }
 
+            // Este bloco agora funcionará sem erros.
             $dataHoraFormatada = Carbon::parse($sessao->data_hora)->format('d/m/Y \à\s H:i');
             $nomeProfissional = $usuario->name;
             $profissao = $usuario->tipo_profissional ?? 'Profissional';
@@ -76,7 +81,7 @@ class LembreteController extends Controller
             $mensagem = "👋 Olá {$paciente->nome}, tudo bem? 😊\n\n" .
                         "Lembrando da sua sessão agendada para 📅 {$dataHoraFormatada} com o(a) 🧑‍⚕️ {$nomeProfissional} ({$profissao}).\n\n" .
                         "Por favor, responda com *CONFIRMAR*, *REMARCAR* ou *CANCELAR*.";
-
+                        
             $token = config('services.wppconnect.token');
             $url = config('services.wppconnect.url');
             $session = config('services.wppconnect.session');
