@@ -250,4 +250,73 @@ class WebhookWhatsappController extends Controller
 
         return $this->receberMensagem($laravelRequest);
     }
+
+    public function diagnosticarWebhook()
+{
+    try {
+        $logs = [];
+
+        $logs[] = '🔍 Iniciando diagnóstico...';
+
+        $token = config('services.wppconnect.token');
+        $url = config('services.wppconnect.url');
+        $session = config('services.wppconnect.session');
+        $env = app()->environment();
+
+        // ✅ Token
+        if (!$token || strlen($token) < 10) {
+            $logs[] = '❌ Token do WPPConnect inválido ou ausente.';
+        } else {
+            $logs[] = '✅ Token carregado: ' . substr($token, 0, 10) . '...';
+        }
+
+        // ✅ URL
+        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            $logs[] = '❌ URL da API WPPConnect inválida.';
+        } else {
+            $logs[] = '✅ URL da API carregada: ' . $url;
+        }
+
+        // ✅ Session
+        if (!$session) {
+            $logs[] = '❌ Nome da sessão ausente.';
+        } else {
+            $logs[] = '✅ Sessão: ' . $session;
+        }
+
+        // ✅ Ambiente
+        $logs[] = '✅ Ambiente atual: ' . $env;
+        if ($env !== 'production') {
+            $logs[] = '⚠️  Ambiente não está em produção. Verifique APP_ENV no .env';
+        }
+
+        // ✅ Endpoint
+        $endpoint = app()->isLocal()
+            ? "http://localhost:21465/api/{$session}/send-message"
+            : "{$url}/api/{$session}/send-message";
+        $logs[] = '✅ Endpoint detectado: ' . $endpoint;
+
+        // ✅ Teste de acesso à URL
+        try {
+            $test = Http::timeout(5)->get($url);
+            $logs[] = $test->ok()
+                ? '✅ URL da API WPPConnect respondeu com sucesso.'
+                : '❌ A URL da API WPPConnect não respondeu corretamente. Status: ' . $test->status();
+        } catch (\Exception $e) {
+            $logs[] = '❌ Falha ao tentar acessar a URL da API: ' . $e->getMessage();
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'logs' => $logs,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'erro',
+            'mensagem' => 'Erro durante o diagnóstico',
+            'erro' => $e->getMessage(),
+        ], 500);
+    }
+}
+
 }

@@ -20,6 +20,8 @@ Route::get('/ping', function () {
 // 📩 Webhook do WPPConnect para processar mensagens recebidas
 Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem'])->name('webhook.whatsapp');
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
+Route::get('/diagnostico-webhook', [WebhookWhatsappController::class, 'diagnosticarWebhook']);
+
 
 Route::get('/executar-schedule-seguro/{token}', function ($token) {
     if ($token !== env('TOKEN_CRON_SEGURA')) {
