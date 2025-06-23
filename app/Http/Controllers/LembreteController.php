@@ -24,7 +24,7 @@ class LembreteController extends Controller
                     $query->orWhereDate('data_hora', $segunda);
                 }
             })
-            ->with('paciente')
+            ->with('paciente', 'usuario') 
             ->get();
 
         $detalhes = $sessoes->map(function ($sessao) {
@@ -34,6 +34,7 @@ class LembreteController extends Controller
                 'lembrete_enviado' => $sessao->lembrete_enviado,
                 'paciente' => $sessao->paciente->nome ?? 'SEM PACIENTE',
                 'telefone' => $sessao->paciente->telefone ?? 'NÃO INFORMADO',
+                'profissional' => $sessao->usuario->name ?? 'SEM PROFISSIONAL',
                 'enviar' => $sessao->lembrete_enviado == 0 ? 'SIM' : 'NÃO',
             ];
         });
@@ -56,9 +57,10 @@ class LembreteController extends Controller
 
         foreach ($sessoes as $sessao) {
             $paciente = $sessao->paciente;
+            $usuario = $sessao->usuario;
 
-            if (!$paciente || !$paciente->telefone) {
-                $erros[] = "Paciente sem telefone válido: Sessão ID {$sessao->id}";
+            if (!$paciente || !$paciente->telefone || !$usuario) {
+                $erros[] = "Dados incompletos (paciente, telefone ou profissional não encontrado): Sessão ID {$sessao->id}";
                 continue;
             }
 
@@ -68,7 +70,12 @@ class LembreteController extends Controller
             }
 
             $dataHoraFormatada = Carbon::parse($sessao->data_hora)->format('d/m/Y \à\s H:i');
-            $mensagem = "Olá {$paciente->nome}, tudo bem? Sua sessão está marcada para {$dataHoraFormatada}. Por favor, responda com CONFIRMADO, REMARCAR ou CANCELAR.";
+            $nomeProfissional = $usuario->name;
+            $profissao = $usuario->tipo_profissional ?? 'Profissional';
+
+            $mensagem = "👋 Olá {$paciente->nome}, tudo bem? 😊\n\n" .
+                        "Lembrando da sua sessão agendada para 📅 {$dataHoraFormatada} com o(a) 🧑‍⚕️ {$nomeProfissional} ({$profissao}).\n\n" .
+                        "Por favor, responda com *CONFIRMAR*, *REMARCAR* ou *CANCELAR*.";
 
             $token = config('services.wppconnect.token');
             $url = config('services.wppconnect.url');
@@ -79,7 +86,7 @@ class LembreteController extends Controller
             ])->post("{$url}/api/{$session}/send-message", [
                 'phone' => $numero,
                 'message' => $mensagem,
-            ]);            
+            ]);
 
             $json = $resposta->json();
 
