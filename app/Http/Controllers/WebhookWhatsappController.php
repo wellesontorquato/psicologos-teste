@@ -133,6 +133,8 @@ class WebhookWhatsappController extends Controller
             ->orderBy('data_hora')
             ->first();
 
+        Log::info('[Webhook] Sessão encontrada:', ['sessao_id' => $sessao->id ?? 'não encontrada']);
+
         if (!$sessao) {
             Log::warning('[Webhook] ⚠️ Nenhuma sessão encontrada para atualizar.', [
                 'paciente' => $paciente->nome,
@@ -143,12 +145,26 @@ class WebhookWhatsappController extends Controller
         }
 
         $sessao->status_confirmacao = $status;
+        
+        Log::info('[Webhook] Atualizando status da sessão', [
+            'sessao_id' => $sessao->id,
+            'novo_status' => $sessao->status_confirmacao,
+        ]);
 
         if (in_array($sessao->status_confirmacao, ['REMARCAR', 'CANCELADA'])) {
             $sessao->data_hora = null;
         }
 
-        $sessao->save();
+        try {
+            $sessao->save();
+            Log::info('[Webhook] Sessão salva com sucesso', ['sessao_id' => $sessao->id]);
+        } catch (\Exception $e) {
+            Log::error('[Webhook] Erro ao salvar a sessão', [
+                'sessao_id' => $sessao->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         $sessao->loadMissing('paciente');
 
         match ($sessao->status_confirmacao) {
@@ -252,71 +268,70 @@ class WebhookWhatsappController extends Controller
     }
 
     public function diagnosticarWebhook()
-{
-    try {
-        $logs = [];
-
-        $logs[] = '🔍 Iniciando diagnóstico...';
-
-        $token = config('services.wppconnect.token');
-        $url = config('services.wppconnect.url');
-        $session = config('services.wppconnect.session');
-        $env = app()->environment();
-
-        // ✅ Token
-        if (!$token || strlen($token) < 10) {
-            $logs[] = '❌ Token do WPPConnect inválido ou ausente.';
-        } else {
-            $logs[] = '✅ Token carregado: ' . substr($token, 0, 10) . '...';
-        }
-
-        // ✅ URL
-        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
-            $logs[] = '❌ URL da API WPPConnect inválida.';
-        } else {
-            $logs[] = '✅ URL da API carregada: ' . $url;
-        }
-
-        // ✅ Session
-        if (!$session) {
-            $logs[] = '❌ Nome da sessão ausente.';
-        } else {
-            $logs[] = '✅ Sessão: ' . $session;
-        }
-
-        // ✅ Ambiente
-        $logs[] = '✅ Ambiente atual: ' . $env;
-        if ($env !== 'production') {
-            $logs[] = '⚠️  Ambiente não está em produção. Verifique APP_ENV no .env';
-        }
-
-        // ✅ Endpoint
-        $endpoint = app()->isLocal()
-            ? "http://localhost:21465/api/{$session}/send-message"
-            : "{$url}/api/{$session}/send-message";
-        $logs[] = '✅ Endpoint detectado: ' . $endpoint;
-
-        // ✅ Teste de acesso à URL
+    {
         try {
-            $test = Http::timeout(5)->get($url);
-            $logs[] = $test->ok()
-                ? '✅ URL da API WPPConnect respondeu com sucesso.'
-                : '❌ A URL da API WPPConnect não respondeu corretamente. Status: ' . $test->status();
-        } catch (\Exception $e) {
-            $logs[] = '❌ Falha ao tentar acessar a URL da API: ' . $e->getMessage();
+            $logs = [];
+
+            $logs[] = '🔍 Iniciando diagnóstico...';
+
+            $token = config('services.wppconnect.token');
+            $url = config('services.wppconnect.url');
+            $session = config('services.wppconnect.session');
+            $env = app()->environment();
+
+            // ✅ Token
+            if (!$token || strlen($token) < 10) {
+                $logs[] = '❌ Token do WPPConnect inválido ou ausente.';
+            } else {
+                $logs[] = '✅ Token carregado: ' . substr($token, 0, 10) . '...';
+            }
+
+            // ✅ URL
+            if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+                $logs[] = '❌ URL da API WPPConnect inválida.';
+            } else {
+                $logs[] = '✅ URL da API carregada: ' . $url;
+            }
+
+            // ✅ Session
+            if (!$session) {
+                $logs[] = '❌ Nome da sessão ausente.';
+            } else {
+                $logs[] = '✅ Sessão: ' . $session;
+            }
+
+            // ✅ Ambiente
+            $logs[] = '✅ Ambiente atual: ' . $env;
+            if ($env !== 'production') {
+                $logs[] = '⚠️  Ambiente não está em produção. Verifique APP_ENV no .env';
+            }
+
+            // ✅ Endpoint
+            $endpoint = app()->isLocal()
+                ? "http://localhost:21465/api/{$session}/send-message"
+                : "{$url}/api/{$session}/send-message";
+            $logs[] = '✅ Endpoint detectado: ' . $endpoint;
+
+            // ✅ Teste de acesso à URL
+            try {
+                $test = Http::timeout(5)->get($url);
+                $logs[] = $test->ok()
+                    ? '✅ URL da API WPPConnect respondeu com sucesso.'
+                    : '❌ A URL da API WPPConnect não respondeu corretamente. Status: ' . $test->status();
+            } catch (\Exception $e) {
+                $logs[] = '❌ Falha ao tentar acessar a URL da API: ' . $e->getMessage();
+            }
+
+            return response()->json([
+                'status' => 'ok',
+                'logs' => $logs,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'erro',
+                'mensagem' => 'Erro durante o diagnóstico',
+                'erro' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'status' => 'ok',
-            'logs' => $logs,
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'status' => 'erro',
-            'mensagem' => 'Erro durante o diagnóstico',
-            'erro' => $e->getMessage(),
-        ], 500);
     }
-}
-
 }
