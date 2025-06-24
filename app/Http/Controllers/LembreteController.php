@@ -25,7 +25,7 @@ class LembreteController extends Controller
                 }
             })
             // <-- AJUSTE 1: Adicionado 'usuario' para carregar os dados do profissional.
-            ->with('paciente', 'usuario') 
+            ->with('paciente.user') 
             ->get();
 
         $detalhes = $sessoes->map(function ($sessao) {
@@ -36,7 +36,7 @@ class LembreteController extends Controller
                 'lembrete_enviado' => $sessao->lembrete_enviado,
                 'paciente' => $sessao->paciente->nome ?? 'SEM PACIENTE',
                 'telefone' => $sessao->paciente->telefone ?? 'NÃO INFORMADO',
-                'profissional' => $sessao->usuario->name ?? 'SEM PROFISSIONAL',
+                'profissional' => $sessao->paciente?->user?->name ?? 'SEM PROFISSIONAL',
                 'enviar' => $sessao->lembrete_enviado == 0 ? 'SIM' : 'NÃO',
             ];
         });
@@ -60,7 +60,7 @@ class LembreteController extends Controller
         foreach ($sessoes as $sessao) {
             $paciente = $sessao->paciente;
             // <-- AJUSTE 3: Definida a variável $usuario para ser usada logo abaixo.
-            $usuario = $sessao->usuario;
+            $usuario = $sessao->paciente?->user;
 
             // <-- AJUSTE 4: Adicionada verificação para garantir que o profissional existe.
             if (!$paciente || !$paciente->telefone || !$usuario) {
