@@ -6,6 +6,7 @@ use App\Models\Sessao;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Events\SessaoConfirmada;
@@ -21,142 +22,205 @@ class WebhookWhatsappController extends Controller
      */
     public function receberMensagem(Request $request)
     {
+        Log::info('[Webhook] DIAGNÓSTICO DE TIMEZONE:', ['hora_do_servidor' => now()->toDateTimeString(), 'timezone_app_config' => config('app.timezone')]);
         $rawContent = $request->getContent();
         Log::info('[Webhook] 📩 Corpo bruto recebido:', ['raw' => $rawContent]);
-
         $dados = json_decode($rawContent, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             Log::error('[Webhook] ❌ Erro ao decodificar JSON.', ['raw' => $rawContent]);
             return response()->json(['message' => 'JSON inválido.'], 400);
         }
-
         Log::info('[Webhook] 🧾 Dados decodificados:', is_array($dados) ? $dados : []);
-
-        // Estrutura unificada para diferentes payloads de webhook
         $evento = strtolower($dados['event'] ?? '');
         $data = $dados['data'] ?? $dados;
-
         if (!in_array($evento, ['message', 'onmessage']) || empty($data['from']) || empty($data['body'])) {
             Log::info('[Webhook] ➡️ Evento ignorado (não é uma mensagem de usuário).', ['event' => $evento]);
             return response()->json(['message' => 'Evento ignorado.'], 200);
         }
-
         $from = $data['from'];
         $bodyOriginal = $data['body'];
-
         if (!str_contains($from, '@c.us')) {
             Log::warning('[Webhook] 🚫 Número malformado, ignorando.', ['from' => $from]);
             return response()->json(['message' => 'Número inválido.'], 200);
         }
-
-        // --- Processamento e Busca ---
-
         $numeroLimpo = $this->normalizarNumero($from);
         $bodyLimpo = strtoupper(Str::ascii(trim($bodyOriginal)));
-        
-        Log::info('[Webhook] 🧪 Dados processados:', [
-            'numero_normalizado' => $numeroLimpo,
-            'texto_limpo' => $bodyLimpo
-        ]);
-
+        Log::info('[Webhook] 🧪 Dados processados:', ['numero_normalizado' => $numeroLimpo, 'texto_limpo' => $bodyLimpo]);
         $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
-
         if (!$paciente) {
             Log::warning('[Webhook] ❌ Paciente não encontrado com o número.', ['numero' => $numeroLimpo]);
             $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu cadastro em nosso sistema. Por favor, verifique o número com o(a) profissional que te acompanha.');
             return response()->json(['message' => 'Paciente não encontrado.'], 200);
         }
-        
         Log::info('[Webhook] ✅ Paciente encontrado:', ['id' => $paciente->id, 'nome' => $paciente->nome]);
-
         $status = $this->mapearRespostaParaStatus($bodyLimpo);
-
         if (!$status) {
             Log::info('[Webhook] ⚠️ Resposta inválida do paciente.', ['recebido' => $bodyLimpo]);
             $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nPara confirmar sua sessão, responda com uma das palavras:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
             $this->responderNoWhatsapp($numeroLimpo, $mensagemErro);
             return response()->json(['message' => 'Mensagem inválida.'], 200);
         }
-        
         Log::info('[Webhook] ✅ Intenção detectada:', ['palavra_chave' => $bodyLimpo, 'status_mapeado' => $status]);
-
-        // --- Busca da Sessão (Ponto Crítico com a Correção de Timezone e Logs) ---
-        
-        $hoje = Carbon::today(config('app.timezone'));
-        $dataLimite = $hoje->copy()->addDays(5);
-        
-        Log::info('[Webhook] 🔍 Buscando sessão para o paciente...', [
-            'paciente_id' => $paciente->id,
-            'data_inicio_busca' => $hoje->toDateString(),
-            'data_fim_busca' => $dataLimite->toDateString(),
-            'condicoes' => [
-                'status_confirmacao' => 'PENDENTE',
-                'lembrete_enviado' => 1
-            ]
-        ]);
-
-        // [MUDANÇA AQUI] Usando whereDate para uma comparação mais segura contra problemas de fuso horário.
-        $sessao = Sessao::where('paciente_id', $paciente->id)
-            ->where('status_confirmacao', 'PENDENTE')
-            ->where('lembrete_enviado', 1)
-            ->whereDate('data_hora', '>=', $hoje->toDateString())
-            ->whereDate('data_hora', '<=', $dataLimite->toDateString())
-            ->orderBy('data_hora', 'asc')
-            ->first();
-
+        $sessao = $this->encontrarSessaoValidaParaConfirmacao($paciente);
         if (!$sessao) {
-            // [LOG MELHORADO AQUI] Verifica se existem sessões para este paciente que falharam em alguma condição.
-            $sessoesCandidatas = Sessao::where('paciente_id', $paciente->id)->where('status_confirmacao', 'PENDENTE')->get();
-
-            Log::warning('[Webhook] ⚠️ Nenhuma sessão PENDENTE e com LEMBRETE ENVIADO foi encontrada no período correto.', [
-                'paciente' => $paciente->nome,
-                'numero' => $numeroLimpo,
-                'sessoes_pendentes_encontradas_fora_criterio' => $sessoesCandidatas->toArray() // Isso vai nos mostrar o que existe no banco
-            ]);
-            
             $this->responderNoWhatsapp($numeroLimpo, "Olá, {$paciente->nome}! Recebemos sua mensagem, mas não encontramos uma sessão pendente de confirmação para você nos próximos dias.");
-            return response()->json(['message' => 'Nenhuma sessão encontrada.'], 200);
+            return response()->json(['message' => 'Nenhuma sessão encontrada após verificação detalhada.'], 200);
         }
-
-        Log::info('[Webhook] ✅ Sessão encontrada para atualização:', ['sessao_id' => $sessao->id, 'data_hora' => $sessao->data_hora->toDateTimeString()]);
-        
-        // --- Atualização e Resposta ---
-
+        Log::info('[Webhook] ✅ SESSÃO VALIDADA COM SUCESSO!', ['sessao_id' => $sessao->id, 'data_hora' => $sessao->data_hora->toDateTimeString()]);
         $sessao->status_confirmacao = $status;
         if (in_array($status, ['REMARCAR', 'CANCELADA'])) {
             $sessao->data_hora = null;
         }
-
         try {
             $sessao->save();
             Log::info('[Webhook] 💾 SESSÃO SALVA COM SUCESSO NO BANCO DE DADOS!', ['sessao_id' => $sessao->id, 'novo_status' => $status]);
         } catch (\Exception $e) {
-            Log::error('[Webhook] 💥 CRÍTICO: Erro ao salvar a sessão no banco de dados!', [
-                'sessao_id' => $sessao->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString() // Para debug aprofundado
-            ]);
+            Log::error('[Webhook] 💥 CRÍTICO: Erro ao salvar a sessão no banco de dados!', ['sessao_id' => $sessao->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             $this->responderNoWhatsapp($numeroLimpo, "🚨 Ocorreu um erro interno ao processar sua resposta. Já fomos notificados. Por favor, entre em contato com a clínica diretamente.");
             return response()->json(['message' => 'Erro ao salvar sessão.'], 500);
         }
-
         $sessao->loadMissing('paciente');
-
         match ($status) {
             'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
             'CANCELADA'  => event(new SessaoCancelada($sessao)),
             'REMARCAR'   => event(new SessaoRemarcada($sessao)),
             default      => null,
         };
-
         $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}! Sua sessão foi atualizada para: *{$status}*.";
         if ($status === 'REMARCAR') {
             $mensagem .= "\n\nEntraremos em contato para encontrar um novo horário.";
         }
-        
         $this->responderNoWhatsapp($numeroLimpo, $mensagem);
-
         return response()->json(['message' => 'Sessão atualizada com sucesso.'], 200);
+    }
+
+    private function encontrarSessaoValidaParaConfirmacao(Paciente $paciente): ?Sessao
+    {
+        $hoje = Carbon::today(config('app.timezone'));
+        $dataLimite = $hoje->copy()->addDays(5);
+        $sessoesCandidatas = Sessao::where('paciente_id', $paciente->id)->where('status_confirmacao', 'PENDENTE')->orderBy('data_hora', 'asc')->get();
+        if ($sessoesCandidatas->isEmpty()) {
+            Log::warning('[DIAGNÓSTICO] Nenhuma sessão com status PENDENTE encontrada para o paciente.', ['paciente_id' => $paciente->id]);
+            return null;
+        }
+        Log::info('[DIAGNÓSTICO] Sessões candidatas encontradas:', $sessoesCandidatas->pluck('id')->toArray());
+        foreach ($sessoesCandidatas as $sessao) {
+            Log::info('----------------------------------------------------');
+            Log::info('[DIAGNÓSTICO] Verificando sessão ID: ' . $sessao->id, ['dados_completos' => $sessao->toArray()]);
+            $lembreteOk = $sessao->lembrete_enviado == 1;
+            Log::info('[DIAGNÓSTICO] Checando `lembrete_enviado == 1`... Resultado: ' . ($lembreteOk ? '✅ SUCESSO' : '❌ FALHA'));
+            if (!$lembreteOk) continue;
+            $dataSessao = Carbon::parse($sessao->data_hora)->startOfDay();
+            $dataOk = $dataSessao->betweenIncluded($hoje, $dataLimite);
+            Log::info('[DIAGNÓSTICO] Checando data... ', ['data_sessao' => $dataSessao->toDateString(), 'data_inicio_intervalo' => $hoje->toDateString(), 'data_fim_intervalo' => $dataLimite->toDateString(), 'resultado' => ($dataOk ? '✅ SUCESSO' : '❌ FALHA')]);
+            if (!$dataOk) continue;
+            Log::info('[DIAGNÓSTICO] ✅ SESSÃO ID ' . $sessao->id . ' passou em todas as validações!');
+            Log::info('----------------------------------------------------');
+            return $sessao;
+        }
+        Log::warning('[DIAGNÓSTICO] Nenhuma das sessões candidatas passou em todos os critérios de validação.');
+        Log::info('----------------------------------------------------');
+        return null;
+    }
+
+    /**
+     * [NOVA FERRAMENTA DE DIAGNÓSTICO]
+     * Acessível via /api/webhook/diagnostico
+     */
+    public function diagnosticarWebhook(Request $request)
+    {
+        $diagnostico = [];
+
+        // 1. Configurações do Ambiente Laravel
+        $diagnostico['ambiente_laravel'] = [
+            'APP_ENV' => config('app.env'),
+            'APP_DEBUG' => config('app.debug'),
+            'APP_URL' => config('app.url'),
+            'LOG_CHANNEL' => config('logging.default'),
+        ];
+
+        // 2. Fuso Horário (Timezone)
+        try {
+            $db_time = DB::select('select now() as db_time')[0]->db_time;
+        } catch (\Exception $e) {
+            $db_time = 'ERRO AO ACESSAR BANCO: ' . $e->getMessage();
+        }
+        $diagnostico['fuso_horario'] = [
+            'app_timezone_config' => config('app.timezone'),
+            'php_default_timezone' => date_default_timezone_get(),
+            'carbon_now (app_timezone)' => Carbon::now()->toDateTimeString(),
+            'hora_banco_dados (db_timezone)' => $db_time,
+        ];
+
+        // 3. Configurações WPPConnect
+        $diagnostico['wppconnect'] = [
+            'url' => config('services.wppconnect.url'),
+            'session' => config('services.wppconnect.session'),
+            'token_presente' => !empty(config('services.wppconnect.token')),
+        ];
+
+        // 4. Teste de Conectividade WPPConnect
+        try {
+            $response = Http::timeout(5)->get(config('services.wppconnect.url'));
+            $diagnostico['wppconnect']['conectividade'] = [
+                'status' => 'SUCESSO',
+                'http_status' => $response->status(),
+            ];
+        } catch (\Exception $e) {
+            $diagnostico['wppconnect']['conectividade'] = [
+                'status' => 'FALHA',
+                'erro' => $e->getMessage(),
+            ];
+        }
+        
+        // 5. Diagnóstico Específico por Telefone (se fornecido)
+        if ($request->has('telefone')) {
+            $telefoneRaw = $request->input('telefone');
+            $numeroLimpo = $this->normalizarNumero($telefoneRaw);
+            $diagnostico['diagnostico_paciente'] = ['telefone_fornecido' => $telefoneRaw, 'numero_normalizado' => $numeroLimpo];
+            
+            $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
+            
+            if (!$paciente) {
+                $diagnostico['diagnostico_paciente']['status'] = 'PACIENTE NÃO ENCONTRADO';
+            } else {
+                $diagnostico['diagnostico_paciente']['status'] = 'PACIENTE ENCONTRADO';
+                $diagnostico['diagnostico_paciente']['paciente_id'] = $paciente->id;
+                $diagnostico['diagnostico_paciente']['paciente_nome'] = $paciente->nome;
+
+                $hoje = Carbon::today(config('app.timezone'));
+                $dataLimite = $hoje->copy()->addDays(5);
+                
+                $sessoes = Sessao::where('paciente_id', $paciente->id)->orderBy('data_hora', 'desc')->take(10)->get();
+
+                if($sessoes->isEmpty()){
+                     $diagnostico['diagnostico_paciente']['sessoes'] = 'NENHUMA SESSÃO ENCONTRADA PARA ESTE PACIENTE';
+                } else {
+                    $diagnostico['diagnostico_paciente']['sessoes_analisadas'] = [];
+                    foreach($sessoes as $sessao) {
+                        $dataSessao = Carbon::parse($sessao->data_hora)->startOfDay();
+                        $elegivel = ($sessao->status_confirmacao === 'PENDENTE' && $sessao->lembrete_enviado == 1 && $dataSessao->betweenIncluded($hoje, $dataLimite));
+                        
+                        $diagnostico['diagnostico_paciente']['sessoes_analisadas'][] = [
+                            'sessao_id' => $sessao->id,
+                            'data_hora_db' => $sessao->data_hora,
+                            'status_confirmacao_db' => $sessao->status_confirmacao,
+                            'lembrete_enviado_db' => $sessao->lembrete_enviado,
+                            'ANALISE' => [
+                                '1_status_eh_pendente' => ($sessao->status_confirmacao === 'PENDENTE'),
+                                '2_lembrete_foi_enviado' => ($sessao->lembrete_enviado == 1),
+                                '3_esta_no_intervalo_de_data' => $dataSessao->betweenIncluded($hoje, $dataLimite),
+                                'intervalo_usado' => "De {$hoje->toDateString()} até {$dataLimite->toDateString()}"
+                            ],
+                            'RESULTADO_FINAL' => $elegivel ? '✅ ELEGÍVEL PARA CONFIRMAÇÃO' : '❌ NÃO ELEGÍVEL'
+                        ];
+                    }
+                }
+            }
+        } else {
+             $diagnostico['diagnostico_paciente'] = 'Nenhum telefone fornecido. Adicione ?telefone=NUMERO na URL para um diagnóstico específico.';
+        }
+        return response()->json($diagnostico, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -301,73 +365,5 @@ class WebhookWhatsappController extends Controller
 
         $laravelRequest = Request::createFromBase($symfonyRequest);
         return $this->receberMensagem($laravelRequest);
-    }
-
-    public function diagnosticarWebhook()
-    {
-        try {
-            $logs = [];
-
-            $logs[] = '🔍 Iniciando diagnóstico...';
-
-            $token = config('services.wppconnect.token');
-            $url = config('services.wppconnect.url');
-            $session = config('services.wppconnect.session');
-            $env = app()->environment();
-
-            // ✅ Token
-            if (!$token || strlen($token) < 10) {
-                $logs[] = '❌ Token do WPPConnect inválido ou ausente.';
-            } else {
-                $logs[] = '✅ Token carregado: ' . substr($token, 0, 10) . '...';
-            }
-
-            // ✅ URL
-            if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
-                $logs[] = '❌ URL da API WPPConnect inválida.';
-            } else {
-                $logs[] = '✅ URL da API carregada: ' . $url;
-            }
-
-            // ✅ Session
-            if (!$session) {
-                $logs[] = '❌ Nome da sessão ausente.';
-            } else {
-                $logs[] = '✅ Sessão: ' . $session;
-            }
-
-            // ✅ Ambiente
-            $logs[] = '✅ Ambiente atual: ' . $env;
-            if ($env !== 'production') {
-                $logs[] = '⚠️  Ambiente não está em produção. Verifique APP_ENV no .env';
-            }
-
-            // ✅ Endpoint
-            $endpoint = app()->isLocal()
-                ? "http://localhost:21465/api/{$session}/send-message"
-                : "{$url}/api/{$session}/send-message";
-            $logs[] = '✅ Endpoint detectado: ' . $endpoint;
-
-            // ✅ Teste de acesso à URL
-            try {
-                $test = Http::timeout(5)->get($url);
-                $logs[] = $test->ok()
-                    ? '✅ URL da API WPPConnect respondeu com sucesso.'
-                    : '❌ A URL da API WPPConnect não respondeu corretamente. Status: ' . $test->status();
-            } catch (\Exception $e) {
-                $logs[] = '❌ Falha ao tentar acessar a URL da API: ' . $e->getMessage();
-            }
-
-            return response()->json([
-                'status' => 'ok',
-                'logs' => $logs,
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'erro',
-                'mensagem' => 'Erro durante o diagnóstico',
-                'erro' => $e->getMessage(),
-            ], 500);
-        }
     }
 }
