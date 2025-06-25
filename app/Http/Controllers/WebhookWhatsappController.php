@@ -60,7 +60,7 @@ class WebhookWhatsappController extends Controller
         }
         Log::info('[Webhook] ✅ Intenção detectada:', ['palavra_chave' => $bodyLimpo, 'status_mapeado' => $status]);
         
-        // [CORREÇÃO FINAL] Busca a sessão ignorando escopos globais
+        // Busca a sessão ignorando escopos globais
         $sessao = $this->encontrarSessaoValidaParaConfirmacao($paciente);
         
         if (!$sessao) {
@@ -73,7 +73,7 @@ class WebhookWhatsappController extends Controller
             $sessao->data_hora = null;
         }
         try {
-            // [CORREÇÃO FINAL] Salva o modelo sem escopos para evitar problemas
+            // Salva o modelo sem escopos para evitar problemas
             Sessao::withoutGlobalScopes()->where('id', $sessao->id)->update($sessao->getDirty());
             Log::info('[Webhook] 💾 SESSÃO SALVA COM SUCESSO NO BANCO DE DADOS!', ['sessao_id' => $sessao->id, 'novo_status' => $status]);
         } catch (\Exception $e) {
@@ -99,7 +99,7 @@ class WebhookWhatsappController extends Controller
         $hoje = Carbon::today(config('app.timezone'));
         $dataLimite = $hoje->copy()->addDays(5);
 
-        // [CORREÇÃO FINAL] Usamos withoutGlobalScopes() para garantir que vemos TODAS as sessões.
+        // Usamos withoutGlobalScopes() para garantir que vemos TODAS as sessões.
         $sessoesCandidatas = Sessao::withoutGlobalScopes()
                                 ->where('paciente_id', $paciente->id)
                                 ->where('status_confirmacao', 'PENDENTE')
@@ -149,12 +149,15 @@ class WebhookWhatsappController extends Controller
                 $hoje = Carbon::today(config('app.timezone'));
                 $dataLimite = $hoje->copy()->addDays(5);
                 
-                // [NOVA VERIFICAÇÃO] Adicionamos withTrashed() para encontrar registros com soft-delete
-                $sessoes = Sessao::withoutGlobalScopes()->withTrashed()
-                            ->where('paciente_id', $paciente->id)
-                            ->orderBy('data_hora', 'desc')
-                            ->take(20) // Aumentado para 20 para garantir
-                            ->get();
+                // [CORREÇÃO 500] Verifica se o modelo usa SoftDeletes antes de tentar usar withTrashed()
+                $query = Sessao::withoutGlobalScopes()->where('paciente_id', $paciente->id);
+                $modelUsaSoftDeletes = in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses(Sessao::class));
+
+                if ($modelUsaSoftDeletes) {
+                    $query->withTrashed();
+                }
+                
+                $sessoes = $query->orderBy('data_hora', 'desc')->take(20)->get();
                 
                 if($sessoes->isEmpty()){
                      $diagnostico['diagnostico_paciente']['sessoes'] = 'NENHUMA SESSÃO ENCONTRADA PARA ESTE PACIENTE (mesmo incluindo deletadas)';
@@ -166,7 +169,7 @@ class WebhookWhatsappController extends Controller
                         
                         $diagnostico['diagnostico_paciente']['sessoes_analisadas'][] = [
                             'sessao_id' => $sessao->id,
-                            'FOI_DELETADA_VIA_SOFTDELETE' => $sessao->trashed(), // <-- NOVA INFORMAÇÃO
+                            'FOI_DELETADA_VIA_SOFTDELETE' => $modelUsaSoftDeletes ? $sessao->trashed() : false, // Verifica antes de chamar
                             'data_hora_db' => $sessao->data_hora,
                             'status_confirmacao_db' => $sessao->status_confirmacao,
                             'lembrete_enviado_db' => $sessao->lembrete_enviado,
