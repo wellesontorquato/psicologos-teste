@@ -149,18 +149,24 @@ class WebhookWhatsappController extends Controller
                 $hoje = Carbon::today(config('app.timezone'));
                 $dataLimite = $hoje->copy()->addDays(5);
                 
-                // [CORREÇÃO FINAL] Usamos withoutGlobalScopes() no diagnóstico também.
-                $sessoes = Sessao::withoutGlobalScopes()->where('paciente_id', $paciente->id)->orderBy('data_hora', 'desc')->take(10)->get();
+                // [NOVA VERIFICAÇÃO] Adicionamos withTrashed() para encontrar registros com soft-delete
+                $sessoes = Sessao::withoutGlobalScopes()->withTrashed()
+                            ->where('paciente_id', $paciente->id)
+                            ->orderBy('data_hora', 'desc')
+                            ->take(20) // Aumentado para 20 para garantir
+                            ->get();
                 
                 if($sessoes->isEmpty()){
-                     $diagnostico['diagnostico_paciente']['sessoes'] = 'NENHUMA SESSÃO ENCONTRADA PARA ESTE PACIENTE';
+                     $diagnostico['diagnostico_paciente']['sessoes'] = 'NENHUMA SESSÃO ENCONTRADA PARA ESTE PACIENTE (mesmo incluindo deletadas)';
                 } else {
                     $diagnostico['diagnostico_paciente']['sessoes_analisadas'] = [];
                     foreach($sessoes as $sessao) {
                         $dataSessao = Carbon::parse($sessao->data_hora)->startOfDay();
                         $elegivel = ($sessao->status_confirmacao === 'PENDENTE' && $sessao->lembrete_enviado == 1 && $dataSessao->betweenIncluded($hoje, $dataLimite));
+                        
                         $diagnostico['diagnostico_paciente']['sessoes_analisadas'][] = [
                             'sessao_id' => $sessao->id,
+                            'FOI_DELETADA_VIA_SOFTDELETE' => $sessao->trashed(), // <-- NOVA INFORMAÇÃO
                             'data_hora_db' => $sessao->data_hora,
                             'status_confirmacao_db' => $sessao->status_confirmacao,
                             'lembrete_enviado_db' => $sessao->lembrete_enviado,
