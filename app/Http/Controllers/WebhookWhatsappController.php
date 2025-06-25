@@ -16,73 +16,177 @@ use Illuminate\Support\Str;
 
 class WebhookWhatsappController extends Controller
 {
+    /**
+     * Ponto de entrada principal para o webhook do WhatsApp.
+     */
     public function receberMensagem(Request $request)
     {
         $rawContent = $request->getContent();
         Log::info('[Webhook] 📩 Corpo bruto recebido:', ['raw' => $rawContent]);
 
         $dados = json_decode($rawContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Log::error('[Webhook] ❌ Erro ao decodificar JSON.', ['raw' => $rawContent]);
+            return response()->json(['message' => 'JSON inválido.'], 400);
+        }
+
         Log::info('[Webhook] 🧾 Dados decodificados:', is_array($dados) ? $dados : []);
 
+        // Estrutura unificada para diferentes payloads de webhook
         $evento = strtolower($dados['event'] ?? '');
         $data = $dados['data'] ?? $dados;
 
         if (!in_array($evento, ['message', 'onmessage']) || empty($data['from']) || empty($data['body'])) {
+            Log::info('[Webhook] ➡️ Evento ignorado (não é uma mensagem de usuário).', ['event' => $evento]);
             return response()->json(['message' => 'Evento ignorado.'], 200);
         }
 
         $from = $data['from'];
         $bodyOriginal = $data['body'];
-        $bodyLimpo = strtoupper(Str::ascii(trim($bodyOriginal)));
-        Log::info('[Webhook] 🧪 Texto limpo gerado:', ['original' => $bodyOriginal, 'limpo' => $bodyLimpo]);
 
         if (!str_contains($from, '@c.us')) {
-            Log::warning('[Webhook] 🚫 Número malformado:', ['from' => $from]);
+            Log::warning('[Webhook] 🚫 Número malformado, ignorando.', ['from' => $from]);
             return response()->json(['message' => 'Número inválido.'], 200);
         }
 
-        $numero = str_replace(['@c.us', '+'], '', $from);
-        $numeroLimpo = $this->normalizarNumero($numero);
-        Log::info('[Webhook] 📞 Número extraído e normalizado:', ['original' => $numero, 'normalizado' => $numeroLimpo]);
+        // --- Processamento e Busca ---
 
-        // Busca direta pelo número já normalizado
-        $paciente = Paciente::get()->first(function ($p) use ($numeroLimpo) {
-            $telefoneBanco = preg_replace('/\D/', '', $p->telefone);
+        $numeroLimpo = $this->normalizarNumero($from);
+        $bodyLimpo = strtoupper(Str::ascii(trim($bodyOriginal)));
+        
+        Log::info('[Webhook] 🧪 Dados processados:', [
+            'numero_normalizado' => $numeroLimpo,
+            'texto_limpo' => $bodyLimpo
+        ]);
 
-            // Tenta casar diretamente
-            if ($numeroLimpo === $telefoneBanco) {
-                return true;
-            }
-
-            // Se o número tem 8 dígitos após o DDD (faltando o 9), tenta adicionar o 9 para comparar
-            if (preg_match('/^(\d{2})(\d{8})$/', $numeroLimpo, $matches)) {
-                $numeroComNove = $matches[1] . '9' . $matches[2];
-                if ($numeroComNove === $telefoneBanco) {
-                    Log::info('[Webhook] 🔄 Casou número adicionando 9:', ['original' => $numeroLimpo, 'ajustado' => $numeroComNove]);
-                    return true;
-                }
-            }
-
-            return false;
-        });
+        $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
 
         if (!$paciente) {
-            Log::warning('[Webhook] ❌ Paciente não encontrado:', ['numero' => $numeroLimpo]);
-            $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu número no sistema. Verifique com o(a) profissional que te acompanha.');
+            Log::warning('[Webhook] ❌ Paciente não encontrado com o número.', ['numero' => $numeroLimpo]);
+            $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu cadastro em nosso sistema. Por favor, verifique o número com o(a) profissional que te acompanha.');
             return response()->json(['message' => 'Paciente não encontrado.'], 200);
         }
+        
+        Log::info('[Webhook] ✅ Paciente encontrado:', ['id' => $paciente->id, 'nome' => $paciente->nome]);
 
+        $status = $this->mapearRespostaParaStatus($bodyLimpo);
+
+        if (!$status) {
+            Log::info('[Webhook] ⚠️ Resposta inválida do paciente.', ['recebido' => $bodyLimpo]);
+            $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nPara confirmar sua sessão, responda com uma das palavras:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
+            $this->responderNoWhatsapp($numeroLimpo, $mensagemErro);
+            return response()->json(['message' => 'Mensagem inválida.'], 200);
+        }
+        
+        Log::info('[Webhook] ✅ Intenção detectada:', ['palavra_chave' => $bodyLimpo, 'status_mapeado' => $status]);
+
+        // --- Busca da Sessão (Ponto Crítico) ---
+        
+        $hoje = Carbon::today(config('app.timezone'));
+        $limiteDias = 5;
+        
+        Log::info('[Webhook] 🔍 Buscando sessão para o paciente...', [
+            'paciente_id' => $paciente->id,
+            'data_inicio_busca' => $hoje->toDateString(),
+            'data_fim_busca' => $hoje->copy()->addDays($limiteDias)->toDateString()
+        ]);
+
+        $sessao = Sessao::where('paciente_id', $paciente->id)
+            ->where('status_confirmacao', 'PENDENTE')
+            ->where('lembrete_enviado', 1)
+            ->where('data_hora', '>=', $hoje)
+            ->where('data_hora', '<=', $hoje->copy()->addDays($limiteDias))
+            ->orderBy('data_hora', 'asc')
+            ->first();
+
+        if (!$sessao) {
+            Log::warning('[Webhook] ⚠️ Nenhuma sessão PENDENTE e com LEMBRETE ENVIADO foi encontrada para o paciente no período correto.', [
+                'paciente' => $paciente->nome,
+                'numero' => $numeroLimpo
+            ]);
+            $this->responderNoWhatsapp($numeroLimpo, "Olá, {$paciente->nome}! Recebemos sua mensagem, mas não encontramos uma sessão pendente de confirmação para você nos próximos dias.");
+            return response()->json(['message' => 'Nenhuma sessão encontrada.'], 200);
+        }
+
+        Log::info('[Webhook] ✅ Sessão encontrada para atualização:', ['sessao_id' => $sessao->id, 'data_hora' => $sessao->data_hora]);
+        
+        // --- Atualização e Resposta ---
+
+        $sessao->status_confirmacao = $status;
+        if (in_array($status, ['REMARCAR', 'CANCELADA'])) {
+            $sessao->data_hora = null;
+        }
+
+        try {
+            $sessao->save();
+            Log::info('[Webhook] 💾 SESSÃO SALVA COM SUCESSO NO BANCO DE DADOS!', ['sessao_id' => $sessao->id, 'novo_status' => $status]);
+        } catch (\Exception $e) {
+            Log::error('[Webhook] 💥 CRÍTICO: Erro ao salvar a sessão no banco de dados!', [
+                'sessao_id' => $sessao->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString() // Para debug aprofundado
+            ]);
+            $this->responderNoWhatsapp($numeroLimpo, "🚨 Ocorreu um erro interno ao processar sua resposta. Já fomos notificados. Por favor, entre em contato com a clínica diretamente.");
+            return response()->json(['message' => 'Erro ao salvar sessão.'], 500);
+        }
+
+        $sessao->loadMissing('paciente');
+
+        match ($status) {
+            'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
+            'CANCELADA'  => event(new SessaoCancelada($sessao)),
+            'REMARCAR'   => event(new SessaoRemarcada($sessao)),
+            default      => null,
+        };
+
+        $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}! Sua sessão foi atualizada para: *{$status}*.";
+        if ($status === 'REMARCAR') {
+            $mensagem .= "\n\nEntraremos em contato para encontrar um novo horário.";
+        }
+        
+        $this->responderNoWhatsapp($numeroLimpo, $mensagem);
+
+        return response()->json(['message' => 'Sessão atualizada com sucesso.'], 200);
+    }
+
+    /**
+     * Encontra um paciente pelo número de telefone de forma eficiente.
+     */
+    private function encontrarPacientePorTelefone(string $numeroLimpo)
+    {
+        // Esta query é muito mais eficiente que Paciente::get()
+        return Paciente::where(function ($query) use ($numeroLimpo) {
+                // Remove todos os caracteres não numéricos do campo do banco na própria query
+                $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroLimpo]);
+
+                // Lógica para o "9" ausente: se o número recebido tem 10 dígitos (DDD + 8),
+                // busca no banco por números com 11 dígitos que correspondam.
+                if (strlen($numeroLimpo) === 10) {
+                    $ddd = substr($numeroLimpo, 0, 2);
+                    $resto = substr($numeroLimpo, 2);
+                    $numeroComNove = $ddd . '9' . $resto;
+                    $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroComNove]);
+                }
+            })
+            ->first();
+    }
+    
+    /**
+     * Mapeia a resposta do usuário para um status interno.
+     */
+    private function mapearRespostaParaStatus(string $bodyLimpo): ?string
+    {
+        // NOTA: A ordem é importante! Chaves mais específicas (com negação) vêm primeiro.
         $mapa = [
-            // CONFIRMAR
-            'CONFIRMADO'    => 'CONFIRMADA',
-            'CONFIRMAR'     => 'CONFIRMADA',
-            'CONFIRMADA'    => 'CONFIRMADA',
-            'OK'            => 'CONFIRMADA',
-            'CERTO'         => 'CONFIRMADA',
-            'SIM'           => 'CONFIRMADA',
-            'VOU'           => 'CONFIRMADA',
-            'ESTAREI'       => 'CONFIRMADA',
-            'CONFIRMEI'     => 'CONFIRMADA',
+            // CANCELAR (mais específico primeiro)
+            'NAO VOU'       => 'CANCELADA',
+            'NÃO VOU'       => 'CANCELADA',
+            'CANCELAR'      => 'CANCELADA',
+            'CANCELADO'     => 'CANCELADA',
+            'CANCELADA'     => 'CANCELADA',
+            'DESMARCAR'     => 'CANCELADA',
+            'DESMARQUE'     => 'CANCELADA',
+            'CANCELE'       => 'CANCELADA',
 
             // REMARCAR
             'REMARCAR'      => 'REMARCAR',
@@ -90,103 +194,48 @@ class WebhookWhatsappController extends Controller
             'REAGENDAR'     => 'REMARCAR',
             'REAGENDAMENTO' => 'REMARCAR',
             'REMARQUE'      => 'REMARCAR',
-            'REMARCARÁ'     => 'REMARCAR',
             'MUDAR'         => 'REMARCAR',
             'TROCAR'        => 'REMARCAR',
             'ADIAR'         => 'REMARCAR',
-
-            // CANCELAR
-            'CANCELAR'      => 'CANCELADA',
-            'CANCELADO'     => 'CANCELADA',
-            'CANCELADA'     => 'CANCELADA',
-            'DESMARCAR'     => 'CANCELADA',
-            'DESMARQUE'     => 'CANCELADA',
-            'NAO VOU'       => 'CANCELADA',
-            'NÃO VOU'       => 'CANCELADA',
-            'CANCELE'       => 'CANCELADA',
+            
+            // CONFIRMAR (mais genérico por último)
+            'CONFIRMADO'    => 'CONFIRMADA',
+            'CONFIRMAR'     => 'CONFIRMADA',
+            'CONFIRMADA'    => 'CONFIRMADA',
+            'CONFIRMEI'     => 'CONFIRMADA',
+            'OK'            => 'CONFIRMADA',
+            'CERTO'         => 'CONFIRMADA',
+            'SIM'           => 'CONFIRMADA',
+            'VOU'           => 'CONFIRMADA',
+            'ESTAREI'       => 'CONFIRMADA',
         ];
 
-        // 🔍 Busca inteligente pela primeira palavra-chave que bate
-        $status = null;
         foreach ($mapa as $chave => $valor) {
             if (Str::contains($bodyLimpo, $chave)) {
-                $status = $valor;
-                Log::info('[Webhook] ✅ Palavra-chave detectada:', ['chave' => $chave, 'status' => $valor]);
-                break;
+                return $valor;
             }
         }
-
-        if (!$status) {
-            Log::info('[Webhook] ⚠️ Resposta inválida do paciente', ['recebido' => $bodyLimpo]);
-            $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nPara confirmar sua sessão, responda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
-            $this->responderNoWhatsapp($numeroLimpo, $mensagemErro);
-            return response()->json(['message' => 'Mensagem inválida.'], 200);
-        }
-
-        $sessao = Sessao::where('paciente_id', $paciente->id)
-            ->where('status_confirmacao', 'PENDENTE')
-            ->where('lembrete_enviado', 1)
-            ->whereBetween('data_hora', [
-                Carbon::today(config('app.timezone')),
-                Carbon::today(config('app.timezone'))->addDays(5),
-            ])
-            ->orderBy('data_hora')
-            ->first();
-
-        Log::info('[Webhook] Sessão encontrada:', ['sessao_id' => $sessao->id ?? 'não encontrada']);
-
-        if (!$sessao) {
-            Log::warning('[Webhook] ⚠️ Nenhuma sessão encontrada para atualizar.', [
-                'paciente' => $paciente->nome,
-                'numero' => $numeroLimpo
-            ]);
-            $this->responderNoWhatsapp($numeroLimpo, "⚠️ Nenhuma sessão pendente encontrada para atualizar.");
-            return response()->json(['message' => 'Nenhuma sessão encontrada.'], 200);
-        }
-
-        $sessao->status_confirmacao = $status;
-        
-        Log::info('[Webhook] Atualizando status da sessão', [
-            'sessao_id' => $sessao->id,
-            'novo_status' => $sessao->status_confirmacao,
-        ]);
-
-        if (in_array($sessao->status_confirmacao, ['REMARCAR', 'CANCELADA'])) {
-            $sessao->data_hora = null;
-        }
-
-        try {
-            $sessao->save();
-            Log::info('[Webhook] Sessão salva com sucesso', ['sessao_id' => $sessao->id]);
-        } catch (\Exception $e) {
-            Log::error('[Webhook] Erro ao salvar a sessão', [
-                'sessao_id' => $sessao->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        $sessao->loadMissing('paciente');
-
-        match ($sessao->status_confirmacao) {
-            'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
-            'CANCELADA'  => event(new SessaoCancelada($sessao)),
-            'REMARCAR'   => event(new SessaoRemarcada($sessao)),
-            default      => null,
-        };
-
-        Log::info('[Webhook] ✅ Sessão atualizada com sucesso', [
-            'sessao_id' => $sessao->id,
-            'novo_status' => $sessao->status_confirmacao,
-        ]);
-
-        $mensagem = "✅ Sessão marcada como *{$sessao->status_confirmacao}*.\nObrigado pela resposta, {$paciente->nome}!";
-        $this->responderNoWhatsapp($numeroLimpo, $mensagem);
-
-        return response()->json(['message' => $mensagem], 200);
+        return null;
     }
 
+    /**
+     * Normaliza um número de telefone vindo do WhatsApp.
+     */
+    private function normalizarNumero(string $numero): string
+    {
+        $num = preg_replace('/\D/', '', $numero);
+        if (str_starts_with($num, '55')) {
+            return substr($num, 2); // Retorna DDD + Número
+        }
+        return $num;
+    }
+
+    /**
+     * Envia uma resposta via API WPPConnect.
+     */
     private function responderNoWhatsapp($numero, $mensagem)
     {
+        // Implementação original mantida...
         $numeroCompleto = preg_replace('/\D/', '', $numero);
         if (!str_starts_with($numeroCompleto, '55')) {
             $numeroCompleto = '55' . $numeroCompleto;
@@ -199,10 +248,6 @@ class WebhookWhatsappController extends Controller
         Log::info('[Webhook] 🚀 Preparando envio WhatsApp:', [
             'numero' => $numeroCompleto,
             'mensagem' => $mensagem,
-            'url' => $url,
-            'session' => $session,
-            'token' => $token,
-            'env' => app()->environment(),
         ]);
 
         $endpoint = app()->isLocal()
@@ -216,30 +261,16 @@ class WebhookWhatsappController extends Controller
             'phone' => $numeroCompleto,
             'message' => $mensagem,
         ]);
-
-        if ($response->successful()) {
-            Log::info('[Webhook] ✅ Mensagem enviada com sucesso para o WhatsApp', [
+        
+        if (!$response->successful()) {
+            Log::error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', [
                 'numero' => $numeroCompleto,
-                'mensagem' => $mensagem,
-            ]);
-        } else {
-            Log::error('[Webhook] ❌ Falha ao enviar mensagem ao WhatsApp', [
-                'numero' => $numeroCompleto,
-                'mensagem' => $mensagem,
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+        } else {
+            Log::info('[Webhook] ✅ Mensagem de resposta enviada com sucesso.', ['numero' => $numeroCompleto]);
         }
-    }
-
-    private function normalizarNumero($numero)
-    {
-        // Remove caracteres não numéricos e o prefixo 55 se houver
-        $num = preg_replace('/\D/', '', $numero);
-        if (str_starts_with($num, '55')) {
-            $num = substr($num, 2);
-        }
-        return $num;
     }
 
     public function testeManual(Request $request)
