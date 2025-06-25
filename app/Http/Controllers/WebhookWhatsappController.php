@@ -80,35 +80,45 @@ class WebhookWhatsappController extends Controller
         
         Log::info('[Webhook] ✅ Intenção detectada:', ['palavra_chave' => $bodyLimpo, 'status_mapeado' => $status]);
 
-        // --- Busca da Sessão (Ponto Crítico) ---
+        // --- Busca da Sessão (Ponto Crítico com a Correção de Timezone e Logs) ---
         
         $hoje = Carbon::today(config('app.timezone'));
-        $limiteDias = 5;
+        $dataLimite = $hoje->copy()->addDays(5);
         
         Log::info('[Webhook] 🔍 Buscando sessão para o paciente...', [
             'paciente_id' => $paciente->id,
             'data_inicio_busca' => $hoje->toDateString(),
-            'data_fim_busca' => $hoje->copy()->addDays($limiteDias)->toDateString()
+            'data_fim_busca' => $dataLimite->toDateString(),
+            'condicoes' => [
+                'status_confirmacao' => 'PENDENTE',
+                'lembrete_enviado' => 1
+            ]
         ]);
 
+        // [MUDANÇA AQUI] Usando whereDate para uma comparação mais segura contra problemas de fuso horário.
         $sessao = Sessao::where('paciente_id', $paciente->id)
             ->where('status_confirmacao', 'PENDENTE')
             ->where('lembrete_enviado', 1)
-            ->where('data_hora', '>=', $hoje)
-            ->where('data_hora', '<=', $hoje->copy()->addDays($limiteDias))
+            ->whereDate('data_hora', '>=', $hoje->toDateString())
+            ->whereDate('data_hora', '<=', $dataLimite->toDateString())
             ->orderBy('data_hora', 'asc')
             ->first();
 
         if (!$sessao) {
-            Log::warning('[Webhook] ⚠️ Nenhuma sessão PENDENTE e com LEMBRETE ENVIADO foi encontrada para o paciente no período correto.', [
+            // [LOG MELHORADO AQUI] Verifica se existem sessões para este paciente que falharam em alguma condição.
+            $sessoesCandidatas = Sessao::where('paciente_id', $paciente->id)->where('status_confirmacao', 'PENDENTE')->get();
+
+            Log::warning('[Webhook] ⚠️ Nenhuma sessão PENDENTE e com LEMBRETE ENVIADO foi encontrada no período correto.', [
                 'paciente' => $paciente->nome,
-                'numero' => $numeroLimpo
+                'numero' => $numeroLimpo,
+                'sessoes_pendentes_encontradas_fora_criterio' => $sessoesCandidatas->toArray() // Isso vai nos mostrar o que existe no banco
             ]);
+            
             $this->responderNoWhatsapp($numeroLimpo, "Olá, {$paciente->nome}! Recebemos sua mensagem, mas não encontramos uma sessão pendente de confirmação para você nos próximos dias.");
             return response()->json(['message' => 'Nenhuma sessão encontrada.'], 200);
         }
 
-        Log::info('[Webhook] ✅ Sessão encontrada para atualização:', ['sessao_id' => $sessao->id, 'data_hora' => $sessao->data_hora]);
+        Log::info('[Webhook] ✅ Sessão encontrada para atualização:', ['sessao_id' => $sessao->id, 'data_hora' => $sessao->data_hora->toDateTimeString()]);
         
         // --- Atualização e Resposta ---
 
@@ -278,23 +288,18 @@ class WebhookWhatsappController extends Controller
         $dados = [
             'event' => 'message',
             'data' => [
-                'from' => '5582999405099@c.us',
-                'body' => 'Confirmado',
+                'from' => '5582999405099@c.us', // Use um número de paciente de teste válido
+                'body' => 'Confirmado', // Teste com 'Cancelar', 'Remarcar', etc.
             ]
         ];
 
         $symfonyRequest = SymfonyRequest::create(
-            '/api/webhook/whatsapp',
-            'POST',
-            [],
-            [],
-            [],
+            '/api/webhook/whatsapp', 'POST', [], [], [],
             ['CONTENT_TYPE' => 'application/json'],
             json_encode($dados)
         );
 
         $laravelRequest = Request::createFromBase($symfonyRequest);
-
         return $this->receberMensagem($laravelRequest);
     }
 
