@@ -17,6 +17,12 @@ Route::get('/ping', function () {
     return response()->json(['message' => 'API funcionando']);
 });
 
+Route::post('/debug-webhook', function (\Illuminate\Http\Request $request) {
+    error_log('[DEBUG WEBHOOK] 🚨 Recebi requisição: ' . $request->getContent());
+    return response()->json(['status' => 'Recebido com sucesso'], 200);
+});
+
+
 // 📩 Webhook do WPPConnect para processar mensagens recebidas
 Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem'])->name('webhook.whatsapp');
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
