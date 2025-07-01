@@ -267,8 +267,6 @@ class WebhookWhatsappController extends Controller
         return $this->receberMensagem($laravelRequest);
     }
 
-    use Illuminate\Support\Facades\Log;
-
     public function handle(Request $request)
     {
         Log::channel('whatsapp')->info('✅ Webhook recebido!', [
@@ -276,7 +274,6 @@ class WebhookWhatsappController extends Controller
             'ip' => $request->ip(),
             'headers' => $request->headers->all(),
         ]);
-
         return response()->json(['status' => 'ok']);
     }
 

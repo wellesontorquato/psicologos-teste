@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Log;
 use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Storage;
@@ -234,6 +235,11 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 //         'full_path' => Storage::disk('s3')->path('profile-photos/teste-remote.txt'),
 //     ]);
 // });
+
+Route::get('/testar-log-whatsapp', function () {
+    Log::channel('whatsapp')->info('Mensagem de teste gravada no canal whatsapp em ' . now());
+    return 'Log de teste enviado!';
+});
 
 Route::get('/ver-log-whatsapp', function () {
     $logFile = storage_path('logs/whatsapp.log');
