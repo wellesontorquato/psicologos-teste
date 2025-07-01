@@ -266,4 +266,18 @@ class WebhookWhatsappController extends Controller
         $laravelRequest = Request::createFromBase($symfonyRequest);
         return $this->receberMensagem($laravelRequest);
     }
+
+    use Illuminate\Support\Facades\Log;
+
+    public function handle(Request $request)
+    {
+        Log::channel('whatsapp')->info('✅ Webhook recebido!', [
+            'data' => $request->all(),
+            'ip' => $request->ip(),
+            'headers' => $request->headers->all(),
+        ]);
+
+        return response()->json(['status' => 'ok']);
+    }
+
 }
