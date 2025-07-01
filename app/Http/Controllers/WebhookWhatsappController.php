@@ -252,7 +252,7 @@ class WebhookWhatsappController extends Controller
         $dados = [
             'event' => 'message',
             'data' => [
-                'from' => '5582999405099@c.us',
+                'from' => '5582994262851@c.us',
                 'body' => 'Confirmado',
             ]
         ];
