@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use App\Events\SessaoConfirmada;
 use App\Events\SessaoCancelada;
 use App\Events\SessaoRemarcada;
@@ -275,6 +276,24 @@ class WebhookWhatsappController extends Controller
             'headers' => $request->headers->all(),
         ]);
         return response()->json(['status' => 'ok']);
+    }
+
+    public function verLogWhatsapp()
+    {
+        $hoje = now()->format('Y-m-d');
+        $logPath = storage_path("logs/whatsapp-{$hoje}.log");
+
+        if (!File::exists($logPath)) {
+            return '<pre style="color: red;">Arquivo de log não encontrado: '.$logPath.'</pre>';
+        }
+
+        $conteudo = File::get($logPath);
+
+        if (empty($conteudo)) {
+            return '<pre style="color: orange;">Arquivo existe, mas está vazio.</pre>';
+        }
+
+        return '<pre style="color: green;">' . htmlentities($conteudo) . '</pre>';
     }
 
 }
