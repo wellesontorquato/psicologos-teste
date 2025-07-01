@@ -22,11 +22,6 @@ Route::post('/debug-webhook', function (\Illuminate\Http\Request $request) {
     return response()->json(['status' => 'Recebido com sucesso'], 200);
 });
 
-Route::get('/ver-log-whatsapp', function () {
-    $logFile = storage_path('logs/whatsapp.log');
-    $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
-    return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
-})->middleware('auth');
 
 // 📩 Webhook do WPPConnect para processar mensagens recebidas
 Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem'])->name('webhook.whatsapp');

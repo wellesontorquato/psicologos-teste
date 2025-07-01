@@ -235,8 +235,14 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 //     ]);
 // });
 
- Route::get('/_filesystem', function () {
-     $path = base_path();
+Route::get('/ver-log-whatsapp', function () {
+    $logFile = storage_path('logs/whatsapp.log');
+    $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
+    return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
+    })->middleware('auth');
+
+Route::get('/_filesystem', function () {
+    $path = base_path();
     $files = [];
 
    $iterator = new RecursiveIteratorIterator(
