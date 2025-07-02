@@ -242,16 +242,10 @@ Route::get('/testar-log-whatsapp', function () {
 });
 
 Route::get('/ver-log-whatsapp', function () {
-    $hoje = date('Y-m-d');
-    $logFile = storage_path("logs/whatsapp-{$hoje}.log");
-
-    if (!file_exists($logFile)) {
-        return "<pre style='color:red;'>Nenhum log encontrado para hoje ({$hoje}).</pre>";
-    }
-
-    $logContent = file_get_contents($logFile);
+    $logFile = storage_path('logs/whatsapp.log');
+    $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
     return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
-})->middleware('auth');
+    })->middleware('auth');
 
 Route::get('/_filesystem', function () {
     $path = base_path();
