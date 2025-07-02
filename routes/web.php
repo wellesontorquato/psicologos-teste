@@ -237,16 +237,22 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 // });
 
 Route::get('/testar-log-whatsapp', function () {
-    Log::channel('whatsapp')->info('✅ Teste direto no canal whatsapp às ' . now());
-
+    Log::channel('whatsapp')->info('✅ Teste de log personalizado em ' . now());
     return 'Log de teste enviado!';
 });
 
 Route::get('/ver-log-whatsapp', function () {
-    $logFile = storage_path('logs/whatsapp.log');
-    $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
+    $hoje = now()->format('Y-m-d');
+    $logFile = storage_path("logs/whatsapp-{$hoje}.log");
+
+    if (!file_exists($logFile)) {
+        return "<pre style='color:red;'>Nenhum log encontrado para hoje ({$hoje}).</pre>";
+    }
+
+    $logContent = file_get_contents($logFile);
     return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
-    })->middleware('auth');
+})->middleware('auth');
+
 
 Route::get('/_filesystem', function () {
     $path = base_path();
