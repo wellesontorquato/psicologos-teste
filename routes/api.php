@@ -24,7 +24,11 @@ Route::post('/debug-webhook', function (\Illuminate\Http\Request $request) {
 
 
 // 📩 Webhook do WPPConnect para processar mensagens recebidas
-Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem'])->name('webhook.whatsapp');
+Route::match(['get', 'post', 'put', 'patch', 'delete'], '/webhook/whatsapp', function (Request $request) {
+    \Log::info('[Webhook Debug] Método recebido:', ['method' => $request->method()]);
+    \Log::info('[Webhook Debug] Corpo recebido:', ['body' => $request->getContent()]);
+    return response()->json(['message' => 'Método recebido com sucesso. Veja os logs.'], 200);
+});
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
 Route::get('/diagnostico-webhook', [WebhookWhatsappController::class, 'diagnosticarWebhook']);
 
