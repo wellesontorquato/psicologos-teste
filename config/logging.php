@@ -93,7 +93,7 @@ return [
 
         // ✅ Novo canal de log personalizado para webhook WhatsApp
         'whatsapp' => [
-            'driver' => 'daily',
+            'driver' => 'single',
             'path' => storage_path('logs/whatsapp.log'),
             'level' => 'debug',
             'days' => 14,

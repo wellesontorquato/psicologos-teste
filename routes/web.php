@@ -237,7 +237,8 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 // });
 
 Route::get('/testar-log-whatsapp', function () {
-    Log::channel('whatsapp')->info('✅ Teste de log personalizado em ' . now());
+    Log::channel('whatsapp')->info('✅ Teste direto no canal whatsapp às ' . now());
+
     return 'Log de teste enviado!';
 });
 
