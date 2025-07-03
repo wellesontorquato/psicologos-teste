@@ -237,8 +237,10 @@ class WebhookWhatsappController extends Controller
 
         Log::info('[Webhook] 🚀 Preparando envio WhatsApp:', ['numero' => $numeroCompleto, 'mensagem' => $mensagem,]);
 
-        $endpoint = app()->isLocal() ? "http://localhost:21465/api/{$session}/send-message" : "{$url}/api/{$session}/send-message";
-        
+        $endpoint = app()->isLocal()
+        ? "http://localhost:21465/api/{$session}/send-message"
+        : rtrim($url, '/') . "/api/{$session}/send-message";
+
         $response = Http::withHeaders(['Authorization' => "Bearer {$token}", 'Accept' => 'application/json',])->post($endpoint, ['phone' => $numeroCompleto, 'message' => $mensagem,]);
         
         if (!$response->successful()) {
