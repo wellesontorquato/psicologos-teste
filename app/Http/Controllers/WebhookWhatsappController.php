@@ -230,27 +230,28 @@ class WebhookWhatsappController extends Controller
     
     private function responderNoWhatsapp($numero, $mensagem)
     {
-        $numeroCompleto = preg_replace('/\D/', '', $numero);
-        if (!str_starts_with($numeroCompleto, '55')) {
-            $numeroCompleto = '55' . $numeroCompleto;
-        }
+        $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
 
-        $token = config('services.wppconnect.token');
-        $url = config('services.wppconnect.url');
-        $session = config('services.wppconnect.session');
+        Log::channel('whatsapp')->info('[Webhook] 🚀 Preparando envio WhatsApp', [
+            'numero' => $numeroComPrefixo,
+            'mensagem' => $mensagem,
+        ]);
 
-        Log::channel('whatsapp')->info('[Webhook] 🚀 Preparando envio WhatsApp:', ['numero' => $numeroCompleto, 'mensagem' => $mensagem]);
+        try {
+            $response = Http::post('http://localhost:3000/sendText', [
+                'to' => $numeroComPrefixo . '@c.us',
+                'text' => $mensagem,
+            ]);
 
-        $endpoint = app()->isLocal()
-        ? "http://localhost:21465/api/{$session}/send-message"
-        : rtrim($url, '/') . "/api/{$session}/send-message";
-
-        $response = Http::withHeaders(['Authorization' => "Bearer {$token}", 'Accept' => 'application/json',])->post($endpoint, ['phone' => $numeroCompleto, 'message' => $mensagem,]);
-        
-        if (!$response->successful()) {
-            Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', ['numero' => $numeroCompleto, 'status' => $response->status(), 'body' => $response->body(),]);
-        } else {
-            Log::channel('whatsapp')->info('[Webhook] ✅ Mensagem de resposta enviada com sucesso.', ['numero' => $numeroCompleto]);
+            if (!$response->successful()) {
+                Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', [
+                    'numero' => $numeroComPrefixo,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem', ['erro' => $e->getMessage()]);
         }
     }
 
