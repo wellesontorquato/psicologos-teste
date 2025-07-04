@@ -35,11 +35,15 @@ return [
         ],
     ],
 
-
     'wppconnect' => [
     'url' => env('WPP_URL'),
     'session' => env('WPP_SESSION'),
     'token' => env('WPP_TOKEN'),
 ],
+    
+    'venom' => [
+    'url' => env('VENOM_URL'),
+],
+
 
 ];

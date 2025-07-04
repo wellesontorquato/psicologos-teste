@@ -82,15 +82,10 @@ class LembreteController extends Controller
                         "Lembrando da sua sessão agendada para 📅 {$dataHoraFormatada} com o(a) 🧑‍⚕️ {$nomeProfissional} ({$profissao}).\n\n" .
                         "Por favor, responda com *CONFIRMAR*, *REMARCAR* ou *CANCELAR*.";
                         
-            $token = config('services.wppconnect.token');
-            $url = config('services.wppconnect.url');
-            $session = config('services.wppconnect.session');
-
-            $resposta = Http::withHeaders([
-                'Authorization' => "Bearer {$token}",
-            ])->post("{$url}/api/{$session}/send-message", [
-                'phone' => $numero,
-                'message' => $mensagem,
+            $url = config('services.venom.url'); // novo campo no .env
+            $resposta = Http::post($url, [
+                'to' => $numero,
+                'text' => $mensagem,
             ]);
 
             $json = $resposta->json();
