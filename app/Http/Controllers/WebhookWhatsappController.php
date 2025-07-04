@@ -18,79 +18,83 @@ use Illuminate\Support\Str;
 
 class WebhookWhatsappController extends Controller
 {
-    /**
-     * Ponto de entrada principal para o webhook do WhatsApp.
-     */
     public function receberMensagem(Request $request)
     {
-        Log::channel('whatsapp')->info('[Webhook] ----- INÍCIO DA REQUISIÇÃO -----');
+        Log::channel('whatsapp')->info('[Webhook] 🔔 VENOM-BOT INICIADO');
         $rawContent = $request->getContent();
-        Log::channel('whatsapp')->info('[Webhook] 📩 Corpo bruto recebido:', ['raw' => $rawContent]);
+        Log::channel('whatsapp')->info('[Webhook] 📩 Conteúdo cru recebido:', ['raw' => $rawContent]);
+
         $dados = json_decode($rawContent, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::channel('whatsapp')->error('[Webhook] ❌ Erro ao decodificar JSON.', ['raw' => $rawContent]);
+            Log::channel('whatsapp')->error('[Webhook] ❌ JSON inválido.');
             return response()->json(['message' => 'JSON inválido.'], 400);
         }
+
         $evento = strtolower($dados['event'] ?? '');
         $data = $dados['data'] ?? $dados;
+
         if (!in_array($evento, ['message', 'onmessage']) || empty($data['from']) || empty($data['body'])) {
-            Log::channel('whatsapp')->info('[Webhook] ➡️ Evento ignorado (não é uma mensagem de usuário).', ['event' => $evento]);
+            Log::channel('whatsapp')->info('[Webhook] Ignorado: evento não relevante ou faltando dados.', ['event' => $evento]);
             return response()->json(['message' => 'Evento ignorado.'], 200);
         }
+
         $from = $data['from'];
         if (!str_contains($from, '@c.us')) {
-            Log::channel('whatsapp')->warning('[Webhook] 🚫 Número malformado, ignorando.', ['from' => $from]);
+            Log::channel('whatsapp')->warning('[Webhook] 🚫 Número inválido', ['from' => $from]);
             return response()->json(['message' => 'Número inválido.'], 200);
         }
+
         $numeroLimpo = $this->normalizarNumero($from);
         $bodyLimpo = strtoupper(Str::ascii(trim($data['body'])));
-        Log::channel('whatsapp')->info('[Webhook] 🧪 Dados processados:', ['numero_normalizado' => $numeroLimpo, 'texto_limpo' => $bodyLimpo]);
+        Log::channel('whatsapp')->info('[Webhook] 🧪 Dados recebidos limpos', ['numero' => $numeroLimpo, 'mensagem' => $bodyLimpo]);
+
         $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
         if (!$paciente) {
-            Log::channel('whatsapp')->warning('[Webhook] ❌ Paciente não encontrado com o número.', ['numero' => $numeroLimpo]);
-            $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu cadastro em nosso sistema. Por favor, verifique o número com o(a) profissional que te acompanha.');
+            Log::channel('whatsapp')->warning('[Webhook] ❌ Paciente não encontrado.', ['numero' => $numeroLimpo]);
+            $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu cadastro. Verifique com o(a) profissional.');
             return response()->json(['message' => 'Paciente não encontrado.'], 200);
         }
-        Log::channel('whatsapp')->info('[Webhook] ✅ Paciente encontrado:', ['id' => $paciente->id, 'nome' => $paciente->nome]);
+
+        Log::channel('whatsapp')->info('[Webhook] ✅ Paciente identificado', ['paciente_id' => $paciente->id]);
+
         $status = $this->mapearRespostaParaStatus($bodyLimpo);
         if (!$status) {
-            Log::channel('whatsapp')->info('[Webhook] ⚠️ Resposta inválida do paciente.', ['recebido' => $bodyLimpo]);
-            $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nPara confirmar sua sessão, responda com uma das palavras:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
+            $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nResponda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
             $this->responderNoWhatsapp($numeroLimpo, $mensagemErro);
             return response()->json(['message' => 'Mensagem inválida.'], 200);
         }
-        Log::channel('whatsapp')->info('[Webhook] ✅ Intenção detectada:', ['palavra_chave' => $bodyLimpo, 'status_mapeado' => $status]);
-        
-        // Busca a sessão ignorando escopos globais
+
         $sessao = $this->encontrarSessaoValidaParaConfirmacao($paciente);
-        
         if (!$sessao) {
-            $this->responderNoWhatsapp($numeroLimpo, "Olá, {$paciente->nome}! Recebemos sua mensagem, mas não encontramos uma sessão pendente de confirmação para você nos próximos dias.");
-            return response()->json(['message' => 'Nenhuma sessão encontrada após verificação detalhada.'], 200);
+            $this->responderNoWhatsapp($numeroLimpo, "Olá {$paciente->nome}, não encontramos uma sessão pendente para você.");
+            return response()->json(['message' => 'Sessão não encontrada.'], 200);
         }
-        Log::channel('whatsapp')->info('[Webhook] ✅ SESSÃO VALIDADA COM SUCESSO!', ['sessao_id' => $sessao->id, 'data_hora' => $sessao->data_hora->toDateTimeString()]);
+
         $sessao->status_confirmacao = $status;
         if (in_array($status, ['REMARCAR', 'CANCELADA'])) {
             $sessao->data_hora = null;
         }
+
         try {
-            // Salva o modelo sem escopos para evitar problemas
             Sessao::withoutGlobalScopes()->where('id', $sessao->id)->update($sessao->getDirty());
-            Log::channel('whatsapp')->info('[Webhook] 💾 SESSÃO SALVA COM SUCESSO NO BANCO DE DADOS!', ['sessao_id' => $sessao->id, 'novo_status' => $status]);
+            Log::channel('whatsapp')->info('[Webhook] 💾 Sessão atualizada com sucesso.', ['sessao_id' => $sessao->id, 'status' => $status]);
         } catch (\Exception $e) {
-            Log::channel('whatsapp')->error('[Webhook] 💥 CRÍTICO: Erro ao salvar a sessão no banco de dados!', ['sessao_id' => $sessao->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            $this->responderNoWhatsapp($numeroLimpo, "🚨 Ocorreu um erro interno ao processar sua resposta. Já fomos notificados.");
+            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao salvar sessão', ['erro' => $e->getMessage()]);
+            $this->responderNoWhatsapp($numeroLimpo, "🚨 Erro ao processar sua resposta. Já fomos notificados.");
             return response()->json(['message' => 'Erro ao salvar sessão.'], 500);
         }
-        $sessao->loadMissing('paciente');
+
         match ($status) {
             'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
             'CANCELADA'  => event(new SessaoCancelada($sessao)),
             'REMARCAR'   => event(new SessaoRemarcada($sessao)),
-            default      => null,
         };
-        $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}! Sua sessão foi atualizada para: *{$status}*.";
-        if ($status === 'REMARCAR') $mensagem .= "\n\nEntraremos em contato para encontrar um novo horário.";
+
+        $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}. Sua sessão foi marcada como: *{$status}*.";
+        if ($status === 'REMARCAR') {
+            $mensagem .= "\n\nVamos entrar em contato para reagendar.";
+        }
+
         $this->responderNoWhatsapp($numeroLimpo, $mensagem);
         return response()->json(['message' => 'Sessão atualizada com sucesso.'], 200);
     }
