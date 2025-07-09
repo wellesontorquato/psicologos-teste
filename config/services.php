@@ -36,8 +36,7 @@ return [
     ],
     
     'venom' => [
-    'url' => env('VENOM_URL'),
+    'url' => env('VENOM_URL', 'http://localhost:3000'),
 ],
-
 
 ];

@@ -229,31 +229,36 @@ class WebhookWhatsappController extends Controller
     }
     
     private function responderNoWhatsapp($numero, $mensagem)
-    {
-        $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
+{
+    $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
+    $urlBase = config('services.venom.url');
 
-        Log::channel('whatsapp')->info('[Webhook] 🚀 Preparando envio WhatsApp', [
-            'numero' => $numeroComPrefixo,
-            'mensagem' => $mensagem,
+    Log::channel('whatsapp')->info('[Webhook] 🚀 Preparando envio WhatsApp', [
+        'numero' => $numeroComPrefixo,
+        'mensagem' => $mensagem,
+        'endpoint' => $urlBase . '/sendText',
+    ]);
+
+    try {
+        $response = Http::post(rtrim($urlBase, '/') . '/sendText', [
+            'to' => $numeroComPrefixo . '@c.us',
+            'text' => $mensagem,
         ]);
 
-        try {
-            $response = Http::post('http://localhost:3000/sendText', [
-                'to' => $numeroComPrefixo . '@c.us',
-                'text' => $mensagem,
+        if (!$response->successful()) {
+            Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', [
+                'numero' => $numeroComPrefixo,
+                'status' => $response->status(),
+                'body' => $response->body(),
             ]);
-
-            if (!$response->successful()) {
-                Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', [
-                    'numero' => $numeroComPrefixo,
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem', ['erro' => $e->getMessage()]);
         }
+    } catch (\Exception $e) {
+        Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem', [
+            'erro' => $e->getMessage(),
+        ]);
     }
+}
+
 
     public function testeManual(Request $request)
     {
