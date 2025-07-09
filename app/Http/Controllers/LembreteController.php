@@ -91,7 +91,7 @@ class LembreteController extends Controller
 
             $json = $resposta->json();
 
-            if ($resposta->successful() && ($json['status'] ?? '') === 'success') {
+            if ($resposta->successful() && ($json['success'] ?? false) === true) {
                 $sessao->lembrete_enviado = 1;
                 $sessao->save();
 

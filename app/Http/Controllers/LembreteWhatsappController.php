@@ -53,8 +53,6 @@ class LembreteController extends Controller
                         "Lembrando da sua sessão agendada para 📅 {$dataHoraFormatada} com o(a) 🧑‍⚕️ {$nomeProfissional} ({$profissao}).\n\n" .
                         "Por favor, responda com *CONFIRMAR*, *REMARCAR* ou *CANCELAR*.";
 
-            $url = config('services.venom.url'); // novo campo no .env
-
             $url = config('services.venom.url');
 
             $resposta = Http::post($url, [
