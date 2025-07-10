@@ -37,7 +37,13 @@
 
                     <hr>
 
-                    <form class="form-excluir" action="{{ route('assinatura.cancelar') }}" method="POST">
+                    {{-- Botão que abre o modal --}}
+                    <button class="btn btn-outline-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#modalCartao">
+                        <i class="bi bi-credit-card me-1"></i> Gerenciar Cartão de Crédito
+                    </button>
+
+                    {{-- Cancelar Assinatura --}}
+                    <form class="form-cancelarassinatura" action="{{ route('assinatura.cancelar') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-outline-danger w-100">
                             <i class="bi bi-x-circle me-1"></i> Cancelar Assinatura
@@ -86,12 +92,42 @@
         </div>
     </div>
 </div>
+
+{{-- Modal para gerenciar cartão --}}
+<div class="modal fade" id="modalCartao" tabindex="-1" aria-labelledby="modalCartaoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalCartaoLabel"><i class="bi bi-shield-lock me-1"></i> Gerenciar Cartão de Crédito</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Você será redirecionado para o portal seguro da Stripe, onde poderá:</p>
+        <ul>
+          <li>Alterar o cartão atual</li>
+          <li>Adicionar um novo método de pagamento</li>
+          <li>Remover o cartão existente</li>
+        </ul>
+        <p class="text-muted small">Essa operação é 100% segura e feita diretamente na plataforma Stripe.</p>
+      </div>
+      <div class="modal-footer">
+        <form action="{{ route('billing.portal') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Acessar Portal da Stripe
+            </button>
+        </form>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.querySelectorAll('.form-excluir').forEach(form => {
+    document.querySelectorAll('.form-cancelarassinatura').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Storage;
@@ -338,5 +339,14 @@ Route::get('/_filesystem', function () {
 //     return Response::make('Migração executada com sucesso!', 200);
 // });
 
+Route::post('/billing/portal', function (Request $request) {
+    $user = auth()->user();
+
+    return redirect()->away(
+        $user->createBillingPortalSession([
+            'return_url' => route('minha.assinatura'),
+        ])
+    );
+})->name('billing.portal');
 
 require __DIR__.'/auth.php';
