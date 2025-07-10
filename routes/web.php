@@ -74,7 +74,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/minha-assinatura', [AssinaturaController::class, 'minha'])->name('assinaturas.minha');
     Route::post('/cancelar-assinatura', [AssinaturaController::class, 'cancelar'])->name('assinatura.cancelar');
-
 });
 
 /*
