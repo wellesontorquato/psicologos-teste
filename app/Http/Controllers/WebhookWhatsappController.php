@@ -21,15 +21,31 @@ class WebhookWhatsappController extends Controller
     public function receberMensagem(Request $request)
     {
         Log::channel('whatsapp')->info('[Webhook] 🔔 VENOM-BOT INICIADO');
+
+        // Diagnóstico completo da requisição
+        Log::channel('whatsapp')->info('[Webhook] 🩺 Diagnóstico da requisição recebida', [
+            'method'        => $request->method(),
+            'content_type'  => $request->header('Content-Type'),
+            'headers'       => $request->headers->all(),
+            'body_raw'      => $request->getContent(),
+            'all_inputs'    => $request->all(),
+            'ip'            => $request->ip(),
+        ]);
+
+        // Captura conteúdo cru
         $rawContent = $request->getContent();
         Log::channel('whatsapp')->info('[Webhook] 📩 Conteúdo cru recebido:', ['raw' => $rawContent]);
 
+        // Tenta decodificar JSON
         $dados = json_decode($rawContent, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::channel('whatsapp')->error('[Webhook] ❌ JSON inválido.');
-            return response()->json(['message' => 'JSON inválido.'], 400);
+
+        // Se JSON estiver inválido, tenta via $request->all()
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($dados)) {
+            Log::channel('whatsapp')->warning('[Webhook] ⚠️ JSON inválido ou ausente. Tentando via request->all()');
+            $dados = $request->all();
         }
 
+        // Valida evento
         $evento = strtolower($dados['event'] ?? '');
         $data = $dados['data'] ?? $dados;
 
@@ -38,6 +54,7 @@ class WebhookWhatsappController extends Controller
             return response()->json(['message' => 'Evento ignorado.'], 200);
         }
 
+        // Número e corpo da mensagem
         $from = $data['from'];
         if (!str_contains($from, '@c.us')) {
             Log::channel('whatsapp')->warning('[Webhook] 🚫 Número inválido', ['from' => $from]);
@@ -46,8 +63,12 @@ class WebhookWhatsappController extends Controller
 
         $numeroLimpo = $this->normalizarNumero($from);
         $bodyLimpo = strtoupper(Str::ascii(trim($data['body'])));
-        Log::channel('whatsapp')->info('[Webhook] 🧪 Dados recebidos limpos', ['numero' => $numeroLimpo, 'mensagem' => $bodyLimpo]);
+        Log::channel('whatsapp')->info('[Webhook] 🧪 Dados recebidos limpos', [
+            'numero'   => $numeroLimpo,
+            'mensagem' => $bodyLimpo,
+        ]);
 
+        // Busca paciente
         $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
         if (!$paciente) {
             Log::channel('whatsapp')->warning('[Webhook] ❌ Paciente não encontrado.', ['numero' => $numeroLimpo]);
@@ -57,6 +78,7 @@ class WebhookWhatsappController extends Controller
 
         Log::channel('whatsapp')->info('[Webhook] ✅ Paciente identificado', ['paciente_id' => $paciente->id]);
 
+        // Interpreta a resposta do paciente
         $status = $this->mapearRespostaParaStatus($bodyLimpo);
         if (!$status) {
             $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nResponda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
@@ -64,12 +86,14 @@ class WebhookWhatsappController extends Controller
             return response()->json(['message' => 'Mensagem inválida.'], 200);
         }
 
+        // Procura sessão válida
         $sessao = $this->encontrarSessaoValidaParaConfirmacao($paciente);
         if (!$sessao) {
             $this->responderNoWhatsapp($numeroLimpo, "Olá {$paciente->nome}, não encontramos uma sessão pendente para você.");
             return response()->json(['message' => 'Sessão não encontrada.'], 200);
         }
 
+        // Atualiza status e limpa data se necessário
         $sessao->status_confirmacao = $status;
         if (in_array($status, ['REMARCAR', 'CANCELADA'])) {
             $sessao->data_hora = null;
@@ -84,12 +108,14 @@ class WebhookWhatsappController extends Controller
             return response()->json(['message' => 'Erro ao salvar sessão.'], 500);
         }
 
+        // Dispara evento de confirmação, cancelamento ou remarcação
         match ($status) {
             'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
             'CANCELADA'  => event(new SessaoCancelada($sessao)),
             'REMARCAR'   => event(new SessaoRemarcada($sessao)),
         };
 
+        // Mensagem de retorno
         $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}. Sua sessão foi marcada como: *{$status}*.";
         if ($status === 'REMARCAR') {
             $mensagem .= "\n\nVamos entrar em contato para reagendar.";
@@ -98,7 +124,7 @@ class WebhookWhatsappController extends Controller
         $this->responderNoWhatsapp($numeroLimpo, $mensagem);
         return response()->json(['message' => 'Sessão atualizada com sucesso.'], 200);
     }
-    
+
     private function encontrarSessaoValidaParaConfirmacao(Paciente $paciente): ?Sessao
     {
         $hoje = Carbon::today(config('app.timezone'));
