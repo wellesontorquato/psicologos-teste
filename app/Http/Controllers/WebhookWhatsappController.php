@@ -154,65 +154,6 @@ class WebhookWhatsappController extends Controller
         Log::channel('whatsapp')->warning('[DIAGNÓSTICO] Nenhuma das sessões candidatas passou em todos os critérios de validação (lembrete ou data).');
         return null;
     }
-
-    public function diagnosticarWebhook(Request $request)
-    {
-        $diagnostico = [];
-        $diagnostico['ambiente_laravel'] = ['APP_ENV' => config('app.env'), 'APP_DEBUG' => config('app.debug'), 'APP_URL' => config('app.url'), 'LOG_CHANNEL' => config('logging.default')];
-        try { $db_time = DB::select('select now() as db_time')[0]->db_time; } catch (\Exception $e) { $db_time = 'ERRO: ' . $e->getMessage(); }
-        $diagnostico['fuso_horario'] = ['app_timezone_config' => config('app.timezone'), 'php_default_timezone' => date_default_timezone_get(), 'carbon_now (app_timezone)' => Carbon::now()->toDateTimeString(), 'hora_banco_dados (db_timezone)' => $db_time];
-        $diagnostico['wppconnect'] = ['url' => config('services.wppconnect.url'), 'session' => config('services.wppconnect.session'), 'token_presente' => !empty(config('services.wppconnect.token'))];
-
-        if ($request->has('telefone')) {
-            $telefoneRaw = $request->input('telefone');
-            $numeroLimpo = $this->normalizarNumero($telefoneRaw);
-            $diagnostico['diagnostico_paciente'] = ['telefone_fornecido' => $telefoneRaw, 'numero_normalizado' => $numeroLimpo];
-            $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
-            if (!$paciente) {
-                $diagnostico['diagnostico_paciente']['status'] = 'PACIENTE NÃO ENCONTRADO';
-            } else {
-                $diagnostico['diagnostico_paciente']['status'] = 'PACIENTE ENCONTRADO';
-                $diagnostico['diagnostico_paciente']['paciente_id'] = $paciente->id;
-                $diagnostico['diagnostico_paciente']['paciente_nome'] = $paciente->nome;
-
-                $hoje = Carbon::today(config('app.timezone'));
-                $dataLimite = $hoje->copy()->addDays(5);
-                
-                // [CORREÇÃO 500] Verifica se o modelo usa SoftDeletes antes de tentar usar withTrashed()
-                $query = Sessao::withoutGlobalScopes()->where('paciente_id', $paciente->id);
-                $modelUsaSoftDeletes = in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses(Sessao::class));
-
-                if ($modelUsaSoftDeletes) {
-                    $query->withTrashed();
-                }
-                
-                $sessoes = $query->orderBy('data_hora', 'desc')->take(20)->get();
-                
-                if($sessoes->isEmpty()){
-                     $diagnostico['diagnostico_paciente']['sessoes'] = 'NENHUMA SESSÃO ENCONTRADA PARA ESTE PACIENTE (mesmo incluindo deletadas)';
-                } else {
-                    $diagnostico['diagnostico_paciente']['sessoes_analisadas'] = [];
-                    foreach($sessoes as $sessao) {
-                        $dataSessao = Carbon::parse($sessao->data_hora)->startOfDay();
-                        $elegivel = ($sessao->status_confirmacao === 'PENDENTE' && $sessao->lembrete_enviado == 1 && $dataSessao->betweenIncluded($hoje, $dataLimite));
-                        
-                        $diagnostico['diagnostico_paciente']['sessoes_analisadas'][] = [
-                            'sessao_id' => $sessao->id,
-                            'FOI_DELETADA_VIA_SOFTDELETE' => $modelUsaSoftDeletes ? $sessao->trashed() : false, // Verifica antes de chamar
-                            'data_hora_db' => $sessao->data_hora,
-                            'status_confirmacao_db' => $sessao->status_confirmacao,
-                            'lembrete_enviado_db' => $sessao->lembrete_enviado,
-                            'ANALISE' => ['1_status_eh_pendente' => ($sessao->status_confirmacao === 'PENDENTE'), '2_lembrete_foi_enviado' => ($sessao->lembrete_enviado == 1), '3_esta_no_intervalo_de_data' => $dataSessao->betweenIncluded($hoje, $dataLimite), 'intervalo_usado' => "De {$hoje->toDateString()} até {$dataLimite->toDateString()}"],
-                            'RESULTADO_FINAL' => $elegivel ? '✅ ELEGÍVEL PARA CONFIRMAÇÃO' : '❌ NÃO ELEGÍVEL'
-                        ];
-                    }
-                }
-            }
-        } else {
-             $diagnostico['diagnostico_paciente'] = 'Nenhum telefone fornecido. Adicione ?telefone=NUMERO na URL para um diagnóstico específico.';
-        }
-        return response()->json($diagnostico, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    }
     
     private function encontrarPacientePorTelefone(string $numeroLimpo)
     {

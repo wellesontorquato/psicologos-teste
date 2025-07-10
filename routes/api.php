@@ -18,49 +18,7 @@ Route::get('/ping', function () {
 });
 
 Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem']);
-
-Route::match(['get', 'post'], '/webhook/whatsapp/debug', function (Request $request) {
-    $method = $request->method();
-
-    if ($method === 'POST') {
-        Log::channel('whatsapp')->info('[✅ VENOM POST] Webhook recebido com dados', [
-            'from' => $request->input('from'),
-            'body' => $request->input('body'),
-            'timestamp' => $request->input('timestamp'),
-            'headers' => $request->headers->all(),
-        ]);
-    } else {
-        Log::channel('whatsapp')->info('[🧪 DEBUG VENOM] Webhook GET recebido', [
-            'headers' => $request->headers->all(),
-            'ip' => $request->ip(),
-        ]);
-    }
-
-    return response()->json(['ok' => true]);
-});
-
-Route::any('/webhook/whatsapp/force', function (Request $request) {
-    Log::channel('whatsapp')->info('[🛠️ FALLBACK ANY] Webhook recebido com método: ' . $request->method(), [
-        'headers' => $request->headers->all(),
-        'body_raw' => $request->getContent(),
-        'all_inputs' => $request->all(),
-    ]);
-
-    // Se for GET, não tem nada a processar
-    if ($request->isMethod('get')) {
-        Log::channel('whatsapp')->info('[🛑 GET ignorado - aguardando POST com dados reais]');
-        return response()->json(['message' => 'GET recebido, mas sem dados para processar'], 200);
-    }
-
-    // Encaminha para o controlador principal
-    $controller = new WebhookWhatsappController();
-    return $controller->receberMensagem($request);
-});
-
-
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
-Route::get('/diagnostico-webhook', [WebhookWhatsappController::class, 'diagnosticarWebhook']);
-
 
 Route::get('/executar-schedule-seguro/{token}', function ($token) {
     if ($token !== env('TOKEN_CRON_SEGURA')) {
