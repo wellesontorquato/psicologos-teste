@@ -39,6 +39,16 @@ Route::match(['get', 'post'], '/webhook/whatsapp/debug', function (Request $requ
     return response()->json(['ok' => true]);
 });
 
+Route::any('/webhook/whatsapp/force', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Log::channel('whatsapp')->info('[🛠️ FALLBACK ANY] Webhook recebido com método: ' . $request->method(), [
+        'headers' => $request->headers->all(),
+        'body_raw' => $request->getContent(),
+        'all_inputs' => $request->all(),
+    ]);
+    return response()->json(['message' => 'Webhook forçado recebido.'], 200);
+});
+
+
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
 Route::get('/diagnostico-webhook', [WebhookWhatsappController::class, 'diagnosticarWebhook']);
 
