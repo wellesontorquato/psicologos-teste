@@ -91,7 +91,12 @@ class LembreteController extends Controller
 
             $json = $resposta->json();
 
-            if ($resposta->successful() && ($json['success'] ?? false) === true) {
+            if (
+                $resposta->successful() &&
+                isset($json['status']) &&
+                $json['status'] === 'success' &&
+                isset($json['result']['to']['_serialized'])
+            ) {
                 $sessao->lembrete_enviado = 1;
                 $sessao->save();
 
@@ -100,7 +105,8 @@ class LembreteController extends Controller
                     'paciente' => $paciente->nome,
                     'numero' => $numero,
                 ]);
-            } else {
+            }
+            else {
                 $erroMsg = "❌ Erro ao enviar para {$paciente->nome} (Sessão ID {$sessao->id}). Código: {$resposta->status()} - " . $resposta->body();
                 Log::error($erroMsg);
                 $erros[] = $erroMsg;
