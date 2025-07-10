@@ -82,11 +82,11 @@ class LembreteController extends Controller
                         "Lembrando da sua sessão agendada para 📅 {$dataHoraFormatada} com o(a) 🧑‍⚕️ {$nomeProfissional} ({$profissao}).\n\n" .
                         "Por favor, responda com *CONFIRMAR*, *REMARCAR* ou *CANCELAR*.";
                         
-            $url = config('services.venom.url');
+            $url = rtrim(config('services.venom.url'), '/') . '/sendText';
 
             $resposta = Http::post($url, [
-                'to' => $numero,
-                'body' => $mensagem,
+                'to' => $numero . '@c.us',
+                'text' => $mensagem,
             ]);
 
             $json = $resposta->json();
