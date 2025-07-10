@@ -37,7 +37,7 @@
 
                     <hr>
 
-                    <form id="cancelar-assinatura-form" action="{{ route('assinatura.cancelar') }}" method="POST">
+                    <form class="form-excluir" action="{{ route('assinatura.cancelar') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-outline-danger w-100">
                             <i class="bi bi-x-circle me-1"></i> Cancelar Assinatura
@@ -91,22 +91,36 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.getElementById('cancelar-assinatura-form').addEventListener('submit', function(e) {
-        e.preventDefault();
+    document.querySelectorAll('.form-excluir').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        Swal.fire({
-            title: 'Tem certeza?',
-            text: "Você perderá o acesso ao sistema ao cancelar a assinatura.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sim, cancelar',
-            cancelButtonText: 'Manter assinatura'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                this.submit();
-            }
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: "Você perderá o acesso ao sistema ao cancelar a assinatura.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, cancelar',
+                cancelButtonText: 'Manter assinatura'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.close();
+
+                    setTimeout(() => {
+                        if (typeof showSpinner === 'function') {
+                            showSpinner();
+                        } else {
+                            const btn = form.querySelector('button[type="submit"]');
+                            btn.disabled = true;
+                            btn.innerHTML = 'Cancelando... <span class="spinner-border spinner-border-sm ms-2"></span>';
+                        }
+
+                        form.submit();
+                    }, 300);
+                }
+            });
         });
     });
 </script>
