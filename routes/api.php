@@ -39,13 +39,22 @@ Route::match(['get', 'post'], '/webhook/whatsapp/debug', function (Request $requ
     return response()->json(['ok' => true]);
 });
 
-Route::any('/webhook/whatsapp/force', function (\Illuminate\Http\Request $request) {
-    \Illuminate\Support\Facades\Log::channel('whatsapp')->info('[🛠️ FALLBACK ANY] Webhook recebido com método: ' . $request->method(), [
+Route::any('/webhook/whatsapp/force', function (Request $request) {
+    Log::channel('whatsapp')->info('[🛠️ FALLBACK ANY] Webhook recebido com método: ' . $request->method(), [
         'headers' => $request->headers->all(),
         'body_raw' => $request->getContent(),
         'all_inputs' => $request->all(),
     ]);
-    return response()->json(['message' => 'Webhook forçado recebido.'], 200);
+
+    // Se for GET, não tem nada a processar
+    if ($request->isMethod('get')) {
+        Log::channel('whatsapp')->info('[🛑 GET ignorado - aguardando POST com dados reais]');
+        return response()->json(['message' => 'GET recebido, mas sem dados para processar'], 200);
+    }
+
+    // Encaminha para o controlador principal
+    $controller = new WebhookWhatsappController();
+    return $controller->receberMensagem($request);
 });
 
 
