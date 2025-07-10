@@ -22,12 +22,16 @@ Route::post('/debug-webhook', function (\Illuminate\Http\Request $request) {
     return response()->json(['status' => 'Recebido com sucesso'], 200);
 });
 
-
-// 📩 Webhook do WPPConnect para processar mensagens recebidas
-Route::match(['get', 'post', 'put', 'patch', 'delete'], '/webhook/whatsapp', function (Request $request) {
-    \Log::channel('whatsapp')->info('[Webhook Debug] Método recebido:', ['method' => $request->method()]);
-    \Log::channel('whatsapp')->info('[Webhook Debug] Corpo recebido:', ['body' => $request->getContent()]);
-    return response()->json(['message' => 'Método recebido com sucesso. Veja os logs no canal whatsapp.'], 200);
+Route::match(['get', 'post'], '/webhook/whatsapp/debug', function (Request $request) {
+    Log::channel('whatsapp')->info('[🧪 DEBUG VENOM] Webhook genérico recebido', [
+        'method' => $request->method(),
+        'content_type' => $request->header('Content-Type'),
+        'headers' => $request->headers->all(),
+        'body_raw' => $request->getContent(),
+        'all_inputs' => $request->all(),
+        'ip' => $request->ip(),
+    ]);
+    return response()->json(['ok' => true]);
 });
 
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
