@@ -43,7 +43,7 @@
                     </button>
 
                     {{-- Cancelar Assinatura --}}
-                    <form class="form-cancelarassinatura" action="{{ route('assinatura.cancelar') }}" method="POST">
+                    <form class="form-cancelarassinatura no-spinner" action="{{ route('assinatura.cancelar') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-outline-danger w-100">
                             <i class="bi bi-x-circle me-1"></i> Cancelar Assinatura
@@ -111,7 +111,7 @@
         <p class="text-muted small">Essa operação é 100% segura e feita diretamente na plataforma Stripe.</p>
       </div>
       <div class="modal-footer">
-        <form action="{{ route('billing.portal') }}" method="POST">
+        <form action="{{ route('assinaturas.portal') }}" method="POST">
             @csrf
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-box-arrow-up-right me-1"></i> Acessar Portal da Stripe

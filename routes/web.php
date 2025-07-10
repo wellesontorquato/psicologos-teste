@@ -339,6 +339,7 @@ Route::get('/_filesystem', function () {
 //     return Response::make('Migração executada com sucesso!', 200);
 // });
 
+
 Route::post('/billing/portal', function (Request $request) {
     $user = auth()->user();
 
@@ -347,6 +348,6 @@ Route::post('/billing/portal', function (Request $request) {
             'return_url' => route('minha.assinatura'),
         ])
     );
-})->name('billing.portal');
+})->name('assinaturas.portal');
 
 require __DIR__.'/auth.php';
