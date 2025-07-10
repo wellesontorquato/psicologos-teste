@@ -34,38 +34,35 @@ class WebhookWhatsappController extends Controller
 
         // Captura conteúdo cru
         $rawContent = $request->getContent();
-        Log::channel('whatsapp')->info('[Webhook] 📩 Conteúdo cru recebido:', ['raw' => $rawContent]);
+        Log::channel('whatsapp')->info('[Webhook] 📩 Conteúdo cru recebido', ['raw' => $rawContent]);
 
-        // Tenta decodificar JSON
+        // Decodifica JSON ou usa fallback
         $dados = json_decode($rawContent, true);
-
-        // Se JSON estiver inválido, tenta via $request->all()
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($dados)) {
-            Log::channel('whatsapp')->warning('[Webhook] ⚠️ JSON inválido ou ausente. Tentando via request->all()');
+            Log::channel('whatsapp')->warning('[Webhook] ⚠️ JSON inválido. Usando request->all() como fallback.');
             $dados = $request->all();
         }
 
-        // Valida evento
-        $evento = strtolower($dados['event'] ?? '');
+        // Flexibilidade: se houver 'event', espera 'data'. Se não houver, assume que tudo já está em $dados.
+        $evento = strtolower($dados['event'] ?? 'onmessage'); // Assume padrão 'onmessage'
         $data = $dados['data'] ?? $dados;
 
-        if (!in_array($evento, ['message', 'onmessage']) || empty($data['from']) || empty($data['body'])) {
-            Log::channel('whatsapp')->info('[Webhook] Ignorado: evento não relevante ou faltando dados.', ['event' => $evento]);
-            return response()->json(['message' => 'Evento ignorado.'], 200);
+        // Validação mínima
+        $from = $data['from'] ?? null;
+        $body = $data['body'] ?? null;
+
+        if (!$from || !$body || !str_contains($from, '@c.us')) {
+            Log::channel('whatsapp')->info('[Webhook] Ignorado: dados incompletos ou número inválido.', compact('evento', 'from', 'body'));
+            return response()->json(['message' => 'Evento ignorado ou inválido.'], 200);
         }
 
-        // Número e corpo da mensagem
-        $from = $data['from'];
-        if (!str_contains($from, '@c.us')) {
-            Log::channel('whatsapp')->warning('[Webhook] 🚫 Número inválido', ['from' => $from]);
-            return response()->json(['message' => 'Número inválido.'], 200);
-        }
-
+        // Normaliza dados
         $numeroLimpo = $this->normalizarNumero($from);
-        $bodyLimpo = strtoupper(Str::ascii(trim($data['body'])));
-        Log::channel('whatsapp')->info('[Webhook] 🧪 Dados recebidos limpos', [
-            'numero'   => $numeroLimpo,
-            'mensagem' => $bodyLimpo,
+        $mensagemLimpa = strtoupper(Str::ascii(trim($body)));
+
+        Log::channel('whatsapp')->info('[Webhook] 🧪 Dados normalizados', [
+            'numero' => $numeroLimpo,
+            'mensagem' => $mensagemLimpa,
         ]);
 
         // Busca paciente
@@ -78,8 +75,8 @@ class WebhookWhatsappController extends Controller
 
         Log::channel('whatsapp')->info('[Webhook] ✅ Paciente identificado', ['paciente_id' => $paciente->id]);
 
-        // Interpreta a resposta do paciente
-        $status = $this->mapearRespostaParaStatus($bodyLimpo);
+        // Interpreta a resposta
+        $status = $this->mapearRespostaParaStatus($mensagemLimpa);
         if (!$status) {
             $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nResponda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
             $this->responderNoWhatsapp($numeroLimpo, $mensagemErro);
@@ -93,7 +90,7 @@ class WebhookWhatsappController extends Controller
             return response()->json(['message' => 'Sessão não encontrada.'], 200);
         }
 
-        // Atualiza status e limpa data se necessário
+        // Atualiza status e data se necessário
         $sessao->status_confirmacao = $status;
         if (in_array($status, ['REMARCAR', 'CANCELADA'])) {
             $sessao->data_hora = null;
@@ -108,14 +105,14 @@ class WebhookWhatsappController extends Controller
             return response()->json(['message' => 'Erro ao salvar sessão.'], 500);
         }
 
-        // Dispara evento de confirmação, cancelamento ou remarcação
+        // Dispara evento
         match ($status) {
             'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
             'CANCELADA'  => event(new SessaoCancelada($sessao)),
             'REMARCAR'   => event(new SessaoRemarcada($sessao)),
         };
 
-        // Mensagem de retorno
+        // Mensagem final
         $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}. Sua sessão foi marcada como: *{$status}*.";
         if ($status === 'REMARCAR') {
             $mensagem .= "\n\nVamos entrar em contato para reagendar.";
@@ -124,6 +121,7 @@ class WebhookWhatsappController extends Controller
         $this->responderNoWhatsapp($numeroLimpo, $mensagem);
         return response()->json(['message' => 'Sessão atualizada com sucesso.'], 200);
     }
+
 
     private function encontrarSessaoValidaParaConfirmacao(Paciente $paciente): ?Sessao
     {
@@ -255,36 +253,35 @@ class WebhookWhatsappController extends Controller
     }
     
     private function responderNoWhatsapp($numero, $mensagem)
-{
-    $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
-    $urlBase = config('services.venom.url');
+    {
+        $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
+        $urlBase = config('services.venom.url');
 
-    Log::channel('whatsapp')->info('[Webhook] 🚀 Preparando envio WhatsApp', [
-        'numero' => $numeroComPrefixo,
-        'mensagem' => $mensagem,
-        'endpoint' => $urlBase . '/sendText',
-    ]);
-
-    try {
-        $response = Http::post(rtrim($urlBase, '/') . '/sendText', [
-            'to' => $numeroComPrefixo . '@c.us',
-            'text' => $mensagem,
+        Log::channel('whatsapp')->info('[Webhook] 🚀 Preparando envio WhatsApp', [
+            'numero' => $numeroComPrefixo,
+            'mensagem' => $mensagem,
+            'endpoint' => $urlBase . '/sendText',
         ]);
 
-        if (!$response->successful()) {
-            Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', [
-                'numero' => $numeroComPrefixo,
-                'status' => $response->status(),
-                'body' => $response->body(),
+        try {
+            $response = Http::post(rtrim($urlBase, '/') . '/sendText', [
+                'to' => $numeroComPrefixo . '@c.us',
+                'text' => $mensagem,
+            ]);
+
+            if (!$response->successful()) {
+                Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', [
+                    'numero' => $numeroComPrefixo,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem', [
+                'erro' => $e->getMessage(),
             ]);
         }
-    } catch (\Exception $e) {
-        Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem', [
-            'erro' => $e->getMessage(),
-        ]);
     }
-}
-
 
     public function testeManual(Request $request)
     {
