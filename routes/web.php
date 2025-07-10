@@ -154,6 +154,10 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/billing/portal', [App\Http\Controllers\AssinaturaController::class, 'portal'])->name('billing.portal');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Stripe Webhook
@@ -161,9 +165,9 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 | Responsável por receber os eventos da Stripe e salvar as assinaturas no banco.
 | Não requer autenticação.
 */
-    Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
-
+Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 /*
+
 |--------------------------------------------------------------------------
 | Auth padrão do Laravel
 |--------------------------------------------------------------------------
@@ -237,99 +241,99 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 //     ]);
 // });
 
-Route::get('/testar-log-whatsapp', function () {
-    Log::channel('whatsapp')->info('✅ Teste direto no canal whatsapp às ' . now());
+// Route::get('/testar-log-whatsapp', function () {
+//     Log::channel('whatsapp')->info('✅ Teste direto no canal whatsapp às ' . now());
 
-    return 'Log de teste enviado!';
-});
+//     return 'Log de teste enviado!';
+// });
 
-Route::get('/ver-log-whatsapp', function () {
-    $logFile = storage_path('logs/whatsapp.log');
-    $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
-    return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
-    })->middleware('auth');
+// Route::get('/ver-log-whatsapp', function () {
+//     $logFile = storage_path('logs/whatsapp.log');
+//     $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
+//     return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
+//     })->middleware('auth');
 
-Route::get('/_filesystem', function () {
-    $path = base_path();
-    $files = [];
+// Route::get('/_filesystem', function () {
+//     $path = base_path();
+//     $files = [];
 
-   $iterator = new RecursiveIteratorIterator(
-         new RecursiveCallbackFilterIterator(
-            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
-            function ($current, $key, $iterator) {
-               // 🔒 Ignorar vendor, node_modules, data/lost+found e tudo que começa com ponto
-                $pathname = $current->getPathname();
-                if (
-                  strpos($pathname, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
-                     strpos($pathname, DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
-                    strpos($pathname, DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false ||
-                    strpos($current->getFilename(), '.') === 0 // ignora arquivos ocultos e .git etc
-                ) {
-                    return false;
-                }
+//    $iterator = new RecursiveIteratorIterator(
+//          new RecursiveCallbackFilterIterator(
+//             new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+//             function ($current, $key, $iterator) {
+//                // 🔒 Ignorar vendor, node_modules, data/lost+found e tudo que começa com ponto
+//                 $pathname = $current->getPathname();
+//                 if (
+//                   strpos($pathname, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
+//                      strpos($pathname, DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
+//                     strpos($pathname, DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false ||
+//                     strpos($current->getFilename(), '.') === 0 // ignora arquivos ocultos e .git etc
+//                 ) {
+//                     return false;
+//                 }
 
-               // Se não conseguir ler o diretório, ignora tambémmm
-                 if ($current->isDir() && !is_readable($pathname)) {
-                     return false;
-                 }
+//                // Se não conseguir ler o diretório, ignora tambémmm
+//                  if ($current->isDir() && !is_readable($pathname)) {
+//                      return false;
+//                  }
 
-                 return true;
-             }
-         ),
-         RecursiveIteratorIterator::SELF_FIRST
-     );
+//                  return true;
+//              }
+//          ),
+//          RecursiveIteratorIterator::SELF_FIRST
+//      );
 
-     foreach ($iterator as $file) {
-         if ($file->isFile()) {
-             try {
-                 $fullPath = $file->getPathname();
-                 $relativePath = str_replace($path, '', $fullPath);
+//      foreach ($iterator as $file) {
+//          if ($file->isFile()) {
+//              try {
+//                  $fullPath = $file->getPathname();
+//                  $relativePath = str_replace($path, '', $fullPath);
 
-                $files[] = [
-                    'path' => $relativePath,
-                     'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
-                     'size' => $file->getSize(),
-                 ];
-             } catch (Exception $e) {
-                 // Se não conseguir acessar, ignora silenciosamente
-                 continue;
-             }
-         }
-     }
+//                 $files[] = [
+//                     'path' => $relativePath,
+//                      'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
+//                      'size' => $file->getSize(),
+//                  ];
+//              } catch (Exception $e) {
+//                  // Se não conseguir acessar, ignora silenciosamente
+//                  continue;
+//              }
+//          }
+//      }
 
-     return view('filesystem', ['files' => $files]);
- })->name('filesystem.index');
+//      return view('filesystem', ['files' => $files]);
+//  })->name('filesystem.index');
 
 
- Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
-     $file = $request->query('file');
-     if (!$file) {
-         abort(404, 'Arquivo não especificado.');
-     }
+//  Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
+//      $file = $request->query('file');
+//      if (!$file) {
+//          abort(404, 'Arquivo não especificado.');
+//      }
 
-     $fullPath = base_path($file);
+//      $fullPath = base_path($file);
 
-     if (!file_exists($fullPath)) {
-         abort(404, 'Arquivo não encontrado.');
-     }
+//      if (!file_exists($fullPath)) {
+//          abort(404, 'Arquivo não encontrado.');
+//      }
 
-     return Response::file($fullPath);
- })->name('filesystem.view');
+//      return Response::file($fullPath);
+//  })->name('filesystem.view');
 
- Route::get('/_filesystem/download', function (\Illuminate\Http\Request $request) {
-     $file = $request->query('file');
-     if (!$file) {
-         abort(404, 'Arquivo não especificado.');
-     }
+//  Route::get('/_filesystem/download', function (\Illuminate\Http\Request $request) {
+//      $file = $request->query('file');
+//      if (!$file) {
+//          abort(404, 'Arquivo não especificado.');
+//      }
 
-     $fullPath = base_path($file);
+//      $fullPath = base_path($file);
 
-     if (!file_exists($fullPath)) {
-         abort(404, 'Arquivo não encontrado.');
-     }
+//      if (!file_exists($fullPath)) {
+//          abort(404, 'Arquivo não encontrado.');
+//      }
 
-     return Response::download($fullPath);
- })->name('filesystem.download');
+//      return Response::download($fullPath);
+//  })->name('filesystem.download');
 
 // Route::get('/run-migrate', function (\Illuminate\Http\Request $request) {
 //     if ($request->query('token') !== env('MIGRATE_TOKEN')) {
@@ -338,16 +342,5 @@ Route::get('/_filesystem', function () {
 //     Artisan::call('migrate', ['--force' => true]);
 //     return Response::make('Migração executada com sucesso!', 200);
 // });
-
-
-Route::post('/billing/portal', function (Request $request) {
-    $user = auth()->user();
-
-    return redirect()->away(
-        $user->createBillingPortalSession([
-            'return_url' => route('minha.assinatura'),
-        ])
-    );
-})->name('assinaturas.portal');
 
 require __DIR__.'/auth.php';

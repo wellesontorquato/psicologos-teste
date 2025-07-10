@@ -111,7 +111,7 @@
         <p class="text-muted small">Essa operação é 100% segura e feita diretamente na plataforma Stripe.</p>
       </div>
       <div class="modal-footer">
-        <form action="{{ route('assinaturas.portal') }}" method="POST">
+        <form action="{{ route('billing.portal') }}" method="POST">
             @csrf
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-box-arrow-up-right me-1"></i> Acessar Portal da Stripe

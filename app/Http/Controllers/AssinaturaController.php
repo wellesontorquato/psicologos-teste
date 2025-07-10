@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Auth;
 
 class AssinaturaController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         return view('assinaturas', [
@@ -20,6 +25,10 @@ class AssinaturaController extends Controller
 
     public function checkout(Request $request)
     {
+        $request->validate([
+            'price_id' => 'required|string',
+        ]);
+
         $user = Auth::user();
 
         $validPrices = [
@@ -48,7 +57,7 @@ class AssinaturaController extends Controller
             return redirect()->route('assinaturas.index')->with('error', 'Você ainda não possui uma assinatura ativa.');
         }
 
-        $faturas = $user->invoices(); // Laravel Cashier pega via Stripe
+        $faturas = $user->invoices();
 
         return view('assinatura.minha', compact('assinatura', 'faturas'));
     }
@@ -63,5 +72,16 @@ class AssinaturaController extends Controller
         }
 
         return redirect()->route('assinaturas.index')->with('error', 'Você não possui uma assinatura ativa.');
+    }
+
+    public function portal()
+    {
+        try {
+            $user = Auth::user();
+            return $user->redirectToBillingPortal(route('assinaturas.minha'));
+        } catch (\Exception $e) {
+            \Log::error('Erro ao acessar o portal da Stripe: ' . $e->getMessage());
+            return redirect()->route('assinaturas.minha')->with('error', 'Erro ao redirecionar para o portal de faturamento.');
+        }
     }
 }
