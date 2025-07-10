@@ -23,14 +23,22 @@ Route::post('/debug-webhook', function (\Illuminate\Http\Request $request) {
 });
 
 Route::match(['get', 'post'], '/webhook/whatsapp/debug', function (Request $request) {
-    Log::channel('whatsapp')->info('[🧪 DEBUG VENOM] Webhook genérico recebido', [
-        'method' => $request->method(),
-        'content_type' => $request->header('Content-Type'),
-        'headers' => $request->headers->all(),
-        'body_raw' => $request->getContent(),
-        'all_inputs' => $request->all(),
-        'ip' => $request->ip(),
-    ]);
+    $method = $request->method();
+
+    if ($method === 'POST') {
+        Log::channel('whatsapp')->info('[✅ VENOM POST] Webhook recebido com dados', [
+            'from' => $request->input('from'),
+            'body' => $request->input('body'),
+            'timestamp' => $request->input('timestamp'),
+            'headers' => $request->headers->all(),
+        ]);
+    } else {
+        Log::channel('whatsapp')->info('[🧪 DEBUG VENOM] Webhook GET recebido', [
+            'headers' => $request->headers->all(),
+            'ip' => $request->ip(),
+        ]);
+    }
+
     return response()->json(['ok' => true]);
 });
 
