@@ -15,17 +15,26 @@
         </a>
     </div>
 
-    @if (empty($eventos))
+    @php
+        $eventosOrdenados = collect($eventos)->sortBy('data');
+    @endphp
+
+    @if ($eventosOrdenados->isEmpty())
         <div class="alert alert-warning">
             Nenhuma sessão ou evolução registrada para este paciente.
         </div>
     @else
         <ul class="timeline">
-            @foreach ($eventos as $evento)
+            @foreach ($eventosOrdenados as $evento)
                 @php
                     $isMedicacao = str_starts_with($evento['descricao'], 'Medicação registrada:') || str_starts_with($evento['descricao'], 'Medicação Inicial:');
                     $isInicial = str_starts_with($evento['descricao'], 'Medicação Inicial:');
+                    $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && ($evento['status'] ?? null) === 'confirmado';
                 @endphp
+
+                @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
+                    @continue
+                @endif
 
                 <li class="timeline-item position-relative mb-5 ps-4 border-start 
                     {{ $evento['tipo'] === 'Sessão' ? 'border-success' : ($isMedicacao ? 'border-danger' : 'border-primary') }}">

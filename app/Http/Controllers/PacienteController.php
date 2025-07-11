@@ -186,8 +186,14 @@ class PacienteController extends Controller
 
     private function gerarEventosDoPaciente(Paciente $paciente): array
     {
-        $sessoes = $paciente->sessoes()->orderBy('data_hora')->get();
-        $evolucoes = $paciente->evolucoes()->orderBy('data')->get();
+        $sessoes = $paciente->sessoes()
+            ->where('status', 'confirmado')
+            ->orderBy('data_hora')
+            ->get();
+
+        $evolucoes = $paciente->evolucoes()
+            ->orderBy('data')
+            ->get();
 
         $eventos = [];
 
@@ -195,9 +201,11 @@ class PacienteController extends Controller
             $data = Carbon::parse($sessao->data_hora);
             $eventos[] = [
                 'tipo' => 'Sessão',
-                'data' => $data->format('d/m/Y'),
+                'data' => $data->format('Y-m-d'),
                 'hora' => $data->format('H:i'),
-                'descricao' => 'Valor: R$ ' . number_format($sessao->valor, 2, ',', '.') . ($sessao->foi_pago ? ' <span class="text-success">(Pago)</span>' : ' <span class="text-danger">(Pendente)</span>')
+                'status' => $sessao->status,
+                'descricao' => 'Valor: R$ ' . number_format($sessao->valor, 2, ',', '.') .
+                    ($sessao->foi_pago ? ' <span class="text-success">(Pago)</span>' : ' <span class="text-danger">(Pendente)</span>')
             ];
         }
 
@@ -205,17 +213,19 @@ class PacienteController extends Controller
             $data = Carbon::parse($evolucao->data);
             $eventos[] = [
                 'tipo' => $evolucao->tipo === 'medicacao' ? 'Medicação' : 'Evolução',
-                'data' => $data->format('d/m/Y'),
+                'data' => $data->format('Y-m-d'),
                 'hora' => '',
+                'status' => 'confirmado', // para evitar falhas na view
                 'descricao' => nl2br(e(trim($evolucao->texto) ?: 'Sem anotação registrada.'))
             ];
         }
 
-        usort($eventos, fn($a, $b) => strtotime($a['data'] . ($a['hora'] ?? ' 00:00')) <=> strtotime($b['data'] . ($b['hora'] ?? ' 00:00')));
+        // Ordenação do mais antigo para o mais recente
+        usort($eventos, fn($a, $b) => strtotime($a['data'] . ' ' . ($a['hora'] ?? '00:00')) <=> strtotime($b['data'] . ' ' . ($b['hora'] ?? '00:00')));
 
         return $eventos;
     }
-
+    
     public function aniversariantesHoje()
     {
         $hoje = Carbon::today();
