@@ -29,7 +29,7 @@
                 @php
                     $isMedicacao = str_starts_with($evento['descricao'], 'Medicação registrada:') || str_starts_with($evento['descricao'], 'Medicação Inicial:');
                     $isInicial = str_starts_with($evento['descricao'], 'Medicação Inicial:');
-                    $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && \Illuminate\Support\Str::upper(trim($evento['status'] ?? '')) === 'CONFIRMADA';
+                    $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && \Illuminate\Support\Str::upper(trim($evento['status_confirmacao'] ?? '')) === 'CONFIRMADA';
                 @endphp
 
                 @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
