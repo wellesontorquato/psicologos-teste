@@ -46,10 +46,12 @@ class EvolucaoController extends Controller
     }
 
     // 🌐 WEB: Formulário de criação
-    public function create()
+    public function create(Request $request)
     {
         $pacientes = Paciente::where('user_id', auth()->id())->get();
-        return view('evolucoes.create', compact('pacientes'));
+        $pacienteSelecionado = $request->paciente_id;
+
+        return view('evolucoes.create', compact('pacientes', 'pacienteSelecionado'));
     }
 
     // 🌐 WEB: Armazenar evolução

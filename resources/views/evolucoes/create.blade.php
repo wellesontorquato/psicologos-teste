@@ -11,10 +11,14 @@
             <label>Paciente</label>
             <select name="paciente_id" class="form-control" required>
                 @foreach($pacientes as $paciente)
-                    <option value="{{ $paciente->id }}">{{ $paciente->nome }}</option>
+                    <option value="{{ $paciente->id }}"
+                        {{ old('paciente_id', $pacienteSelecionado ?? '') == $paciente->id ? 'selected' : '' }}>
+                        {{ $paciente->nome }}
+                    </option>
                 @endforeach
             </select>
         </div>
+
 
         <div class="mb-3">
             <label>Data</label>

@@ -54,7 +54,6 @@
                     <form action="{{ route('sessoes.destroy', $sessao) }}" method="POST" class="form-excluir d-inline no-spinner">
                         @csrf
                         @method('DELETE')
-                        {{-- 🔽 Inputs preenchidos via JS --}}
                         <input type="hidden" name="query_string" value="">
                         <input type="hidden" name="aba" value="">
                         <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
@@ -67,6 +66,11 @@
                         data-sessao-id="{{ $sessao->id }}">
                         Recorrências
                     </button>
+
+                    <a href="{{ route('evolucoes.create', ['paciente' => $sessao->paciente_id, 'data' => optional($sessao->data_hora)->format('Y-m-d')]) }}"
+                        class="btn btn-outline-success btn-sm mt-1">
+                        Evolução
+                    </a>
                 </td>
             </tr>
         @empty
