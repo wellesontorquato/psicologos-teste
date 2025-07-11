@@ -11,6 +11,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use App\Helpers\AuditHelper;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class PacienteController extends Controller
 {
@@ -169,7 +171,23 @@ class PacienteController extends Controller
         $this->authorize('view', $paciente);
         $eventos = $this->gerarEventosDoPaciente($paciente);
 
-        return view('pacientes.historico', compact('paciente', 'eventos'));
+        // Paginação manual dos eventos
+        $currentPage = request()->get('page', 1);
+        $perPage = 10;
+        $offset = ($currentPage - 1) * $perPage;
+
+        $eventosPaginados = new LengthAwarePaginator(
+            array_slice($eventos, $offset, $perPage),
+            count($eventos),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('pacientes.historico', [
+            'paciente' => $paciente,
+            'eventos' => $eventosPaginados
+        ]);
     }
 
     public function exportarHistoricoPdf(Paciente $paciente)

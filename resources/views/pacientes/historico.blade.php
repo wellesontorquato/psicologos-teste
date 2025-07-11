@@ -15,17 +15,13 @@
         </a>
     </div>
 
-    @php
-        $eventosOrdenados = collect($eventos); // já vem ordenado do controller
-    @endphp
-
-    @if ($eventosOrdenados->isEmpty())
+    @if ($eventos->count() === 0)
         <div class="alert alert-warning">
             Nenhuma sessão ou evolução registrada para este paciente.
         </div>
     @else
         <ul class="timeline">
-            @foreach ($eventosOrdenados as $evento)
+            @foreach ($eventos as $evento)
                 @php
                     $isMedicacao = str_starts_with($evento['descricao'], 'Medicação registrada:') || str_starts_with($evento['descricao'], 'Medicação Inicial:');
                     $isInicial = str_starts_with($evento['descricao'], 'Medicação Inicial:');
@@ -45,11 +41,11 @@
 
                     <h5 class="fw-bold">
                         @if ($evento['tipo'] === 'Sessão')
-                            🧘 Sessão — {{ $evento['data'] }}
+                            🧘 Sessão — {{ \Carbon\Carbon::parse($evento['data'])->format('d/m/Y') }}
                         @elseif ($isMedicacao)
-                            💊 {{ $isInicial ? 'Medicação Inicial' : 'Nova Medicação' }} — {{ $evento['data'] }}
+                            💊 {{ $isInicial ? 'Medicação Inicial' : 'Nova Medicação' }} — {{ \Carbon\Carbon::parse($evento['data'])->format('d/m/Y') }}
                         @else
-                            📄 Evolução — {{ $evento['data'] }}
+                            📄 Evolução — {{ \Carbon\Carbon::parse($evento['data'])->format('d/m/Y') }}
                         @endif
                     </h5>
 
@@ -66,6 +62,10 @@
                 </li>
             @endforeach
         </ul>
+
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $eventos->links() }}
+        </div>
     @endif
 
     <a href="{{ route('pacientes.index') }}" class="btn btn-secondary mt-4">← Voltar</a>
