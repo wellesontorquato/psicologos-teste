@@ -13,42 +13,53 @@
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                     <span class="fw-semibold text-primary">📄 Detalhes da Assinatura</span>
-                    <span class="badge rounded-pill px-3 py-2 {{ $assinatura->stripe_status === 'active' ? 'bg-success' : 'bg-secondary' }}">
-                        {{ ucfirst($assinatura->stripe_status) }}
+
+                    @php
+                        $status = $assinatura->stripe_status;
+                        $badgeClass = match($status) {
+                            'active' => 'bg-success',
+                            'canceled' => 'bg-danger',
+                            default => 'bg-secondary'
+                        };
+                        $statusTraduzido = match($status) {
+                            'active' => 'Ativa',
+                            'canceled' => 'Cancelada',
+                            default => ucfirst($status)
+                        };
+                    @endphp
+
+                    <span class="badge rounded-pill px-3 py-2 text-white {{ $badgeClass }}">
+                        {{ $statusTraduzido }}
                     </span>
                 </div>
                 <div class="card-body">
 
-                    @php
-                        $nomesPlanos = [
-                            'price_1RVxueC1nNYXXNDRXZRHr2N3' => 'Plano Mensal',
-                            'price_1RVxv5C1nNYXXNDRYJlrrwG5' => 'Plano Trimestral',
-                            'price_1RVxvdC1nNYXXNDR2URxfXFz' => 'Plano Anual',
-                        ];
-                    @endphp
-
+                    {{-- Plano --}}
                     <p class="mb-2"><strong>📌 Plano:</strong> {{ $nomesPlanos[$assinatura->stripe_price] ?? 'Desconhecido' }}</p>
 
+                    {{-- Trial --}}
                     @if($assinatura->onTrial())
                         <p class="mb-2"><strong>🎁 Período de Teste até:</strong> {{ $assinatura->trial_ends_at->format('d/m/Y') }}</p>
                     @endif
 
+                    {{-- Fim da assinatura --}}
                     @if($assinatura->ends_at)
                         <p class="mb-2"><strong>📆 Assinatura se encerra em:</strong> {{ $assinatura->ends_at->format('d/m/Y') }}</p>
                     @endif
 
                     <hr class="my-4">
 
-                    {{-- BOTÃO DE CARTÃO --}}
-                    <button class="btn btn-outline-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#modalCartao">
-                        <i class="bi bi-credit-card-fill me-2"></i> Gerenciar Cartão de Crédito
+                    {{-- BOTÃO DE GERENCIAR CARTÃO --}}
+                    <button class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center gap-2"
+                        data-bs-toggle="modal" data-bs-target="#modalCartao">
+                        <i class="bi bi-credit-card-2-front-fill fs-5"></i> Gerenciar Cartão de Crédito
                     </button>
 
                     {{-- CANCELAR ASSINATURA --}}
                     <form class="form-cancelarassinatura no-spinner" action="{{ route('assinatura.cancelar') }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="bi bi-x-octagon-fill me-2"></i> Cancelar Assinatura
+                        <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-x-circle-fill fs-5"></i> Cancelar Assinatura
                         </button>
                     </form>
                 </div>
