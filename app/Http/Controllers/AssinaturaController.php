@@ -78,10 +78,15 @@ class AssinaturaController extends Controller
     {
         try {
             $user = Auth::user();
+
             return $user->redirectToBillingPortal(route('assinaturas.minha'));
         } catch (\Exception $e) {
-            \Log::error('Erro ao acessar o portal da Stripe: ' . $e->getMessage());
-            return redirect()->route('assinaturas.minha')->with('error', 'Erro ao redirecionar para o portal de faturamento.');
+            \Log::error('Stripe Billing Portal error: ' . $e->getMessage());
+
+            return response()->json([
+                'erro' => true,
+                'mensagem' => $e->getMessage()
+            ], 500);
         }
     }
 }

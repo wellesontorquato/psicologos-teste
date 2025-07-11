@@ -4,19 +4,21 @@
 
 @section('content')
 <div class="container py-5">
-    <h2 class="mb-4 fw-bold text-center">Minha Assinatura</h2>
+    <h2 class="mb-5 fw-bold text-center">🧾 Minha Assinatura</h2>
 
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold text-primary">Detalhes da Assinatura</span>
-                    <span class="badge {{ $assinatura->stripe_status === 'active' ? 'bg-success' : 'bg-secondary' }}">
+        <div class="col-lg-8">
+
+            {{-- CARD DE DETALHES --}}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold text-primary">📄 Detalhes da Assinatura</span>
+                    <span class="badge rounded-pill px-3 py-2 {{ $assinatura->stripe_status === 'active' ? 'bg-success' : 'bg-secondary' }}">
                         {{ ucfirst($assinatura->stripe_status) }}
                     </span>
                 </div>
-
                 <div class="card-body">
+
                     @php
                         $nomesPlanos = [
                             'price_1RVxueC1nNYXXNDRXZRHr2N3' => 'Plano Mensal',
@@ -25,41 +27,42 @@
                         ];
                     @endphp
 
-                    <p><strong>Plano:</strong> {{ $nomesPlanos[$assinatura->stripe_price] ?? 'Desconhecido' }}</p>
+                    <p class="mb-2"><strong>📌 Plano:</strong> {{ $nomesPlanos[$assinatura->stripe_price] ?? 'Desconhecido' }}</p>
 
                     @if($assinatura->onTrial())
-                        <p><strong>Período de Teste até:</strong> {{ $assinatura->trial_ends_at->format('d/m/Y') }}</p>
+                        <p class="mb-2"><strong>🎁 Período de Teste até:</strong> {{ $assinatura->trial_ends_at->format('d/m/Y') }}</p>
                     @endif
 
                     @if($assinatura->ends_at)
-                        <p><strong>Assinatura se encerra em:</strong> {{ $assinatura->ends_at->format('d/m/Y') }}</p>
+                        <p class="mb-2"><strong>📆 Assinatura se encerra em:</strong> {{ $assinatura->ends_at->format('d/m/Y') }}</p>
                     @endif
 
-                    <hr>
+                    <hr class="my-4">
 
-                    {{-- Botão que abre o modal --}}
+                    {{-- BOTÃO DE CARTÃO --}}
                     <button class="btn btn-outline-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#modalCartao">
-                        <i class="bi bi-credit-card me-1"></i> Gerenciar Cartão de Crédito
+                        <i class="bi bi-credit-card-fill me-2"></i> Gerenciar Cartão de Crédito
                     </button>
 
-                    {{-- Cancelar Assinatura --}}
+                    {{-- CANCELAR ASSINATURA --}}
                     <form class="form-cancelarassinatura no-spinner" action="{{ route('assinatura.cancelar') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="bi bi-x-circle me-1"></i> Cancelar Assinatura
+                            <i class="bi bi-x-octagon-fill me-2"></i> Cancelar Assinatura
                         </button>
                     </form>
                 </div>
             </div>
 
+            {{-- HISTÓRICO DE PAGAMENTOS --}}
             @if($faturas && count($faturas) > 0)
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-light">
-                        <strong>Histórico de Pagamentos</strong>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom">
+                        <strong>💰 Histórico de Pagamentos</strong>
                     </div>
                     <div class="card-body p-0">
-                        <table class="table table-bordered m-0">
-                            <thead>
+                        <table class="table table-striped table-hover align-middle text-center m-0">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Data</th>
                                     <th>Valor</th>
@@ -73,13 +76,13 @@
                                         <td>{{ \Carbon\Carbon::parse($fatura->created)->format('d/m/Y') }}</td>
                                         <td>R$ {{ number_format($fatura->amount_paid / 100, 2, ',', '.') }}</td>
                                         <td>
-                                            <span class="badge {{ $fatura->paid ? 'bg-success' : 'bg-danger' }}">
+                                            <span class="badge px-3 py-2 rounded-pill {{ $fatura->paid ? 'bg-success' : 'bg-danger' }}">
                                                 {{ $fatura->paid ? 'Pago' : 'Falhou' }}
                                             </span>
                                         </td>
                                         <td>
                                             <a href="{{ $fatura->invoice_pdf }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                Ver Recibo
+                                                <i class="bi bi-receipt-cutoff me-1"></i> Ver Recibo
                                             </a>
                                         </td>
                                     </tr>
@@ -89,34 +92,32 @@
                     </div>
                 </div>
             @endif
+
         </div>
     </div>
 </div>
 
-{{-- Modal para gerenciar cartão --}}
+{{-- MODAL DO CARTÃO --}}
 <div class="modal fade" id="modalCartao" tabindex="-1" aria-labelledby="modalCartaoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow">
       <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="modalCartaoLabel"><i class="bi bi-shield-lock me-1"></i> Gerenciar Cartão de Crédito</h5>
+        <h5 class="modal-title" id="modalCartaoLabel"><i class="bi bi-shield-lock-fill me-2"></i> Gerenciar Cartão</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
         <p>Você será redirecionado para o portal seguro da Stripe, onde poderá:</p>
         <ul>
           <li>Alterar o cartão atual</li>
-          <li>Adicionar um novo método de pagamento</li>
-          <li>Remover o cartão existente</li>
+          <li>Adicionar novo método de pagamento</li>
+          <li>Remover cartão existente</li>
         </ul>
         <p class="text-muted small">Essa operação é 100% segura e feita diretamente na plataforma Stripe.</p>
       </div>
       <div class="modal-footer">
-        <form action="{{ route('billing.portal') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-box-arrow-up-right me-1"></i> Acessar Portal da Stripe
-            </button>
-        </form>
+        <a href="{{ route('billing.portal') }}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Acessar Portal da Stripe
+        </a>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
