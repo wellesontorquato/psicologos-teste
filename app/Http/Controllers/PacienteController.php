@@ -175,15 +175,11 @@ class PacienteController extends Controller
         $eventosAgrupados = collect($eventos)->groupBy(function ($evento) {
             $dataBruta = $evento['data'] ?? null;
 
-            if ($dataBruta && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dataBruta)) {
-                try {
-                    return Carbon::createFromFormat('Y-m-d', $dataBruta)->format('d/m/Y');
-                } catch (\Exception $e) {
-                    return 'Data inválida';
-                }
+            if ($dataBruta && strtotime($dataBruta)) {
+                return Carbon::parse($dataBruta)->format('Y-m-d');
             }
 
-            return 'Data inválida';
+            return null;
         });
 
         // Paginação manual dos eventos (não interfere no agrupamento visual)

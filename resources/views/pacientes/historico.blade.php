@@ -29,7 +29,14 @@
 
             <div class="{{ $corFundo }} p-3 rounded shadow-sm mb-4 {{ $borda }}">
                 <h5 class="fw-bold text-primary mb-3">
-                    📅 {{ \Carbon\Carbon::parse($data)->translatedFormat('l, d \d\e F \d\e Y') }}
+                    📅 
+                    @php
+                        try {
+                            echo \Carbon\Carbon::parse($data)->translatedFormat('l, d \d\e F \d\e Y');
+                        } catch (\Exception $e) {
+                            echo 'Data inválida';
+                        }
+                    @endphp
                 </h5>
 
                 <ul class="timeline">
