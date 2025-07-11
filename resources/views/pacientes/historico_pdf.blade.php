@@ -4,42 +4,54 @@
     <meta charset="UTF-8">
     <title>Histórico de {{ $paciente->nome }}</title>
     <style>
+        @page {
+            margin: 30px 40px;
+        }
+
         body {
             font-family: 'DejaVu Sans', sans-serif;
-            font-size: 11.5px;
+            font-size: 12px;
             color: #333;
             margin: 0;
             padding: 0;
         }
+
         .header {
             text-align: center;
-            padding: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
             border-bottom: 3px solid #00aaff;
         }
+
         .header img {
             max-height: 70px;
             margin-bottom: 10px;
         }
+
         .header h1 {
             margin: 0;
             font-size: 20px;
             color: #00aaff;
         }
+
         .section {
-            padding: 20px 30px;
+            padding: 10px 0;
         }
+
         .evento {
             border-left: 4px solid #0d6efd;
-            background: #f9f9f9;
-            margin-bottom: 18px;
+            background: #f8f9fa;
+            margin: 15px 0;
             padding: 10px 15px;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 6px;
+            page-break-inside: avoid;
         }
+
         .evento h4 {
             margin: 0 0 5px 0;
             font-size: 14px;
         }
+
         .evento.sessao h4 { color: #198754; }
         .evento.evolucao h4 { color: #0d6efd; }
         .evento.medicacao h4 { color: #dc3545; }
@@ -48,14 +60,17 @@
             font-weight: bold;
             margin-bottom: 3px;
         }
+
         .hora {
             color: #666;
             font-size: 11px;
         }
+
         .descricao {
-            white-space: pre-wrap;
             font-size: 11.5px;
+            margin-top: 5px;
         }
+
         .footer {
             text-align: center;
             font-size: 10px;
@@ -75,9 +90,7 @@
     </div>
 
     <div class="section">
-        @php
-            use Illuminate\Support\Str;
-        @endphp
+        @php use Illuminate\Support\Str; @endphp
 
         @forelse ($eventos as $evento)
             @php
@@ -91,14 +104,12 @@
                 $titulo = match($evento['tipo']) {
                     'Sessão' => 'Sessão',
                     'Evolução' => 'Evolução',
-                    'Medicação' => Str::startsWith($evento['descricao'], 'Medicação Inicial:')
-                        ? 'Medicação Inicial'
-                        : 'Nova Medicação',
+                    'Medicação' => Str::startsWith($evento['descricao'], 'Medicação Inicial:') ? 'Medicação Inicial' : 'Nova Medicação',
                     default => $evento['tipo']
                 };
 
                 $isMedicacao = Str::startsWith($evento['descricao'], 'Medicação registrada:') || Str::startsWith($evento['descricao'], 'Medicação Inicial:');
-                $status = \Illuminate\Support\Str::upper(trim($evento['status_confirmacao'] ?? ''));
+                $status = Str::upper(trim($evento['status_confirmacao'] ?? ''));
                 $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && $status === 'CONFIRMADA';
             @endphp
 
@@ -115,9 +126,6 @@
                     @endif
                 </div>
                 <div class="descricao">
-                    @if (!$isMedicacao && $evento['tipo'] !== 'Sessão')
-                        <strong>Lembrete para a próxima sessão:</strong><br>
-                    @endif
                     {!! strip_tags($evento['descricao'], '<br><b><strong><em><i><u>') !!}
                 </div>
             </div>

@@ -201,9 +201,9 @@ class PacienteController extends Controller
             $data = Carbon::parse($sessao->data_hora);
             $eventos[] = [
                 'tipo' => 'Sessão',
-                'data' => $data->format('Y-m-d'),
+                'data' => $data->format('d/m/Y'),
                 'hora' => $data->format('H:i'),
-                'status_confirmacao' => $sessao->status_confirmacao, // <- CORREÇÃO AQUI
+                'status_confirmacao' => $sessao->status_confirmacao,
                 'descricao' => 'Valor: R$ ' . number_format($sessao->valor, 2, ',', '.') .
                     ($sessao->foi_pago ? ' <span class="text-success">(Pago)</span>' : ' <span class="text-danger">(Pendente)</span>')
             ];
@@ -213,7 +213,7 @@ class PacienteController extends Controller
             $data = Carbon::parse($evolucao->data);
             $eventos[] = [
                 'tipo' => $evolucao->tipo === 'medicacao' ? 'Medicação' : 'Evolução',
-                'data' => $data->format('Y-m-d'),
+                'data' => $data->format('d/m/Y'),
                 'hora' => '',
                 'status' => 'confirmado', // para evitar falhas na view
                 'descricao' => nl2br(e(trim($evolucao->texto) ?: 'Sem anotação registrada.'))
