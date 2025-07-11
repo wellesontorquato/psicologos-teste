@@ -38,10 +38,16 @@
             padding: 10px 0;
         }
 
+        h3 {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #0d6efd;
+        }
+
         .evento {
             border-left: 4px solid #0d6efd;
             background: #f8f9fa;
-            margin: 15px 0;
+            margin: 10px 0;
             padding: 10px 15px;
             border-radius: 6px;
             page-break-inside: avoid;
@@ -90,51 +96,57 @@
     </div>
 
     <div class="section">
-        @php use Illuminate\Support\Str; @endphp
+        @php
+            use Illuminate\Support\Str;
+            $agrupadosPorData = collect($eventos)->groupBy('data');
+        @endphp
 
-        @forelse ($eventos as $evento)
-            @php
-                $classeTipo = match($evento['tipo']) {
-                    'Sessão' => 'sessao',
-                    'Evolução' => 'evolucao',
-                    'Medicação' => 'medicacao',
-                    default => ''
-                };
+        @forelse ($agrupadosPorData as $data => $grupo)
+            <h3>{{ \Carbon\Carbon::parse($data)->format('d/m/Y') }}</h3>
 
-                $titulo = match($evento['tipo']) {
-                    'Sessão' => 'Sessão',
-                    'Evolução' => 'Evolução',
-                    'Medicação' => Str::startsWith($evento['descricao'], 'Medicação Inicial:') ? 'Medicação Inicial' : 'Nova Medicação',
-                    default => $evento['tipo']
-                };
+            @foreach ($grupo as $evento)
+                @php
+                    $classeTipo = match($evento['tipo']) {
+                        'Sessão' => 'sessao',
+                        'Evolução' => 'evolucao',
+                        'Medicação' => 'medicacao',
+                        default => ''
+                    };
 
-                $isMedicacao = Str::startsWith($evento['descricao'], 'Medicação registrada:') || Str::startsWith($evento['descricao'], 'Medicação Inicial:');
-                $status = Str::upper(trim($evento['status_confirmacao'] ?? ''));
-                $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && $status === 'CONFIRMADA';
-            @endphp
+                    $titulo = match($evento['tipo']) {
+                        'Sessão' => 'Sessão',
+                        'Evolução' => 'Evolução',
+                        'Medicação' => Str::startsWith($evento['descricao'], 'Medicação Inicial:') ? 'Medicação Inicial' : 'Nova Medicação',
+                        default => $evento['tipo']
+                    };
 
-            @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
-                @continue
-            @endif
+                    $status = Str::upper(trim($evento['status_confirmacao'] ?? ''));
+                    $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && $status === 'CONFIRMADA';
+                @endphp
 
-            <div class="evento {{ $classeTipo }}">
-                <h4>{{ $titulo }}</h4>
-                <div class="data">
-                    {{ $evento['data'] }}
-                    @if($evento['hora'])
-                        às <span class="hora">{{ $evento['hora'] }}</span>
-                    @endif
+                @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
+                    @continue
+                @endif
+
+                <div class="evento {{ $classeTipo }}">
+                    <h4>{{ $titulo }}</h4>
+                    <div class="data">
+                        {{ $evento['data'] }}
+                        @if($evento['hora'])
+                            às <span class="hora">{{ $evento['hora'] }}</span>
+                        @endif
+                    </div>
+                    <div class="descricao">
+                        {!! strip_tags($evento['descricao'], '<br><b><strong><em><i><u>') !!}
+                    </div>
                 </div>
-                <div class="descricao">
-                    {!! strip_tags($evento['descricao'], '<br><b><strong><em><i><u>') !!}
-                </div>
-            </div>
+            @endforeach
         @empty
             <p style="margin-top: 30px;">Nenhum evento registrado.</p>
         @endforelse
     </div>
 
-    {{-- Paginação --}}
+    {{-- Paginação no rodapé do PDF --}}
     <script type="text/php">
         if (isset($pdf)) {
             $pdf->page_script('
