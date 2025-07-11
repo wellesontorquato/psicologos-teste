@@ -30,13 +30,11 @@
             <div class="{{ $corFundo }} p-3 rounded shadow-sm mb-4 {{ $borda }}">
                 <h5 class="fw-bold text-primary mb-3">
                     📅 
-                    @php
-                        try {
-                            echo \Carbon\Carbon::parse($data)->translatedFormat('l, d \d\e F \d\e Y');
-                        } catch (\Exception $e) {
-                            echo 'Data inválida';
-                        }
-                    @endphp
+                    @if (\Carbon\Carbon::hasFormat($data, 'Y-m-d'))
+                        {{ \Carbon\Carbon::parse($data)->translatedFormat('l, d \d\e F \d\e Y') }}
+                    @else
+                        Data inválida
+                    @endif
                 </h5>
 
                 <ul class="timeline">
