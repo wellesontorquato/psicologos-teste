@@ -29,7 +29,7 @@
 
             <div class="{{ $corFundo }} p-3 rounded shadow-sm mb-4 {{ $borda }}">
                 <h5 class="fw-bold text-primary mb-3">
-                    📅 {{ \Carbon\Carbon::createFromFormat('d/m/Y', $data)->translatedFormat('l, d \d\e F \d\e Y') }}
+                    📅 {{ \Carbon\Carbon::parse($data)->translatedFormat('l, d \d\e F \d\e Y') }}
                 </h5>
 
                 <ul class="timeline">
