@@ -62,7 +62,7 @@
                                 @elseif ($isMedicacao)
                                     💊 {{ $isInicial ? 'Medicação Inicial' : 'Nova Medicação' }}
                                 @else
-                                    📄 Evolução
+                                    📄 Evolução (Lembretes para próxima sessão)
                                 @endif
                             </h6>
 
