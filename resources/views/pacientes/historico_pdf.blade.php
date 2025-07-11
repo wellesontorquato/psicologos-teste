@@ -98,11 +98,12 @@
     <div class="section">
         @php
             use Illuminate\Support\Str;
+            use Carbon\Carbon;
             $agrupadosPorData = collect($eventos)->groupBy('data');
         @endphp
 
         @forelse ($agrupadosPorData as $data => $grupo)
-            <h3>{{ \Carbon\Carbon::parse($data)->format('d/m/Y') }}</h3>
+            <h3>{{ Carbon::parse($data)->format('d/m/Y') }}</h3>
 
             @foreach ($grupo as $evento)
                 @php
