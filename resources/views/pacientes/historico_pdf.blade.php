@@ -75,6 +75,10 @@
     </div>
 
     <div class="section">
+        @php
+            use Illuminate\Support\Str;
+        @endphp
+
         @forelse ($eventos as $evento)
             @php
                 $classeTipo = match($evento['tipo']) {
@@ -92,7 +96,14 @@
                         : 'Nova Medicação',
                     default => $evento['tipo']
                 };
+
+                $isMedicacao = Str::startsWith($evento['descricao'], 'Medicação registrada:') || Str::startsWith($evento['descricao'], 'Medicação Inicial:');
+                $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && ($evento['status'] ?? null) === 'confirmado';
             @endphp
+
+            @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
+                @continue
+            @endif
 
             <div class="evento {{ $classeTipo }}">
                 <h4>{{ $titulo }}</h4>
@@ -102,7 +113,12 @@
                         às <span class="hora">{{ $evento['hora'] }}</span>
                     @endif
                 </div>
-                <div class="descricao">{!! strip_tags($evento['descricao'], '<br><b><strong><em><i><u>') !!}</div>
+                <div class="descricao">
+                    @if (!$isMedicacao && $evento['tipo'] !== 'Sessão')
+                        <strong>Lembrete para a próxima sessão:</strong><br>
+                    @endif
+                    {!! strip_tags($evento['descricao'], '<br><b><strong><em><i><u>') !!}
+                </div>
             </div>
         @empty
             <p style="margin-top: 30px;">Nenhum evento registrado.</p>
