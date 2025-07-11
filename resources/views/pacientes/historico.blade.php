@@ -22,7 +22,11 @@
     @else
         @php
             $eventosAgrupados = $eventos->groupBy(function ($item) {
-                return \Carbon\Carbon::parse($item['data'])->format('d/m/Y');
+                try {
+                    return \Carbon\Carbon::createFromFormat('Y-m-d', $item['data'])->format('d/m/Y');
+                } catch (\Exception $e) {
+                    return 'Data inválida';
+                }
             });
         @endphp
 
