@@ -187,7 +187,7 @@ class PacienteController extends Controller
     private function gerarEventosDoPaciente(Paciente $paciente): array
     {
         $sessoes = $paciente->sessoes()
-            ->where('status', 'confirmado')
+            ->where('status_confirmacao', 'CONFIRMADA')
             ->orderBy('data_hora')
             ->get();
 
@@ -225,7 +225,7 @@ class PacienteController extends Controller
 
         return $eventos;
     }
-    
+
     public function aniversariantesHoje()
     {
         $hoje = Carbon::today();
