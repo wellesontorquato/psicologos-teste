@@ -98,7 +98,8 @@
                 };
 
                 $isMedicacao = Str::startsWith($evento['descricao'], 'Medicação registrada:') || Str::startsWith($evento['descricao'], 'Medicação Inicial:');
-                $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && \Illuminate\Support\Str::upper(trim($evento['status_confirmacao'] ?? '')) === 'CONFIRMADA';
+                $status = \Illuminate\Support\Str::upper(trim($evento['status_confirmacao'] ?? ''));
+                $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && $status === 'CONFIRMADA';
             @endphp
 
             @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
