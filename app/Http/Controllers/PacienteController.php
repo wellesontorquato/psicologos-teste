@@ -231,19 +231,19 @@ class PacienteController extends Controller
             $data = Carbon::parse($sessao->data_hora);
             $eventos[] = [
                 'tipo' => 'Sessão',
-                'data' => $data->format('d/m/Y'),
+                'data' => $data->format('Y-m-d'),
                 'hora' => $data->format('H:i'),
                 'status_confirmacao' => $sessao->status_confirmacao,
                 'descricao' => 'Valor: R$ ' . number_format($sessao->valor, 2, ',', '.') .
                     ($sessao->foi_pago ? ' <span class="text-success">(Pago)</span>' : ' <span class="text-danger">(Pendente)</span>')
             ];
         }
-        
+
         foreach ($evolucoes as $evolucao) {
             $data = Carbon::parse($evolucao->data);
             $eventos[] = [
                 'tipo' => $evolucao->tipo === 'medicacao' ? 'Medicação' : 'Evolução',
-                'data' => $data->format('d/m/Y'),
+                'data' => $data->format('Y-m-d'),
                 'hora' => '',
                 'status' => 'confirmado',
                 'descricao' => nl2br(e(trim($evolucao->texto) ?: 'Sem anotação registrada.'))
@@ -254,6 +254,7 @@ class PacienteController extends Controller
 
         return $eventos;
     }
+
 
     public function aniversariantesHoje()
     {
