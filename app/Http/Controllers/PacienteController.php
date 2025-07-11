@@ -203,12 +203,12 @@ class PacienteController extends Controller
                 'tipo' => 'Sessão',
                 'data' => $data->format('Y-m-d'),
                 'hora' => $data->format('H:i'),
-                'status' => $sessao->status,
+                'status_confirmacao' => $sessao->status_confirmacao, // <- CORREÇÃO AQUI
                 'descricao' => 'Valor: R$ ' . number_format($sessao->valor, 2, ',', '.') .
                     ($sessao->foi_pago ? ' <span class="text-success">(Pago)</span>' : ' <span class="text-danger">(Pendente)</span>')
             ];
         }
-
+        
         foreach ($evolucoes as $evolucao) {
             $data = Carbon::parse($evolucao->data);
             $eventos[] = [
