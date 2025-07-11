@@ -215,12 +215,11 @@ class PacienteController extends Controller
                 'tipo' => $evolucao->tipo === 'medicacao' ? 'Medicação' : 'Evolução',
                 'data' => $data->format('d/m/Y'),
                 'hora' => '',
-                'status' => 'confirmado', // para evitar falhas na view
+                'status' => 'confirmado',
                 'descricao' => nl2br(e(trim($evolucao->texto) ?: 'Sem anotação registrada.'))
             ];
         }
 
-        // Ordenação do mais antigo para o mais recente
         usort($eventos, fn($a, $b) => strtotime($a['data'] . ' ' . ($a['hora'] ?? '00:00')) <=> strtotime($b['data'] . ' ' . ($b['hora'] ?? '00:00')));
 
         return $eventos;

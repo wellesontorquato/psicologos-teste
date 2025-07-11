@@ -16,7 +16,7 @@
     </div>
 
     @php
-        $eventosOrdenados = collect($eventos)->sortBy('data');
+        $eventosOrdenados = collect($eventos); // já vem ordenado do controller
     @endphp
 
     @if ($eventosOrdenados->isEmpty())
