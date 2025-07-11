@@ -26,8 +26,11 @@
                             'canceled' => 'Cancelada',
                             default => ucfirst($status)
                         };
+                        $nomesPlanos = [
+                            'price_1RVxueC1nNYXXNDRXZRHr2N3' => 'Plano Mensal',
+                            'price_1RVxv5C1nNYXXNDRYJlrrwG5' => 'Plano Trimestral',
+                            'price_1RVxvdC1nNYXXNDR2URxfXFz' => 'Plano Anual',
                     @endphp
-
                     <span class="badge rounded-pill px-3 py-2 text-white {{ $badgeClass }}">
                         {{ $statusTraduzido }}
                     </span>
