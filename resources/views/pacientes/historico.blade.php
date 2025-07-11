@@ -20,44 +20,67 @@
             Nenhuma sessão ou evolução registrada para este paciente.
         </div>
     @else
+        @php
+            $eventosAgrupados = $eventos->groupBy(function ($item) {
+                return \Carbon\Carbon::parse($item['data'])->format('d/m/Y');
+            });
+        @endphp
+
         <ul class="timeline">
-            @foreach ($eventos as $evento)
+            @foreach ($eventosAgrupados as $dataFormatada => $eventosDoDia)
                 @php
-                    $isMedicacao = str_starts_with($evento['descricao'], 'Medicação registrada:') || str_starts_with($evento['descricao'], 'Medicação Inicial:');
-                    $isInicial = str_starts_with($evento['descricao'], 'Medicação Inicial:');
-                    $status = \Illuminate\Support\Str::upper(trim($evento['status_confirmacao'] ?? ''));
-                    $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && $status === 'CONFIRMADA';
+                    // Verifica se há pelo menos uma sessão confirmada neste grupo
+                    $exibirGrupo = $eventosDoDia->contains(function ($evento) {
+                        $status = \Illuminate\Support\Str::upper(trim($evento['status_confirmacao'] ?? ''));
+                        return $evento['tipo'] !== 'Sessão' || $status === 'CONFIRMADA';
+                    });
                 @endphp
 
-                @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
+                @if (!$exibirGrupo)
                     @continue
                 @endif
 
-                <li class="timeline-item position-relative mb-5 ps-4 border-start 
-                    {{ $evento['tipo'] === 'Sessão' ? 'border-success' : ($isMedicacao ? 'border-danger' : 'border-primary') }}">
-                    <span class="position-absolute top-0 start-0 translate-middle p-2 rounded-circle border border-light
-                        {{ $evento['tipo'] === 'Sessão' ? 'bg-success' : ($isMedicacao ? 'bg-danger' : 'bg-primary') }}">
-                    </span>
+                <li class="timeline-item position-relative mb-5 ps-4 border-start border-info">
+                    <span class="position-absolute top-0 start-0 translate-middle p-2 rounded-circle border border-light bg-info"></span>
 
-                    <h5 class="fw-bold">
-                        @if ($evento['tipo'] === 'Sessão')
-                            🧘 Sessão — {{ \Carbon\Carbon::parse($evento['data'])->format('d/m/Y') }}
-                        @elseif ($isMedicacao)
-                            💊 {{ $isInicial ? 'Medicação Inicial' : 'Nova Medicação' }} — {{ \Carbon\Carbon::parse($evento['data'])->format('d/m/Y') }}
-                        @else
-                            📄 Evolução — {{ \Carbon\Carbon::parse($evento['data'])->format('d/m/Y') }}
-                        @endif
-                    </h5>
+                    <div class="p-3 rounded bg-light border">
+                        <h5 class="fw-bold text-info mb-3">📅 Eventos do dia {{ $dataFormatada }}</h5>
 
-                    @if($evento['hora'])
-                        <p class="text-muted mb-1">{{ $evento['hora'] }}</p>
-                    @endif
+                        @foreach ($eventosDoDia as $evento)
+                            @php
+                                $isMedicacao = str_starts_with($evento['descricao'], 'Medicação registrada:') || str_starts_with($evento['descricao'], 'Medicação Inicial:');
+                                $isInicial = str_starts_with($evento['descricao'], 'Medicação Inicial:');
+                                $status = \Illuminate\Support\Str::upper(trim($evento['status_confirmacao'] ?? ''));
+                                $isSessaoConfirmada = $evento['tipo'] === 'Sessão' && $status === 'CONFIRMADA';
+                            @endphp
 
-                    <div>
-                        @if (!$isMedicacao && $evento['tipo'] !== 'Sessão')
-                            <p class="fw-semibold text-primary mb-2">Lembrete para a próxima sessão:</p>
-                        @endif
-                        {!! $evento['descricao'] !!}
+                            @if ($evento['tipo'] === 'Sessão' && !$isSessaoConfirmada)
+                                @continue
+                            @endif
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold">
+                                    @if ($evento['tipo'] === 'Sessão')
+                                        🧘 Sessão
+                                    @elseif ($isMedicacao)
+                                        💊 {{ $isInicial ? 'Medicação Inicial' : 'Nova Medicação' }}
+                                    @else
+                                        📄 Evolução
+                                    @endif
+                                </h6>
+
+                                @if ($evento['hora'])
+                                    <p class="text-muted mb-1">{{ $evento['hora'] }}</p>
+                                @endif
+
+                                <div>
+                                    @if (!$isMedicacao && $evento['tipo'] !== 'Sessão')
+                                        <p class="fw-semibold text-primary mb-2">Lembrete para a próxima sessão:</p>
+                                    @endif
+                                    {!! $evento['descricao'] !!}
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </li>
             @endforeach
