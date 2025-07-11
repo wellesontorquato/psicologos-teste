@@ -168,37 +168,30 @@ class PacienteController extends Controller
 
     public function historico(Paciente $paciente)
     {
-        $this->authorize('view', $paciente);
         $eventos = $this->gerarEventosDoPaciente($paciente);
 
-        // Agrupamento por data formatada (DD/MM/YYYY)
-        $eventosAgrupados = collect($eventos)->groupBy(function ($evento) {
-            $dataBruta = $evento['data'] ?? null;
+        // Agrupa por data (mantendo ordem)
+        $eventosAgrupados = collect($eventos)
+            ->groupBy('data')
+            ->sortKeys();
 
-            if ($dataBruta && strtotime($dataBruta)) {
-                return Carbon::parse($dataBruta)->format('Y-m-d');
-            }
+        // PAGINAÇÃO MANUAL DOS BLOCOS (cada grupo = 1 dia)
+        $paginaAtual = LengthAwarePaginator::resolveCurrentPage();
+        $itensPorPagina = 5;
+        $itemsPaginados = $eventosAgrupados->forPage($paginaAtual, $itensPorPagina);
 
-            return null;
-        });
-
-        // Paginação manual dos eventos (não interfere no agrupamento visual)
-        $currentPage = request()->get('page', 1);
-        $perPage = 10;
-        $offset = ($currentPage - 1) * $perPage;
-
-        $eventosPaginados = new LengthAwarePaginator(
-            array_slice($eventos, $offset, $perPage),
-            count($eventos),
-            $perPage,
-            $currentPage,
+        $paginador = new LengthAwarePaginator(
+            $itemsPaginados,
+            $eventosAgrupados->count(),
+            $itensPorPagina,
+            $paginaAtual,
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
         return view('pacientes.historico', [
             'paciente' => $paciente,
-            'eventos' => $eventosPaginados,
-            'eventosAgrupados' => $eventosAgrupados,
+            'eventos' => $paginador,
+            'eventosAgrupados' => $paginador
         ]);
     }
 
@@ -254,7 +247,6 @@ class PacienteController extends Controller
 
         return $eventos;
     }
-
 
     public function aniversariantesHoje()
     {
