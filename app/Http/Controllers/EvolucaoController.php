@@ -49,9 +49,11 @@ class EvolucaoController extends Controller
     public function create(Request $request)
     {
         $pacientes = Paciente::where('user_id', auth()->id())->get();
-        $pacienteSelecionado = $request->paciente_id;
 
-        return view('evolucoes.create', compact('pacientes', 'pacienteSelecionado'));
+        $pacienteSelecionado = $request->paciente;
+        $dataSelecionada = $request->data;
+
+        return view('evolucoes.create', compact('pacientes', 'pacienteSelecionado', 'dataSelecionada'));
     }
 
     // 🌐 WEB: Armazenar evolução

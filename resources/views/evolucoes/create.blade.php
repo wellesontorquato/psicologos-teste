@@ -19,15 +19,15 @@
             </select>
         </div>
 
-
         <div class="mb-3">
             <label>Data</label>
-            <input type="date" name="data" class="form-control" required>
+            <input type="date" name="data" class="form-control"
+                   value="{{ old('data', $dataSelecionada ?? '') }}" required>
         </div>
 
         <div class="mb-3">
             <label>Anotação Clínica</label>
-            <textarea name="texto" class="form-control" rows="5" required></textarea>
+            <textarea name="texto" class="form-control" rows="5" required>{{ old('texto') }}</textarea>
         </div>
 
         <button class="btn btn-success">Salvar</button>
