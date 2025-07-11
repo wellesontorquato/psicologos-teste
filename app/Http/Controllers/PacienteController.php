@@ -171,7 +171,22 @@ class PacienteController extends Controller
         $this->authorize('view', $paciente);
         $eventos = $this->gerarEventosDoPaciente($paciente);
 
-        // Paginação manual dos eventos
+        // Agrupamento por data formatada (DD/MM/YYYY)
+        $eventosAgrupados = collect($eventos)->groupBy(function ($evento) {
+            $dataBruta = $evento['data'] ?? null;
+
+            if ($dataBruta && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dataBruta)) {
+                try {
+                    return Carbon::createFromFormat('Y-m-d', $dataBruta)->format('d/m/Y');
+                } catch (\Exception $e) {
+                    return 'Data inválida';
+                }
+            }
+
+            return 'Data inválida';
+        });
+
+        // Paginação manual dos eventos (não interfere no agrupamento visual)
         $currentPage = request()->get('page', 1);
         $perPage = 10;
         $offset = ($currentPage - 1) * $perPage;
@@ -186,7 +201,8 @@ class PacienteController extends Controller
 
         return view('pacientes.historico', [
             'paciente' => $paciente,
-            'eventos' => $eventosPaginados
+            'eventos' => $eventosPaginados,
+            'eventosAgrupados' => $eventosAgrupados,
         ]);
     }
 
