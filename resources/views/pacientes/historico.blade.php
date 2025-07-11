@@ -47,7 +47,12 @@
                         <p class="text-muted mb-1">{{ $evento['hora'] }}</p>
                     @endif
 
-                    <div>{!! $evento['descricao'] !!}</div>
+                    <div>
+                        @if (!$isMedicacao && $evento['tipo'] !== 'Sessão')
+                            <p class="fw-semibold text-primary mb-2">Lembrete para a próxima sessão:</p>
+                        @endif
+                        {!! $evento['descricao'] !!}
+                    </div>
                 </li>
             @endforeach
         </ul>
