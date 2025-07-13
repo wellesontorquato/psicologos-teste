@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'PsiGestor - Plataforma para Profissionais da Saúde Mental' }}</title>
+    <title>{{ $title ?? 'PsiGestor - Plataforma para Psicólogos, Psicanalistas e Psiquiatras' }}</title>
 
     {{-- Open Graph (Facebook, WhatsApp, LinkedIn) --}}
     @if(isset($news))
