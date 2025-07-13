@@ -112,9 +112,6 @@
 @include('components.depoimentos')
 <hr style="border: none; border-top: 2px solid #e0e0e0; margin: 60px auto; max-width: 80%;">
 @include('components.noticias')
-<hr style="border: none; border-top: 2px solid #e0e0e0; margin: 60px auto; max-width: 80%;">
-{{-- Contato --}}
-@include('components.contato')
 
 {{-- Botão WhatsApp --}}
 <a href="https://wa.me/5582991128022?text=Olá,%20tenho%20interesse%20no%20PsiGestor!" target="_blank" style="
