@@ -68,7 +68,7 @@
             <li>Revogar o consentimento dado anteriormente;</li>
             <li>Solicitar informações sobre o compartilhamento de dados.</li>
         </ul>
-        <p>Para exercer seus direitos, entre em contato pelo e-mail <strong>privacidade@psigestor.com</strong>.</p>
+        <p>Para exercer seus direitos, entre em contato pelo e-mail <strong>psigestor@devtorquato.com.br</strong>.</p>
 
         <h3>6. Segurança dos dados</h3>
         <p>Adotamos medidas técnicas e organizacionais rigorosas para proteger seus dados, como:</p>
@@ -90,7 +90,7 @@
 
         <h3>10. Encarregado de dados (DPO)</h3>
         <p>O PsiGestor nomeou um Encarregado pelo Tratamento de Dados (DPO), que pode ser contatado em:</p>
-        <p><strong>E-mail:</strong> privacidade@psigestor.com<br>
+        <p><strong>E-mail:</strong> psigestor@devtorquato.com.br<br>
         <strong>Responsável:</strong> Equipe de Privacidade - PsiGestor</p>
 
         <p>Ao continuar utilizando nosso site e plataforma, você declara estar ciente e de acordo com esta Política de Privacidade.</p>
