@@ -60,7 +60,12 @@ Route::post('/contato/enviar', [App\Http\Controllers\ContatoController::class, '
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
-Route::view('/politica-de-privacidade', 'politica-de-privacidade')->name('politica.privacidade');
+// Política de Privacidade
+Route::view('/politica-de-privacidade', 'landing.politica')->name('politica');
+
+// Termos de Uso
+Route::view('/termos-de-uso', 'landing.termos')->name('termos');
+
 
 /*
 |--------------------------------------------------------------------------
