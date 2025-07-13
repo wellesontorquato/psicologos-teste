@@ -61,10 +61,10 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 // Política de Privacidade
-Route::view('/politica-de-privacidade', 'landing.politica')->name('politica');
+Route::view('/politica-de-privacidade', 'pages.politica-de-privacidade')->name('politica-de-privacidade');
 
 // Termos de Uso
-Route::view('/termos-de-uso', 'landing.termos')->name('termos');
+Route::view('/termos-de-uso', 'pages.termos-de-uso')->name('termos-de-uso');
 
 
 /*
