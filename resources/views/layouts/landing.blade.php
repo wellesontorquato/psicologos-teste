@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'PsiGestor - Plataforma para Psicólogos, Psicanalistas e Psiquiatras' }}</title>
+    <title>{{ $title ?? 'PsiGestor - Plataforma para Profissionais da Saúde Mental' }}</title>
 
     {{-- Open Graph (Facebook, WhatsApp, LinkedIn) --}}
-    @if(isset($news))
+    @if(isset($news) && $news instanceof \App\Models\News)
         <meta property="og:title" content="{{ $news->title }}">
         <meta property="og:description" content="{{ $news->subtitle ?? Str::limit(strip_tags($news->content), 150) }}">
         <meta property="og:image" content="{{ $news->image_url }}">
         <meta property="og:url" content="{{ route('blog.show', $news->slug) }}">
         <meta property="og:type" content="article">
         <meta property="og:locale" content="pt_BR">
-    @endif
 
-    @if(isset($news))
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ $news->title }}">
         <meta name="twitter:description" content="{{ $news->subtitle ?? Str::limit(strip_tags($news->content), 150) }}">
