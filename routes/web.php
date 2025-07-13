@@ -60,6 +60,8 @@ Route::post('/contato/enviar', [App\Http\Controllers\ContatoController::class, '
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
+Route::view('/politica-de-privacidade', 'politica-de-privacidade')->name('politica.privacidade');
+
 /*
 |--------------------------------------------------------------------------
 | Área de Assinaturas (usuário autenticado, mas sem exigir assinatura ativa)

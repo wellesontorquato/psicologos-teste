@@ -72,8 +72,8 @@
         }
     </style>
 
-
     @stack('styles')
+
     <!-- Facebook Meta Pixel -->
     <script>
     !function(f,b,e,v,n,t,s)
@@ -90,7 +90,6 @@
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1112759344219140&ev=PageView&noscript=1"
     /></noscript>
-    <!-- End Facebook Meta Pixel -->
 </head>
 <body>
     <div class="page-wrapper">
@@ -113,5 +112,83 @@
     </script>
 
     @stack('scripts')
+
+    {{-- Banner de Cookies --}}
+    <div id="cookie-banner" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 600px; margin: auto; background: white; border: 1px solid #ccc; border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999;">
+        <p style="margin-bottom: 10px; font-size: 0.95rem; color: #333;">
+            🍪 Este site utiliza cookies para melhorar a sua experiência de navegação, analisar o tráfego e personalizar conteúdos. Ao continuar, você concorda com nossa 
+            <a href="/politica-de-privacidade" target="_blank" style="color: #00aaff; text-decoration: underline;">Política de Privacidade</a>.
+        </p>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="aceitarCookies()" style="background-color: #00aaff; color: white; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer;">Aceitar Todos</button>
+            <button onclick="rejeitarCookies()" style="background-color: #ddd; color: #111; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer;">Rejeitar</button>
+            <button onclick="abrirConfiguracoesCookies()" style="background-color: transparent; color: #555; border: none; padding: 10px 16px; cursor: pointer; text-decoration: underline;">Cookies Personalizados</button>
+        </div>
+    </div>
+
+    {{-- Modal de Personalização de Cookies --}}
+    <div id="cookie-modal" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);">
+        <div style="background: #fff; max-width: 500px; margin: 80px auto; padding: 30px; border-radius: 8px; position: relative;">
+            <h4 style="margin-top: 0">Preferências de Cookies</h4>
+            <p>Escolha os tipos de cookies que você deseja aceitar:</p>
+
+            <div style="margin-top: 20px">
+                <label><input type="checkbox" disabled checked> Cookies Necessários <small>(sempre ativos)</small></label>
+            </div>
+            <div style="margin-top: 10px">
+                <label><input type="checkbox" id="cookie-analytics"> Cookies de Análise</label>
+            </div>
+            <div style="margin-top: 10px">
+                <label><input type="checkbox" id="cookie-marketing"> Cookies de Marketing</label>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px">
+                <button onclick="salvarPreferenciasCookies()" style="background-color: #00aaff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Salvar</button>
+                <button onclick="fecharModalCookies()" style="background: transparent; border: none; color: #666; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const consent = localStorage.getItem('cookieConsent');
+            if (!consent) {
+                document.getElementById('cookie-banner').style.display = 'block';
+            }
+        });
+
+        function aceitarCookies() {
+            localStorage.setItem('cookieConsent', 'all');
+            document.getElementById('cookie-banner').style.display = 'none';
+        }
+
+        function rejeitarCookies() {
+            localStorage.setItem('cookieConsent', 'none');
+            document.getElementById('cookie-banner').style.display = 'none';
+        }
+
+        function abrirConfiguracoesCookies() {
+            document.getElementById('cookie-modal').style.display = 'block';
+        }
+
+        function fecharModalCookies() {
+            document.getElementById('cookie-modal').style.display = 'none';
+        }
+
+        function salvarPreferenciasCookies() {
+            const analytics = document.getElementById('cookie-analytics').checked;
+            const marketing = document.getElementById('cookie-marketing').checked;
+
+            const preferencias = {
+                analytics,
+                marketing
+            };
+
+            localStorage.setItem('cookieConsent', JSON.stringify(preferencias));
+            document.getElementById('cookie-banner').style.display = 'none';
+            fecharModalCookies();
+        }
+    </script>
 </body>
 </html>
