@@ -59,6 +59,78 @@
             {!! $news->content !!}
         </div>
 
+        {{-- Compartilhamento --}}
+        <div style="margin-top: 40px; margin-bottom: 30px;">
+            <p style="font-weight: bold; margin-bottom: 10px; color: #111;">Compartilhe:</p>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                @php
+                    $url = urlencode(route('blog.show', $news->slug));
+                    $title = urlencode($news->title);
+                @endphp
+
+                {{-- WhatsApp --}}
+                <a href="https://wa.me/?text={{ $title }}%0A{{ $url }}" target="_blank" style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    background-color: #25D366;
+                    color: #fff;
+                    padding: 10px 16px;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    font-weight: 500;
+                ">
+                    <i class="bi bi-whatsapp"></i> WhatsApp
+                </a>
+
+                {{-- Facebook --}}
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ $url }}" target="_blank" style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    background-color: #1877F2;
+                    color: #fff;
+                    padding: 10px 16px;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    font-weight: 500;
+                ">
+                    <i class="bi bi-facebook"></i> Facebook
+                </a>
+
+                {{-- X (Twitter) --}}
+                <a href="https://twitter.com/intent/tweet?text={{ $title }}&url={{ $url }}" target="_blank" style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    background-color: #000;
+                    color: #fff;
+                    padding: 10px 16px;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    font-weight: 500;
+                ">
+                    <i class="bi bi-twitter-x"></i> X
+                </a>
+
+                {{-- Instagram (abre app com sugestão de colar link) --}}
+                <button onclick="copiarLinkInstagram('{{ route('blog.show', $news->slug) }}')" style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
+                    color: #fff;
+                    padding: 10px 16px;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: 500;
+                    cursor: pointer;
+                ">
+                    <i class="bi bi-instagram"></i> Instagram
+                </button>
+            </div>
+        </div>
+
         {{-- Notícias Relacionadas --}}
         @if ($related->count())
             <div style="margin-top: 60px;">
@@ -182,6 +254,16 @@
             img.style.float = (index % 2 === 0) ? 'left' : 'right';
         });
     });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+    function copiarLinkInstagram(url) {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Link copiado! Agora é só colar no seu story ou feed do Instagram. 😉');
+        });
+    }
 </script>
 @endpush
 
