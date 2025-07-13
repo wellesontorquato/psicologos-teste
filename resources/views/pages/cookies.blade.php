@@ -67,7 +67,7 @@
 
         <h3>8. Contato</h3>
         <p>Em caso de dúvidas sobre esta política ou sobre como usamos cookies, entre em contato pelo e-mail:</p>
-        <p><strong>privacidade@psigestor.com</strong></p>
+        <p><strong>psigestor@devtorquato.com.br</strong></p>
 
         <p>Ao continuar usando nosso site, você concorda com o uso de cookies conforme descrito nesta política.</p>
     </div>
