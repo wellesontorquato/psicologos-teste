@@ -51,7 +51,7 @@
         @if ($news->image)
             <img src="{{ $news->image_url }}"
                  alt="{{ $news->title }}"
-                 style="width: 100%; border-radius: 10px; margin-bottom: 30px;">
+                 style="width: 50%; border-radius: 10px; margin-bottom: 30px;">
         @endif
 
         {{-- Conteúdo --}}
@@ -70,63 +70,67 @@
 
                 {{-- WhatsApp --}}
                 <a href="https://wa.me/?text={{ $title }}%0A{{ $url }}" target="_blank" style="
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
-                    gap: 6px;
+                    gap: 8px;
                     background-color: #25D366;
                     color: #fff;
-                    padding: 10px 16px;
+                    padding: 10px 18px;
                     border-radius: 6px;
                     text-decoration: none;
                     font-weight: 500;
                 ">
-                    <i class="bi bi-whatsapp"></i> WhatsApp
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/whatsapp/whatsapp-original.svg" alt="WhatsApp" width="20" height="20">
+                    WhatsApp
                 </a>
 
                 {{-- Facebook --}}
                 <a href="https://www.facebook.com/sharer/sharer.php?u={{ $url }}" target="_blank" style="
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
-                    gap: 6px;
+                    gap: 8px;
                     background-color: #1877F2;
                     color: #fff;
-                    padding: 10px 16px;
+                    padding: 10px 18px;
                     border-radius: 6px;
                     text-decoration: none;
                     font-weight: 500;
                 ">
-                    <i class="bi bi-facebook"></i> Facebook
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/facebook/facebook-original.svg" alt="Facebook" width="20" height="20">
+                    Facebook
                 </a>
 
                 {{-- X (Twitter) --}}
                 <a href="https://twitter.com/intent/tweet?text={{ $title }}&url={{ $url }}" target="_blank" style="
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
-                    gap: 6px;
+                    gap: 8px;
                     background-color: #000;
                     color: #fff;
-                    padding: 10px 16px;
+                    padding: 10px 18px;
                     border-radius: 6px;
                     text-decoration: none;
                     font-weight: 500;
                 ">
-                    <i class="bi bi-twitter-x"></i> X
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/X_logo_2023.svg" alt="X" width="20" height="20">
+                    X
                 </a>
 
-                {{-- Instagram (abre app com sugestão de colar link) --}}
+                {{-- Instagram --}}
                 <button onclick="copiarLinkInstagram('{{ route('blog.show', $news->slug) }}')" style="
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
-                    gap: 6px;
+                    gap: 8px;
                     background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
                     color: #fff;
-                    padding: 10px 16px;
+                    padding: 10px 18px;
                     border: none;
                     border-radius: 6px;
                     font-weight: 500;
                     cursor: pointer;
                 ">
-                    <i class="bi bi-instagram"></i> Instagram
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/instagram/instagram-original.svg" alt="Instagram" width="20" height="20">
+                    Instagram
                 </button>
             </div>
         </div>
