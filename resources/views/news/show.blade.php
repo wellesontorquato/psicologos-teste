@@ -103,7 +103,7 @@
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    background-color: #000;
+                    background-color: #fff;
                     color: #fff;
                     padding: 10px 18px;
                     border-radius: 6px;
