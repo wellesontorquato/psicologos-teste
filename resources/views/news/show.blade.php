@@ -110,7 +110,7 @@
                     text-decoration: none;
                     font-weight: 500;
                 ">
-                    <img src="https://img.icons8.com/?size=100&id=phOKFKYpe00C&format=png&color=000000" alt="X" width="20" height="20">
+                    <img src="https://img.icons8.com/?size=100&id=6Fsj3rv2DCmG&format=png&color=000000" alt="X" width="20" height="20">
                 </a>
 
                 {{-- Instagram --}}
