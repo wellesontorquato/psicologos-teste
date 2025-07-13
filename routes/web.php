@@ -66,6 +66,9 @@ Route::view('/politica-de-privacidade', 'pages.politica-de-privacidade')->name('
 // Termos de Uso
 Route::view('/termos-de-uso', 'pages.termos-de-uso')->name('termos-de-uso');
 
+// Política de Cookies
+Route::view('/politica-de-cookies', 'pages.cookies')->name('cookies');
+
 /*
 |--------------------------------------------------------------------------
 | Área de Assinaturas (usuário autenticado, mas sem exigir assinatura ativa)

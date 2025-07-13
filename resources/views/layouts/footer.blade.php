@@ -74,14 +74,15 @@
 
         <div class="footer-column">
             <h4>Institucional</h4>
+            <a href="{{ route('quem-somos') }}">Quem somos</a>
             <a href="{{ route('politica-de-privacidade') }}">Política de Privacidade</a>
             <a href="{{ route('termos-de-uso') }}">Termos de Uso</a>
-            <a href="{{ route('quem-somos') }}">Quem somos</a>
+            <a href="{{ route('cookies') }}">Política de Cookies</a>
         </div>
 
         <div class="footer-column">
             <h4>Fale Conosco</h4>
-            <a href="mailto:psigestor@devtorquato.com.br">ppsigestor@devtorquato.com.br</a>
+            <a href="mailto:psigestor@devtorquato.com.br">psigestor@devtorquato.com.br</a>
             <a href="https://wa.me/5582991128022" target="_blank">(82) 99112-8022</a>
 
             <div class="social-icons">

@@ -44,7 +44,7 @@
         <p>Todo o conteúdo da plataforma (marcas, textos, layouts, imagens, código-fonte) é de propriedade exclusiva do PsiGestor e protegido por leis de direitos autorais e propriedade intelectual.</p>
 
         <h3>6. Privacidade e Proteção de Dados</h3>
-        <p>O uso da plataforma está sujeito à nossa <a href="{{ route('politica') }}">Política de Privacidade</a>. O PsiGestor adota medidas de segurança para proteger os dados dos usuários e está em conformidade com a LGPD.</p>
+        <p>O uso da plataforma está sujeito à nossa <a href="{{ route('politica-de-privacidade') }}">Política de Privacidade</a>. O PsiGestor adota medidas de segurança para proteger os dados dos usuários e está em conformidade com a LGPD.</p>
 
         <h3>7. Cancelamento e Rescisão</h3>
         <p>O usuário pode cancelar sua conta a qualquer momento. O PsiGestor se reserva o direito de suspender ou encerrar contas em caso de uso indevido ou violação destes termos.</p>
