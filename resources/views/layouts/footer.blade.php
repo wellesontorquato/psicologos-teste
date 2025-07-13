@@ -74,8 +74,8 @@
 
         <div class="footer-column">
             <h4>Institucional</h4>
-            <a href="{{ route('politica') }}">Política de Privacidade</a>
-            <a href="{{ route('termos') }}">Termos de Uso</a>
+            <a href="{{ route('politica-de-privacidade') }}">Política de Privacidade</a>
+            <a href="{{ route('termos-de-uso') }}">Termos de Uso</a>
             <a href="{{ route('quem-somos') }}">Quem somos</a>
         </div>
 
