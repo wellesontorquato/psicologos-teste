@@ -80,8 +80,7 @@
                     text-decoration: none;
                     font-weight: 500;
                 ">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/whatsapp/whatsapp-original.svg" alt="WhatsApp" width="20" height="20">
-                    WhatsApp
+                    <img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="20" height="20">
                 </a>
 
                 {{-- Facebook --}}
@@ -97,7 +96,6 @@
                     font-weight: 500;
                 ">
                     <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/facebook/facebook-original.svg" alt="Facebook" width="20" height="20">
-                    Facebook
                 </a>
 
                 {{-- X (Twitter) --}}
@@ -112,8 +110,7 @@
                     text-decoration: none;
                     font-weight: 500;
                 ">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/X_logo_2023.svg" alt="X" width="20" height="20">
-                    X
+                    <img src="https://img.icons8.com/?size=100&id=phOKFKYpe00C&format=png&color=000000" alt="X" width="20" height="20">
                 </a>
 
                 {{-- Instagram --}}
@@ -129,8 +126,7 @@
                     font-weight: 500;
                     cursor: pointer;
                 ">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/instagram/instagram-original.svg" alt="Instagram" width="20" height="20">
-                    Instagram
+                    <img src="https://img.icons8.com/?size=100&id=32323&format=png&color=000000" alt="Instagram" width="20" height="20">
                 </button>
             </div>
         </div>
