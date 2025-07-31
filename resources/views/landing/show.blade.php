@@ -15,7 +15,7 @@
                  alt="Foto de {{ $user->name }}">
 
             <h2>{{ $user->name }}</h2>
-            <p class="specialty">{{ $user->especialidade ?? 'Psicólogo(a)' }}</p>
+            <p class="specialty">{{ $user->tipo_profissional ?? 'Psicólogo(a)' }}</p>
 
             @php
                 use Illuminate\Support\Str;
