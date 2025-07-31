@@ -1,8 +1,6 @@
-@php
-    $title = $news->title . ' | PsiGestor';
-@endphp
-
 @extends('layouts.landing')
+
+@section('title', $news->title . ' | PsiGestor')
 
 @section('content')
 <section style="padding: 40px 20px; background: #fff;">
@@ -59,75 +57,38 @@
             {!! $news->content !!}
         </div>
 
-        {{-- Compartilhamento --}}
-        <div style="margin-top: 40px; margin-bottom: 30px;">
-            <p style="font-weight: bold; margin-bottom: 10px; color: #111;">Compartilhe:</p>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                @php
-                    $url = urlencode(route('blog.show', $news->slug));
-                    $title = urlencode($news->title);
-                @endphp
+        @php
+            $shareUrl = urlencode(route('blog.show', $news->slug));
+            $shareTitle = urlencode($news->title);
+        @endphp
 
+        {{-- Compartilhamento --}}
+        <div class="mt-5 mb-4">
+            <p class="fw-bold mb-2 text-dark">Compartilhe:</p>
+            
+            {{-- Container principal dos botões --}}
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                
                 {{-- WhatsApp --}}
-                <a href="https://wa.me/?text={{ $title }}%0A{{ $url }}" target="_blank" style="
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    background-color: #25D366;
-                    color: #fff;
-                    padding: 10px 18px;
-                    border-radius: 6px;
-                    text-decoration: none;
-                    font-weight: 500;
-                ">
-                    <img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="20" height="20">
+                <a href="https://wa.me/?text={{ $shareTitle }}%0A{{ $shareUrl }}" target="_blank" class="share-btn whatsapp" title="Compartilhar no WhatsApp">
+                    <i class="bi bi-whatsapp"></i>
                 </a>
 
                 {{-- Facebook --}}
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ $url }}" target="_blank" style="
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    background-color: #1877F2;
-                    color: #fff;
-                    padding: 10px 18px;
-                    border-radius: 6px;
-                    text-decoration: none;
-                    font-weight: 500;
-                ">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/facebook/facebook-original.svg" alt="Facebook" width="20" height="20">
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ $shareUrl }}" target="_blank" class="share-btn facebook" title="Compartilhar no Facebook">
+                    <i class="bi bi-facebook"></i>
                 </a>
 
-                {{-- X (Twitter) --}}
-                <a href="https://twitter.com/intent/tweet?text={{ $title }}&url={{ $url }}" target="_blank" style="
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    background-color: #fff;
-                    color: #fff;
-                    padding: 10px 18px;
-                    border-radius: 6px;
-                    text-decoration: none;
-                    font-weight: 500;
-                ">
-                    <img src="https://img.icons8.com/?size=100&id=phOKFKYpe00C&format=png&color=000000" alt="X" width="20" height="20">
+                {{-- Twitter/X --}}
+                <a href="https://twitter.com/intent/tweet?text={{ $shareTitle }}&url={{ $shareUrl }}" target="_blank" class="share-btn twitter" title="Compartilhar no Twitter">
+                    <i class="bi bi-twitter-x"></i>
                 </a>
-
-                {{-- Instagram --}}
-                <button onclick="copiarLinkInstagram('{{ route('blog.show', $news->slug) }}')" style="
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
-                    color: #fff;
-                    padding: 10px 18px;
-                    border: none;
-                    border-radius: 6px;
-                    font-weight: 500;
-                    cursor: pointer;
-                ">
-                    <img src="https://img.icons8.com/?size=100&id=32323&format=png&color=000000" alt="Instagram" width="20" height="20">
+                
+                {{-- Instagram (Copiar Link) --}}
+                <button onclick="copiarLinkInstagram('{{ route('blog.show', $news->slug) }}')" class="share-btn instagram" title="Copiar link para o Instagram">
+                    <i class="bi bi-instagram"></i>
                 </button>
+
             </div>
         </div>
 
@@ -221,6 +182,43 @@
             margin: 0 auto 20px auto !important;
             width: 100%;
             max-width: 100%;
+        }
+    }
+    
+    .share-btn {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: #fff !important;
+        font-size: 1.4rem;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .share-btn:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+
+    .share-btn.whatsapp { background-color: #25D366; }
+    .share-btn.facebook { background-color: #1877F2; }
+    .share-btn.twitter  { background-color: #000; }
+    .share-btn.instagram {
+        background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
+    }
+
+    .d-flex.flex-row.flex-wrap > .text-center {
+        width: auto; /* não deixa ocupar 100% */
+    }
+
+    /* Centralizar ícones em mobile */
+    @media (max-width: 576px) {
+        .d-flex.align-items-center.gap-4.flex-wrap {
+            justify-content: center;
         }
     }
 </style>

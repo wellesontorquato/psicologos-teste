@@ -4,82 +4,228 @@
 
 @section('styles')
 <style>
-    /* Garante prioridade absoluta sobre o Tailwind */
-    body .fc .fc-event.evento-pago {
-        background-color: #28a745 !important;
-        border: 2px solid #1e7e34 !important;
+    /* Card do calendário */
+    #calendar-card {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        background: white;
+        padding: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Estilo dos eventos */
+    .fc-event {
+        border-radius: 6px !important;
+        padding: 4px !important;
+        font-size: 0.9rem !important;
+    }
+    .fc .fc-event.evento-pago {
+        background: linear-gradient(90deg, #28a745, #218838) !important;
+        border: none !important;
         color: white !important;
-        font-weight: bold !important;
+        font-weight: 600 !important;
     }
-
-    body .fc .fc-event.evento-pendente {
-        background-color: #dc3545 !important;
-        border: 2px solid #a71d2a !important;
+    .fc .fc-event.evento-pendente {
+        background: linear-gradient(90deg, #dc3545, #a71d2a) !important;
+        border: none !important;
         color: white !important;
-        font-weight: bold !important;
+        font-weight: 600 !important;
+    }
+    .fc .fc-event.evento-apos-meia-noite {
+        background: #e3f7ff !important;
+        border: 1px dashed #00c4ff !important;
+        color: #006f99 !important;
+        font-weight: 600 !important;
+    }
+    .fc-daygrid-event-dot { display: none !important; }
+
+    /* Cabeçalho customizado */
+    .calendar-header {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    @media (min-width: 768px) {
+        .calendar-header {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
     }
 
-    body .fc .fc-event.evento-apos-meia-noite {
-        background-color: rgba(0, 174, 255, 0.15) !important;
-        border: 2px dashed #00c4ff !important;
-        color: #005f88 !important;
-        font-weight: bold !important;
+    /* Título responsivo */
+    .calendar-title {
+        font-weight: 700;
+        color: #222;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        line-height: 1.2;
+    }
+    .calendar-title i {
+        font-size: 1.8rem;
+        color: #00aaff;
+    }
+    .calendar-title span {
+        display: flex;
+        flex-direction: column;
+    }
+    .calendar-title .main-title {
+        font-size: 1.2rem;
+        color: #111;
+    }
+    .calendar-title .sub-title {
+        font-size: 0.95rem;
+        color: #666;
+        font-weight: 500;
     }
 
-    /* Remove a bolinha azul padrão do evento */
-    .fc-daygrid-event-dot {
-        display: none !important;
+    @media (min-width: 992px) {
+        .calendar-title .main-title {
+            font-size: 1.6rem;
+        }
+        .calendar-title .sub-title {
+            font-size: 1.1rem;
+        }
+    }
+    @media (max-width: 991px) {
+        .calendar-title .main-title {
+            font-size: 1.4rem;
+        }
+    }
+    @media (max-width: 576px) {
+        .calendar-title {
+            justify-content: center;
+            text-align: center;
+        }
+        .calendar-title .main-title {
+            font-size: 1.2rem;
+        }
+        .calendar-title .sub-title {
+            font-size: 1rem;
+        }
+    }
+
+    /* Botões */
+    .calendar-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+    .calendar-controls button {
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
+        padding: 6px 14px !important;
+        border: 1px solid #ccc;
+        background: #f8f9fa;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        flex: 1 1 auto; /* Ajuste para dividir espaço igualmente */
+        min-width: 90px;
+    }
+    .calendar-controls button:hover {
+        background: #e9ecef;
+        color: #000;
+    }
+    .calendar-controls button.active {
+        background: #00aaff !important;
+        color: #fff !important;
+        border-color: #0090d0 !important;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 170, 255, 0.35);
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        .calendar-controls {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            justify-content: center;
+        }
+        .calendar-controls button {
+            flex: 0 0 auto;
+            min-width: 90px;
+        }
     }
 </style>
-@endsection
+
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">Agenda</h2>
-    <div id="calendar"></div>
+
+    {{-- Cabeçalho clean --}}
+    <div class="calendar-header bg-white p-3 rounded shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div class="calendar-title">
+            <i class="bi bi-calendar3 text-primary fs-3"></i>
+            <span id="calendarTitle" class="fw-bold">Minha Agenda</span>
+        </div>
+        <div class="calendar-controls d-flex flex-wrap gap-2">
+            <button id="prevBtn" class="btn btn-outline-primary px-3">←</button>
+            <button id="todayBtn" class="btn btn-outline-secondary px-3">Hoje</button>
+            <button id="nextBtn" class="btn btn-outline-primary px-3">→</button>
+            <button id="monthBtn" class="btn btn-primary active px-3">Mês</button>
+            <button id="weekBtn" class="btn btn-outline-primary px-3">Semana</button>
+            <button id="dayBtn" class="btn btn-outline-primary px-3">Dia</button>
+        </div>
+    </div>
+
+    {{-- Calendário --}}
+    <div id="calendar-card">
+        <div id="calendar"></div>
+    </div>
 </div>
 
-<!-- Modal de Sessão -->
+<!-- Modal Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1" aria-labelledby="modalSessaoLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form id="formSessao">
+  <div class="modal-dialog modal-dialog-centered">
+    <form id="formSessao" class="modal-content shadow-sm">
       @csrf
       <input type="hidden" name="id" id="sessao_id">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalTitulo">Nova Sessão</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      <div class="modal-header">
+        <h5 class="modal-title fw-semibold" id="modalTitulo">Nova Sessão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label small text-muted fw-semibold">Paciente</label>
+                <select name="paciente_id" id="paciente_id" class="form-select form-select-sm shadow-sm" required>
+                    @foreach(\App\Models\Paciente::where('user_id', auth()->id())->get() as $paciente)
+                        <option value="{{ $paciente->id }}">{{ $paciente->nome }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label small text-muted fw-semibold">Data e Hora</label>
+                <input type="datetime-local" name="data_hora" id="data_hora" 
+                       class="form-control form-control-sm shadow-sm" required>
+            </div>
+            <div class="col-6">
+                <label class="form-label small text-muted fw-semibold">Valor (R$)</label>
+                <input type="number" step="0.01" name="valor" id="valor" 
+                       class="form-control form-control-sm shadow-sm" required>
+            </div>
+            <div class="col-6">
+                <label class="form-label small text-muted fw-semibold">Duração (min)</label>
+                <input type="number" name="duracao" id="duracao" 
+                       class="form-control form-control-sm shadow-sm" value="50" required>
+            </div>
+            <div class="col-12 form-check">
+                <input type="checkbox" name="foi_pago" id="foi_pago" class="form-check-input">
+                <label class="form-check-label small fw-semibold" for="foi_pago">Foi Pago?</label>
+            </div>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-              <label>Paciente</label>
-              <select name="paciente_id" id="paciente_id" class="form-control" required>
-                  @foreach(\App\Models\Paciente::where('user_id', auth()->id())->get() as $paciente)
-                      <option value="{{ $paciente->id }}">{{ $paciente->nome }}</option>
-                  @endforeach
-              </select>
-          </div>
-          <div class="mb-3">
-              <label>Data e Hora</label>
-              <input type="datetime-local" name="data_hora" id="data_hora" class="form-control" required>
-          </div>
-          <div class="mb-3">
-              <label>Valor</label>
-              <input type="number" step="0.01" name="valor" id="valor" class="form-control" required>
-          </div>
-          <div class="mb-3">
-              <label>Duração (minutos)</label>
-              <input type="number" name="duracao" id="duracao" class="form-control" value="50" required>
-          </div>
-          <div class="mb-3 form-check">
-              <input type="checkbox" name="foi_pago" id="foi_pago" class="form-check-input">
-              <label class="form-check-label" for="foi_pago">Foi pago?</label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
-        </div>
+      </div>
+      <div class="modal-footer d-flex flex-column flex-md-row gap-2">
+        <button type="button" class="btn btn-secondary w-100 w-md-auto" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-success w-100 w-md-auto">Salvar</button>
       </div>
     </form>
   </div>
@@ -95,6 +241,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
+    const calendarTitle = document.getElementById('calendarTitle');
     const modal = new bootstrap.Modal(document.getElementById('modalSessao'));
 
     const campos = {
@@ -121,13 +268,12 @@ document.addEventListener('DOMContentLoaded', function () {
         height: 650,
         locale: window.FullCalendar.ptBr,
         initialView: 'dayGridMonth',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-
+        headerToolbar: false, // desabilita header nativo
         events: '/api/sessoes',
+
+        datesSet: function(info) {
+            calendarTitle.innerText = "Minha Agenda - " + info.view.title;
+        },
 
         eventContent: function (arg) {
             const viewType = arg.view.type;
@@ -192,6 +338,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     calendar.render();
+
+        // Botões customizados
+        document.getElementById('prevBtn').onclick = () => calendar.prev();
+        document.getElementById('nextBtn').onclick = () => calendar.next();
+        document.getElementById('todayBtn').onclick = () => calendar.today();
+
+        // Views (Mês / Semana / Dia) com controle de active
+        const viewButtons = {
+            monthBtn: 'dayGridMonth',
+            weekBtn: 'timeGridWeek',
+            dayBtn: 'timeGridDay'
+        };
+
+        Object.keys(viewButtons).forEach(id => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('click', () => {
+                calendar.changeView(viewButtons[id]);
+
+                // Remove active dos outros e adiciona no clicado
+                document.querySelectorAll('.calendar-controls button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
 
     function abrirModalCriar(data) {
         campos.id.value = '';
@@ -267,9 +436,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(() => {
                     if (typeof hideSpinner === 'function') hideSpinner();
                 });
-
-                    }
-        });
+        }
+    });
 });
 </script>
 @endsection

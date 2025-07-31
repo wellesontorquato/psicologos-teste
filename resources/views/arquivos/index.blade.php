@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Arquvios | PsiGestor')
+@section('title', 'Arquivos | PsiGestor')
 
 @section('content')
 <div class="container">

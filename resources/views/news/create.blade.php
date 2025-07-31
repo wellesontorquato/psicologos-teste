@@ -1,63 +1,128 @@
 @extends('layouts.app')
 @section('title', 'Criar Notícia | PsiGestor')
+
 @section('content')
-<div class="container py-6 max-w-3xl">
-    <h2 class="text-2xl font-bold mb-4">📝 Criar Nova Notícia</h2>
+<style>
+    .news-form-container {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        margin: auto;
+        max-width: 900px;
+    }
 
-    <form action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
+    .news-form-container h2 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1f2937;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
 
-        {{-- TÍTULO --}}
-        <div class="mb-3">
-            <label class="form-label">Título</label>
-            <input type="text" name="title" value="{{ old('title') }}" class="form-control" required>
-        </div>
+    .form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.3rem;
+    }
 
-        {{-- SUBTÍTULO --}}
-        <div class="mb-3">
-            <label class="form-label">Subtítulo (opcional)</label>
-            <input type="text" name="subtitle" value="{{ old('subtitle') }}" class="form-control">
-        </div>
+    .form-control,
+    .form-select {
+        font-size: 0.9rem;
+        padding: 0.65rem 0.9rem;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+    }
 
-        {{-- CATEGORIA --}}
-        <div class="mb-3">
-            <label class="form-label">Categoria</label>
-            <select name="category" class="form-control" required>
-                <option disabled {{ old('category') ? '' : 'selected' }}>Selecione uma categoria</option>
-                @php
-                    $categorias = [
-                        'Saúde Mental',
-                        'Bem-estar',
-                        'Psicologia Clínica',
-                        'Tecnologia',
-                        'Atualidades',
-                        'Sociedade',
-                        'Carreira & Trabalho',
-                        'PsiGestor'
-                    ];
-                @endphp
-                @foreach($categorias as $categoria)
-                    <option value="{{ $categoria }}" {{ old('category') === $categoria ? 'selected' : '' }}>
-                        {{ $categoria }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+    .btn-submit {
+        background-color: #00aaff;
+        border: none;
+        font-weight: 600;
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        width: 100%;
+        transition: background 0.2s;
+    }
+    .btn-submit:hover {
+        background-color: #008ecc;
+    }
 
-        {{-- IMAGEM --}}
-        <div class="mb-3">
-            <label class="form-label">Imagem de Capa</label>
-            <input type="file" name="image" class="form-control" accept="image/*">
-        </div>
+    /* Responsivo */
+    @media (min-width: 768px) {
+        .news-form-container h2 {
+            font-size: 1.8rem;
+        }
+        .btn-submit {
+            width: auto;
+        }
+    }
+</style>
 
-        {{-- CONTEÚDO --}}
-        <div class="mb-3">
-            <label class="form-label">Conteúdo</label>
-            <textarea name="content" id="editor" class="form-control" rows="10">{{ old('content') }}</textarea>
-        </div>
+<div class="container py-5">
+    <div class="news-form-container">
+        <h2>📝 Criar Nova Notícia</h2>
 
-        <button type="submit" class="btn btn-success">Salvar</button>
-    </form>
+        <form action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            {{-- TÍTULO --}}
+            <div class="mb-3">
+                <label class="form-label">Título</label>
+                <input type="text" name="title" value="{{ old('title') }}" class="form-control" required>
+            </div>
+
+            {{-- SUBTÍTULO --}}
+            <div class="mb-3">
+                <label class="form-label">Subtítulo (opcional)</label>
+                <input type="text" name="subtitle" value="{{ old('subtitle') }}" class="form-control">
+            </div>
+
+            {{-- CATEGORIA --}}
+            <div class="mb-3">
+                <label class="form-label">Categoria</label>
+                <select name="category" class="form-select" required>
+                    <option disabled {{ old('category') ? '' : 'selected' }}>Selecione uma categoria</option>
+                    @php
+                        $categorias = [
+                            'Saúde Mental',
+                            'Bem-estar',
+                            'Psicologia Clínica',
+                            'Tecnologia',
+                            'Atualidades',
+                            'Sociedade',
+                            'Carreira & Trabalho',
+                            'PsiGestor'
+                        ];
+                    @endphp
+                    @foreach($categorias as $categoria)
+                        <option value="{{ $categoria }}" {{ old('category') === $categoria ? 'selected' : '' }}>
+                            {{ $categoria }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- IMAGEM --}}
+            <div class="mb-3">
+                <label class="form-label">Imagem de Capa</label>
+                <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+
+            {{-- CONTEÚDO --}}
+            <div class="mb-3">
+                <label class="form-label">Conteúdo</label>
+                <textarea name="content" id="editor" class="form-control" rows="10">{{ old('content') }}</textarea>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn-submit">
+                    💾 Salvar Notícia
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 @endsection
 

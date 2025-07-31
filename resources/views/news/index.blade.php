@@ -3,12 +3,14 @@
 
 @section('content')
 <div class="container py-6">
-    <h2 class="text-2xl font-bold mb-4">🗂️ Todas as Notícias</h2>
+    <h2 class="text-2xl font-bold mb-4 text-center">🗂️ Todas as Notícias</h2>
 
     {{-- Botão Nova --}}
-    <a href="{{ route('admin.news.create') }}" class="btn btn-success mb-4">
-        <i class="bi bi-plus-lg"></i> Nova Notícia
-    </a>
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ route('admin.news.create') }}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Nova Notícia
+        </a>
+    </div>
 
     {{-- Filtros --}}
     <form method="GET" action="{{ route('admin.news.index') }}" class="row g-3 mb-4">
@@ -41,9 +43,9 @@
         </div>
     </form>
 
-    {{-- Tabela --}}
-    <div class="table-responsive">
-        <table class="table table-bordered align-middle">
+    {{-- Tabela em telas médias e grandes --}}
+    <div class="d-none d-md-block">
+        <table class="table table-bordered align-middle shadow-sm bg-white">
             <thead class="table-light">
                 <tr>
                     <th style="width: 80px;">Imagem</th>
@@ -63,18 +65,14 @@
                                 <img src="{{ $article->image_url }}" class="rounded shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
                             @endif
                         </td>
-
                         <td class="align-middle"><strong>{{ $article->title }}</strong></td>
                         <td class="align-middle">{{ $article->subtitle ?? '—' }}</td>
-
                         <td class="text-center align-middle">
                             <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1">
                                 {{ $article->category ?? 'Sem categoria' }}
                             </span>
                         </td>
-
                         <td class="text-center align-middle">{{ $article->created_at->format('d/m/Y') }}</td>
-
                         <td class="text-center align-middle">
                             @if($article->updated_at->ne($article->created_at))
                                 {{ $article->updated_at->diffForHumans() }}
@@ -82,7 +80,6 @@
                                 —
                             @endif
                         </td>
-
                         <td class="text-center align-middle">
                             <a href="{{ route('admin.news.edit', $article) }}" class="btn btn-sm btn-warning me-1">
                                 <i class="bi bi-pencil-fill"></i>
@@ -104,17 +101,58 @@
         </table>
     </div>
 
+    {{-- Cards em telas pequenas --}}
+    <div class="d-md-none">
+        @forelse ($news as $article)
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        @if ($article->image)
+                            <img src="{{ $article->image_url }}" class="rounded shadow-sm me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                        @endif
+                        <h5 class="card-title mb-0">{{ $article->title }}</h5>
+                    </div>
+                    <p class="mb-1 text-muted">{{ $article->subtitle ?? '—' }}</p>
+                    <p class="mb-1">
+                        <span class="badge bg-primary-subtle text-primary fw-semibold">
+                            {{ $article->category ?? 'Sem categoria' }}
+                        </span>
+                    </p>
+                    <p class="mb-1"><i class="bi bi-calendar"></i> {{ $article->created_at->format('d/m/Y') }}</p>
+                    <p class="mb-2"><i class="bi bi-clock-history"></i>
+                        @if($article->updated_at->ne($article->created_at))
+                            {{ $article->updated_at->diffForHumans() }}
+                        @else
+                            —
+                        @endif
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ route('admin.news.edit', $article) }}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i> Editar
+                        </a>
+                        <form action="{{ route('admin.news.destroy', $article) }}" method="POST" class="delete-form d-inline no-spinner">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash3-fill"></i> Excluir
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="alert alert-info text-center">Nenhuma notícia encontrada.</div>
+        @endforelse
+    </div>
+
     <div class="mt-4">
         {{ $news->appends(request()->query())->links() }}
     </div>
 </div>
 @endsection
 
-
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Confirmação de exclusão
     document.querySelectorAll('.delete-form').forEach(form => {
         form.addEventListener('submit', function (e) {
             e.preventDefault();

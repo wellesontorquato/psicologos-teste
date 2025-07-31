@@ -5,7 +5,7 @@
 @section('content')
 <style>
     .usuarios-container {
-        max-width: 1000px;
+        max-width: 1100px;
         margin: auto;
         background: white;
         padding: 2rem;
@@ -18,25 +18,7 @@
         font-weight: bold;
         margin-bottom: 1.5rem;
         color: #1f2937;
-    }
-
-    .table-usuarios {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .table-usuarios th,
-    .table-usuarios td {
-        padding: 0.75rem;
-        text-align: left;
-        border-bottom: 1px solid #e5e7eb;
-        font-size: 0.9rem;
-    }
-
-    .table-usuarios th {
-        background-color: #f8fafc;
-        font-weight: 600;
-        color: #374151;
+        text-align: center;
     }
 
     .badge-admin {
@@ -61,6 +43,7 @@
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.8rem;
+        font-weight: 500;
     }
 
     .btn-admin {
@@ -82,6 +65,7 @@
 <div class="usuarios-container">
     <h2>Gerenciar Usuários</h2>
 
+    {{-- Alertas --}}
     @if (session('success'))
         <script>
             Swal.fire({
@@ -104,28 +88,69 @@
         </script>
     @endif
 
-    <table class="table-usuarios">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Admin</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($usuarios as $user)
+    {{-- Tabela em telas médias e grandes --}}
+    <div class="d-none d-md-block">
+        <table class="table table-bordered table-hover shadow-sm bg-white">
+            <thead class="table-light">
                 <tr>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Admin</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($usuarios as $user)
+                    <tr>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>
+                            @if ($user->is_admin)
+                                <span class="badge-admin">Sim</span>
+                            @else
+                                <span class="badge-user">Não</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($user->id !== auth()->id())
+                                <form method="POST" action="{{ route('admin.usuarios.toggleAdmin', $user) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                        class="btn-toggle {{ $user->is_admin ? 'btn-admin' : 'btn-user' }}">
+                                        {{ $user->is_admin ? 'Revogar Admin' : 'Tornar Admin' }}
+                                    </button>
+                                </form>
+                            @else
+                                <em>(você)</em>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Nenhum usuário encontrado.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Cards em telas pequenas --}}
+    <div class="d-md-none">
+        @forelse ($usuarios as $user)
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-2">{{ $user->name }}</h5>
+                    <p class="mb-1"><i class="bi bi-envelope"></i> {{ $user->email }}</p>
+                    <p class="mb-1">
                         @if ($user->is_admin)
-                            <span class="badge-admin">Sim</span>
+                            👑 <span class="badge-admin">Administrador</span>
                         @else
-                            <span class="badge-user">Não</span>
+                            👤 <span class="badge-user">Usuário</span>
                         @endif
-                    </td>
-                    <td>
+                    </p>
+                    
+                    <div class="mt-2">
                         @if ($user->id !== auth()->id())
                             <form method="POST" action="{{ route('admin.usuarios.toggleAdmin', $user) }}">
                                 @csrf
@@ -136,13 +161,15 @@
                                 </button>
                             </form>
                         @else
-                            <em>(você)</em>
+                            <em class="text-muted">(você)</em>
                         @endif
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="alert alert-info text-center">Nenhum usuário encontrado.</div>
+        @endforelse
+    </div>
 
     <div class="pagination">
         {{ $usuarios->links() }}

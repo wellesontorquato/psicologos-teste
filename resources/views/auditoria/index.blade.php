@@ -4,22 +4,17 @@
 
 @section('content')
 <style>
-    .audit-pagination {
-    margin-top: 2rem;
-    text-align: center;
-    }
-
     .audit-container {
         background-color: #ffffff;
-        padding: 2rem;
+        padding: 1.5rem;
         border-radius: 1rem;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-        max-width: 1000px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        max-width: 1100px;
         margin: auto;
     }
 
     .audit-container h1 {
-        font-size: 1.75rem;
+        font-size: 1.6rem;
         font-weight: bold;
         margin-bottom: 1.5rem;
         color: #1f2937;
@@ -30,41 +25,17 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .audit-filters select,
     .audit-filters input[type="date"],
     .audit-filters input[type="text"] {
-        padding: 0.5rem 0.75rem;
+        padding: 0.6rem 0.8rem;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
-        font-size: 0.875rem;
+        font-size: 0.9rem;
         width: 100%;
-    }
-
-    .audit-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .audit-table th,
-    .audit-table td {
-        padding: 0.75rem;
-        text-align: left;
-        border-bottom: 1px solid #e5e7eb;
-        font-size: 0.875rem;
-    }
-
-    .audit-table th {
-        background-color: #f1f5f9;
-        font-weight: 600;
-        color: #374151;
-    }
-
-    .audit-pagination {
-        margin-top: 1.5rem;
-        text-align: center;
     }
 
     .badge {
@@ -73,42 +44,14 @@
         padding: 2px 8px;
         font-size: 0.75rem;
         border-radius: 6px;
-    }
-
-    .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        text-decoration: none;
         display: inline-block;
-    }
-
-    .btn-primary {
-        background-color: #fff;
-        color: #00aaff;
-        border: 1px solid #00aaff;
-        font-weight: bold;
-    }
-
-    .btn-primary:hover {
-        background-color: #00aaff;
-    }
-
-    .btn-secondary {
-        background-color: #e5e7eb;
-        color: #374151;
-        border: none;
-        font-weight: bold;
-    }
-
-    .btn-secondary:hover {
-        background-color:rgb(129, 129, 130);
     }
 </style>
 
 <div class="audit-container">
     <h1>Logs de Auditoria</h1>
 
+    {{-- Filtros --}}
     <form method="GET" class="audit-filters">
         <select name="user_id">
             <option value="">-- Usuário --</option>
@@ -120,14 +63,15 @@
         </select>
 
         <input type="text" name="action" placeholder="Ação" value="{{ request('action') }}" />
-
         <input type="date" name="de" value="{{ request('de') }}" />
         <input type="date" name="ate" value="{{ request('ate') }}" />
-        
+
         <button type="submit" class="btn btn-primary">Filtrar</button>
         <a href="{{ route('admin.auditoria.index') }}" class="btn btn-secondary">Limpar</a>
     </form>
-        <div class="flex flex-wrap gap-2 mb-4">
+
+    {{-- Exportações --}}
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
         <a href="{{ route('admin.auditoria.exportar.pdf', request()->query()) }}" class="btn btn-sm btn-danger no-spinner">
             📄 Exportar PDF
         </a>
@@ -136,36 +80,54 @@
         </a>
     </div>
 
-    <table class="audit-table">
-        <thead>
-            <tr>
-                <th>Usuário</th>
-                <th>Ação</th>
-                <th>Descrição</th>
-                <th>IP</th>
-                <th>Data</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($audits as $log)
+    {{-- Tabela em telas médias para cima --}}
+    <div class="d-none d-md-block">
+        <table class="table table-bordered table-hover shadow-sm bg-white">
+            <thead class="table-light">
                 <tr>
-                    <td>
-                        <span class="badge">
-                            {{ $log->user->name ?? 'Desconhecido' }}
-                        </span>
-                    </td>
-                    <td>{{ $log->action }}</td>
-                    <td>{{ $log->description ?? '-' }}</td>
-                    <td>{{ $log->ip_address }}</td>
-                    <td>{{ $log->created_at->format('d/m/Y H:i') }}</td>
+                    <th>Usuário</th>
+                    <th>Ação</th>
+                    <th>Descrição</th>
+                    <th>IP</th>
+                    <th>Data</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" style="text-align: center;">Nenhum registro encontrado.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($audits as $log)
+                    <tr>
+                        <td><span class="badge">{{ $log->user->name ?? 'Desconhecido' }}</span></td>
+                        <td>{{ $log->action }}</td>
+                        <td>{{ $log->description ?? '-' }}</td>
+                        <td>{{ $log->ip_address }}</td>
+                        <td>{{ $log->created_at->format('d/m/Y H:i') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Nenhum registro encontrado.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Cards em telas pequenas --}}
+    <div class="d-md-none">
+        @forelse ($audits as $log)
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-2">
+                        <span class="badge">{{ $log->user->name ?? 'Desconhecido' }}</span>
+                    </h5>
+                    <p class="mb-1"><i class="bi bi-check-circle"></i> <strong>Ação:</strong> {{ $log->action }}</p>
+                    <p class="mb-1"><i class="bi bi-text-paragraph"></i> <strong>Descrição:</strong> {{ $log->description ?? '-' }}</p>
+                    <p class="mb-1"><i class="bi bi-wifi"></i> <strong>IP:</strong> {{ $log->ip_address }}</p>
+                    <p class="mb-1"><i class="bi bi-calendar-event"></i> <strong>Data:</strong> {{ $log->created_at->format('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+        @empty
+            <div class="alert alert-info text-center">Nenhum registro encontrado.</div>
+        @endforelse
+    </div>
 
     <div class="audit-pagination">
         {{ $audits->appends(request()->query())->links() }}

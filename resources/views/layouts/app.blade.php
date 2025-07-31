@@ -69,22 +69,27 @@
             transition: margin-left 0.3s ease;
         }
 
-        @media (max-width: 1200px) {
-            .sidebar {
-                width: 70px;
-            }
+        /* Overlay para escurecer fundo */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35); /* leve escurecimento */
+            backdrop-filter: blur(6px);   /* aplica o blur */
+            -webkit-backdrop-filter: blur(6px); /* suporte Safari */
+            z-index: 1040;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
 
-            .main-content {
-                margin-left: 90px;
-            }
+        .overlay.active {
+            display: block;
+            opacity: 1;
+        }
 
-            .sidebar a span {
-                display: none;
-            }
-
-            .sidebar a i {
-                margin: 0 auto;
-            }
+        .topbar {
+            position: relative;
+            z-index: 1100; /* garante que o botão hamburguer fica acima do overlay */
         }
 
         .topbar {
@@ -124,6 +129,47 @@
             gap: 4px;
             font-weight: 500;
         }
+
+        .modal {
+            z-index: 1200 !important; /* maior que a topbar */
+        }
+
+        .modal-backdrop {
+            z-index: 1190 !important; /* um pouco abaixo do modal */
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0; /* fixo no canto esquerdo */
+                height: 100vh;
+                z-index: 1050;
+                transform: translateX(-260px); /* começa fora da tela */
+                transition: transform 0.3s ease;
+            }
+            .sidebar.active {
+                transform: translateX(0); /* desliza para dentro */
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 20px 15px;
+            }
+            .menu-toggle {
+                display: inline-block;
+            }
+        }
+
+        .btn-novo-paciente, .btn-nova-sessao, .btn-voltar-sessoes, .btn-nova-evolucao {
+            width: 100%; /* mobile first */
+        }
+
+        @media (min-width: 768px) {
+            .btn-novo-paciente, .btn-nova-sessao, .btn-voltar-sessoes, .btn-nova-evolucao {
+                width: auto;
+                display: inline-block;
+            }
+        }     
     </style>
     <!-- Facebook Meta Pixel -->
     <script>
@@ -271,23 +317,24 @@
             @endif
         @endauth
 
-
         <hr>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button class="btn btn-sm btn-light w-100">Sair</button>
         </form>
     </div>
+    <div class="overlay"></div>
 
     <div class="main-content">
         <div class="topbar">
-            <div>
-                @isset($header)
-                    <h2 class="h5">{{ $header }}</h2>
-                @else
-                    <h2 class="h5">Painel</h2>
-                @endisset
-            </div>
+            <div class="d-flex align-items-center">
+            <button class="menu-toggle btn btn-link text-dark d-lg-none">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <h2 class="h5 mb-0">
+                @isset($header) {{ $header }} @else Painel @endisset
+            </h2>
+        </div>
 
             <div x-data="{ aberto: false }" class="relative">
                 @php
@@ -684,5 +731,54 @@
         }
     });
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.menu-toggle');
+        const overlay = document.querySelector('.overlay');
+
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        function openSidebar() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        }
+
+        // abre/fecha no clique do botão
+        toggleBtn?.addEventListener('click', () => {
+            if (sidebar.classList.contains('active')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+
+        // fecha se clicar em um link da sidebar
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 992) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // fecha se clicar fora da sidebar (no overlay)
+        overlay?.addEventListener('click', closeSidebar);
+
+        // fallback: fecha se clicar fora de tudo
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 992 && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target) && !overlay.contains(e.target)) {
+                    closeSidebar();
+                }
+            }
+        });
+    });
+</script>
+
 </body>
 </html>
