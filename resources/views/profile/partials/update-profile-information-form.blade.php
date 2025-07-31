@@ -45,6 +45,22 @@
         </small>
     </div>
 
+    <div class="form-group">
+        <label for="link_extra1">Link adicional 1</label>
+        <input type="url" id="link_extra1" name="link_extra1"
+            value="{{ old('link_extra1', auth()->user()->link_extra1) }}"
+            class="input-style"
+            placeholder="https://instagram.com/psicologo">
+    </div>
+
+    <div class="form-group">
+        <label for="link_extra2">Link adicional 2</label>
+        <input type="url" id="link_extra2" name="link_extra2"
+            value="{{ old('link_extra2', auth()->user()->link_extra2) }}"
+            class="input-style"
+            placeholder="https://linkedin.com/in/psicologo">
+    </div>
+
     <button type="submit" class="btn-primary">
         Salvar Alterações
     </button>

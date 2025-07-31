@@ -216,6 +216,13 @@
 
         .card:nth-child(2) { animation-delay: 0.1s; }
         .card:nth-child(3) { animation-delay: 0.2s; }
+
+        .links-container {
+            display: flex;
+            flex-direction: column; /* deixa os botões um abaixo do outro */
+            gap: 1rem; /* espaço entre os botões */
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>

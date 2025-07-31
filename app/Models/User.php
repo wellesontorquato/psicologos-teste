@@ -29,6 +29,8 @@ class User extends Authenticatable
         'registro_profissional',
         'slug',
         'link_principal',
+        'link_extra1',
+        'link_extra2',
     ];
 
     protected $appends = ['profile_photo_url'];

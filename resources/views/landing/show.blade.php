@@ -19,36 +19,48 @@
 
             @php
                 use Illuminate\Support\Str;
-                $link = $user->link_principal;
-                $btnClass = 'btn-default';
-                $btnText = 'Agende sua consulta';
-                $btnIcon = 'bi-calendar-check';
 
-                if ($link) {
+                function montarBotao($link) {
+                    if (!$link) return null;
+                    $btn = ['class' => 'btn-default', 'text' => 'Acessar', 'icon' => 'bi-link'];
+
                     if (Str::contains($link, ['wa.me', 'whatsapp.com'])) {
-                        $btnClass = 'btn-whatsapp'; $btnText = 'WhatsApp'; $btnIcon = 'bi-whatsapp';
+                        $btn = ['class' => 'btn-whatsapp', 'text' => 'WhatsApp', 'icon' => 'bi-whatsapp'];
                     } elseif (Str::contains($link, 'instagram.com')) {
-                        $btnClass = 'btn-instagram'; $btnText = 'Instagram'; $btnIcon = 'bi-instagram';
+                        $btn = ['class' => 'btn-instagram', 'text' => 'Instagram', 'icon' => 'bi-instagram'];
                     } elseif (Str::contains($link, 'facebook.com')) {
-                        $btnClass = 'btn-facebook'; $btnText = 'Facebook'; $btnIcon = 'bi-facebook';
+                        $btn = ['class' => 'btn-facebook', 'text' => 'Facebook', 'icon' => 'bi-facebook'];
                     } elseif (Str::contains($link, 'linkedin.com')) {
-                        $btnClass = 'btn-linkedin'; $btnText = 'LinkedIn'; $btnIcon = 'bi-linkedin';
+                        $btn = ['class' => 'btn-linkedin', 'text' => 'LinkedIn', 'icon' => 'bi-linkedin'];
                     } elseif (Str::contains($link, 'calendly.com')) {
-                        $btnClass = 'btn-calendly'; $btnText = 'Agende via Calendly'; $btnIcon = 'bi-calendar-event';
+                        $btn = ['class' => 'btn-calendly', 'text' => 'Agende via Calendly', 'icon' => 'bi-calendar-event'];
                     } elseif (Str::contains($link, ['t.me', 'telegram.me'])) {
-                        $btnClass = 'btn-telegram'; $btnText = 'Telegram'; $btnIcon = 'bi-telegram';
+                        $btn = ['class' => 'btn-telegram', 'text' => 'Telegram', 'icon' => 'bi-telegram'];
                     }
+
+                    return array_merge($btn, ['url' => $link]);
                 }
+
+                $botoes = [];
+                if (!empty($user->link_principal)) $botoes[] = montarBotao($user->link_principal);
+                if (!empty($user->link_extra1)) $botoes[] = montarBotao($user->link_extra1);
+                if (!empty($user->link_extra2)) $botoes[] = montarBotao($user->link_extra2);
             @endphp
 
-            @if(!empty($link))
-                <a href="{{ $link }}" class="btn-link {{ $btnClass }}" target="_blank" rel="noopener noreferrer">
-                    <i class="bi {{ $btnIcon }}"></i>
-                    {{ $btnText }}
-                </a>
+            @if(count($botoes) > 0)
+                <div class="links-container">
+                    @foreach($botoes as $btn)
+                        <a href="{{ $btn['url'] }}" 
+                           class="btn-link {{ $btn['class'] }}" 
+                           target="_blank" rel="noopener noreferrer">
+                            <i class="bi {{ $btn['icon'] }}"></i>
+                            {{ $btn['text'] }}
+                        </a>
+                    @endforeach
+                </div>
             @else
                 <p class="text-muted mt-3">
-                    <em>Link de contato não configurado.</em>
+                    <em>Nenhum link configurado.</em>
                 </p>
             @endif
         </div>
@@ -82,7 +94,6 @@
 
         {{-- ÁREAS DE ATUAÇÃO --}}
         @php
-            // Decodifica as áreas apenas uma vez
             $areas = !empty($user->areas) ? json_decode($user->areas, true) : [];
         @endphp
         

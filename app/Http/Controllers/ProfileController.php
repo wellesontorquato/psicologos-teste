@@ -30,6 +30,8 @@ class ProfileController extends Controller
         // Permite tanto número puro quanto link completo
         $request->validate([
             'link_principal' => ['nullable', 'string', 'max:255'],
+            'link_extra1' => ['nullable', 'string', 'max:255'],
+            'link_extra2' => ['nullable', 'string', 'max:255'],
         ]);
 
         $validated = $request->validated();
