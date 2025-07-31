@@ -130,7 +130,7 @@
 </head>
 <body>
     <header>
-        <img src="{{ asset('images/logo-psigestor-completo-azul.png') }}" alt="PsiGestor" class="logo">
+        <img src="{{ asset('images/logo-psigestor.png') }}" alt="PsiGestor" class="logo">
     </header>
 
     <div class="container">
