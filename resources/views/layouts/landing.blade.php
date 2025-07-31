@@ -70,6 +70,63 @@
             font-size: 1.4rem;
             color: #333;
         }
+        /* BOTÃO HAMBÚRGUER */
+        .hamburger {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+        }
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* MENU MOBILE OCULTO */
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            background: #fff;
+            position: absolute;
+            top: 65px;
+            right: 10px;
+            left: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            z-index: 998;
+        }
+        .mobile-menu a {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            font-weight: 500;
+        }
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+        .mobile-menu.show {
+            display: flex;
+        }
+
+        /* ANIMAÇÃO DO ÍCONE */
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
     </style>
 
     @stack('styles')
@@ -190,5 +247,17 @@
             fecharModalCookies();
         }
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('menu-toggle');
+            const menu = document.getElementById('mobile-menu');
+
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+                menu.classList.toggle('show');
+            });
+        });
+    </script>
+
 </body>
 </html>
