@@ -93,8 +93,11 @@ Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->gr
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
     Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
 
-    // ✅ rota para atualizar só o slug
+    // ✅ Rota para atualizar só o slug
     Route::patch('/slug', [ProfileController::class, 'updateSlug'])->name('update.slug');
+
+    // ✅ Rota exclusiva para atualizar a Página Pública (Landing Page)
+    Route::patch('/landing', [ProfileController::class, 'updateLanding'])->name('update.landing');
 });
 
 /*

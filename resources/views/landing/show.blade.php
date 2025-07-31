@@ -19,38 +19,33 @@
 
             @php
                 use Illuminate\Support\Str;
+                $links = array_filter([$user->link_principal, $user->link_extra1, $user->link_extra2]);
+                $botoes = [];
 
-                function montarBotao($link) {
-                    if (!$link) return null;
-                    $btn = ['class' => 'btn-default', 'text' => 'Acessar', 'icon' => 'bi-link'];
+                foreach ($links as $link) {
+                    $btn = ['class' => 'btn-default', 'text' => 'Acessar Link', 'icon' => 'bi-link-45deg', 'url' => $link];
 
                     if (Str::contains($link, ['wa.me', 'whatsapp.com'])) {
-                        $btn = ['class' => 'btn-whatsapp', 'text' => 'WhatsApp', 'icon' => 'bi-whatsapp'];
+                        $btn = ['class' => 'btn-whatsapp', 'text' => 'WhatsApp', 'icon' => 'bi-whatsapp', 'url' => $link];
                     } elseif (Str::contains($link, 'instagram.com')) {
-                        $btn = ['class' => 'btn-instagram', 'text' => 'Instagram', 'icon' => 'bi-instagram'];
+                        $btn = ['class' => 'btn-instagram', 'text' => 'Instagram', 'icon' => 'bi-instagram', 'url' => $link];
                     } elseif (Str::contains($link, 'facebook.com')) {
-                        $btn = ['class' => 'btn-facebook', 'text' => 'Facebook', 'icon' => 'bi-facebook'];
+                        $btn = ['class' => 'btn-facebook', 'text' => 'Facebook', 'icon' => 'bi-facebook', 'url' => $link];
                     } elseif (Str::contains($link, 'linkedin.com')) {
-                        $btn = ['class' => 'btn-linkedin', 'text' => 'LinkedIn', 'icon' => 'bi-linkedin'];
+                        $btn = ['class' => 'btn-linkedin', 'text' => 'LinkedIn', 'icon' => 'bi-linkedin', 'url' => $link];
                     } elseif (Str::contains($link, 'calendly.com')) {
-                        $btn = ['class' => 'btn-calendly', 'text' => 'Agende via Calendly', 'icon' => 'bi-calendar-event'];
+                        $btn = ['class' => 'btn-calendly', 'text' => 'Agendar Consulta', 'icon' => 'bi-calendar-event', 'url' => $link];
                     } elseif (Str::contains($link, ['t.me', 'telegram.me'])) {
-                        $btn = ['class' => 'btn-telegram', 'text' => 'Telegram', 'icon' => 'bi-telegram'];
+                        $btn = ['class' => 'btn-telegram', 'text' => 'Telegram', 'icon' => 'bi-telegram', 'url' => $link];
                     }
-
-                    return array_merge($btn, ['url' => $link]);
+                    $botoes[] = $btn;
                 }
-
-                $botoes = [];
-                if (!empty($user->link_principal)) $botoes[] = montarBotao($user->link_principal);
-                if (!empty($user->link_extra1)) $botoes[] = montarBotao($user->link_extra1);
-                if (!empty($user->link_extra2)) $botoes[] = montarBotao($user->link_extra2);
             @endphp
 
             @if(count($botoes) > 0)
                 <div class="links-container">
                     @foreach($botoes as $btn)
-                        <a href="{{ $btn['url'] }}" 
+                        <a href="{{ e($btn['url']) }}" 
                            class="btn-link {{ $btn['class'] }}" 
                            target="_blank" rel="noopener noreferrer">
                             <i class="bi {{ $btn['icon'] }}"></i>
@@ -59,8 +54,8 @@
                     @endforeach
                 </div>
             @else
-                <p class="text-muted mt-3">
-                    <em>Nenhum link configurado.</em>
+                <p class="text-muted mt-3" style="font-size: 0.9rem;">
+                    <em>Nenhum link de contato configurado.</em>
                 </p>
             @endif
         </div>
@@ -68,7 +63,8 @@
         {{-- CARD DE CONTATO --}}
         <div class="card contact-info">
             <h4><i class="bi bi-person-rolodex"></i> Contato</h4>
-            @if(!empty($user->whatsapp))
+            {{-- Mostra o WhatsApp aqui apenas se não houver um botão principal para ele --}}
+            @if(!empty($user->whatsapp) && !collect($botoes)->contains('text', 'WhatsApp'))
                 <p>
                     <i class="bi bi-whatsapp" style="color:#25D366"></i>
                     <a href="https://wa.me/55{{ preg_replace('/\D/','',$user->whatsapp) }}" target="_blank">
@@ -89,15 +85,15 @@
         {{-- SOBRE MIM --}}
         <div class="card">
             <h4><i class="bi bi-person-vcard-fill"></i> Sobre mim</h4>
-            <p style="white-space: pre-wrap;">{{ $user->bio ?? 'Este profissional ainda não adicionou uma descrição.' }}</p>
+            <blockquote class="bio-text">{{ $user->bio ?? 'Este profissional ainda não adicionou uma descrição.' }}</blockquote>
         </div>
 
         {{-- ÁREAS DE ATUAÇÃO --}}
         @php
-            $areas = !empty($user->areas) ? json_decode($user->areas, true) : [];
+            $areas = json_decode($user->areas ?? '[]', true) ?? [];
         @endphp
         
-        @if(is_array($areas) && count($areas) > 0)
+        @if(count($areas) > 0)
             <div class="card">
                 <h4><i class="bi bi-journals"></i> Áreas de Atuação</h4>
                 <ul class="areas-list">

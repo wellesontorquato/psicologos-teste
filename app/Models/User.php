@@ -31,6 +31,9 @@ class User extends Authenticatable
         'link_principal',
         'link_extra1',
         'link_extra2',
+        'bio',
+        'whatsapp',
+        'areas',
     ];
 
     protected $appends = ['profile_photo_url'];
@@ -40,6 +43,7 @@ class User extends Authenticatable
     protected $casts = [
         'trial_ends_at' => 'datetime',
         'data_nascimento' => 'date',
+        'areas' => 'array',
     ];
 
     /**

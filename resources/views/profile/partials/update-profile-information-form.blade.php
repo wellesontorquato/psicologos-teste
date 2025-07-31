@@ -30,37 +30,7 @@
             <option value="prefiro não dizer" {{ old('genero', auth()->user()->genero) === 'prefiro não dizer' ? 'selected' : '' }}>Prefiro não dizer</option>
         </select>
     </div>
-
-    <div class="form-group">
-        <label for="link_principal">
-            Link principal (WhatsApp, Instagram, etc.)
-        </label>
-        <input type="text" id="link_principal" name="link_principal"
-               value="{{ old('link_principal', auth()->user()->link_principal) }}"
-               class="input-style"
-               placeholder="https://wa.me/5582999998888">
-
-        <small class="text-muted block mt-1" style="color: #6c757d; font-size: 0.875em;">
-            💡 Dica: digite apenas o número do WhatsApp (ex: <code>82999998888</code>) ou cole o link da sua rede social.
-        </small>
-    </div>
-
-    <div class="form-group">
-        <label for="link_extra1">Link adicional 1</label>
-        <input type="url" id="link_extra1" name="link_extra1"
-            value="{{ old('link_extra1', auth()->user()->link_extra1) }}"
-            class="input-style"
-            placeholder="https://instagram.com/psicologo">
-    </div>
-
-    <div class="form-group">
-        <label for="link_extra2">Link adicional 2</label>
-        <input type="url" id="link_extra2" name="link_extra2"
-            value="{{ old('link_extra2', auth()->user()->link_extra2) }}"
-            class="input-style"
-            placeholder="https://linkedin.com/in/psicologo">
-    </div>
-
+    
     <button type="submit" class="btn-primary">
         Salvar Alterações
     </button>

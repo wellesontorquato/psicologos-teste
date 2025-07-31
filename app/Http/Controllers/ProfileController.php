@@ -23,57 +23,78 @@ class ProfileController extends Controller
         ]);
     }
 
+    /**
+     * Atualização dos dados gerais de perfil (nome, email, etc).
+     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-
-        // Permite tanto número puro quanto link completo
-        $request->validate([
-            'link_principal' => ['nullable', 'string', 'max:255'],
-            'link_extra1' => ['nullable', 'string', 'max:255'],
-            'link_extra2' => ['nullable', 'string', 'max:255'],
-        ]);
-
         $validated = $request->validated();
+
         $user->fill($validated);
 
-        if ($request->filled('link_principal')) {
-            $link = trim($request->link_principal);
-
-            // Se for apenas números (WhatsApp), converte automaticamente
-            if (preg_match('/^\d+$/', $link)) {
-                $user->link_principal = 'https://wa.me/55' . $link;
-            } else {
-                $user->link_principal = $link;
-            }
-        }
-
         $camposAlterados = [];
-
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
             $camposAlterados[] = 'e-mail';
         }
-        if ($user->isDirty('genero')) {
-            $camposAlterados[] = 'gênero';
-        }
         if ($user->isDirty('name')) {
             $camposAlterados[] = 'nome';
         }
-        if ($user->isDirty('link_principal')) {
-            $camposAlterados[] = 'link principal';
+        if ($user->isDirty('genero')) {
+            $camposAlterados[] = 'gênero';
         }
 
         $user->save();
 
-        AuditLogger::log(
-            'updated_profile',
-            get_class($user),
-            $user->id,
-            'Atualizou: ' . implode(', ', $camposAlterados)
-        );
+        if (!empty($camposAlterados)) {
+            AuditLogger::log('updated_profile', get_class($user), $user->id, 'Atualizou: ' . implode(', ', $camposAlterados));
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Atualização exclusiva da Landing Page Pública.
+     */
+    public function updateLanding(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'slug'          => ['required', 'string', 'max:255', 'unique:users,slug,' . $user->id],
+            'bio'           => ['nullable', 'string', 'max:2000'],
+            'whatsapp'      => ['nullable', 'string', 'max:20'],
+            'link_principal'=> ['nullable', 'string', 'max:255'],
+            'link_extra1'   => ['nullable', 'string', 'max:255'],
+            'link_extra2'   => ['nullable', 'string', 'max:255'],
+            'areas'         => ['nullable', 'array'],
+        ]);
+
+        $user->slug = $request->slug;
+        $user->bio = $request->bio;
+        $user->whatsapp = $request->whatsapp ? preg_replace('/\D/', '', $request->whatsapp) : null;
+
+        // Converte link principal se for apenas números
+        if ($request->filled('link_principal')) {
+            $link = trim($request->link_principal);
+            $user->link_principal = preg_match('/^\d+$/', $link)
+                ? 'https://wa.me/55' . $link
+                : $link;
+        } else {
+            $user->link_principal = null;
+        }
+
+        $user->link_extra1 = $request->link_extra1 ?? null;
+        $user->link_extra2 = $request->link_extra2 ?? null;
+        $user->areas = $request->areas ? json_encode($request->areas) : null;
+
+        $user->save();
+
+        AuditLogger::log('updated_landing', get_class($user), $user->id, 'Atualizou a página pública');
+
+        return Redirect::route('profile.edit', ['tab' => 'pagina-publica'])
+            ->with('status', 'landing-updated');
     }
 
     public function updatePassword(PasswordUpdateRequest $request): RedirectResponse
@@ -123,21 +144,6 @@ class ProfileController extends Controller
         }
 
         return Redirect::route('profile.edit')->with('status', 'photo-deleted');
-    }
-
-    public function updateSlug(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'slug' => ['required', 'string', 'max:255', 'unique:users,slug,' . $request->user()->id],
-        ]);
-
-        $user = $request->user();
-        $user->slug = $request->slug;
-        $user->save();
-
-        AuditLogger::log('updated_slug', get_class($user), $user->id, 'Atualizou o slug');
-
-        return redirect()->route('profile.edit')->with('status', 'slug-updated');
     }
 
     public function destroy(Request $request): RedirectResponse
