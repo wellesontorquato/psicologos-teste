@@ -27,7 +27,8 @@ use App\Http\Controllers\{
     WppconnectDiagnosticoController,
     NotificacaoController,
     AssinaturaController,
-    BlogController
+    BlogController,
+    LandingPageController
 };
 
 /*
@@ -174,8 +175,13 @@ Route::middleware(['auth'])->group(function () {
 | Não requer autenticação.
 */
 Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
-/*
 
+Route::get('/{slug}', [LandingPageController::class, 'show'])
+    ->name('landing.show')
+    ->where('slug', '[A-Za-z0-9\-]+');
+
+
+/*
 |--------------------------------------------------------------------------
 | Auth padrão do Laravel
 |--------------------------------------------------------------------------

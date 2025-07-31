@@ -9,6 +9,7 @@ use Laravel\Cashier\Billable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\CustomVerifyEmail;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -26,6 +27,8 @@ class User extends Authenticatable
         'data_nascimento',
         'tipo_profissional',
         'registro_profissional',
+        'slug',
+        'link_principal',
     ];
 
     protected $appends = ['profile_photo_url'];
@@ -37,6 +40,9 @@ class User extends Authenticatable
         'data_nascimento' => 'date',
     ];
 
+    /**
+     * Retorna a URL da foto de perfil (Contabo ou Avatar padrão)
+     */
     public function getProfilePhotoUrlAttribute()
     {
         if ($this->profile_photo_path) {
@@ -47,11 +53,45 @@ class User extends Authenticatable
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
+    /**
+     * Define automaticamente o link principal
+     * Se for apenas um número, converte em link do WhatsApp
+     */
+    public function setLinkPrincipalAttribute($value)
+    {
+        if ($value) {
+            $limpo = preg_replace('/\D/', '', $value);
+
+            // Se for apenas número e não contiver http
+            if (is_numeric($limpo) && strlen($limpo) >= 10 && !Str::contains($value, ['http', 'www'])) {
+                $this->attributes['link_principal'] = 'https://wa.me/55' . $limpo;
+            } else {
+                $this->attributes['link_principal'] = $value;
+            }
+        } else {
+            $this->attributes['link_principal'] = null;
+        }
+    }
+
+    /**
+     * Retorna o link principal ou null
+     */
+    public function getLinkPrincipalAttribute($value)
+    {
+        return $value ?? null;
+    }
+
+    /**
+     * Verifica se o usuário é admin
+     */
     public function isAdmin(): bool
     {
         return (int) $this->is_admin === 1;
     }
 
+    /**
+     * Envia e-mail de verificação customizado
+     */
     public function sendEmailVerificationNotification()
     {
         $this->notify(new CustomVerifyEmail);

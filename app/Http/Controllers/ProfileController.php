@@ -26,7 +26,16 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $user->fill($request->validated());
+
+        // validação adicional para o link_principal
+        $validated = $request->validated();
+        $request->validate([
+            'link_principal' => ['nullable', 'url', 'max:255'],
+        ]);
+
+        // Preenche campos validados
+        $user->fill($validated);
+        $user->link_principal = $request->link_principal;
 
         $camposAlterados = [];
 
@@ -41,6 +50,10 @@ class ProfileController extends Controller
 
         if ($user->isDirty('name')) {
             $camposAlterados[] = 'nome';
+        }
+
+        if ($user->isDirty('link_principal')) {
+            $camposAlterados[] = 'link principal';
         }
 
         $user->save();
@@ -71,12 +84,10 @@ class ProfileController extends Controller
         $request->validate(['photo' => 'required|image|max:2048']);
         $user = $request->user();
 
-        // 🔥 Exclui a foto antiga do S3 se existir
         if ($user->profile_photo_path) {
             Storage::disk('s3')->delete($user->profile_photo_path);
         }
 
-        // 🚀 Faz upload direto pro S3 (bucket Contabo)
         $path = $request->file('photo')->store('profile-photos', 's3');
         $user->profile_photo_path = $path;
         $user->save();

@@ -151,6 +151,9 @@
     <!-- Informações -->
     @include('profile.partials.update-profile-information-form')
 
+    <!-- Minha Página Pública -->
+    @include('profile.partials.public-page-form')
+
     <!-- Senha -->
     @include('profile.partials.update-password-form')
 
