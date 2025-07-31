@@ -26,7 +26,6 @@
         
         /* Layout em Grid */
         .profile-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
-        .profile-sidebar { position: sticky; top: 2rem; }
         
         /* Cabeçalho e Rodapé */
         header { text-align: center; padding: 1rem; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); }
@@ -111,6 +110,7 @@
         @media (min-width: 992px) {
             .profile-grid {
                 grid-template-columns: 320px 1fr;
+                .profile-sidebar { position: sticky; top: 2rem; }
             }
         }
         @media (max-width: 991px) {
