@@ -4,8 +4,8 @@
 <style>
     /* Novo container principal com largura maior */
     .profile-container {
-        max-width: 1024px; /* Aumentado para acomodar duas colunas */
-        margin: 2rem auto;
+        max-width: 1024px;
+        margin: 0 auto; /* Zera o espaço no topo e na base */
         padding: 2rem;
     }
 
