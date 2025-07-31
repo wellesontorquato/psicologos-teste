@@ -23,23 +23,24 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
-    <!-- (Opcional) Tailwind + Alpine.js -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
     <style>
         body {
             background-color: #f0f4f8;
             font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         .auth-container {
             display: flex;
+            flex-direction: column; /* Mobile-first: empilhado */
             min-height: 100vh;
         }
 
         .auth-image {
-            flex: 1;
-            background: url("{{ asset($image) }}") center/60% no-repeat;
+            width: 100%;
+            height: 180px;
+            background: url("{{ asset($image) }}") center/contain no-repeat;
             background-color: #00aaff;
         }
 
@@ -48,52 +49,53 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px;
+            padding: 30px 20px;
             background-color: #ffffff;
         }
 
         .auth-box {
             width: 100%;
-            max-width: 600px;
-            padding: 40px 50px;
+            max-width: 420px;
+            padding: 30px 25px;
             background-color: #fff;
             border-radius: 16px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
         }
-        
+
         .auth-title {
-            font-size: 24px;
+            font-size: 1.6rem;
             font-weight: bold;
             margin-bottom: 25px;
             text-align: center;
+            color: #111;
         }
 
-        .form-check-label, .form-label {
+        .form-check-label,
+        .form-label {
             font-weight: 500;
+            font-size: 0.95rem;
         }
 
         .btn-primary {
             background-color: #00aaff;
             border: none;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 8px;
         }
 
         .btn-primary:hover {
             background-color: #008ecc;
         }
 
-        .text-muted a {
-            text-decoration: none;
-        }
-
-        .text-muted a:hover {
-            text-decoration: underline;
-        }
-
         .auth-link {
             color: #00aaff;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
 
         .auth-link:hover {
+            color: #008ecc;
             text-decoration: underline;
         }
 
@@ -103,49 +105,45 @@
             padding: 10px 15px;
             border-radius: 5px;
             margin-bottom: 1rem;
+            font-size: 0.95rem;
         }
 
-        /* Spinner */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        #global-spinner {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background-color: rgba(255, 255, 255, 0.7);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
-        #global-spinner .spin {
-            animation: spin 1s linear infinite;
-            height: 64px;
-            width: 64px;
-            color: #00aaff;
+        /* Desktop layout */
+        @media (min-width: 768px) {
+            .auth-container {
+                flex-direction: row;
+            }
+
+            .auth-image {
+                flex: 1;
+                height: auto;
+                min-height: 100vh;
+                background-size: 65%;
+            }
+
+            .auth-form {
+                flex: 1;
+                padding: 60px;
+            }
+
+            .auth-box {
+                max-width: 500px;
+                padding: 45px 40px;
+            }
+
+            .auth-title {
+                font-size: 1.8rem;
+            }
         }
     </style>
-    <!-- Facebook Meta Pixel -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1112759344219140');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=1112759344219140&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Facebook Meta Pixel -->
+
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-image"></div>
+        {{-- Imagem - só aparece em md pra cima --}}
+        <div class="auth-image d-none d-md-block"></div>
+
+        {{-- Formulário --}}
         <div class="auth-form">
             <div class="auth-box">
                 <h2 class="auth-title">@yield('title')</h2>
@@ -154,8 +152,9 @@
         </div>
     </div>
 
-        <!-- Spinner Global -->
-        <div id="global-spinner">
+
+    {{-- Spinner Global --}}
+    <div id="global-spinner">
         <svg class="spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity: 0.25;"></circle>
             <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" style="opacity: 0.75;"></path>
@@ -193,28 +192,10 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             hideSpinner();
-
             document.querySelectorAll('form').forEach(form => {
                 form.addEventListener('submit', function() {
                     showSpinner();
                 });
-            });
-
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a');
-                if (link && link.href && !link.classList.contains('no-spinner')) {
-                    const isSamePageAnchor = link.getAttribute('href')?.startsWith('#');
-                    const isNewTab = link.target === '_blank';
-                    const isExternal = link.hostname !== window.location.hostname;
-
-                    if (!isSamePageAnchor && !isNewTab && !isExternal) {
-                        showSpinner();
-                    }
-                }
-            });
-
-            window.addEventListener('beforeunload', function() {
-                showSpinner();
             });
         });
     </script>
