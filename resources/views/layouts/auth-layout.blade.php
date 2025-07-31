@@ -33,7 +33,7 @@
 
         .auth-container {
             display: flex;
-            flex-direction: column; /* Mobile-first: empilhado */
+            flex-direction: column; /* Mobile-first */
             min-height: 100vh;
         }
 
@@ -47,10 +47,21 @@
         .auth-form {
             flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 30px 20px;
             background-color: #ffffff;
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-logo img {
+            max-width: 180px;
+            height: auto;
         }
 
         .auth-box {
@@ -70,12 +81,6 @@
             color: #111;
         }
 
-        .form-check-label,
-        .form-label {
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
         .btn-primary {
             background-color: #00aaff;
             border: none;
@@ -91,21 +96,11 @@
         .auth-link {
             color: #00aaff;
             font-weight: 500;
-            transition: color 0.3s ease;
         }
 
         .auth-link:hover {
             color: #008ecc;
             text-decoration: underline;
-        }
-
-        .auth-alert {
-            background-color: #dff0d8;
-            color: #3c763d;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
         }
 
         /* Desktop layout */
@@ -124,6 +119,11 @@
             .auth-form {
                 flex: 1;
                 padding: 60px;
+                justify-content: center;
+            }
+
+            .auth-logo {
+                margin-bottom: 30px;
             }
 
             .auth-box {
@@ -136,22 +136,27 @@
             }
         }
     </style>
-
 </head>
 <body>
     <div class="auth-container">
-        {{-- Imagem - só aparece em md pra cima --}}
+        {{-- Imagem lateral (somente desktop) --}}
         <div class="auth-image d-none d-md-block"></div>
 
         {{-- Formulário --}}
         <div class="auth-form">
+            {{-- Logo clicável --}}
+            <div class="auth-logo">
+                <a href="{{ url('/') }}">
+                    <img src="{{ asset('images/logo-psigestor.png') }}" alt="PsiGestor Logo">
+                </a>
+            </div>
+
             <div class="auth-box">
                 <h2 class="auth-title">@yield('title')</h2>
                 @yield('form')
             </div>
         </div>
     </div>
-
 
     {{-- Spinner Global --}}
     <div id="global-spinner">
@@ -162,9 +167,7 @@
     </div>
 
     <style>
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         #global-spinner {
             display: none;
             position: fixed;
@@ -183,19 +186,13 @@
     </style>
 
     <script>
-        window.showSpinner = function() {
-            document.getElementById('global-spinner')?.style.setProperty('display', 'flex', 'important');
-        };
-        window.hideSpinner = function() {
-            document.getElementById('global-spinner')?.style.setProperty('display', 'none', 'important');
-        };
+        window.showSpinner = () => document.getElementById('global-spinner').style.display = 'flex';
+        window.hideSpinner = () => document.getElementById('global-spinner').style.display = 'none';
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             hideSpinner();
             document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', function() {
-                    showSpinner();
-                });
+                form.addEventListener('submit', () => showSpinner());
             });
         });
     </script>
