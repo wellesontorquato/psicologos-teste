@@ -176,11 +176,6 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 
-Route::get('/{slug}', [LandingPageController::class, 'show'])
-    ->name('landing.show')
-    ->where('slug', '[A-Za-z0-9\-]+');
-
-
 /*
 |--------------------------------------------------------------------------
 | Auth padrão do Laravel
@@ -358,3 +353,7 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 // });
 
 require __DIR__.'/auth.php';
+
+Route::get('/{slug}', [LandingPageController::class, 'show'])
+    ->name('landing.show')
+    ->where('slug', '[A-Za-z0-9\-]+');
