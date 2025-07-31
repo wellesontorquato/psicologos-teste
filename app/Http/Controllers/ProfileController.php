@@ -27,15 +27,17 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // validação adicional para o link_principal
-        $validated = $request->validated();
+        // Permite link ou número (WhatsApp)
         $request->validate([
-            'link_principal' => ['nullable', 'url', 'max:255'],
+            'link_principal' => ['nullable', 'string', 'max:255'],
         ]);
 
-        // Preenche campos validados
+        $validated = $request->validated();
         $user->fill($validated);
-        $user->link_principal = $request->link_principal;
+
+        if ($request->has('link_principal')) {
+            $user->link_principal = $request->link_principal;
+        }
 
         $camposAlterados = [];
 
@@ -43,15 +45,12 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
             $camposAlterados[] = 'e-mail';
         }
-
         if ($user->isDirty('genero')) {
             $camposAlterados[] = 'gênero';
         }
-
         if ($user->isDirty('name')) {
             $camposAlterados[] = 'nome';
         }
-
         if ($user->isDirty('link_principal')) {
             $camposAlterados[] = 'link principal';
         }
@@ -115,6 +114,21 @@ class ProfileController extends Controller
         }
 
         return Redirect::route('profile.edit')->with('status', 'photo-deleted');
+    }
+
+    public function updateSlug(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'slug' => ['required', 'string', 'max:255', 'unique:users,slug,' . $request->user()->id],
+        ]);
+
+        $user = $request->user();
+        $user->slug = $request->slug;
+        $user->save();
+
+        AuditLogger::log('updated_slug', get_class($user), $user->id, 'Atualizou o slug');
+
+        return redirect()->route('profile.edit')->with('status', 'slug-updated');
     }
 
     public function destroy(Request $request): RedirectResponse

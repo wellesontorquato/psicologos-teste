@@ -36,7 +36,6 @@ use App\Http\Controllers\{
 | Testes internos / Healthchecks
 |--------------------------------------------------------------------------
 */
-
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
@@ -46,7 +45,6 @@ Route::get('/health', function () {
 | Páginas públicas
 |--------------------------------------------------------------------------
 */
-
 Route::get('/', function () {
     $news = \App\Models\News::latest()->take(3)->get();
     return view('index', compact('news'));
@@ -63,25 +61,21 @@ Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 // Política de Privacidade
 Route::view('/politica-de-privacidade', 'pages.politica-de-privacidade')->name('politica-de-privacidade');
-
 // Termos de Uso
 Route::view('/termos-de-uso', 'pages.termos-de-uso')->name('termos-de-uso');
-
 // Política de Cookies
 Route::view('/politica-de-cookies', 'pages.cookies')->name('cookies');
 
 /*
 |--------------------------------------------------------------------------
-| Área de Assinaturas (usuário autenticado, mas sem exigir assinatura ativa)
+| Área de Assinaturas
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth'])->group(function () {
     Route::get('/assinaturas', [AssinaturaController::class, 'index'])->name('assinaturas.index');
     Route::post('/checkout', [AssinaturaController::class, 'checkout'])->name('assinatura.checkout');
     Route::view('/assinatura/sucesso', 'assinatura.sucesso')->name('assinaturas.sucesso');
     Route::view('/assinatura/cancelado', 'assinatura.cancelado')->name('assinaturas.cancelado');
-
     Route::get('/minha-assinatura', [AssinaturaController::class, 'minha'])->name('assinaturas.minha');
     Route::post('/cancelar-assinatura', [AssinaturaController::class, 'cancelar'])->name('assinatura.cancelar');
 });
@@ -91,7 +85,6 @@ Route::middleware(['auth'])->group(function () {
 | Perfil (usuário autenticado, verificado)
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->group(function () {
     Route::get('/', [ProfileController::class, 'edit'])->name('edit');
     Route::patch('/', [ProfileController::class, 'update'])->name('update');
@@ -99,16 +92,17 @@ Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->gr
     Route::post('/photo', [ProfileController::class, 'updatePhoto'])->name('update.photo');
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
     Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
+
+    // ✅ rota para atualizar só o slug
+    Route::patch('/slug', [ProfileController::class, 'updateSlug'])->name('update.slug');
 });
 
 /*
 |--------------------------------------------------------------------------
-| Área autenticada, verificada e com assinatura ativa
+| Área autenticada com assinatura ativa
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'verified', CheckSubscription::class])->group(function () {
-
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/sessoes-json', [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
@@ -116,11 +110,10 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
 
     Route::resource('pacientes', PacienteController::class);
-    
     Route::resource('evolucoes', EvolucaoController::class)->parameters([
         'evolucoes' => 'evolucao',
     ]);
-    
+
     Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
     Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
     Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');
@@ -136,20 +129,13 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::delete('/arquivos/{arquivo}', [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
     Route::put('/arquivos/{arquivo}/renomear', [ArquivoController::class, 'renomear'])->name('arquivos.rename');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Área exclusiva para administradores
-    |--------------------------------------------------------------------------
-    */
+    // Área admin
     Route::middleware([EnsureUserIsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index');
         Route::get('/auditoria/exportar-pdf', [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
         Route::get('/auditoria/exportar-excel', [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
-
         Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
         Route::patch('/usuarios/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('usuarios.toggleAdmin');
-
-        // ✅ Aqui as rotas de news ganham prefixo admin e nome admin.news.*
         Route::resource('news', NewsController::class);
     });
 
@@ -171,10 +157,25 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 | Stripe Webhook
 |--------------------------------------------------------------------------
-| Responsável por receber os eventos da Stripe e salvar as assinaturas no banco.
-| Não requer autenticação.
 */
 Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
+
+/*
+|--------------------------------------------------------------------------
+| Auth
+|--------------------------------------------------------------------------
+*/
+require __DIR__.'/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Landing Pages - deve ficar por último
+|--------------------------------------------------------------------------
+*/
+Route::get('/{slug}', [LandingPageController::class, 'show'])
+    ->name('landing.show')
+    ->where('slug', '[A-Za-z0-9\-]+');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -352,8 +353,3 @@ Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 //     return Response::make('Migração executada com sucesso!', 200);
 // });
 
-require __DIR__.'/auth.php';
-
-Route::get('/{slug}', [LandingPageController::class, 'show'])
-    ->name('landing.show')
-    ->where('slug', '[A-Za-z0-9\-]+');
