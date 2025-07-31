@@ -1,115 +1,101 @@
 @extends('layouts.profissional')
 
+@section('title', $user->name . ' | Perfil Profissional')
+
 @section('content')
-<div class="container py-5">
-    <div class="text-center mb-4">
-        <img src="{{ $user->profile_photo_url ?? asset('images/default-profile.png') }}" 
-             class="rounded-circle shadow-sm mb-3" width="120" height="120" 
-             alt="Foto de {{ $user->name }}">
+<div class="profile-grid">
+    
+    {{-- COLUNA DA ESQUERDA (SIDEBAR) --}}
+    <aside class="profile-sidebar">
+        
+        {{-- CARD DO PERFIL --}}
+        <div class="card profile-header-card">
+            <img src="{{ $user->profile_photo_url ?? asset('images/default-profile.png') }}" 
+                 class="profile-photo" 
+                 alt="Foto de {{ $user->name }}">
 
-        <h2 class="fw-bold">{{ $user->name }}</h2>
-        <p class="text-muted">{{ $user->especialidade ?? 'Psicólogo(a)' }}</p>
+            <h2>{{ $user->name }}</h2>
+            <p class="specialty">{{ $user->especialidade ?? 'Psicólogo(a)' }}</p>
 
-        @php
-            use Illuminate\Support\Str;
+            @php
+                use Illuminate\Support\Str;
+                $link = $user->link_principal;
+                $btnClass = 'btn-default';
+                $btnText = 'Agende sua consulta';
+                $btnIcon = 'bi-calendar-check';
 
-            $link = $user->link_principal;
-            $textoBotao = 'Agende sua consulta';
-            $iconeBotao = 'bi-calendar-event';
-            $corBotao = '#00aaff'; // cor padrão PsiGestor
-
-            if ($link) {
-                if (Str::contains($link, ['wa.me', 'whatsapp.com'])) {
-                    $textoBotao = 'Fale comigo no WhatsApp';
-                    $iconeBotao = 'bi-whatsapp';
-                    $corBotao = '#25D366';
-                } elseif (Str::contains($link, 'instagram.com')) {
-                    $textoBotao = 'Fale comigo no Instagram';
-                    $iconeBotao = 'bi-instagram';
-                    $corBotao = '#C13584';
-                } elseif (Str::contains($link, 'facebook.com')) {
-                    $textoBotao = 'Fale comigo no Facebook';
-                    $iconeBotao = 'bi-facebook';
-                    $corBotao = '#1877F2';
-                } elseif (Str::contains($link, 'linkedin.com')) {
-                    $textoBotao = 'Fale comigo no LinkedIn';
-                    $iconeBotao = 'bi-linkedin';
-                    $corBotao = '#0A66C2';
-                } elseif (Str::contains($link, 'calendly.com')) {
-                    $textoBotao = 'Agende via Calendly';
-                    $iconeBotao = 'bi-calendar-check';
-                    $corBotao = '#0069A5';
-                } elseif (Str::contains($link, ['t.me', 'telegram.me'])) {
-                    $textoBotao = 'Fale comigo no Telegram';
-                    $iconeBotao = 'bi-telegram';
-                    $corBotao = '#0088CC';
+                if ($link) {
+                    if (Str::contains($link, ['wa.me', 'whatsapp.com'])) {
+                        $btnClass = 'btn-whatsapp'; $btnText = 'WhatsApp'; $btnIcon = 'bi-whatsapp';
+                    } elseif (Str::contains($link, 'instagram.com')) {
+                        $btnClass = 'btn-instagram'; $btnText = 'Instagram'; $btnIcon = 'bi-instagram';
+                    } elseif (Str::contains($link, 'facebook.com')) {
+                        $btnClass = 'btn-facebook'; $btnText = 'Facebook'; $btnIcon = 'bi-facebook';
+                    } elseif (Str::contains($link, 'linkedin.com')) {
+                        $btnClass = 'btn-linkedin'; $btnText = 'LinkedIn'; $btnIcon = 'bi-linkedin';
+                    } elseif (Str::contains($link, 'calendly.com')) {
+                        $btnClass = 'btn-calendly'; $btnText = 'Agende via Calendly'; $btnIcon = 'bi-calendar-event';
+                    } elseif (Str::contains($link, ['t.me', 'telegram.me'])) {
+                        $btnClass = 'btn-telegram'; $btnText = 'Telegram'; $btnIcon = 'bi-telegram';
+                    }
                 }
-            }
-        @endphp
+            @endphp
 
-        @if(!empty($link))
-            <a href="{{ $link }}" 
-               class="btn px-4 d-inline-flex align-items-center gap-2 text-white"
-               style="background-color: {{ $corBotao }}; border:none;"
-               target="_blank" rel="noopener noreferrer">
-                <i class="bi {{ $iconeBotao }}"></i> {{ $textoBotao }}
-            </a>
-        @else
-            <p class="text-muted mt-3">
-                <em>Este profissional ainda não configurou um link de contato.</em>
-            </p>
-        @endif
-    </div>
-
-    {{-- SOBRE MIM --}}
-    <div class="card mb-4 shadow-sm border-0">
-        <div class="card-body">
-            <h4 class="mb-3 text-primary">Sobre mim</h4>
-            <p>
-                {{ $user->bio 
-                    ? nl2br(e($user->bio)) 
-                    : 'Este profissional ainda não adicionou uma descrição.' 
-                }}
-            </p>
+            @if(!empty($link))
+                <a href="{{ $link }}" class="btn-link {{ $btnClass }}" target="_blank" rel="noopener noreferrer">
+                    <i class="bi {{ $btnIcon }}"></i>
+                    {{ $btnText }}
+                </a>
+            @else
+                <p class="text-muted mt-3">
+                    <em>Link de contato não configurado.</em>
+                </p>
+            @endif
         </div>
-    </div>
 
-    {{-- ÁREAS DE ATUAÇÃO --}}
-    @if(!empty($user->areas) && count(json_decode($user->areas, true)) > 0)
-        <div class="card mb-4 shadow-sm border-0">
-            <div class="card-body">
-                <h4 class="mb-3 text-primary">Áreas de Atuação</h4>
-                <ul class="list-unstyled">
-                    @foreach(json_decode($user->areas, true) as $area)
-                        <li>• {{ $area }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    @endif
-
-    {{-- CONTATO --}}
-    <div class="card mb-4 shadow-sm border-0">
-        <div class="card-body">
-            <h4 class="mb-3 text-primary">Contato</h4>
-            
+        {{-- CARD DE CONTATO --}}
+        <div class="card contact-info">
+            <h4><i class="bi bi-person-rolodex"></i> Contato</h4>
             @if(!empty($user->whatsapp))
                 <p>
-                    <strong>WhatsApp:</strong> 
-                    <a href="https://wa.me/55{{ preg_replace('/\D/','',$user->whatsapp) }}" 
-                       target="_blank" class="text-decoration-none">
-                       {{ $user->whatsapp }}
+                    <i class="bi bi-whatsapp" style="color:#25D366"></i>
+                    <a href="https://wa.me/55{{ preg_replace('/\D/','',$user->whatsapp) }}" target="_blank">
+                        {{ $user->whatsapp }}
                     </a>
                 </p>
             @endif
-
             <p>
-                <strong>Email:</strong> 
-                <a href="mailto:{{ $user->email }}" class="text-decoration-none">
-                    {{ $user->email }}
-                </a>
+                <i class="bi bi-envelope-at-fill" style="color:#6c757d"></i>
+                <a href="mailto:{{ $user->email }}">{{ $user->email }}</a>
             </p>
         </div>
-    </div>
+    </aside>
+
+    {{-- COLUNA DA DIREITA (CONTEÚDO PRINCIPAL) --}}
+    <main class="profile-main-content">
+        
+        {{-- SOBRE MIM --}}
+        <div class="card">
+            <h4><i class="bi bi-person-vcard-fill"></i> Sobre mim</h4>
+            <p style="white-space: pre-wrap;">{{ $user->bio ?? 'Este profissional ainda não adicionou uma descrição.' }}</p>
+        </div>
+
+        {{-- ÁREAS DE ATUAÇÃO --}}
+        @php
+            // Decodifica as áreas apenas uma vez
+            $areas = !empty($user->areas) ? json_decode($user->areas, true) : [];
+        @endphp
+        
+        @if(is_array($areas) && count($areas) > 0)
+            <div class="card">
+                <h4><i class="bi bi-journals"></i> Áreas de Atuação</h4>
+                <ul class="areas-list">
+                    @foreach($areas as $area)
+                        <li>{{ $area }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </main>
 </div>
 @endsection
