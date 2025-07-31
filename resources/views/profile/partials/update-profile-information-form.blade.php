@@ -35,7 +35,7 @@
         <label for="link_principal">
             Link principal (WhatsApp, Instagram, etc.)
         </label>
-        <input type="url" id="link_principal" name="link_principal"
+        <input type="text" id="link_principal" name="link_principal"
                value="{{ old('link_principal', auth()->user()->link_principal) }}"
                class="input-style"
                placeholder="https://wa.me/5582999998888">

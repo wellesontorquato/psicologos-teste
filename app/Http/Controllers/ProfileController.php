@@ -27,7 +27,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // Permite link ou número (WhatsApp)
+        // Permite tanto número puro quanto link completo
         $request->validate([
             'link_principal' => ['nullable', 'string', 'max:255'],
         ]);
@@ -35,8 +35,15 @@ class ProfileController extends Controller
         $validated = $request->validated();
         $user->fill($validated);
 
-        if ($request->has('link_principal')) {
-            $user->link_principal = $request->link_principal;
+        if ($request->filled('link_principal')) {
+            $link = trim($request->link_principal);
+
+            // Se for apenas números (WhatsApp), converte automaticamente
+            if (preg_match('/^\d+$/', $link)) {
+                $user->link_principal = 'https://wa.me/55' . $link;
+            } else {
+                $user->link_principal = $link;
+            }
         }
 
         $camposAlterados = [];
