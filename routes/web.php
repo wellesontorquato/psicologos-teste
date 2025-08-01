@@ -30,6 +30,7 @@ use App\Http\Controllers\{
     BlogController,
     LandingPageController
 };
+use App\Models\News;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,43 @@ use App\Http\Controllers\{
 */
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Sitemap XML
+|--------------------------------------------------------------------------
+*/
+Route::get('/sitemap.xml', function () {
+    $urls = [
+        url('/'),
+        url('/funcionalidades'),
+        url('/planos'),
+        url('/quem-somos'),
+        url('/contato'),
+        url('/blog'),
+        url('/politica-de-privacidade'),
+        url('/termos-de-uso'),
+        url('/politica-de-cookies'),
+    ];
+
+    // Adiciona posts do blog
+    $posts = News::all();
+    foreach ($posts as $post) {
+        $urls[] = route('blog.show', $post->slug);
+    }
+
+    $xml = view('sitemap', compact('urls'));
+    return Response::make($xml, 200, ['Content-Type' => 'application/xml']);
+});
+
+Route::get('/robots.txt', function () {
+    $content = "User-agent: *\n";
+    $content .= "Allow: /\n";
+    $content .= "Sitemap: " . url('/sitemap.xml') . "\n";
+
+    return response($content, 200)
+        ->header('Content-Type', 'text/plain');
 });
 
 /*
@@ -93,10 +131,10 @@ Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->gr
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
     Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
 
-    // ✅ Rota para atualizar só o slug
+    // ✅ Atualização de slug
     Route::patch('/slug', [ProfileController::class, 'updateSlug'])->name('update.slug');
 
-    // ✅ Rota exclusiva para atualizar a Página Pública (Landing Page)
+    // ✅ Página Pública
     Route::patch('/landing', [ProfileController::class, 'updateLanding'])->name('update.landing');
 });
 
@@ -178,7 +216,6 @@ require __DIR__.'/auth.php';
 Route::get('/{slug}', [LandingPageController::class, 'show'])
     ->name('landing.show')
     ->where('slug', '[A-Za-z0-9\-]+');
-
 
 /*
 |--------------------------------------------------------------------------
