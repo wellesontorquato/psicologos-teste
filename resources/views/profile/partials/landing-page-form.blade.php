@@ -19,7 +19,7 @@
             </div>
             <small id="slugPreview" class="form-text text-muted d-block mt-2">
                 Esse será o link que você poderá compartilhar com seus pacientes:<br>
-                <span class="input-group-text" style="color:#00aaff; font-weight:500;">
+                <span class="public-link">
                     {{ url('/') }}/{{ old('slug', $user->slug ?? 'seu-link-ainda-nao-configurado') }}
                 </span>
             </small>
@@ -171,6 +171,16 @@
     .area-item input {
         margin-right: 5px;
     }
+    .public-link {
+    display: inline-block;
+    max-width: 100%;
+    color: #00aaff;
+    font-weight: 500;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    line-height: 1.4;
+}
 </style>
 
 <script>
