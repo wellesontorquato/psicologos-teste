@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Você está offline | PsiGestor</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            color: #333;
+        }
+        .offline-box {
+            background: #fff;
+            padding: 30px 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 400px;
+            width: 90%;
+        }
+        .offline-box img {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.6rem;
+            color: #00aaff;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: #00aaff;
+            border: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background-color: #008ecc;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-box">
+        <img src="/icons/icon-192x192.png" alt="PsiGestor Logo">
+        <h1>Você está offline</h1>
+        <p>Parece que sua conexão caiu.<br>Não se preocupe, assim que você voltar à internet, tudo estará disponível novamente.</p>
+        <button class="btn btn-primary" onclick="location.reload()">Tentar Novamente</button>
+    </div>
+</body>
+</html>

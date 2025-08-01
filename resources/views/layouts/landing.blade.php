@@ -18,6 +18,11 @@
         <meta name="twitter:title" content="{{ $news->title }}">
         <meta name="twitter:description" content="{{ $news->subtitle ?? Str::limit(strip_tags($news->content), 150) }}">
         <meta name="twitter:image" content="{{ $news->image_url }}">
+    @else
+        <meta property="og:title" content="PsiGestor - Plataforma para Profissionais da Saúde Mental">
+        <meta property="og:description" content="Facilite sua prática clínica com agendamento, prontuário e muito mais.">
+        <meta property="og:image" content="{{ asset('images/default-og.png') }}">
+        <meta property="og:url" content="{{ url()->current() }}">
     @endif
 
     {{-- Ícones e AOS --}}
@@ -26,6 +31,11 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00aaff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="/icon-192.png">
 
     {{-- Estilos personalizados da landing --}}
     <style>
@@ -257,6 +267,13 @@
                 menu.classList.toggle('show');
             });
         });
+    </script>
+    <script>
+    if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log("✅ Service Worker registrado!"))
+        .catch(err => console.log("❌ Erro no Service Worker:", err));
+    }
     </script>
 
 </body>
