@@ -2,8 +2,8 @@ const CACHE_NAME = "psigestor-cache-v3";
 const urlsToCache = [
   "/",
   "/manifest.json",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png",
+  "/icons/icon-192x192-maskable.png",
+  "/icons/icon-512x512-maskable.png",
   "/offline.html",
 ];
 
