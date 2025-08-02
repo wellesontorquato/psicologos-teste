@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class News extends Model
@@ -41,7 +40,7 @@ class News extends Model
             : null;
     }
 
-    // URL da versão WebP, se existir
+    // URL da versão WebP (gera direto, sem checar fisicamente)
     public function getImageWebpUrlAttribute()
     {
         if (!$this->image) {
@@ -52,11 +51,8 @@ class News extends Model
         $dir = $pathInfo['dirname'] !== '.' ? $pathInfo['dirname'].'/' : '';
         $webpFile = $dir . $pathInfo['filename'] . '.webp';
 
-        if (Storage::disk('public')->exists($webpFile)) {
-            return $this->getContaboPrefix() . '/' . ltrim($webpFile, '/');
-        }
-
-        return $this->image_url;
+        // Assume que o arquivo WebP existe no mesmo bucket Contabo
+        return $this->getContaboPrefix() . '/' . ltrim($webpFile, '/');
     }
 
     // Garante que o slug seja salvo em minúsculas e sem espaços
