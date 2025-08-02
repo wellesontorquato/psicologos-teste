@@ -66,10 +66,10 @@
                     box-shadow: 0 0 10px rgba(0,0,0,0.1);
                 ">
                     <strong>🎁 10 dias grátis</strong><br>
-                    <small>
+                    <strong><small>
                         ✅ Sem cartão de crédito<br>
                         ✅ Acesso imediato
-                    </small>
+                    </small></strong>
                 </div>
             </div>
         </div>
@@ -91,14 +91,15 @@
                 margin: auto;
             ">
                 <picture id="carouselPicture">
-                    <source srcset="/images/demo1.webp" type="image/webp">
+                    <source srcset="/images/demo1-small.webp" type="image/webp">
                     <img id="carouselImage"
-                         src="/images/demo1.png"
-                         alt="Mockup PsiGestor"
-                         loading="lazy"
-                         width="580" height="326"
-                         style="width: 100%; display: block; transition: transform 0.4s ease;"
-                         onerror="this.onerror=null; this.src='/images/fallback.png';">
+                        src="/images/demo1-small.png"
+                        alt="Mockup PsiGestor"
+                        loading="lazy"
+                        decoding="async"
+                        width="580" height="326"
+                        style="width: 100%; display: block; transition: transform 0.4s ease;"
+                        onerror="this.onerror=null; this.src='/images/fallback.png';">
                 </picture>
             </div>
 
@@ -119,7 +120,9 @@
 @include('components.noticias')
 
 {{-- Botão WhatsApp --}}
-<a href="https://wa.me/5582991128022?text=Olá,%20tenho%20interesse%20no%20PsiGestor!" target="_blank" style="
+<a href="https://wa.me/5582991128022?text=Olá,%20tenho%20interesse%20no%20PsiGestor!"
+   aria-label="Abrir conversa no WhatsApp com PsiGestor"
+   target="_blank" style="
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -142,6 +145,7 @@
              alt="WhatsApp"
              width="24" height="24"
              loading="lazy"
+             decoding="async"
              style="width: 24px; height: 24px;"
              onerror="this.onerror=null; this.src='{{ asset('images/fallback.png') }}';">
     </picture>

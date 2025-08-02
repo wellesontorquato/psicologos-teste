@@ -209,10 +209,12 @@
     </div>
 
     {{-- JS --}}
-    <script src="https://unpkg.com/aos@next/dist/aos.js" defer></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js" async></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            AOS.init({ duration: 1000 });
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({ duration: 1000 });
+            }
         });
     </script>
 
