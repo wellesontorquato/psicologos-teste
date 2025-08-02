@@ -24,9 +24,12 @@
 
                         @if ($article->image)
                             <picture>
-                                {{-- Versão otimizada WebP se existir --}}
-                                <source srcset="{{ $article->image_webp_url }}" type="image/webp">
-                                {{-- Fallback PNG/JPG --}}
+                                {{-- Versão otimizada WebP (se existir) --}}
+                                @if($article->image_webp_url && $article->image_webp_url !== $article->image_url)
+                                    <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                                @endif
+
+                                {{-- Fallback para JPG/PNG --}}
                                 <img src="{{ $article->image_url }}"
                                      alt="{{ $article->title }}"
                                      loading="lazy"

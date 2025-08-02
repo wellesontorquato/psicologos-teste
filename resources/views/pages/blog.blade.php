@@ -52,8 +52,11 @@
                 <a href="{{ route('blog.show', $article->slug) }}" class="blog-card">
                     @if ($article->image)
                         <picture>
-                            {{-- WebP otimizado --}}
-                            <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                            {{-- WebP otimizado (se existir e não for igual ao fallback) --}}
+                            @if($article->image_webp_url && $article->image_webp_url !== $article->image_url)
+                                <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                            @endif
+
                             {{-- Fallback JPG/PNG --}}
                             <img src="{{ $article->image_url }}"
                                  alt="{{ $article->title }}"

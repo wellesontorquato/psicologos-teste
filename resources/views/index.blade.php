@@ -97,7 +97,8 @@
                          alt="Mockup PsiGestor"
                          loading="lazy"
                          width="580" height="326"
-                         style="width: 100%; display: block; transition: transform 0.4s ease;">
+                         style="width: 100%; display: block; transition: transform 0.4s ease;"
+                         onerror="this.onerror=null; this.src='/images/fallback.png';">
                 </picture>
             </div>
 
@@ -141,7 +142,8 @@
              alt="WhatsApp"
              width="24" height="24"
              loading="lazy"
-             style="width: 24px; height: 24px;">
+             style="width: 24px; height: 24px;"
+             onerror="this.onerror=null; this.src='/images/fallback.png';">
     </picture>
     (82) 99112-8022
 </a>
@@ -212,7 +214,8 @@
             <img src="${images[index].fallback}" 
                  alt="Mockup PsiGestor ${index+1}" 
                  loading="lazy" width="580" height="326"
-                 style="width: 100%; display: block; transition: transform 0.4s ease;">
+                 style="width: 100%; display: block; transition: transform 0.4s ease;"
+                 onerror="this.onerror=null; this.src='/images/fallback.png';">
         `;
         dots.forEach(dot => dot.classList.remove('active'));
         dots[index].classList.add('active');
