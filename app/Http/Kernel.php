@@ -6,7 +6,6 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 
-
 class Kernel extends HttpKernel
 {
     /**
@@ -29,6 +28,9 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\TransformsRequest::class,
+
+        // 🔒 Middleware de segurança adicionado
+        \App\Http\Middleware\SecurityHeaders::class,
     ];
 
     /**

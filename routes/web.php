@@ -43,6 +43,16 @@ Route::get('/health', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Endpoint para relatórios CSP
+|--------------------------------------------------------------------------
+*/
+Route::post('/csp-report', function (Request $request) {
+    Log::warning('[CSP VIOLATION]', $request->all());
+    return response()->json(['status' => 'CSP report received']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Sitemap XML
 |--------------------------------------------------------------------------
 */

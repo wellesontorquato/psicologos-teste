@@ -91,11 +91,19 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
-        // ✅ Novo canal de log personalizado para webhook WhatsApp
+        // ✅ Canal de log personalizado para WhatsApp
         'whatsapp' => [
             'driver' => 'single',
             'path' => storage_path('logs/whatsapp.log'),
             'level' => 'debug',
+            'days' => 14,
+        ],
+
+        // ✅ Canal de log personalizado para CSP (segurança)
+        'csp' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/csp.log'),
+            'level' => 'warning',
             'days' => 14,
         ],
     ],
