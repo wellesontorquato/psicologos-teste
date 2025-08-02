@@ -90,11 +90,15 @@
                 transition: transform 0.4s ease;
                 margin: auto;
             ">
-                <img id="carouselImage" src="/images/demo1.png" alt="Mockup PsiGestor" style="
-                    width: 100%;
-                    display: block;
-                    transition: transform 0.4s ease;
-                ">
+                <picture id="carouselPicture">
+                    <source srcset="/images/demo1.webp" type="image/webp">
+                    <img id="carouselImage"
+                         src="/images/demo1.png"
+                         alt="Mockup PsiGestor"
+                         loading="lazy"
+                         width="580" height="326"
+                         style="width: 100%; display: block; transition: transform 0.4s ease;">
+                </picture>
             </div>
 
             <div id="carouselDots" style="margin-top: 10px; text-align: center;">
@@ -131,16 +135,20 @@
     font-weight: bold;
     transition: all 0.3s ease;
 " onmouseover="this.style.background='#1ebd5a';" onmouseout="this.style.background='#25d366';">
-    <img src="https://psigestor.com/images/whatsapp.png" alt="WhatsApp" style="width: 24px; height: 24px;">
+    <picture>
+        <source srcset="https://psigestor.com/images/whatsapp.webp" type="image/webp">
+        <img src="https://psigestor.com/images/whatsapp.png"
+             alt="WhatsApp"
+             width="24" height="24"
+             loading="lazy"
+             style="width: 24px; height: 24px;">
+    </picture>
     (82) 99112-8022
 </a>
 
 @push('styles')
 <style>
-
-    .form-group {
-        margin-bottom: 18px;
-    }
+    .form-group { margin-bottom: 18px; }
 
     .input-field {
         width: 100%;
@@ -158,13 +166,6 @@
         outline: none;
     }
 
-    select.input-field {
-        background: #fff;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-    }
-
     .submit-btn {
         background: #00aaff;
         color: #fff;
@@ -175,111 +176,50 @@
         cursor: pointer;
         transition: all 0.3s ease;
     }
-
-    .submit-btn:hover {
-        background: #0095d8;
-    }
-
-    /* 👇 CENTRALIZAÇÃO do reCAPTCHA */
-    .g-recaptcha {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-        margin: 0 auto !important;
-    }
+    .submit-btn:hover { background: #0095d8; }
 
     .dot {
-        height: 10px;
-        width: 10px;
-        margin: 0 6px;
-        background-color: #ccc;
-        border-radius: 50%;
-        display: inline-block;
-        transition: background-color 0.3s ease;
+        height: 10px; width: 10px; margin: 0 6px;
+        background-color: #ccc; border-radius: 50%;
+        display: inline-block; transition: background-color 0.3s ease;
         cursor: pointer;
     }
-
-    .dot.active {
-        background-color: #00aaff;
-    }
-    .dot {
-        height: 10px;
-        width: 10px;
-        margin: 0 6px;
-        background-color: #ccc;
-        border-radius: 50%;
-        display: inline-block;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-    }
-
-    .dot.active {
-        background-color: #00aaff;
-    }
+    .dot.active { background-color: #00aaff; }
 
     @media (max-width: 768px) {
-        .hero-container {
-            flex-direction: column;
-            padding: 20px 10px;
-        }
-
-        .hero-text, .hero-img {
-            text-align: center !important;
-        }
+        .hero-container { flex-direction: column; padding: 20px 10px; }
+        .hero-text, .hero-img { text-align: center !important; }
     }
 </style>
 @endpush
 
 @push('scripts')
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-@endpush
-
-@push('scripts')
 <script>
     const images = [
-        '/images/demo1.png',
-        '/images/demo2.png',
-        '/images/demo3.png'
+        { webp: '/images/demo1.webp', fallback: '/images/demo1.png' },
+        { webp: '/images/demo2.webp', fallback: '/images/demo2.png' },
+        { webp: '/images/demo3.webp', fallback: '/images/demo3.png' }
     ];
 
     let currentIndex = 0;
-    const imageEl = document.getElementById('carouselImage');
+    const pictureEl = document.getElementById('carouselPicture');
     const dots = document.querySelectorAll('#carouselDots .dot');
-    const tiltEl = document.getElementById('carouselTilt');
 
     function showImage(index) {
         currentIndex = index;
-        imageEl.src = images[index];
+        pictureEl.innerHTML = `
+            <source srcset="${images[index].webp}" type="image/webp">
+            <img src="${images[index].fallback}" 
+                 alt="Mockup PsiGestor ${index+1}" 
+                 loading="lazy" width="580" height="326"
+                 style="width: 100%; display: block; transition: transform 0.4s ease;">
+        `;
         dots.forEach(dot => dot.classList.remove('active'));
         dots[index].classList.add('active');
     }
 
-    dots.forEach(dot => {
-        dot.addEventListener('click', () => {
-            showImage(Number(dot.dataset.index));
-        });
-    });
-
-    setInterval(() => {
-        currentIndex = (currentIndex + 1) % images.length;
-        showImage(currentIndex);
-    }, 5000);
-
-    if (tiltEl) {
-        tiltEl.style.transition = 'transform 0.4s ease';
-        tiltEl.style.transformStyle = 'preserve-3d';
-        tiltEl.style.willChange = 'transform';
-        tiltEl.style.backfaceVisibility = 'hidden';
-
-        tiltEl.addEventListener('mouseenter', () => {
-            tiltEl.style.transform = 'rotateX(4deg) rotateY(-16deg)';
-        });
-
-        tiltEl.addEventListener('mouseleave', () => {
-            tiltEl.style.transform = 'rotateX(0deg) rotateY(0deg)';
-        });
-    }
+    dots.forEach(dot => dot.addEventListener('click', () => showImage(Number(dot.dataset.index))));
+    setInterval(() => showImage((currentIndex + 1) % images.length), 5000);
 </script>
 @endpush
 
@@ -297,6 +237,3 @@
 @endpush
 
 @endsection
-
-
-

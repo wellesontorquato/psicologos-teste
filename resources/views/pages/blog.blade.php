@@ -1,5 +1,5 @@
 @php
-    $title = ' Blog | PsiGestor';
+    $title = 'Blog | PsiGestor';
 @endphp
 
 @extends('layouts.landing')
@@ -46,15 +46,21 @@
         </button>
     </form>
 
-
     @if($news->count())
         <div style="display: flex; flex-direction: column; gap: 30px;">
             @foreach($news as $article)
                 <a href="{{ route('blog.show', $article->slug) }}" class="blog-card">
                     @if ($article->image)
-                        <img src="{{ $article->image_url }}"
-                             alt="{{ $article->title }}"
-                             class="blog-thumbnail">
+                        <picture>
+                            {{-- WebP otimizado --}}
+                            <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                            {{-- Fallback JPG/PNG --}}
+                            <img src="{{ $article->image_url }}"
+                                 alt="{{ $article->title }}"
+                                 loading="lazy"
+                                 width="160" height="100"
+                                 class="blog-thumbnail">
+                        </picture>
                     @endif
                     <div class="blog-content">
                         {{-- Categoria --}}

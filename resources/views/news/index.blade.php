@@ -62,7 +62,17 @@
                     <tr>
                         <td class="text-center align-middle">
                             @if ($article->image)
-                                <img src="{{ $article->image_url }}" class="rounded shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
+                                <picture>
+                                    {{-- WebP otimizado --}}
+                                    <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                                    {{-- Fallback JPG/PNG --}}
+                                    <img src="{{ $article->image_url }}"
+                                         alt="{{ $article->title }}"
+                                         loading="lazy"
+                                         width="60" height="60"
+                                         class="rounded shadow-sm"
+                                         style="object-fit: cover;">
+                                </picture>
                             @endif
                         </td>
                         <td class="align-middle"><strong>{{ $article->title }}</strong></td>
@@ -108,7 +118,15 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
                         @if ($article->image)
-                            <img src="{{ $article->image_url }}" class="rounded shadow-sm me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            <picture>
+                                <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                                <img src="{{ $article->image_url }}"
+                                     alt="{{ $article->title }}"
+                                     loading="lazy"
+                                     width="60" height="60"
+                                     class="rounded shadow-sm me-3"
+                                     style="object-fit: cover;">
+                            </picture>
                         @endif
                         <h5 class="card-title mb-0">{{ $article->title }}</h5>
                     </div>

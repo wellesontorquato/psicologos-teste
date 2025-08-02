@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PsiGestor — plataforma para psicólogos, psicanalistas e psiquiatras. Agenda, prontuário, teleconsulta e muito mais.">
     <title>@yield('title', 'PsiGestor - Plataforma para Profissionais da Saúde Mental')</title>
 
     {{-- Open Graph (Facebook, WhatsApp, LinkedIn) --}}

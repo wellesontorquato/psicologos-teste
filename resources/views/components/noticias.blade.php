@@ -21,10 +21,19 @@
                         background: #f9f9f9;
                         transition: background 0.3s ease;
                     " onmouseover="this.style.background='#f1faff'" onmouseout="this.style.background='#f9f9f9'">
+
                         @if ($article->image)
-                            <img src="{{ $article->image_url }}"
-                                alt="{{ $article->title }}"
-                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <picture>
+                                {{-- Versão otimizada WebP se existir --}}
+                                <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                                {{-- Fallback PNG/JPG --}}
+                                <img src="{{ $article->image_url }}"
+                                     alt="{{ $article->title }}"
+                                     loading="lazy"
+                                     width="80"
+                                     height="80"
+                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            </picture>
                         @endif
 
                         <div style="flex: 1">

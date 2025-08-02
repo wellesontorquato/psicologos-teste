@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class News extends Model
 {
     use HasFactory;
 
-    // Campos que podem ser preenchidos em massa
     protected $fillable = [
         'title',
         'subtitle',
@@ -20,20 +21,47 @@ class News extends Model
         'image',
     ];
 
-    // Rotas usam o slug no lugar do ID
+    // Usa slug nas rotas
     public function getRouteKeyName()
     {
         return 'slug';
     }
 
-    // Accessor para retornar a URL pública da imagem (Contabo)
+    // Prefixo base do Contabo
+    private function getContaboPrefix()
+    {
+        return rtrim('https://usc1.contabostorage.com/' . trim(env('CONTABO_PUBLIC_PREFIX'), '/'), '/');
+    }
+
+    // URL da imagem original
     public function getImageUrlAttribute()
     {
-        if ($this->image) {
-            $prefix = rtrim(env('CONTABO_PUBLIC_PREFIX'), '/');
-            return 'https://usc1.contabostorage.com/' . $prefix . '/' . ltrim($this->image, '/');
+        return $this->image
+            ? $this->getContaboPrefix() . '/' . ltrim($this->image, '/')
+            : null;
+    }
+
+    // URL da versão WebP, se existir
+    public function getImageWebpUrlAttribute()
+    {
+        if (!$this->image) {
+            return null;
         }
 
-        return null;
+        $pathInfo = pathinfo($this->image);
+        $dir = $pathInfo['dirname'] !== '.' ? $pathInfo['dirname'].'/' : '';
+        $webpFile = $dir . $pathInfo['filename'] . '.webp';
+
+        if (Storage::disk('public')->exists($webpFile)) {
+            return $this->getContaboPrefix() . '/' . ltrim($webpFile, '/');
+        }
+
+        return $this->image_url;
+    }
+
+    // Garante que o slug seja salvo em minúsculas e sem espaços
+    public function setSlugAttribute($value)
+    {
+        $this->attributes['slug'] = Str::slug($value);
     }
 }
