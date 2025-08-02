@@ -137,13 +137,13 @@
     transition: all 0.3s ease;
 " onmouseover="this.style.background='#1ebd5a';" onmouseout="this.style.background='#25d366';">
     <picture>
-        <source srcset="https://psigestor.com/images/whatsapp.webp" type="image/webp">
-        <img src="https://psigestor.com/images/whatsapp.png"
+        <source srcset="{{ asset('images/whatsapp.webp') }}" type="image/webp">
+        <img src="{{ asset('images/whatsapp.png') }}"
              alt="WhatsApp"
              width="24" height="24"
              loading="lazy"
              style="width: 24px; height: 24px;"
-             onerror="this.onerror=null; this.src='/images/fallback.png';">
+             onerror="this.onerror=null; this.src='{{ asset('images/fallback.png') }}';">
     </picture>
     (82) 99112-8022
 </a>
