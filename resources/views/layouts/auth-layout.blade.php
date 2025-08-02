@@ -10,6 +10,8 @@
         'password.confirm' => 'images/auth/forgot-password.png',
         default => 'images/auth/tela-login.png',
     };
+
+    $imageWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $image);
 @endphp
 
 <!DOCTYPE html>
@@ -18,10 +20,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Autenticação')</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+
+    <!-- Preconnect para reduzir latência -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <!-- Bootstrap -->
+    <link rel="preload"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    </noscript>
+
+    <!-- Font Awesome -->
+    <link rel="preload"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    </noscript>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
     <style>
         body {
@@ -40,8 +65,15 @@
         .auth-image {
             width: 100%;
             height: 180px;
-            background: url("{{ asset($image) }}") center/contain no-repeat;
             background-color: #00aaff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-image picture, 
+        .auth-image img {
+            max-width: 90%;
+            height: auto;
         }
 
         .auth-form {
@@ -113,7 +145,6 @@
                 flex: 1;
                 height: auto;
                 min-height: 100vh;
-                background-size: 65%;
             }
 
             .auth-form {
@@ -140,14 +171,22 @@
 <body>
     <div class="auth-container">
         {{-- Imagem lateral (somente desktop) --}}
-        <div class="auth-image d-none d-md-block"></div>
+        <div class="auth-image d-none d-md-flex">
+            <picture>
+                <source srcset="{{ asset($imageWebp) }}" type="image/webp">
+                <img src="{{ asset($image) }}" alt="Tela de autenticação" loading="lazy" width="500" height="500">
+            </picture>
+        </div>
 
         {{-- Formulário --}}
         <div class="auth-form">
             {{-- Logo clicável --}}
             <div class="auth-logo">
                 <a href="{{ url('/') }}">
-                    <img src="{{ asset('images/logo-psigestor.png') }}" alt="PsiGestor Logo">
+                    <picture>
+                        <source srcset="{{ asset('images/logo-psigestor.webp') }}" type="image/webp">
+                        <img src="{{ asset('images/logo-psigestor.png') }}" alt="PsiGestor Logo" loading="lazy" width="180" height="auto">
+                    </picture>
                 </a>
             </div>
 
