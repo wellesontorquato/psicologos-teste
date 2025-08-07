@@ -198,7 +198,7 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::resource('sessoes', SessaoController::class)->except(['show']);
     Route::get('/sessoes/importar', [SessaoController::class, 'importarView'])->name('sessoes.importar.view');
     Route::post('/sessoes/importar', [SessaoController::class, 'importar'])->name('sessoes.importar');
-    Route::get('/sessoes/modelo-importacao', [SessaoController::class, 'baixarModeloImportacao'])->name('sessoes.modelo');
+    Route::get('/sessoes/modelo', [SessaoController::class, 'baixarModeloImportacao'])->name('sessoes.modelo');
 
     Route::get('/notificacoes', [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
     Route::get('/notificacoes/{id}/acao', [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
