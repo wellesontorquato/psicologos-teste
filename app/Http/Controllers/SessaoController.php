@@ -403,7 +403,7 @@ class SessaoController extends Controller
 
         Excel::import(new SessoesImport(auth()->id()), $request->file('arquivo'));
 
-        return redirect()->back()->with('sucesso', 'Sessões importadas com sucesso!');
+        return redirect()->route('sessoes.index')->with('sucesso', 'Sessões importadas com sucesso!');
     }
 
     public function baixarModeloImportacao()

@@ -9,7 +9,18 @@
     <div class="page-header text-center text-lg-start mb-4">
         <h2 class="display-6 fw-bold">Importação de Sessões em Massa</h2>
         <p class="text-muted lead">Envie sua planilha do Excel para adicionar múltiplas sessões de uma só vez.</p>
+
+        @if (session('resultado_importacao'))
+            <div class="alert alert-info mt-3 text-start">
+                <ul class="mb-0">
+                    @foreach (session('resultado_importacao') as $mensagem)
+                        <li>{!! $mensagem !!}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     </div>
+
 
     <div class="row g-4 g-lg-5">
 
