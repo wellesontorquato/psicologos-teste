@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sessao;
 use App\Models\Paciente;
 use App\Imports\SessoesImport;
-use App\Exports\ModeloImportacaoExport;
+use App\Exports\ModeloImportacaoSessoesExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Helpers\AuditHelper;

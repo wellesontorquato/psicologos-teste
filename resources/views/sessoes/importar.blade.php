@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Importar sessões em Massa | PsiGestor')
+
 @section('content')
 <div class="container mt-5">
     <h3>Importar Sessões por Planilha</h3>
