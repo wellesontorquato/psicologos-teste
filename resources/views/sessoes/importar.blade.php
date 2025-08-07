@@ -1,14 +1,3 @@
-Com certeza\! É uma ótima prática e fico feliz em refatorar o código para seguir a metodologia "mobile-first".
-
-A principal diferença, como você verá, está na estrutura do CSS. Agora, os estilos definidos primeiro são os mais simples, para telas pequenas. Depois, usamos uma `media query` com `min-width` para adicionar os detalhes e espaçamentos maiores para telas de tablets e desktops.
-
-O resultado visual será muito parecido com o anterior (pois o design já era bem adaptável), mas a estrutura do seu CSS agora está mais robusta e segue a convenção mobile-first.
-
-### Página `importar.blade.php` com CSS Mobile-First
-
-Substitua o conteúdo do seu arquivo por este código:
-
-```php
 @extends('layouts.app')
 
 @section('title', 'Importar Sessões em Massa | PsiGestor')
@@ -76,7 +65,7 @@ Substitua o conteúdo do seu arquivo por este código:
                             <i class="bi bi-person-fill text-primary me-3 fs-4"></i>
                             <div>
                                 <strong class="d-block">Paciente</strong>
-                                Nome completo, idêntico ao cadastrado no sistema, e que aparece na aba Pacientes da planilha modelo.
+                                Nome completo, idêntico ao cadastrado no sistema.
                             </div>
                         </div>
                         <div class="list-group-item d-flex align-items-center">
@@ -282,4 +271,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
-```
