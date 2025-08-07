@@ -76,10 +76,11 @@
         class="btn btn-success shadow-sm no-spinner-on-download">
         <i class="bi bi-file-earmark-excel"></i> Excel
         </a>
-        <a href="{{ route('sessoes.importarView') }}"
+        <a href="{{ route('sessoes.importar.view') }}" 
         class="btn btn-outline-primary shadow-sm">
         <i class="bi bi-upload"></i> Importar sessões em massa
         </a>
+
     </div>
 
 
