@@ -4,25 +4,26 @@
 
 @section('content')
 <div class="container my-4 my-md-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
 
-            <div class="card shadow-sm border-light">
-                <div class="card-header bg-primary text-white py-3">
-                    <h4 class="mb-0"><i class="bi bi-file-earmark-arrow-up-fill me-2"></i>Importar Sessões por Planilha</h4>
-                </div>
-                <div class="card-body p-3 p-md-4 p-lg-5">
+    {{-- CABEÇALHO DA PÁGINA --}}
+    <div class="page-header text-center text-lg-start mb-4">
+        <h2 class="display-6 fw-bold">Importação de Sessões em Massa</h2>
+        <p class="text-muted lead">Envie sua planilha do Excel para adicionar múltiplas sessões de uma só vez.</p>
+    </div>
 
-                    @if (session('sucesso'))
-                        {{-- O SweetAlert já está no seu layout, então não precisa do script aqui --}}
-                    @endif
+    <div class="row g-4 g-lg-5">
+
+        {{-- COLUNA DA ESQUERDA (AÇÃO PRINCIPAL) --}}
+        <div class="col-lg-7">
+            <div class="card h-100 shadow-sm border-light">
+                <div class="card-body p-4 p-lg-5">
                     
                     {{-- PASSO 1 --}}
                     <div class="step-box mb-4">
                         <span class="step-number">1</span>
                         <div>
                             <h5 class="mb-1">Baixe a planilha modelo</h5>
-                            <p class="text-muted mb-2">Preencha com os dados das sessões para garantir que a importação funcione corretamente.</p>
+                            <p class="text-muted mb-2">Use nosso modelo para garantir que os dados estejam no formato correto.</p>
                             <a href="{{ route('sessoes.modelo') }}" class="btn btn-outline-primary no-spinner">
                                 <i class="bi bi-download me-2"></i> Baixar Modelo (.xlsx)
                             </a>
@@ -39,7 +40,7 @@
                             <form action="{{ route('sessoes.importar') }}" method="POST" enctype="multipart/form-data" id="import-form">
                                 @csrf
                                 <div class="file-drop-area mb-3">
-                                    <i class="bi bi-cloud-arrow-up display-4 text-secondary"></i>
+                                    <i class="bi bi-cloud-arrow-up display-4"></i>
                                     <span class="file-message">Arraste e solte o arquivo aqui, ou <strong>clique para selecionar</strong>.</span>
                                     <input type="file" name="arquivo" id="arquivo" class="file-input" required accept=".xlsx,.xls">
                                 </div>
@@ -52,62 +53,56 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- INSTRUÇÕES --}}
-            <div class="card shadow-sm border-light mt-4">
+        {{-- COLUNA DA DIREITA (INSTRUÇÕES) --}}
+        <div class="col-lg-5">
+            <div class="card h-100 shadow-sm border-light">
                 <div class="card-header bg-light py-3">
                     <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Instruções de Preenchimento</h5>
                 </div>
-                <div class="card-body p-3 p-md-4">
-                    <p class="text-muted">Sua planilha deve conter as seguintes colunas para uma importação bem-sucedida:</p>
+                <div class="card-body p-4">
                     <div class="list-group list-group-flush">
-                        <div class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-person-fill text-primary me-3 fs-4"></i>
+                        <div class="list-group-item">
+                            <i class="bi bi-person"></i>
                             <div>
-                                <strong class="d-block">Paciente</strong>
-                                Nome completo, idêntico ao cadastrado no sistema.
+                                <strong>Paciente:</strong> Nome idêntico ao cadastro no sistema.
                             </div>
                         </div>
-                        <div class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-calendar-event-fill text-success me-3 fs-4"></i>
+                        <div class="list-group-item">
+                            <i class="bi bi-calendar-event"></i>
                             <div>
-                                <strong class="d-block">Data</strong>
-                                Formato: `DD/MM/AAAA HH:MM` (ex: `07/08/2025 10:00`).
+                                <strong>Data:</strong> Formato `DD/MM/AAAA HH:MM`.
                             </div>
                         </div>
-                        <div class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-clock-fill text-info me-3 fs-4"></i>
+                        <div class="list-group-item">
+                            <i class="bi bi-clock"></i>
                             <div>
-                                <strong class="d-block">Duração (Minutos)</strong>
-                                Apenas o número (ex: `50`).
+                                <strong>Duração (Minutos):</strong> Apenas números (ex: `50`).
                             </div>
                         </div>
-                         <div class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-cash-coin text-warning me-3 fs-4"></i>
+                         <div class="list-group-item">
+                            <i class="bi bi-cash-coin"></i>
                             <div>
-                                <strong class="d-block">Valor</strong>
-                                Formato com vírgula (ex: `150,00`).
+                                <strong>Valor:</strong> Formato com vírgula (ex: `150,00`).
                             </div>
                         </div>
-                        <div class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-check-circle-fill text-success me-3 fs-4"></i>
+                        <div class="list-group-item">
+                            <i class="bi bi-check2-circle"></i>
                             <div>
-                                <strong class="d-block">Pago</strong>
-                                Apenas `Sim` ou `Não`.
+                                <strong>Pago:</strong> Use `Sim` ou `Não`.
                             </div>
                         </div>
-                        <div class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-bookmark-star-fill text-info me-3 fs-4"></i>
+                        <div class="list-group-item">
+                            <i class="bi bi-bookmark-star"></i>
                             <div>
-                                <strong class="d-block">Status</strong>
-                                Opções: `Confirmada` ou `Pendente`.
+                                <strong>Status:</strong> `Confirmada` ou `Pendente`.
                             </div>
                         </div>
-                        <div class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-file-text-fill text-secondary me-3 fs-4"></i>
+                        <div class="list-group-item">
+                            <i class="bi bi-file-text"></i>
                             <div>
-                                <strong class="d-block">Evolução</strong>
-                                Campo opcional, mas obrigatório se a sessão já aconteceu.
+                                <strong>Evolução:</strong> Texto livre (obrigatório se a sessão já ocorreu).
                             </div>
                         </div>
                     </div>
@@ -120,88 +115,112 @@
 
 @push('styles')
 <style>
-    /* ------------------------- */
-    /* ESTILOS BASE (MOBILE-FIRST) */
-    /* ------------------------- */
-    /* Estilos aplicados em todas as telas, começando pela menor. */
-
-    .card-header h4, .card-header h5 {
-        font-weight: 500;
-        font-size: 1.1rem; /* Um pouco menor no mobile */
+    /* ---------------------------------- */
+    /* ESTILOS BASE (MOBILE-FIRST) E TEMA */
+    /* ---------------------------------- */
+    :root {
+        --psi-primary: #0077ff;
+        --psi-secondary: #00aaff;
+        --psi-light-bg: #f0f8ff;
+        --psi-text-muted: #6c757d;
     }
+
+    .page-header h2 {
+        color: var(--psi-primary);
+    }
+
     .step-box {
         display: flex;
         align-items: flex-start;
-        gap: 1rem; /* Espaçamento menor para mobile */
+        gap: 1rem;
     }
     .step-number {
         flex-shrink: 0;
         width: 35px;
         height: 35px;
-        background-color: #e9ecef;
+        background-color: var(--psi-light-bg);
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        color: #495057;
+        color: var(--psi-primary);
         font-size: 1.1rem;
     }
+
     .file-drop-area {
         position: relative;
-        border: 2px dashed #adb5bd;
+        border: 2px dashed #d0d0d0;
         border-radius: .5rem;
-        padding: 1.5rem; /* Padding menor para mobile */
+        padding: 1.5rem;
         text-align: center;
         cursor: pointer;
+        background-color: #fdfdfd;
         transition: border-color .3s, background-color .3s;
     }
-    .file-input {
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 100%;
-        cursor: pointer;
-        opacity: 0;
-    }
-    .file-message {
-        display: block;
-        margin-top: 0.5rem;
-        color: #6c757d;
-        font-size: 0.9rem;
+    .file-drop-area i {
+        color: #ced4da;
     }
     .file-drop-area:hover, .file-drop-area.is-dragover {
-        border-color: var(--bs-primary);
-        background-color: #f8f9fa;
+        border-color: var(--psi-primary);
+        background-color: var(--psi-light-bg);
     }
+    .file-input {
+        position: absolute; left: 0; top: 0; height: 100%; width: 100%; cursor: pointer; opacity: 0;
+    }
+    .file-message {
+        display: block; margin-top: 0.5rem; color: var(--psi-text-muted); font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--psi-primary);
+        border-color: var(--psi-primary);
+    }
+    .btn-primary:hover {
+        background-color: #005fcc; /* Um pouco mais escuro no hover */
+        border-color: #005fcc;
+    }
+    .btn-outline-primary {
+        color: var(--psi-primary);
+        border-color: var(--psi-primary);
+    }
+    .btn-outline-primary:hover {
+        background-color: var(--psi-primary);
+        color: white;
+    }
+    
     .list-group-item {
-        padding: 0.9rem 0; /* Padding vertical menor */
-        border-bottom: 1px solid #eee !important;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        background: none;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
     }
     .list-group-item:last-child {
-        border-bottom: none !important;
+        border-bottom: none;
     }
-
-    /* ----------------------------------------------------------------- */
-    /* MELHORIAS PARA TELAS MAIORES (TABLETS E DESKTOPS - 768px ou mais) */
-    /* ----------------------------------------------------------------- */
-    @media (min-width: 768px) {
-        .card-header h4, .card-header h5 {
-            font-size: 1.25rem; /* Retorna ao tamanho original */
-        }
+    .list-group-item i {
+        margin-top: 2px;
+        color: var(--psi-primary);
+    }
+    
+    /* ------------------------------------------------------------------ */
+    /* MELHORIAS PARA DESKTOPS (LG e maiores - 992px ou mais) */
+    /* ------------------------------------------------------------------ */
+    @media (min-width: 992px) {
         .step-box {
-            gap: 1.5rem; /* Aumenta o espaçamento */
+            gap: 1.5rem;
         }
         .step-number {
             width: 40px;
             height: 40px;
         }
         .file-drop-area {
-            padding: 2.5rem; /* Aumenta o padding */
+            padding: 2.5rem;
         }
         .file-message {
-            margin-top: 1rem;
             font-size: 1rem;
         }
     }
@@ -209,7 +228,6 @@
 @endpush
 
 @push('scripts')
-{{-- O JavaScript não precisa de alterações, pois é baseado em eventos e não em layout --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('arquivo');
@@ -219,17 +237,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const importForm = document.getElementById('import-form');
     const submitButton = document.getElementById('submit-button');
 
-    // Highlight drop area when file is dragged over
-    dropArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropArea.classList.add('is-dragover');
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-        dropArea.classList.remove('is-dragover');
-    });
-
-    // Handle dropped file
+    dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('is-dragover'); });
+    dropArea.addEventListener('dragleave', () => { dropArea.classList.remove('is-dragover'); });
     dropArea.addEventListener('drop', (e) => {
         e.preventDefault();
         dropArea.classList.remove('is-dragover');
@@ -238,8 +247,6 @@ document.addEventListener('DOMContentLoaded', function () {
             updateFileMessage();
         }
     });
-
-    // Handle file selected via click
     fileInput.addEventListener('change', updateFileMessage);
 
     function updateFileMessage() {
@@ -249,8 +256,6 @@ document.addEventListener('DOMContentLoaded', function () {
             fileMessage.innerHTML = originalMessage;
         }
     }
-
-    // Handle form submission spinner
     if(importForm) {
         importForm.addEventListener('submit', function() {
             submitButton.disabled = true;
@@ -258,14 +263,12 @@ document.addEventListener('DOMContentLoaded', function () {
             submitButton.querySelector('.button-text').textContent = 'Importando...';
         });
     }
-
-    // SweetAlert para sucesso
     @if (session('sucesso'))
         Swal.fire({
             title: 'Sucesso!',
             text: '{{ session('sucesso') }}',
             icon: 'success',
-            confirmButtonColor: '#0d6efd'
+            confirmButtonColor: 'var(--psi-primary)'
         });
     @endif
 });
