@@ -408,12 +408,7 @@ class SessaoController extends Controller
 
     public function baixarModeloImportacao()
     {
-        $pacientes = \App\Models\Paciente::where('user_id', auth()->id())->get();
-
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new ModeloImportacaoExport($pacientes),
-            'modelo_importacao_sessoes.xlsx'
-        );
+        return Excel::download(new ModeloImportacaoSessoesExport, 'modelo_importacao_sessoes.xlsx');
     }
 
     public function gerarRecorrencias(Request $request)

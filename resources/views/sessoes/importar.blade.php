@@ -10,8 +10,8 @@
         </script>
     @endif
 
-    <a href="{{ route('sessoes.modelo') }}" class="btn btn-outline-secondary mb-3">
-        <i class="bi bi-download"></i> Baixar planilha modelo
+    <a href="{{ route('sessoes.modelo') }}" class="btn btn-outline-secondary mb-3 no-spinner">
+        <i class="bi bi-download no-spinner"></i> Baixar planilha modelo
     </a>
 
     <form action="{{ route('sessoes.importar') }}" method="POST" enctype="multipart/form-data" class="mt-4">
