@@ -10,6 +10,13 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class PacientesSheet implements FromArray, WithTitle, WithHeadings, ShouldAutoSize
 {
+    protected $user_id;
+
+    public function __construct($user_id)
+    {
+        $this->user_id = $user_id;
+    }
+
     public function title(): string
     {
         return 'Pacientes';
@@ -22,6 +29,10 @@ class PacientesSheet implements FromArray, WithTitle, WithHeadings, ShouldAutoSi
 
     public function array(): array
     {
-        return Paciente::orderBy('nome')->pluck('nome')->map(fn ($nome) => [$nome])->toArray();
+        return Paciente::where('user_id', $this->user_id)
+            ->orderBy('nome')
+            ->pluck('nome')
+            ->map(fn ($nome) => [$nome])
+            ->toArray();
     }
 }
