@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Centraliza tudo dentro da seção de perfil */
+.perfil-wrapper {
+    @apply flex flex-col items-center justify-center gap-6 text-center;
+  }
+  
+  /* Estilo para a imagem de perfil */
+  .perfil-foto {
+    @apply w-24 h-24 rounded-full border shadow object-cover;
+  }
+  
+  /* Estilo do botão principal */
+  .btn-psigestor {
+    @apply bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition;
+  }
+  
+  /* Estilo dos botões perigosos (excluir) */
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition;
+  }
+  
+  /* Input elegante */
+  .input-padrao {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none;
+  }
+  
+  /* Container do form com card elegante */
+  .card-form {
+    @apply bg-white p-6 rounded-xl shadow-md w-full max-w-2xl mx-auto;
+  }
+
+  .topbar-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .topbar-profile img {
+      width: 36px;
+      height: 36px;
+      border-radius: 9999px;
+      object-fit: cover;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+      border: 2px solid #00aaff;
+  }
+
+  .topbar-profile a {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s ease;
+  }
+
+  .topbar-profile a:hover {
+      color: #00aaff;
+  }
+
+  .fc-event.evento-pago {
+    background-color: #28a745 !important;
+    border: 2px solid #1e7e34 !important;
+    color: white !important;
+    font-weight: bold !important;
+  }
+  
+  .fc-event.evento-pendente {
+    background-color: #dc3545 !important;
+    border: 2px solid #a71d2a !important;
+    color: white !important;
+    font-weight: bold !important;
+  }
+  
+  .fc-event.evento-apos-meia-noite {
+    background-color: rgba(0, 174, 255, 0.15) !important;
+    border: 2px dashed #00c4ff !important;
+    color: #005f88 !important;
+    font-weight: bold !important;
+  }
+  
+  .fc-daygrid-event-dot {
+    display: none !important;
+  }
+  
+  
+
+  

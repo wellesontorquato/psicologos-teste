@@ -1,0 +1,39 @@
+<table>
+    <thead>
+        <tr>
+            <th>Paciente</th>
+            <th>Data</th>
+            <th>Duração (Minutos)</th>
+            <th>Valor</th>
+            <th>Pago</th>
+            <th>Status</th>
+            <th>Evolução</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for ($i = 0; $i < 10; $i++)
+            <tr>
+                <td></td>
+                <td></td>
+                <td>50</td>
+                <td>150</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        @endfor
+    </tbody>
+    <tfoot>
+        <tr>
+            <td>
+                {{ implode(', ', $pacientes->pluck('nome')->toArray()) }}
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Sim,Não</td>
+            <td>Confirmada,Pendente</td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>
