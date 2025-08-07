@@ -23,11 +23,15 @@ class SessoesImport implements ToCollection
         $agora = now();
 
         foreach ($rows->skip(1) as $linha) {
+            if (count($linha) < 7) continue; // Protege contra erro 'Undefined array key'
+
             [$nomePaciente, $dataHoraBr, $duracaoMin, $valorBr, $pago, $status, $textoEvolucao] = $linha;
 
             if (!$nomePaciente || !$dataHoraBr) continue;
 
-            $paciente = \App\Models\Paciente::where('nome', 'like', trim($nomePaciente))->first();
+            $paciente = \App\Models\Paciente::where('nome', 'like', trim($nomePaciente))
+                ->where('user_id', $this->user_id)
+                ->first();
             if (!$paciente) continue;
 
             try {
