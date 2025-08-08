@@ -222,6 +222,13 @@ Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 | Auth
 |--------------------------------------------------------------------------
 */
+
+Route::get('/ver-log-whatsapp', function () {
+$logFile = storage_path('logs/whatsapp.log');
+$logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
+return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
+})->middleware('auth');
+
 require __DIR__.'/auth.php';
 
 /*
@@ -312,12 +319,6 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 
 //     return 'Log de teste enviado!';
 // });
-
-// Route::get('/ver-log-whatsapp', function () {
-//     $logFile = storage_path('logs/whatsapp.log');
-//     $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
-//     return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
-//     })->middleware('auth');
 
 // Route::get('/_filesystem', function () {
 //     $path = base_path();

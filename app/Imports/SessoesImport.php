@@ -7,12 +7,12 @@ use App\Models\Evolucao;
 use App\Models\Paciente;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
 class SessoesImport implements ToCollection
 {
     protected $user_id;
-    protected $mensagens = [];
 
     public function __construct($user_id)
     {
@@ -24,18 +24,20 @@ class SessoesImport implements ToCollection
         $agora = now();
         $sucesso = 0;
 
+        Log::channel('whatsapp')->info("📥 Iniciando importação de sessões (Total: {$rows->count()} linhas)");
+
         foreach ($rows->skip(1) as $index => $linha) {
-            $linhaNum = $index + 2; // +2 para contar cabeçalho e linha 1-based
+            $linhaNum = $index + 2;
 
             if (count($linha) < 7) {
-                $this->mensagens[] = "⚠️ Linha {$linhaNum}: incompleta (menos de 7 colunas).";
+                Log::channel('whatsapp')->warning("⚠️ Linha {$linhaNum}: incompleta (menos de 7 colunas). Dados: " . json_encode($linha));
                 continue;
             }
 
             [$nomePaciente, $dataHoraBr, $duracaoMin, $valorBr, $pago, $status, $textoEvolucao] = $linha;
 
             if (!$nomePaciente || !$dataHoraBr) {
-                $this->mensagens[] = "⚠️ Linha {$linhaNum}: nome do paciente ou data ausente.";
+                Log::channel('whatsapp')->warning("⚠️ Linha {$linhaNum}: nome ou data ausente.");
                 continue;
             }
 
@@ -46,14 +48,14 @@ class SessoesImport implements ToCollection
                 ->first();
 
             if (!$paciente) {
-                $this->mensagens[] = "❌ Linha {$linhaNum}: paciente '{$nomePacienteLimpo}' não encontrado.";
+                Log::channel('whatsapp')->error("❌ Linha {$linhaNum}: paciente '{$nomePacienteLimpo}' não encontrado.");
                 continue;
             }
 
             try {
                 $dataHora = Carbon::createFromFormat('d/m/Y H:i', trim($dataHoraBr));
             } catch (\Exception $e) {
-                $this->mensagens[] = "❌ Linha {$linhaNum}: data inválida '{$dataHoraBr}'.";
+                Log::channel('whatsapp')->error("❌ Linha {$linhaNum}: data inválida '{$dataHoraBr}'.");
                 continue;
             }
 
@@ -73,6 +75,8 @@ class SessoesImport implements ToCollection
                 'updated_at' => now(),
             ]);
 
+            Log::channel('whatsapp')->info("✅ Linha {$linhaNum}: sessão criada para {$paciente->nome} em {$dataHora->format('d/m/Y H:i')}");
+
             if ($dataHora < $agora && !empty(trim($textoEvolucao))) {
                 Evolucao::create([
                     'paciente_id' => $paciente->id,
@@ -81,13 +85,12 @@ class SessoesImport implements ToCollection
                     'texto' => $textoEvolucao,
                     'tipo' => '',
                 ]);
+                Log::channel('whatsapp')->info("📝 Linha {$linhaNum}: evolução registrada para {$paciente->nome}");
             }
 
             $sucesso++;
         }
 
-        $this->mensagens[] = "✅ Importação finalizada: {$sucesso} sessões criadas com sucesso.";
-
-        session()->flash('resultado_importacao', $this->mensagens);
+        Log::channel('whatsapp')->info("🏁 Importação concluída. Total de sessões criadas: {$sucesso}");
     }
 }
