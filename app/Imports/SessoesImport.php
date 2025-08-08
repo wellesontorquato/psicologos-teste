@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 class SessoesImport implements ToCollection
 {
     protected $user_id;
+    protected $mensagens = [];
 
     public function __construct($user_id)
     {
@@ -24,21 +25,27 @@ class SessoesImport implements ToCollection
     {
         $agora = now();
         $sucesso = 0;
+        $totalLinhas = $rows->count() - 1; // Desconta cabeçalho
+        $maxLinhas = min(50, $totalLinhas);
 
-        Log::channel('whatsapp')->info("📥 Iniciando importação de sessões (Total: {$rows->count()} linhas)");
+        Log::channel('whatsapp')->info("📥 Iniciando importação de sessões (Total: {$totalLinhas} linhas)");
 
-        foreach ($rows->skip(1) as $index => $linha) {
+        foreach ($rows->skip(1)->take($maxLinhas) as $index => $linha) {
             $linhaNum = $index + 2;
 
             if (count($linha) < 7) {
-                Log::channel('whatsapp')->warning("⚠️ Linha {$linhaNum}: incompleta (menos de 7 colunas). Dados: " . json_encode($linha));
+                $msg = "⚠️ Linha {$linhaNum}: incompleta (menos de 7 colunas).";
+                $this->mensagens[] = $msg;
+                Log::channel('whatsapp')->warning($msg);
                 continue;
             }
 
             [$nomePaciente, $dataHoraBr, $duracaoMin, $valorBr, $pago, $status, $textoEvolucao] = $linha;
 
             if (!$nomePaciente || !$dataHoraBr) {
-                Log::channel('whatsapp')->warning("⚠️ Linha {$linhaNum}: nome ou data ausente.");
+                $msg = "⚠️ Linha {$linhaNum}: nome do paciente ou data ausente.";
+                $this->mensagens[] = $msg;
+                Log::channel('whatsapp')->warning($msg);
                 continue;
             }
 
@@ -49,7 +56,9 @@ class SessoesImport implements ToCollection
                 ->first();
 
             if (!$paciente) {
-                Log::channel('whatsapp')->error("❌ Linha {$linhaNum}: paciente '{$nomePacienteLimpo}' não encontrado.");
+                $msg = "❌ Linha {$linhaNum}: paciente '{$nomePacienteLimpo}' não encontrado.";
+                $this->mensagens[] = $msg;
+                Log::channel('whatsapp')->error($msg);
                 continue;
             }
 
@@ -60,11 +69,17 @@ class SessoesImport implements ToCollection
                     $dataHora = Carbon::createFromFormat('d/m/Y H:i', trim($dataHoraBr));
                 }
             } catch (\Exception $e) {
-                Log::channel('whatsapp')->error("❌ Linha {$linhaNum}: data inválida '{$dataHoraBr}'.");
+                $msg = "❌ Linha {$linhaNum}: data inválida '{$dataHoraBr}'.";
+                $this->mensagens[] = $msg;
+                Log::channel('whatsapp')->error($msg);
                 continue;
             }
 
             $valor = floatval(str_replace(',', '.', str_replace('.', '', $valorBr)));
+
+            // Define campos automáticos com base na data
+            $lembreteEnviado = $dataHora < $agora ? 1 : 0;
+            $statusConfirmacao = $dataHora < $agora ? 'Confirmada' : 'Pendente';
 
             $sessao = Sessao::create([
                 'user_id' => $this->user_id,
@@ -74,8 +89,8 @@ class SessoesImport implements ToCollection
                 'duracao' => intval($duracaoMin),
                 'valor' => $valor,
                 'foi_pago' => strtolower(trim($pago)) === 'sim' ? 1 : 0,
-                'status_confirmacao' => ucfirst(strtolower(trim($status))),
-                'lembrete_enviado' => $dataHora < $agora ? 1 : 0,
+                'status_confirmacao' => $statusConfirmacao,
+                'lembrete_enviado' => $lembreteEnviado,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -95,6 +110,15 @@ class SessoesImport implements ToCollection
 
             $sucesso++;
         }
+
+        $mensagemFinal = "✅ Importação finalizada: {$sucesso} sessão(ões) criada(s).";
+        $this->mensagens[] = $mensagemFinal;
+
+        if ($totalLinhas > $maxLinhas) {
+            $this->mensagens[] = "⚠️ Apenas as primeiras 50 linhas foram processadas. Reduza sua planilha se necessário.";
+        }
+
+        session()->flash('resultado_importacao', $this->mensagens);
 
         Log::channel('whatsapp')->info("🏁 Importação concluída. Total de sessões criadas: {$sucesso}");
     }
