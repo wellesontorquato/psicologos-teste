@@ -172,7 +172,7 @@
         background-color: var(--psi-light-bg);
     }
     .file-input {
-        position: absolute; left: 0; top: 0; height: 100%; width: 100%; cursor: pointer; opacity: 0;
+        position: none;
     }
     .file-message {
         display: block; margin-top: 0.5rem; color: var(--psi-text-muted); font-size: 0.9rem;
@@ -237,57 +237,68 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const fileInput = document.getElementById('arquivo');
-    const dropArea = fileInput.closest('.file-drop-area');
-    const fileMessage = dropArea.querySelector('.file-message');
-    const originalMessage = fileMessage.innerHTML;
-    const importForm = document.getElementById('import-form');
-    const submitButton = document.getElementById('submit-button');
+  const fileInput = document.getElementById('arquivo');
+  const dropArea = document.querySelector('.file-drop-area');
+  const fileMessage = dropArea.querySelector('.file-message');
+  const originalMessage = fileMessage.innerHTML;
+  const importForm = document.getElementById('import-form');
+  const submitButton = document.getElementById('submit-button');
 
-    dropArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropArea.classList.add('is-dragover');
+  // Abrir o seletor ao clicar na área
+  dropArea.addEventListener('click', () => fileInput.click());
+
+  // Prevent default em todos os eventos de DnD
+  ['dragenter','dragover','dragleave','drop'].forEach(evtName => {
+    dropArea.addEventListener(evtName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
     });
+  });
 
-    dropArea.addEventListener('dragleave', () => {
-        dropArea.classList.remove('is-dragover');
-    });
-
-    dropArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropArea.classList.remove('is-dragover');
-        if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            updateFileMessage();
-        }
-    });
-
-    fileInput.addEventListener('change', updateFileMessage);
-
-    function updateFileMessage() {
-        if (fileInput.files.length > 0) {
-            fileMessage.innerHTML = '<i class="bi bi-file-earmark-check-fill text-success"></i> <strong>Arquivo selecionado:</strong> ${fileInput.files[0].name}';
-        } else {
-            fileMessage.innerHTML = originalMessage;
-        }
+  dropArea.addEventListener('dragover', () => {
+    dropArea.classList.add('is-dragover');
+  });
+  dropArea.addEventListener('dragleave', () => {
+    dropArea.classList.remove('is-dragover');
+  });
+  dropArea.addEventListener('drop', (e) => {
+    dropArea.classList.remove('is-dragover');
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      updateFileMessage();
     }
+  });
 
-    if (importForm) {
-        importForm.addEventListener('submit', function () {
-            submitButton.disabled = true;
-            submitButton.querySelector('.spinner-border').classList.remove('d-none');
-            submitButton.querySelector('.button-text').textContent = 'Importando...';
-        });
+  fileInput.addEventListener('change', updateFileMessage);
+
+  function updateFileMessage() {
+    if (fileInput.files.length > 0) {
+      fileMessage.innerHTML = `
+        <i class="bi bi-file-earmark-check-fill text-success"></i>
+        <strong>Arquivo selecionado:</strong> ${fileInput.files[0].name}
+      `; // ← AGORA vai interpolar corretamente (crases)
+    } else {
+      fileMessage.innerHTML = originalMessage;
     }
+  }
 
-    @if (session('resultado_importacao'))
-        Swal.fire({
-            title: 'Resultado da Importação',
-            html: '<ul class="text-start" style="padding-left:1.2rem; font-size: 0.95rem;">{!! implode('', array_map(fn($m) => "<li>{$m}</li>", session('resultado_importacao'))) !!}</ul>',
-            icon: '{{ str_contains(implode(" ", session("resultado_importacao")), "❌") ? "error" : "success" }}',
-            confirmButtonColor: 'var(--psi-primary)'
-        });
-    @endif
+  if (importForm) {
+    importForm.addEventListener('submit', function () {
+      submitButton.disabled = true;
+      submitButton.querySelector('.spinner-border').classList.remove('d-none');
+      submitButton.querySelector('.button-text').textContent = 'Importando...';
+    });
+  }
+
+  @if (session('resultado_importacao'))
+    Swal.fire({
+      title: 'Resultado da Importação',
+      html: '<ul class="text-start" style="padding-left:1.2rem; font-size: 0.95rem;">{!! implode('', array_map(fn($m) => "<li>{$m}</li>", session('resultado_importacao'))) !!}</ul>',
+      icon: '{{ str_contains(implode(" ", session("resultado_importacao")), "❌") ? "error" : "success" }}',
+      confirmButtonColor: 'var(--psi-primary)'
+    });
+  @endif
 });
+
 </script>
 @endpush
