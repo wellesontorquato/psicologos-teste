@@ -589,27 +589,36 @@
 
                         // 🎂 Modal de Aniversário
                         if (data.tipo === 'aniversario') {
-                            document.getElementById('lista-aniversariantes').innerHTML = '';
                             const lista = document.getElementById('lista-aniversariantes');
-                            const resposta = await fetch('/api/aniversariantes-hoje');
-                            const aniversariantes = await resposta.json();
+                            lista.innerHTML = '';
 
-                            aniversariantes.forEach(p => {
-                                const li = document.createElement('li');
-                                li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-                                li.innerHTML = `
-                                    <span><i class="bi bi-heart-fill text-danger me-2"></i><strong>${p.nome}</strong></span>
-                                    <span class="badge rounded-pill bg-success">
-                                        🎂 Está fazendo ${p.idade} anos
-                                    </span>`;
-                                lista.appendChild(li);
-                            });
+                            try {
+                                const resposta = await fetch('/api/aniversariantes-hoje');
+                                const aniversariantes = await resposta.json();
 
-                            new bootstrap.Modal(document.getElementById('modalAniversariantes')).show();
+                                aniversariantes.forEach(p => {
+                                    const li = document.createElement('li');
+                                    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                                    li.innerHTML = `
+                                        <span><i class="bi bi-heart-fill text-danger me-2"></i><strong>${p.nome}</strong></span>
+                                        <span class="badge rounded-pill bg-success">
+                                            🎂 Está fazendo ${p.idade} anos
+                                        </span>`;
+                                    lista.appendChild(li);
+                                });
+
+                                const modalEl = document.getElementById('modalAniversariantes');
+                                const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                                instance.show();
+                            } catch (error) {
+                                console.error('Erro ao buscar aniversariantes:', error);
+                                alert('Erro ao carregar os aniversariantes.');
+                            } finally {
+                                hideSpinner();
+                            }
+
                             document.getElementById('modalAniversariantes').addEventListener('hidden.bs.modal', () => {
-                                const backdrops = document.querySelectorAll('.modal-backdrop');
-                                backdrops.forEach(b => b.remove());
-
+                                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
                                 document.body.classList.remove('modal-open');
                                 document.body.style = '';
                             });

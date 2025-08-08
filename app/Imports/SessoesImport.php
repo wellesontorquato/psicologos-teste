@@ -75,9 +75,22 @@ class SessoesImport implements ToCollection
                 continue;
             }
 
+            // VERIFICA SE SESSÃO JÁ EXISTE
+            $jaExiste = Sessao::where('user_id', $this->user_id)
+                ->where('paciente_id', $paciente->id)
+                ->where('data_hora', $dataHora)
+                ->exists();
+
+            if ($jaExiste) {
+                $msg = "🔁 Linha {$linhaNum}: sessão já existente para {$paciente->nome} em {$dataHora->format('d/m/Y H:i')}. Ignorada.";
+                $this->mensagens[] = $msg;
+                Log::channel('whatsapp')->info($msg);
+                continue;
+            }
+
             $valor = floatval(str_replace(',', '.', str_replace('.', '', $valorBr)));
 
-            // Define campos automáticos com base na data
+            // CAMPOS AUTOMÁTICOS
             $lembreteEnviado = $dataHora < $agora ? 1 : 0;
             $statusConfirmacao = $dataHora < $agora ? 'Confirmada' : 'Pendente';
 
@@ -115,7 +128,7 @@ class SessoesImport implements ToCollection
         $this->mensagens[] = $mensagemFinal;
 
         if ($totalLinhas > $maxLinhas) {
-            $this->mensagens[] = "⚠️ Apenas as primeiras 50 linhas foram processadas. Reduza sua planilha se necessário.";
+            $this->mensagens[] = "⚠️ Apenas as primeiras 50 linhas foram processadas.";
         }
 
         session()->flash('resultado_importacao', $this->mensagens);

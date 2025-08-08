@@ -9,16 +9,6 @@
     <div class="page-header text-center text-lg-start mb-4">
         <h2 class="display-6 fw-bold">Importação de Sessões em Massa</h2>
         <p class="text-muted lead">Envie sua planilha do Excel para adicionar múltiplas sessões de uma só vez.</p>
-
-        @if (session('resultado_importacao'))
-            <div class="alert alert-info mt-3 text-start">
-                <ul class="mb-0">
-                    @foreach (session('resultado_importacao') as $mensagem)
-                        <li>{!! $mensagem !!}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
     </div>
 
 
@@ -239,6 +229,7 @@
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('arquivo');
@@ -248,8 +239,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const importForm = document.getElementById('import-form');
     const submitButton = document.getElementById('submit-button');
 
-    dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('is-dragover'); });
-    dropArea.addEventListener('dragleave', () => { dropArea.classList.remove('is-dragover'); });
+    dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.classList.add('is-dragover');
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.classList.remove('is-dragover');
+    });
+
     dropArea.addEventListener('drop', (e) => {
         e.preventDefault();
         dropArea.classList.remove('is-dragover');
@@ -258,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateFileMessage();
         }
     });
+
     fileInput.addEventListener('change', updateFileMessage);
 
     function updateFileMessage() {
@@ -267,18 +266,20 @@ document.addEventListener('DOMContentLoaded', function () {
             fileMessage.innerHTML = originalMessage;
         }
     }
-    if(importForm) {
-        importForm.addEventListener('submit', function() {
+
+    if (importForm) {
+        importForm.addEventListener('submit', function () {
             submitButton.disabled = true;
             submitButton.querySelector('.spinner-border').classList.remove('d-none');
             submitButton.querySelector('.button-text').textContent = 'Importando...';
         });
     }
-    @if (session('sucesso'))
+
+    @if (session('resultado_importacao'))
         Swal.fire({
-            title: 'Sucesso!',
-            text: '{{ session('sucesso') }}',
-            icon: 'success',
+            title: 'Resultado da Importação',
+            html: `<ul class="text-start" style="padding-left:1.2rem; font-size: 0.95rem;">{!! implode('', array_map(fn($m) => "<li>{$m}</li>", session('resultado_importacao'))) !!}</ul>`,
+            icon: '{{ str_contains(implode(" ", session("resultado_importacao")), "❌") ? "error" : "success" }}',
             confirmButtonColor: 'var(--psi-primary)'
         });
     @endif
