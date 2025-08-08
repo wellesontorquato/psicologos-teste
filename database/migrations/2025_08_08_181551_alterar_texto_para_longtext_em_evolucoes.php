@@ -16,7 +16,7 @@ class AlterarTextoParaLongtextEmEvolucoes extends Migration
     public function down()
     {
         Schema::table('evolucoes', function (Blueprint $table) {
-            $table->text('texto')->change(); // ou o tipo anterior, se necessário
+            $table->text('texto')->change();
         });
     }
 }

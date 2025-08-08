@@ -59,7 +59,9 @@ class EvolucaoController extends Controller
     // 🌐 WEB: Formulário de criação
     public function create(Request $request)
     {
-        $pacientes = Paciente::where('user_id', auth()->id())->get();
+        $pacientes = Paciente::where('user_id', auth()->id())
+            ->orderBy('nome', 'asc')
+            ->get();
 
         $pacienteSelecionado = $request->paciente;
         $dataSelecionada = $request->data;
@@ -110,7 +112,9 @@ class EvolucaoController extends Controller
             abort(403, 'Acesso negado.');
         }
 
-        $pacientes = Paciente::where('user_id', auth()->id())->get();
+        $pacientes = Paciente::where('user_id', auth()->id())
+            ->orderBy('nome', 'asc')
+            ->get();
         return view('evolucoes.edit', compact('evolucao', 'pacientes'));
     }
 

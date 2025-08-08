@@ -100,7 +100,9 @@ class SessaoController extends Controller
 
     public function create()
     {
-        $pacientes = Paciente::where('user_id', auth()->id())->get();
+        $pacientes = Paciente::where('user_id', auth()->id())
+            ->orderBy('nome', 'asc')
+            ->get();
         return view('sessoes.create', compact('pacientes'));
     }
 
@@ -181,7 +183,9 @@ class SessaoController extends Controller
 
         AuditHelper::log('edit_sessao', 'Acessou edição da sessão ID ' . $id);
 
-        $pacientes = Paciente::where('user_id', auth()->id())->get();
+        $pacientes = Paciente::where('user_id', auth()->id())
+            ->orderBy('nome', 'asc')
+            ->get();
         return view('sessoes.edit', compact('sessao', 'pacientes'));
     }
 
