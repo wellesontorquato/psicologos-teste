@@ -16,10 +16,10 @@
     <div class="card p-3 mb-4 shadow-sm">
         <form method="GET" class="row g-3 align-items-end">
             <div class="col-12 col-md-3">
-                <label class="form-label fw-bold small">Paciente ou anotação</label>
+                <label class="form-label fw-bold small">Paciente</label>
                 <input type="text" name="busca" value="{{ request('busca') }}" 
                        class="form-control shadow-sm" 
-                       placeholder="Buscar por nome ou conteúdo">
+                       placeholder="Buscar por nome">
             </div>
 
             <div class="col-6 col-md-2">
