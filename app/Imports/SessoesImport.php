@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class SessoesImport implements ToCollection
 {
@@ -53,7 +54,11 @@ class SessoesImport implements ToCollection
             }
 
             try {
-                $dataHora = Carbon::createFromFormat('d/m/Y H:i', trim($dataHoraBr));
+                if (is_numeric($dataHoraBr)) {
+                    $dataHora = Carbon::instance(Date::excelToDateTimeObject($dataHoraBr));
+                } else {
+                    $dataHora = Carbon::createFromFormat('d/m/Y H:i', trim($dataHoraBr));
+                }
             } catch (\Exception $e) {
                 Log::channel('whatsapp')->error("❌ Linha {$linhaNum}: data inválida '{$dataHoraBr}'.");
                 continue;
