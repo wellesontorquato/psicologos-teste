@@ -5,6 +5,11 @@
 @section('content')
 <div class="container my-4 my-md-5">
 
+    {{-- Botão Voltar --}}
+    <a href="{{ route('sessoes.index') }}" class="btn btn-outline-secondary mb-3 btn-voltar-sessoes">
+        <i class="bi bi-arrow-left"></i> Voltar para lista de sessões
+    </a>
+
     {{-- CABEÇALHO DA PÁGINA --}}
     <div class="page-header text-center text-lg-start mb-4">
         <h2 class="display-6 fw-bold">Importação de Sessões em Massa</h2>
