@@ -131,6 +131,7 @@ class SessaoController extends Controller
             return redirect()->back()->withInput()->with('error', 'Já existe uma sessão marcada nesse horário.');
         }
 
+        $dados['user_id'] = auth()->id();
         $sessao = Sessao::create($dados);
 
         AuditHelper::log('created_sessao', 'Criou sessão com o paciente ID ' . $sessao->paciente_id);
@@ -164,6 +165,7 @@ class SessaoController extends Controller
             return response()->json(['message' => 'Já existe uma sessão nesse horário.'], 409);
         }
 
+        $dados['user_id'] = auth()->id();
         $sessao = Sessao::create($dados);
 
         AuditHelper::log('created_sessao_json', 'Criou sessão via JSON para o paciente ID ' . $sessao->paciente_id);
@@ -440,6 +442,7 @@ class SessaoController extends Controller
 
             if (!$conflito) {
                 Sessao::create([
+                    'user_id' => auth()->id(),
                     'paciente_id' => $sessaoOriginal->paciente_id,
                     'data_hora' => $novaDataHora,
                     'data_hora_original' => $novaDataHora,
@@ -487,6 +490,7 @@ class SessaoController extends Controller
 
             if (!$conflito) {
                 Sessao::create([
+                    'user_id' => auth()->id(),
                     'paciente_id' => $sessaoOriginal->paciente_id,
                     'data_hora' => $novaDataHora,
                     'data_hora_original' => $novaDataHora,

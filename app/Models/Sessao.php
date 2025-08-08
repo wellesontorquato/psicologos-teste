@@ -12,6 +12,7 @@ class Sessao extends Model
     protected $table = 'sessoes';
 
     protected $fillable = [
+        'user_id',
         'paciente_id',
         'data_hora',
         'data_hora_original',
