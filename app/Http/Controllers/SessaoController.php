@@ -150,8 +150,6 @@ class SessaoController extends Controller
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
-
-        // Definir data_hora_original na criação
         $dados['data_hora_original'] = $dados['data_hora'];
 
         $inicio = Carbon::parse($dados['data_hora']);
@@ -202,7 +200,7 @@ class SessaoController extends Controller
         return response()->json([
             'id' => $sessao->id,
             'paciente_id' => $sessao->paciente_id,
-            'data_hora' => $sessao->data_hora->timezone(config('app.timezone'))->format('Y-m-d\TH:i'), // ✅ já formatado para datetime-local
+            'data_hora' => $sessao->data_hora->timezone(config('app.timezone'))->format('Y-m-d\TH:i'),
             'valor' => $sessao->valor,
             'duracao' => $sessao->duracao,
             'foi_pago' => $sessao->foi_pago,

@@ -18,7 +18,7 @@ class ContatoController extends Controller
             'telefone' => 'nullable|string|max:20',
             'assunto' => 'required|string',
             'mensagem' => 'required|string',
-            'g-recaptcha-response' => 'required', // nova regra
+            'g-recaptcha-response' => 'required',
         ]);
 
         // Validação do reCAPTCHA

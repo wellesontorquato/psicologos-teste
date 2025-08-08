@@ -20,6 +20,8 @@ class Sessao extends Model
         'valor',
         'foi_pago',
         'observacoes',
+        'status_confirmacao',
+        'lembrete_enviado', 
     ];
 
     protected $casts = [
