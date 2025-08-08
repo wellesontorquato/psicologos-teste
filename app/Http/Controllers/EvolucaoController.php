@@ -16,13 +16,10 @@ class EvolucaoController extends Controller
         $query = Evolucao::with(['paciente', 'sessao'])
             ->whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()));
 
-        // 🔍 Filtro por texto ou nome do paciente
+        // 🔍 Filtro por nome do paciente
         if ($request->filled('busca')) {
             $busca = $request->busca;
-            $query->where(function ($q) use ($busca) {
-                $q->where('texto', 'like', "%$busca%")
-                  ->orWhereHas('paciente', fn($sub) => $sub->where('nome', 'like', "%$busca%"));
-            });
+            $query->whereHas('paciente', fn($sub) => $sub->where('nome', 'like', "%$busca%"));
         }
 
         // 🔍 Filtro por tipo de evolução

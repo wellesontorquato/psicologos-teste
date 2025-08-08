@@ -67,37 +67,37 @@
                         <div class="list-group-item">
                             <i class="bi bi-person"></i>
                             <div>
-                                <strong>Paciente:</strong> Nome idêntico ao cadastro no sistema.
+                                <strong>Paciente:</strong> Nome idêntico ao cadastro no sistema(Aba Pacientes da planilha Modelo mostra uma lista dos seus pacientes cadastrados).
                             </div>
                         </div>
                         <div class="list-group-item">
                             <i class="bi bi-calendar-event"></i>
                             <div>
-                                <strong>Data:</strong> Formato `DD/MM/AAAA HH:MM`.
+                                <strong>Data:</strong> Formato 'DD/MM/AAAA HH:MM'.
                             </div>
                         </div>
                         <div class="list-group-item">
                             <i class="bi bi-clock"></i>
                             <div>
-                                <strong>Duração (Minutos):</strong> Apenas números (ex: `50`).
+                                <strong>Duração (Minutos):</strong> Apenas números (ex: '50').
                             </div>
                         </div>
                          <div class="list-group-item">
                             <i class="bi bi-cash-coin"></i>
                             <div>
-                                <strong>Valor:</strong> Formato com vírgula (ex: `150,00`).
+                                <strong>Valor:</strong> Formato com vírgula (ex: '150,00').
                             </div>
                         </div>
                         <div class="list-group-item">
                             <i class="bi bi-check2-circle"></i>
                             <div>
-                                <strong>Pago:</strong> Use `Sim` ou `Não`.
+                                <strong>Pago:</strong> Use 'Sim' ou 'Não'.
                             </div>
                         </div>
                         <div class="list-group-item">
                             <i class="bi bi-bookmark-star"></i>
                             <div>
-                                <strong>Status:</strong> `Confirmada` ou `Pendente`.
+                                <strong>Status:</strong> 'Confirmada' se for sessões passadas ou 'Pendente' caso seja sessões futuras.
                             </div>
                         </div>
                         <div class="list-group-item">
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateFileMessage() {
         if (fileInput.files.length > 0) {
-            fileMessage.innerHTML = `<i class="bi bi-file-earmark-check-fill text-success"></i> <strong>Arquivo selecionado:</strong> ${fileInput.files[0].name}`;
+            fileMessage.innerHTML = '<i class="bi bi-file-earmark-check-fill text-success"></i> <strong>Arquivo selecionado:</strong> ${fileInput.files[0].name}';
         } else {
             fileMessage.innerHTML = originalMessage;
         }
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
     @if (session('resultado_importacao'))
         Swal.fire({
             title: 'Resultado da Importação',
-            html: `<ul class="text-start" style="padding-left:1.2rem; font-size: 0.95rem;">{!! implode('', array_map(fn($m) => "<li>{$m}</li>", session('resultado_importacao'))) !!}</ul>`,
+            html: '<ul class="text-start" style="padding-left:1.2rem; font-size: 0.95rem;">{!! implode('', array_map(fn($m) => "<li>{$m}</li>", session('resultado_importacao'))) !!}</ul>',
             icon: '{{ str_contains(implode(" ", session("resultado_importacao")), "❌") ? "error" : "success" }}',
             confirmButtonColor: 'var(--psi-primary)'
         });
