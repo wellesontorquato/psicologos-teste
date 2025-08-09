@@ -206,6 +206,12 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/integracoes/google/connect', [\App\Http\Controllers\GoogleAuthController::class, 'redirect'])->name('google.connect');
+    Route::get('/oauth/google/callback', [\App\Http\Controllers\GoogleAuthController::class, 'callback'])->name('google.callback');
+    Route::post('/integracoes/google/disconnect', [\App\Http\Controllers\GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/billing/portal', [App\Http\Controllers\AssinaturaController::class, 'portal'])->name('billing.portal');
 });

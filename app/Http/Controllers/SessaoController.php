@@ -12,6 +12,7 @@ use App\Helpers\AuditHelper;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SessoesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\GoogleCalendarService;
 
 class SessaoController extends Controller
 {
@@ -138,6 +139,32 @@ class SessaoController extends Controller
 
         AuditHelper::log('created_sessao', 'Criou sessão com o paciente ID ' . $sessao->paciente_id);
 
+        // 🔗 Google Calendar (criar evento)
+        $user = $request->user();
+        if ($user->google_connected) {
+            try {
+                $gcal = app(GoogleCalendarService::class);
+                $eventId = $gcal->createEvent($user, [
+                    'summary'     => "Sessão com {$sessao->paciente->nome}",
+                    'description' => $sessao->observacoes ?? null,
+                    'start'       => $inicio,
+                    'end'         => $fim,
+                    'attendees'   => $sessao->paciente->email ? [['email' => $sessao->paciente->email]] : [],
+                ]);
+
+                $sessao->update([
+                    'google_event_id'    => $eventId,
+                    'google_sync_status' => 'ok',
+                    'google_sync_error'  => null,
+                ]);
+            } catch (\Throwable $e) {
+                $sessao->update([
+                    'google_sync_status' => 'error',
+                    'google_sync_error'  => substr($e->getMessage(), 0, 1000),
+                ]);
+            }
+        }
+
         return redirect()->route('sessoes.index')->with('success', 'Sessão cadastrada!');
     }
 
@@ -169,6 +196,32 @@ class SessaoController extends Controller
         $sessao = Sessao::create($dados);
 
         AuditHelper::log('created_sessao_json', 'Criou sessão via JSON para o paciente ID ' . $sessao->paciente_id);
+
+        // 🔗 Google Calendar (criar evento)
+        $user = $request->user();
+        if ($user->google_connected) {
+            try {
+                $gcal = app(GoogleCalendarService::class);
+                $eventId = $gcal->createEvent($user, [
+                    'summary'     => "Sessão com {$sessao->paciente->nome}",
+                    'description' => $sessao->observacoes ?? null,
+                    'start'       => $inicio,
+                    'end'         => $fim,
+                    'attendees'   => $sessao->paciente->email ? [['email' => $sessao->paciente->email]] : [],
+                ]);
+
+                $sessao->update([
+                    'google_event_id'    => $eventId,
+                    'google_sync_status' => 'ok',
+                    'google_sync_error'  => null,
+                ]);
+            } catch (\Throwable $e) {
+                $sessao->update([
+                    'google_sync_status' => 'error',
+                    'google_sync_error'  => substr($e->getMessage(), 0, 1000),
+                ]);
+            }
+        }
 
         return response()->json(['message' => 'Sessão criada com sucesso', 'id' => $sessao->id], 201);
     }
@@ -245,6 +298,44 @@ class SessaoController extends Controller
 
         AuditHelper::log('updated_sessao', 'Atualizou sessão ID ' . $id);
 
+        // 🔗 Google Calendar (atualizar/criar se não tiver)
+        $user = $request->user();
+        if ($user->google_connected) {
+            try {
+                $inicio = Carbon::parse($sessao->data_hora);
+                $fim    = $inicio->copy()->addMinutes((int) $sessao->duracao);
+
+                $gcal = app(GoogleCalendarService::class);
+
+                if ($sessao->google_event_id) {
+                    $gcal->updateEvent($user, $sessao->google_event_id, [
+                        'summary'     => "Sessão com {$sessao->paciente->nome}",
+                        'description' => $sessao->observacoes ?? null,
+                        'start'       => $inicio,
+                        'end'         => $fim,
+                    ]);
+                } else {
+                    $eventId = $gcal->createEvent($user, [
+                        'summary'     => "Sessão com {$sessao->paciente->nome}",
+                        'description' => $sessao->observacoes ?? null,
+                        'start'       => $inicio,
+                        'end'         => $fim,
+                        'attendees'   => $sessao->paciente->email ? [['email' => $sessao->paciente->email]] : [],
+                    ]);
+                    $sessao->google_event_id = $eventId;
+                }
+
+                $sessao->google_sync_status = 'ok';
+                $sessao->google_sync_error  = null;
+                $sessao->save();
+            } catch (\Throwable $e) {
+                $sessao->update([
+                    'google_sync_status' => 'error',
+                    'google_sync_error'  => substr($e->getMessage(), 0, 1000),
+                ]);
+            }
+        }
+
         return redirect()->route('sessoes.index')->with('success', 'Sessão atualizada!');
     }
 
@@ -295,6 +386,45 @@ class SessaoController extends Controller
 
         AuditHelper::log('updated_sessao_json', 'Atualizou sessão via JSON ID ' . $id);
 
+        // 🔗 Google Calendar (atualizar/criar se não tiver)
+        $user = $request->user();
+        if ($user->google_connected) {
+            try {
+                $inicio = Carbon::parse($sessao->data_hora);
+                $fim    = $inicio->copy()->addMinutes((int) $sessao->duracao);
+
+                $gcal = app(GoogleCalendarService::class);
+
+                if ($sessao->google_event_id) {
+                    $gcal->updateEvent($user, $sessao->google_event_id, [
+                        'summary'     => "Sessão com {$sessao->paciente->nome}",
+                        'description' => $sessao->observacoes ?? null,
+                        'start'       => $inicio,
+                        'end'         => $fim,
+                    ]);
+                } else {
+                    $eventId = $gcal->createEvent($user, [
+                        'summary'     => "Sessão com {$sessao->paciente->nome}",
+                        'description' => $sessao->observacoes ?? null,
+                        'start'       => $inicio,
+                        'end'         => $fim,
+                        'attendees'   => $sessao->paciente->email ? [['email' => $sessao->paciente->email]] : [],
+                    ]);
+                    $sessao->google_event_id = $eventId;
+                    $sessao->save();
+                }
+
+                $sessao->google_sync_status = 'ok';
+                $sessao->google_sync_error  = null;
+                $sessao->save();
+            } catch (\Throwable $e) {
+                $sessao->update([
+                    'google_sync_status' => 'error',
+                    'google_sync_error'  => substr($e->getMessage(), 0, 1000),
+                ]);
+            }
+        }
+
         return response()->json(['message' => 'Sessão atualizada com sucesso']);
     }
 
@@ -304,6 +434,16 @@ class SessaoController extends Controller
 
         if (!$sessao->paciente || $sessao->paciente->user_id !== auth()->id()) {
             abort(403, 'ACESSO NEGADO À SESSÃO.');
+        }
+
+        // 🔗 Google Calendar (deletar evento)
+        $user = $request->user();
+        if ($user->google_connected) {
+            try {
+                app(GoogleCalendarService::class)->deleteEvent($user, $sessao->google_event_id);
+            } catch (\Throwable $e) {
+                // opcional: logar erro de deleção
+            }
         }
 
         $sessao->delete();
@@ -330,6 +470,16 @@ class SessaoController extends Controller
 
         if (!$sessao->paciente || $sessao->paciente->user_id !== auth()->id()) {
             return response()->json(['message' => 'ACESSO NEGADO À SESSÃO.'], 403);
+        }
+
+        // 🔗 Google Calendar (deletar evento)
+        $user = auth()->user();
+        if ($user && $user->google_connected) {
+            try {
+                app(GoogleCalendarService::class)->deleteEvent($user, $sessao->google_event_id);
+            } catch (\Throwable $e) {
+                // opcional: logar erro de deleção
+            }
         }
 
         $sessao->delete();
@@ -512,8 +662,7 @@ class SessaoController extends Controller
         ], 201);
     }
 
-
-        public function indexJson(Request $request)
+    public function indexJson(Request $request)
     {
         $sessoes = Sessao::with('paciente')
             ->whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))

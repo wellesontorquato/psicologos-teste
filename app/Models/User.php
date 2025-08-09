@@ -34,16 +34,34 @@ class User extends Authenticatable
         'bio',
         'whatsapp',
         'areas',
+
+        // Integração Google Calendar
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expires_at',
+        'google_calendar_id',
+        'google_connected',
     ];
 
     protected $appends = ['profile_photo_url'];
 
-    protected $hidden = ['profile_photo_path'];
+    // Esconde tokens sensíveis quando o model é serializado
+    protected $hidden = [
+        'profile_photo_path',
+        'google_access_token',
+        'google_refresh_token',
+    ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
         'data_nascimento' => 'date',
         'areas' => 'array',
+
+        // Segurança e tipos da integração Google
+        'google_access_token' => 'encrypted',
+        'google_refresh_token' => 'encrypted',
+        'google_token_expires_at' => 'datetime',
+        'google_connected' => 'boolean',
     ];
 
     /**

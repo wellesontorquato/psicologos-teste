@@ -164,8 +164,43 @@
     <div class="calendar-header bg-white p-3 rounded shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <div class="calendar-title">
             <i class="bi bi-calendar3 text-primary fs-3"></i>
-            <span id="calendarTitle" class="fw-bold">Minha Agenda</span>
+            <span class="d-flex flex-column">
+                <span id="calendarTitle" class="fw-bold main-title">Minha Agenda</span>
+                <span class="sub-title">
+                    @if(auth()->user()?->google_connected)
+                        <span class="badge bg-success-subtle text-success border border-success-subtle" title="Integração ativa">
+                            <i class="bi bi-google me-1"></i> Google Agenda conectado
+                        </span>
+                    @else
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Conecte para sincronizar">
+                            <i class="bi bi-google me-1"></i> Não conectado
+                        </span>
+                    @endif
+                </span>
+            </span>
         </div>
+
+        <div class="d-flex flex-column flex-md-row align-items-center gap-2">
+            {{-- Botão de integração Google --}}
+            @if(auth()->user()?->google_connected)
+                <div class="d-flex gap-2">
+                    <a href="{{ route('google.connect') }}" class="btn btn-outline-success">
+                        <i class="bi bi-arrow-repeat me-1"></i> Reautenticar
+                    </a>
+                    <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Desconectar do Google Agenda?')">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="bi bi-x-circle me-1"></i> Desconectar
+                        </button>
+                    </form>
+                </div>
+            @else
+                <a href="{{ route('google.connect') }}" class="btn btn-primary">
+                    <i class="bi bi-google me-1"></i> Conectar ao Google
+                </a>
+            @endif
+        </div>
+
         <div class="calendar-controls d-flex flex-wrap gap-2">
             <button id="prevBtn" class="btn btn-outline-primary px-3">←</button>
             <button id="todayBtn" class="btn btn-outline-secondary px-3">Hoje</button>
@@ -175,6 +210,7 @@
             <button id="dayBtn" class="btn btn-outline-primary px-3">Dia</button>
         </div>
     </div>
+
 
     {{-- Calendário --}}
     <div id="calendar-card">
