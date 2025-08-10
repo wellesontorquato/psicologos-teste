@@ -11,11 +11,14 @@ use App\Http\Controllers\EvolucaoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\Api\FeriadosController;
 
 // 🔍 Health check
 Route::get('/ping', function () {
     return response()->json(['message' => 'API funcionando']);
 });
+
+Route::get('/feriados', [FeriadosController::class, 'index']);
 
 Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem']);
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
