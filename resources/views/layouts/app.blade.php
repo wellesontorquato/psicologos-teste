@@ -15,6 +15,8 @@
 
     <!-- Vite -->
     {{ Vite::useBuildDirectory('build')->withEntryPoints(['resources/css/app.css', 'resources/js/app.js']) }}
+    @yield('styles')
+    @stack('styles')
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
