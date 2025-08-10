@@ -4,212 +4,248 @@
 
 @section('styles')
 <style>
-    /* Card do calendário */
-    #calendar-card {
-        border: 1px solid #dee2e6;
-        border-radius: 12px;
-        background: white;
-        padding: 15px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    :root{
+        --pg-primary:#12B4B7;         /* turquesa PsiGestor */
+        --pg-primary-600:#0ea2a5;
+        --pg-primary-700:#0b7f83;
+        --pg-ink:#15181f;
+        --pg-muted:#6c7685;
+        --pg-border:#e6eaef;
+        --pg-surface:#ffffff;
     }
 
-    /* Estilo dos eventos */
-    .fc-event {
-        border-radius: 6px !important;
-        padding: 4px !important;
-        font-size: 0.9rem !important;
+    /* Card do calendário (mantido) */
+    #calendar-card{
+        border:1px solid var(--pg-border);
+        border-radius:16px;
+        background:var(--pg-surface);
+        padding:18px;
+        box-shadow:0 6px 18px rgba(10,20,30,.06);
     }
-    .fc .fc-event.evento-pago {
-        background: linear-gradient(90deg, #28a745, #218838) !important;
-        border: none !important;
-        color: white !important;
-        font-weight: 600 !important;
-    }
-    .fc .fc-event.evento-pendente {
-        background: linear-gradient(90deg, #dc3545, #a71d2a) !important;
-        border: none !important;
-        color: white !important;
-        font-weight: 600 !important;
-    }
-    .fc .fc-event.evento-apos-meia-noite {
-        background: #e3f7ff !important;
-        border: 1px dashed #00c4ff !important;
-        color: #006f99 !important;
-        font-weight: 600 !important;
-    }
-    .fc-daygrid-event-dot { display: none !important; }
 
-    /* Cabeçalho customizado */
-    .calendar-header {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-bottom: 20px;
-        padding: 15px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    /* ====== CABEÇALHO NOVO ====== */
+    .calendar-header{
+        position:relative;
+        background:var(--pg-surface);
+        border:1px solid var(--pg-border);
+        border-radius:16px;
+        padding:16px;
+        margin-bottom:18px;
+        box-shadow:0 8px 28px rgba(10,20,30,.06);
     }
-    @media (min-width: 768px) {
-        .calendar-header {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
+    /* Barra turquesa sutil no topo */
+    .calendar-header:before{
+        content:"";
+        position:absolute; inset:0 0 auto 0;
+        height:4px;
+        border-radius:16px 16px 0 0;
+        background:linear-gradient(90deg,var(--pg-primary),#30d1d4);
+    }
+
+    .calendar-row{
+        display:grid;
+        gap:12px;
+        grid-template-columns:1fr;
+    }
+    @media (min-width: 768px){
+        .calendar-row{
+            grid-template-columns:1.2fr auto;
+            align-items:center;
         }
     }
 
-    /* Título responsivo */
-    .calendar-title {
-        font-weight: 700;
-        color: #222;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        line-height: 1.2;
+    .cal-title{
+        display:flex; gap:12px; align-items:center;
     }
-    .calendar-title i {
-        font-size: 1.8rem;
-        color: #00aaff;
+    .cal-icon{
+        width:40px; height:40px; border-radius:12px;
+        display:grid; place-items:center;
+        background:rgba(18,180,183,.1);
+        color:var(--pg-primary);
+        font-size:20px;
     }
-    .calendar-title span {
-        display: flex;
-        flex-direction: column;
+    .cal-text .cal-head{
+        font-weight:800; letter-spacing:.2px;
+        color:var(--pg-ink); line-height:1.1;
+        font-size:1.25rem;
     }
-    .calendar-title .main-title {
-        font-size: 1.2rem;
-        color: #111;
-    }
-    .calendar-title .sub-title {
-        font-size: 0.95rem;
-        color: #666;
-        font-weight: 500;
+    .cal-text .cal-sub{
+        color:var(--pg-muted); font-size:.95rem;
     }
 
-    @media (min-width: 992px) {
-        .calendar-title .main-title {
-            font-size: 1.6rem;
-        }
-        .calendar-title .sub-title {
-            font-size: 1.1rem;
-        }
+    /* Chips/Badges */
+    .pg-chip{
+        display:inline-flex; align-items:center; gap:6px;
+        border:1px solid var(--pg-border);
+        background:#f8fafc; color:#283040;
+        padding:6px 10px; border-radius:999px; font-weight:600; font-size:.84rem;
+        white-space:nowrap;
     }
-    @media (max-width: 991px) {
-        .calendar-title .main-title {
-            font-size: 1.4rem;
-        }
+    .pg-chip i{font-size:1rem}
+
+    .chip-success{
+        background:rgba(16,185,129,.12);
+        border-color:rgba(16,185,129,.22);
+        color:#0e7a56;
     }
-    @media (max-width: 576px) {
-        .calendar-title {
-            justify-content: center;
-            text-align: center;
-        }
-        .calendar-title .main-title {
-            font-size: 1.2rem;
-        }
-        .calendar-title .sub-title {
-            font-size: 1rem;
-        }
+    .chip-warn{
+        background:rgba(234,88,12,.12);
+        border-color:rgba(234,88,12,.22);
+        color:#8e3a0d;
     }
 
-    /* Botões */
-    .calendar-controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
+    /* Ações do cabeçalho */
+    .cal-actions{
+        display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-start;
     }
-    .calendar-controls button {
-        border-radius: 8px !important;
-        font-size: 0.9rem !important;
-        padding: 6px 14px !important;
-        border: 1px solid #ccc;
-        background: #f8f9fa;
-        color: #333;
-        font-weight: 500;
-        transition: all 0.2s ease-in-out;
-        flex: 1 1 auto; /* Ajuste para dividir espaço igualmente */
-        min-width: 90px;
+    .btn-ghost, .btn-brand, .btn-outline{
+        border-radius:10px; font-weight:700; letter-spacing:.2px;
+        padding:8px 14px; font-size:.9rem; transition:.18s ease;
     }
-    .calendar-controls button:hover {
-        background: #e9ecef;
-        color: #000;
+    .btn-ghost{
+        background:#f3f6f9; border:1px solid var(--pg-border); color:#2a3542;
     }
-    .calendar-controls button.active {
-        background: #00aaff !important;
-        color: #fff !important;
-        border-color: #0090d0 !important;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(0, 170, 255, 0.35);
+    .btn-ghost:hover{ background:#e9eef4 }
+    .btn-outline{
+        background:transparent; border:1px solid var(--pg-primary);
+        color:var(--pg-primary);
     }
+    .btn-outline:hover{ background:rgba(18,180,183,.08) }
+    .btn-brand{
+        background:var(--pg-primary); border:1px solid var(--pg-primary-700); color:#fff;
+        box-shadow:0 6px 16px rgba(18,180,183,.28);
+    }
+    .btn-brand:hover{ background:var(--pg-primary-600) }
 
-    /* Mobile */
-    @media (max-width: 576px) {
-        .calendar-controls {
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            justify-content: center;
-        }
-        .calendar-controls button {
-            flex: 0 0 auto;
-            min-width: 90px;
-        }
+    /* Grupos compactos */
+    .btn-group-clean{ display:flex; gap:8px; align-items:center; }
+    .divider-dot{ width:6px; height:6px; border-radius:999px; background:#d7dde6 }
+
+    /* Controles de navegação/view */
+    .view-switch .vbtn{
+        border:1px solid var(--pg-border); background:#fff; color:#2b3340;
+        border-radius:10px; padding:8px 12px; font-weight:700; font-size:.9rem;
     }
+    .view-switch .vbtn.active{
+        background:linear-gradient(180deg,#fff, #f4ffff);
+        border-color:var(--pg-primary);
+        box-shadow:0 6px 16px rgba(18,180,183,.22);
+        color:var(--pg-primary);
+    }
+    .nav-switch .nbtn{
+        border:1px solid var(--pg-border); background:#fff; color:#2b3340;
+        border-radius:10px; padding:8px 12px; font-weight:800;
+    }
+    .nav-switch .nbtn:hover,
+    .view-switch .vbtn:hover{ transform:translateY(-1px) }
+
+    /* Legenda mini */
+    .legend{
+        display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    }
+    .legend .dot{
+        width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px
+    }
+    .dot-paid{ background:#28a745 }
+    .dot-pending{ background:#dc3545 }
+    .dot-late{ background:#00c4ff }
+
+    /* FullCalendar eventos (mantido) */
+    .fc-event{ border-radius:6px !important; padding:4px !important; font-size:.9rem !important; }
+    .fc .fc-event.evento-pago{
+        background:linear-gradient(90deg,#28a745,#218838)!important;border:none!important;color:#fff!important;font-weight:700!important;
+    }
+    .fc .fc-event.evento-pendente{
+        background:linear-gradient(90deg,#dc3545,#a71d2a)!important;border:none!important;color:#fff!important;font-weight:700!important;
+    }
+    .fc .fc-event.evento-apos-meia-noite{
+        background:#e3f7ff!important;border:1px dashed #00c4ff!important;color:#006f99!important;font-weight:700!important;
+    }
+    .fc-daygrid-event-dot{ display:none!important; }
+
 </style>
 @endsection
 
 @section('content')
 <div class="container">
 
-    {{-- Cabeçalho clean --}}
-    <div class="calendar-header bg-white p-3 rounded shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-    <div class="calendar-title">
-        <i class="bi bi-calendar3 text-primary fs-3"></i>
-        <span class="d-flex flex-column">
-            <span id="calendarTitle" class="fw-bold main-title">Minha Agenda</span>
-            <span class="sub-title">
-                @if(auth()->user()?->google_connected)
-                    <span class="badge bg-success-subtle text-success border border-success-subtle" title="Integração ativa">
-                        <i class="bi bi-google me-1"></i> Google Agenda conectado
-                    </span>
-                @else
-                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Conecte para sincronizar">
-                        <i class="bi bi-google me-1"></i> Não conectado
-                    </span>
-                @endif
-            </span>
-        </span>
-    </div>
+    {{-- Cabeçalho moderno PsiGestor --}}
+    <div class="calendar-header">
+        <div class="calendar-row">
+            {{-- ESQUERDA: Título + status + legenda --}}
+            <div class="cal-left">
+                <div class="cal-title">
+                    <div class="cal-icon">
+                        <i class="bi bi-calendar3-event"></i>
+                    </div>
+                    <div class="cal-text">
+                        <div class="cal-head">
+                            <span id="calendarTitle">Minha Agenda</span>
+                        </div>
+                        <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1">
+                            @if(auth()->user()?->google_connected)
+                                <span class="pg-chip chip-success">
+                                    <i class="bi bi-google"></i> Google Agenda conectado
+                                </span>
+                                <a href="{{ route('google.connect') }}" class="pg-chip">
+                                    <i class="bi bi-arrow-repeat"></i> Reautenticar
+                                </a>
+                                <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="pg-chip" title="Desconectar Google">
+                                        <i class="bi bi-x-circle"></i> Desconectar
+                                    </button>
+                                </form>
+                            @else
+                                <span class="pg-chip chip-warn">
+                                    <i class="bi bi-exclamation-triangle"></i> Google não conectado
+                                </span>
+                                <a href="{{ route('google.connect') }}" class="btn-outline">
+                                    <i class="bi bi-google me-1"></i> Conectar ao Google
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
 
-    <div class="d-flex flex-column flex-md-row align-items-center gap-2">
-        {{-- Botão de integração Google --}}
-        @if(auth()->user()?->google_connected)
-            <div class="d-flex gap-2">
-                <a href="{{ route('google.connect') }}" class="btn btn-outline-success">
-                    <i class="bi bi-arrow-repeat me-1"></i> Reautenticar
-                </a>
-                <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Desconectar do Google Agenda?')">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger">
-                        <i class="bi bi-x-circle me-1"></i> Desconectar
-                    </button>
-                </form>
+                {{-- Legenda compacta --}}
+                <div class="legend mt-3">
+                    <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
+                    <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
+                    <span class="pg-chip"><span class="dot dot-late"></span> Após 00:00</span>
+                </div>
             </div>
-        @else
-            <a href="{{ route('google.connect') }}" class="btn btn-primary">
-                <i class="bi bi-google me-1"></i> Conectar ao Google
-            </a>
-        @endif
-    </div>
 
-    <div class="calendar-controls d-flex flex-wrap gap-2">
-        <button id="prevBtn" class="btn btn-outline-primary px-3">←</button>
-        <button id="todayBtn" class="btn btn-outline-secondary px-3">Hoje</button>
-        <button id="nextBtn" class="btn btn-outline-primary px-3">→</button>
-        <button id="monthBtn" class="btn btn-primary active px-3">Mês</button>
-        <button id="weekBtn" class="btn btn-outline-primary px-3">Semana</button>
-        <button id="dayBtn" class="btn btn-outline-primary px-3">Dia</button>
+            {{-- DIREITA: Navegação + views + ações rápidas --}}
+            <div class="cal-right">
+                <div class="cal-actions">
+                    <div class="btn-group-clean nav-switch">
+                        <button id="prevBtn" class="nbtn btn-ghost" aria-label="Mês anterior">←</button>
+                        <button id="todayBtn" class="nbtn btn-ghost">Hoje</button>
+                        <button id="nextBtn" class="nbtn btn-ghost" aria-label="Próximo mês">→</button>
+                        <span class="divider-dot d-none d-md-inline-block"></span>
+                    </div>
+
+                    <div class="btn-group-clean view-switch">
+                        <button id="monthBtn" class="vbtn active">Mês</button>
+                        <button id="weekBtn" class="vbtn">Semana</button>
+                        <button id="dayBtn" class="vbtn">Dia</button>
+                    </div>
+
+                    <span class="divider-dot d-none d-md-inline-block"></span>
+
+                    <div class="btn-group-clean">
+                        <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'">
+                            <i class="bi bi-list-ul me-1"></i> Lista
+                        </button>
+                        <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao">
+                            <i class="bi bi-plus-lg me-1"></i> Nova sessão
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
     {{-- Calendário --}}
     <div id="calendar-card">
@@ -275,21 +311,24 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendarTitle = document.getElementById('calendarTitle');
-    const modal = new bootstrap.Modal(document.getElementById('modalSessao'));
+    const calendarEl   = document.getElementById('calendar');
+    const calendarH1   = document.getElementById('calendarTitle');
+    const modal        = new bootstrap.Modal(document.getElementById('modalSessao'));
 
     const campos = {
-        id: document.getElementById('sessao_id'),
-        paciente: document.getElementById('paciente_id'),
+        id:        document.getElementById('sessao_id'),
+        paciente:  document.getElementById('paciente_id'),
         data_hora: document.getElementById('data_hora'),
-        valor: document.getElementById('valor'),
-        duracao: document.getElementById('duracao'),
-        foi_pago: document.getElementById('foi_pago'),
-        titulo: document.getElementById('modalTitulo'),
+        valor:     document.getElementById('valor'),
+        duracao:   document.getElementById('duracao'),
+        foi_pago:  document.getElementById('foi_pago'),
+        titulo:    document.getElementById('modalTitulo'),
     };
 
     if (!window.FullCalendar || !calendarEl) return;
+
+    // Título com tipografia “bonita” (substitui “ de ” por “ · ”)
+    const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
     const calendar = new window.FullCalendar.Calendar(calendarEl, {
         plugins: [
@@ -306,33 +345,33 @@ document.addEventListener('DOMContentLoaded', function () {
         headerToolbar: false, // desabilita header nativo
         events: '/api/sessoes',
 
+        // Atualiza o título estilizado e sincroniza o botão ativo
         datesSet: function(info) {
-            calendarTitle.innerText = "Minha Agenda - " + info.view.title;
+            if (calendarH1) {
+                calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
+            }
+            syncActiveViewButton(info.view.type);
         },
 
         eventContent: function (arg) {
             const viewType = arg.view.type;
-            const event = arg.event;
+            const event    = arg.event;
 
             const start = event.start;
-            const end = event.end;
+            const end   = event.end;
 
             const formatHora = (date) =>
                 date.getHours().toString().padStart(2, '0') + ':' +
                 date.getMinutes().toString().padStart(2, '0');
 
             const horaInicio = formatHora(start);
-            const horaFim = end ? formatHora(end) : '';
-            const titulo = event.title;
+            const horaFim    = end ? formatHora(end) : '';
+            const titulo     = event.title;
 
             if (viewType === 'dayGridMonth') {
-                return {
-                    html: `<div>${horaInicio} - ${titulo}</div>`
-                };
+                return { html: `<div>${horaInicio} - ${titulo}</div>` };
             } else {
-                return {
-                    html: `<div>${horaInicio} - ${horaFim}</div><div>${titulo}</div>`
-                };
+                return { html: `<div>${horaInicio} - ${horaFim}</div><div>${titulo}</div>` };
             }
         },
 
@@ -350,13 +389,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const sessao = await res.json();
 
-                campos.id.value = sessao.id;
-                campos.paciente.value = sessao.paciente_id;
+                campos.id.value        = sessao.id;
+                campos.paciente.value  = sessao.paciente_id;
                 campos.data_hora.value = sessao.data_hora;
-                campos.valor.value = sessao.valor;
-                campos.duracao.value = sessao.duracao;
-                campos.foi_pago.checked = sessao.foi_pago == true;
-                campos.titulo.innerText = "Editar Sessão";
+                campos.valor.value     = sessao.valor;
+                campos.duracao.value   = sessao.duracao;
+                campos.foi_pago.checked= sessao.foi_pago == true;
+                campos.titulo.innerText= "Editar Sessão";
 
                 modal.show();
             } catch {
@@ -374,37 +413,55 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calendar.render();
 
-        // Botões customizados
-        document.getElementById('prevBtn').onclick = () => calendar.prev();
-        document.getElementById('nextBtn').onclick = () => calendar.next();
-        document.getElementById('todayBtn').onclick = () => calendar.today();
+    // ===== Navegação (setas / hoje) =====
+    const prevBtn  = document.getElementById('prevBtn');
+    const nextBtn  = document.getElementById('nextBtn');
+    const todayBtn = document.getElementById('todayBtn');
 
-        // Views (Mês / Semana / Dia) com controle de active
-        const viewButtons = {
-            monthBtn: 'dayGridMonth',
-            weekBtn: 'timeGridWeek',
-            dayBtn: 'timeGridDay'
-        };
+    if (prevBtn)  prevBtn.onclick  = () => calendar.prev();
+    if (nextBtn)  nextBtn.onclick  = () => calendar.next();
+    if (todayBtn) todayBtn.onclick = () => calendar.today();
 
-        Object.keys(viewButtons).forEach(id => {
-            const btn = document.getElementById(id);
-            btn.addEventListener('click', () => {
-                calendar.changeView(viewButtons[id]);
+    // ===== Views (Mês / Semana / Dia) =====
+    const viewButtons = {
+        monthBtn: 'dayGridMonth',
+        weekBtn:  'timeGridWeek',
+        dayBtn:   'timeGridDay'
+    };
 
-                // Remove active dos outros e adiciona no clicado
-                document.querySelectorAll('.calendar-controls button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
+    Object.keys(viewButtons).forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            calendar.changeView(viewButtons[id]);
+            syncActiveViewButton(viewButtons[id]);
         });
+    });
+
+    function syncActiveViewButton(currentView){
+        // Remove active de todos os botões do novo cabeçalho
+        document.querySelectorAll('.view-switch .vbtn').forEach(b => b.classList.remove('active'));
+
+        // Define o id correspondente à view atual
+        let activeId = null;
+        if (currentView === 'dayGridMonth') activeId = 'monthBtn';
+        if (currentView === 'timeGridWeek')  activeId = 'weekBtn';
+        if (currentView === 'timeGridDay')   activeId = 'dayBtn';
+
+        if (activeId) {
+            const el = document.getElementById(activeId);
+            if (el) el.classList.add('active');
+        }
+    }
 
     function abrirModalCriar(data) {
-        campos.id.value = '';
+        campos.id.value          = '';
         campos.paciente.selectedIndex = 0;
-        campos.data_hora.value = data.length <= 10 ? data + 'T09:00' : data;
-        campos.valor.value = '';
-        campos.duracao.value = 50;
-        campos.foi_pago.checked = false;
-        campos.titulo.innerText = "Nova Sessão";
+        campos.data_hora.value   = data.length <= 10 ? data + 'T09:00' : data;
+        campos.valor.value       = '';
+        campos.duracao.value     = 50;
+        campos.foi_pago.checked  = false;
+        campos.titulo.innerText  = "Nova Sessão";
 
         modal.show();
     }
@@ -412,16 +469,16 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('formSessao').addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        const id = campos.id.value;
-        const rota = id ? `/sessoes-json/${id}` : `/sessoes-json`;
+        const id     = campos.id.value;
+        const rota   = id ? `/sessoes-json/${id}` : `/sessoes-json`;
         const metodo = id ? 'PUT' : 'POST';
 
         const payload = {
             paciente_id: campos.paciente.value,
-            data_hora: campos.data_hora.value,
-            valor: campos.valor.value,
-            duracao: parseInt(campos.duracao.value),
-            foi_pago: campos.foi_pago.checked ? 1 : 0,
+            data_hora:   campos.data_hora.value,
+            valor:       campos.valor.value,
+            duracao:     parseInt(campos.duracao.value),
+            foi_pago:    campos.foi_pago.checked ? 1 : 0,
         };
 
         try {
@@ -476,3 +533,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endsection
+
