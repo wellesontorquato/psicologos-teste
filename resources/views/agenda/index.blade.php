@@ -34,7 +34,7 @@
         background:var(--pg-surface);
         border:1px solid var(--pg-border);
         border-radius:16px;
-        padding:14px;                 /* mobile first */
+        padding:12px;                 /* mobile primeiro */
         margin-bottom:14px;
         box-shadow:0 8px 28px rgba(10,20,30,.06);
     }
@@ -46,47 +46,46 @@
         background:linear-gradient(90deg,var(--pg-primary),#30d1d4);
     }
 
-    /* Grid do cabeçalho: mobile em coluna */
+    /* Grid do cabeçalho: MOBILE = uma coluna */
     .calendar-row{
         display:grid;
-        gap:12px;
-        grid-template-columns:1fr;    /* mobile: 1 coluna */
+        gap:10px;
+        grid-template-columns:1fr;
     }
 
-    /* Bloco do título */
+    /* Bloco do título (centralizado no mobile) */
     .cal-title{
-        display:flex; gap:10px; align-items:center; justify-content:center; /* mobile centralizado */
+        display:flex; gap:8px; align-items:center; justify-content:center;
         text-align:center;
     }
     .cal-icon{
-        width:36px; height:36px; border-radius:10px;
+        width:30px; height:30px; border-radius:8px;
         display:grid; place-items:center;
         background:rgba(18,180,183,.10);
         color:var(--pg-primary);
-        font-size:18px;
+        font-size:16px;
         flex:0 0 auto;
     }
     .cal-text .cal-head{
         font-weight:800; letter-spacing:.2px;
         color:var(--pg-ink); line-height:1.1;
-        font-size:1.125rem;           /* mobile */
+        font-size:1.05rem;           /* mobile menor */
     }
     .cal-text .cal-sub{
-        color:var(--pg-muted); font-size:.9rem;
+        color:var(--pg-muted); font-size:.86rem;
     }
 
-    /* Chips/Badges (contraste reforçado) */
+    /* Chips/Badges mais compactos no mobile */
     .pg-chip{
         display:inline-flex; align-items:center; gap:6px;
         border:1px solid #cfe7e8;
         background:rgba(18,180,183,.10);
         color:#0b7f83;
-        padding:7px 12px; border-radius:999px; font-weight:700; font-size:.85rem;
-        line-height:1; text-decoration:none;
-        white-space:nowrap;
+        padding:5px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
+        line-height:1; text-decoration:none; white-space:nowrap;
     }
     .pg-chip:hover{ background:rgba(18,180,183,.14) }
-    .pg-chip i{font-size:1rem}
+    .pg-chip i{font-size:.95rem}
 
     .chip-success{
         background:rgba(16,185,129,.14);
@@ -99,32 +98,39 @@
         color:#8e3a0d;
     }
 
-    /* Área de ações: mobile com rolagem horizontal */
-    .cal-actions{
-        display:flex;
-        gap:8px;
-        flex-wrap:nowrap;             /* mobile: em linha */
-        overflow-x:auto;
-        -webkit-overflow-scrolling:touch;
-        padding-bottom:4px;           /* espaço pro indicador de scroll */
-        scrollbar-width:none;         /* Firefox: some o trilho */
-        justify-content:flex-start;
+    /* No mobile mostramos só o 1º chip do status para caber */
+    .cal-sub .pg-chip:nth-child(n+2){ display:none; }
+    /* Quando NÃO conectado, mostramos o 1º (alerta) e escondemos o botão conectar */
+    .cal-sub .btn-outline{ display:none; }
+
+    /* Legenda mini: central e enxuta */
+    .legend{
+        display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center;
     }
-    .cal-actions::-webkit-scrollbar{ display:none; } /* Chrome/Safari */
+    .legend .pg-chip{ padding:5px 8px; font-weight:700; font-size:.78rem; }
+    .legend .dot{
+        width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px;
+        box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8;
+    }
+    .dot-paid{ background:#28a745 }
+    .dot-pending{ background:#dc3545 }
+    .dot-late{ background:#00c4ff }
 
-    /* Grupos compactos (cada grupo vira uma "pílula" de botões) */
-    .btn-group-clean{ display:flex; gap:8px; align-items:center; flex:0 0 auto; }
-    .divider-dot{ display:none; } /* some no mobile */
+    /* ===== AÇÕES: MOBILE = linhas em grade (sem carrossel) ===== */
+    .cal-actions{
+        display:grid;
+        grid-template-columns:1fr;     /* cada grupo ocupa a largura toda */
+        gap:8px;
+    }
+    .btn-group-clean{ display:flex; gap:8px; align-items:center; }
+    .divider-dot{ display:none; }
 
-    /* Botões */
     .btn-ghost, .btn-brand, .btn-outline{
         display:inline-flex; align-items:center; justify-content:center; gap:6px;
         border-radius:12px; font-weight:800; letter-spacing:.2px;
-        padding:10px 14px; font-size:.92rem;
-        min-height:44px;              /* conforto de toque */
-        min-width:90px;               /* dá corpo aos botões no carrossel */
+        padding:10px 14px; font-size:.92rem; min-height:44px;
         transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
-        flex:0 0 auto;                /* impede encolher no carrossel */
+        width:100%;
     }
     .btn-ghost{
         background:#eef5f6; border:1px solid #cfe7e8; color:#184146;
@@ -132,8 +138,7 @@
     .btn-ghost:hover{ transform:translateY(-1px); box-shadow:0 6px 14px rgba(10,20,30,.10) }
 
     .btn-outline{
-        background:#fff; border:1px solid var(--pg-primary);
-        color:var(--pg-primary);
+        background:#fff; border:1px solid var(--pg-primary); color:var(--pg-primary);
     }
     .btn-outline:hover{ background:rgba(18,180,183,.08) }
 
@@ -143,13 +148,16 @@
     }
     .btn-brand:hover{ transform:translateY(-1px); }
 
-    /* Controles (setas e views) no carrossel */
+    /* 1ª linha: navegação em 3 colunas iguais */
+    .nav-switch{
+        display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+    }
+    .view-switch{
+        display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+    }
     .view-switch .vbtn, .nav-switch .nbtn{
-        display:inline-flex; align-items:center; justify-content:center;
         border:1px solid #cfe7e8; background:#fff; color:#1f2a33;
-        border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem;
-        min-height:44px; min-width:90px;
-        flex:0 0 auto;
+        border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem; min-height:44px;
     }
     .view-switch .vbtn.active{
         background:linear-gradient(180deg,#fff,#f0feff);
@@ -157,39 +165,32 @@
         box-shadow:0 8px 18px rgba(18,180,183,.22);
         color:var(--pg-primary);
     }
-    .nav-switch .nbtn:hover,
-    .view-switch .vbtn:hover{ transform:translateY(-1px) }
 
-    /* Legenda mini: quebra em múltiplas linhas no mobile */
-    .legend{
-        display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center;
+    /* 3ª linha: ações finais em 2 colunas */
+    .cal-actions > .btn-group-clean:last-child{
+        display:grid; grid-template-columns:1fr 1fr; gap:8px;
     }
-    .legend .dot{
-        width:12px; height:12px; border-radius:999px; display:inline-block; margin-right:8px;
-        box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8;
-    }
-    .dot-paid{ background:#28a745 }
-    .dot-pending{ background:#dc3545 }
-    .dot-late{ background:#00c4ff }
 
-    /* ====== UPGRADES PARA TELAS MÉDIAS+ ====== */
+    /* ====== DESKTOP (≥768px): volta pro layout lado-a-lado ====== */
     @media (min-width: 768px){
         #calendar-card{ padding:18px; }
-
         .calendar-row{
-            grid-template-columns:1fr auto;   /* à esquerda título, à direita ações */
+            grid-template-columns:1fr auto;
             align-items:center;
         }
         .cal-title{ justify-content:flex-start; text-align:left; }
         .cal-text .cal-head{ font-size:1.25rem; }
-        .divider-dot{ display:inline-block; }
+
+        /* mostra todos os chips no desktop */
+        .cal-sub .pg-chip:nth-child(n+2){ display:inline-flex; }
+        .cal-sub .btn-outline{ display:inline-flex; }
 
         .cal-right{ display:flex; justify-content:flex-end; }
-        .cal-actions{ overflow:visible; flex-wrap:wrap; }
-        .btn-ghost, .btn-brand, .btn-outline,
-        .view-switch .vbtn, .nav-switch .nbtn{
-            min-width:auto;                  /* em desktop, deixam de ter largura mínima */
-        }
+        .cal-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+        .nav-switch, .view-switch{ display:flex; }
+        .nav-switch .nbtn, .view-switch .vbtn{ min-width:auto; }
+        .btn-ghost, .btn-brand, .btn-outline{ width:auto; }
+        .divider-dot{ display:inline-block; width:6px; height:6px; border-radius:999px; background:#d7dde6 }
     }
 
     @media (min-width: 992px){
@@ -217,7 +218,7 @@
     {{-- Cabeçalho moderno PsiGestor (mobile-first) --}}
     <div class="calendar-header">
         <div class="calendar-row">
-            {{-- ESQUERDA (no mobile: primeira linha): Título + status + legenda --}}
+            {{-- LINHA 1 (mobile): Título + status --}}
             <div class="cal-left">
                 <div class="cal-title">
                     <div class="cal-icon">
@@ -253,7 +254,7 @@
                     </div>
                 </div>
 
-                {{-- Legenda compacta (central em mobile) --}}
+                {{-- Legenda compacta (linha própria) --}}
                 <div class="legend mt-3">
                     <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
                     <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
@@ -261,14 +262,13 @@
                 </div>
             </div>
 
-            {{-- DIREITA (no mobile: segunda linha): Navegação + views + ações rápidas --}}
+            {{-- LINHA 2/3 (mobile): Navegação + Views + Ações --}}
             <div class="cal-right">
                 <div class="cal-actions">
                     <div class="btn-group-clean nav-switch">
                         <button id="prevBtn" class="nbtn btn-ghost" aria-label="Mês anterior">←</button>
                         <button id="todayBtn" class="nbtn btn-ghost">Hoje</button>
                         <button id="nextBtn" class="nbtn btn-ghost" aria-label="Próximo mês">→</button>
-                        <span class="divider-dot d-none d-md-inline-block"></span>
                     </div>
 
                     <div class="btn-group-clean view-switch">
@@ -276,8 +276,6 @@
                         <button id="weekBtn" class="vbtn">Semana</button>
                         <button id="dayBtn" class="vbtn">Dia</button>
                     </div>
-
-                    <span class="divider-dot d-none d-md-inline-block"></span>
 
                     <div class="btn-group-clean">
                         <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'">
@@ -372,7 +370,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!window.FullCalendar || !calendarEl) return;
 
-    // Título com tipografia “bonita” (substitui “ de ” por “ · ”)
     const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
     const calendar = new window.FullCalendar.Calendar(calendarEl, {
@@ -387,10 +384,9 @@ document.addEventListener('DOMContentLoaded', function () {
         height: 650,
         locale: window.FullCalendar.ptBr,
         initialView: 'dayGridMonth',
-        headerToolbar: false, // desabilita header nativo
+        headerToolbar: false,
         events: '/api/sessoes',
 
-        // Atualiza o título estilizado e sincroniza o botão ativo
         datesSet: function(info) {
             if (calendarH1) {
                 calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
@@ -458,16 +454,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calendar.render();
 
-    // ===== Navegação (setas / hoje) =====
+    // Navegação
     const prevBtn  = document.getElementById('prevBtn');
     const nextBtn  = document.getElementById('nextBtn');
-    theTodayBtn    = document.getElementById('todayBtn');
+    const todayBtn = document.getElementById('todayBtn');
 
     if (prevBtn)  prevBtn.onclick  = () => calendar.prev();
     if (nextBtn)  nextBtn.onclick  = () => calendar.next();
-    if (theTodayBtn) theTodayBtn.onclick = () => calendar.today();
+    if (todayBtn) todayBtn.onclick = () => calendar.today();
 
-    // ===== Views (Mês / Semana / Dia) =====
+    // Views
     const viewButtons = {
         monthBtn: 'dayGridMonth',
         weekBtn:  'timeGridWeek',
