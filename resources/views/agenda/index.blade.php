@@ -3,38 +3,40 @@
 @section('title', 'Agenda | PsiGestor')
 
 @section('styles')
-{{-- Bootstrap Icons para os <i class="bi ..."> --}}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
 <style>
     :root{
-        --pg-primary:#12B4B7;         /* turquesa PsiGestor */
+        --pg-primary:#12B4B7;
         --pg-primary-600:#0ea2a5;
         --pg-primary-700:#0b7f83;
         --pg-ink:#15181f;
         --pg-muted:#6c7685;
         --pg-border:#e6eaef;
         --pg-surface:#ffffff;
+
+        /* Cores de realce dos dias */
+        --pg-weekend:#FFF6EA;     /* pêssego bem claro */
+        --pg-holiday:#ECF7FF;     /* azul bem claro */
+        --pg-holiday-border:#BEE3FF;
     }
 
     /* ====== MOBILE FIRST ====== */
 
-    /* Card do calendário */
     #calendar-card{
         border:1px solid var(--pg-border);
         border-radius:16px;
         background:var(--pg-surface);
-        padding:14px;                 /* mobile: um pouco mais compacto */
+        padding:14px;
         box-shadow:0 6px 18px rgba(10,20,30,.06);
     }
 
-    /* Cabeçalho */
     .calendar-header{
         position:relative;
         background:var(--pg-surface);
         border:1px solid var(--pg-border);
         border-radius:16px;
-        padding:12px;                 /* mobile primeiro */
+        padding:12px;
         margin-bottom:14px;
         box-shadow:0 8px 28px rgba(10,20,30,.06);
     }
@@ -46,158 +48,100 @@
         background:linear-gradient(90deg,var(--pg-primary),#30d1d4);
     }
 
-    /* Grid do cabeçalho: MOBILE = uma coluna */
-    .calendar-row{
-        display:grid;
-        gap:10px;
-        grid-template-columns:1fr;
-    }
+    .calendar-row{ display:grid; gap:10px; grid-template-columns:1fr; }
 
-    /* Bloco do título (centralizado no mobile) */
-    .cal-title{
-        display:flex; gap:8px; align-items:center; justify-content:center;
-        text-align:center;
-    }
+    .cal-title{ display:flex; gap:8px; align-items:center; justify-content:center; text-align:center; }
     .cal-icon{
-        width:30px; height:30px; border-radius:8px;
-        display:grid; place-items:center;
-        background:rgba(18,180,183,.10);
-        color:var(--pg-primary);
-        font-size:16px;
-        flex:0 0 auto;
+        width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
+        background:rgba(18,180,183,.10); color:var(--pg-primary); font-size:16px; flex:0 0 auto;
     }
-    .cal-text .cal-head{
-        font-weight:800; letter-spacing:.2px;
-        color:var(--pg-ink); line-height:1.1;
-        font-size:1.05rem;           /* mobile menor */
-    }
-    .cal-text .cal-sub{
-        color:var(--pg-muted); font-size:.86rem;
-    }
+    .cal-text .cal-head{ font-weight:800; letter-spacing:.2px; color:var(--pg-ink); line-height:1.1; font-size:1.05rem; }
+    .cal-text .cal-sub{ color:var(--pg-muted); font-size:.86rem; }
 
-    /* Chips/Badges mais compactos no mobile */
     .pg-chip{
         display:inline-flex; align-items:center; gap:6px;
-        border:1px solid #cfe7e8;
-        background:rgba(18,180,183,.10);
-        color:#0b7f83;
-        padding:5px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
-        line-height:1; text-decoration:none; white-space:nowrap;
+        border:1px solid #cfe7e8; background:rgba(18,180,183,.10); color:#0b7f83;
+        padding:5px 10px; border-radius:999px; font-weight:700; font-size:.8rem; line-height:1; text-decoration:none; white-space:nowrap;
     }
     .pg-chip:hover{ background:rgba(18,180,183,.14) }
     .pg-chip i{font-size:.95rem}
-
-    .chip-success{
-        background:rgba(16,185,129,.14);
-        border-color:rgba(16,185,129,.35);
-        color:#0e7a56;
-    }
-    .chip-warn{
-        background:rgba(234,88,12,.14);
-        border-color:rgba(234,88,12,.35);
-        color:#8e3a0d;
-    }
-
-    /* No mobile mostramos só o 1º chip do status para caber */
+    .chip-success{ background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.35); color:#0e7a56; }
+    .chip-warn{ background:rgba(234,88,12,.14); border-color:rgba(234,88,12,.35); color:#8e3a0d; }
     .cal-sub .pg-chip:nth-child(n+2){ display:none; }
-    /* Quando NÃO conectado, mostramos o 1º (alerta) e escondemos o botão conectar */
     .cal-sub .btn-outline{ display:none; }
 
-    /* Legenda mini: central e enxuta */
-    .legend{
-        display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center;
-    }
+    .legend{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; }
     .legend .pg-chip{ padding:5px 8px; font-weight:700; font-size:.78rem; }
-    .legend .dot{
-        width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px;
-        box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8;
-    }
-    .dot-paid{ background:#28a745 }
-    .dot-pending{ background:#dc3545 }
-    .dot-late{ background:#00c4ff }
+    .legend .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8; }
+    .dot-paid{ background:#28a745 } .dot-pending{ background:#dc3545 } .dot-late{ background:#00c4ff }
 
-    /* ===== AÇÕES: MOBILE = linhas em grade (sem carrossel) ===== */
-    .cal-actions{
-        display:grid;
-        grid-template-columns:1fr;     /* cada grupo ocupa a largura toda */
-        gap:8px;
-    }
+    .cal-actions{ display:grid; grid-template-columns:1fr; gap:8px; }
     .btn-group-clean{ display:flex; gap:8px; align-items:center; }
     .divider-dot{ display:none; }
-
-    .btn-ghost, .btn-brand, .btn-outline{
+    .btn-ghost,.btn-brand,.btn-outline{
         display:inline-flex; align-items:center; justify-content:center; gap:6px;
         border-radius:12px; font-weight:800; letter-spacing:.2px;
-        padding:10px 14px; font-size:.92rem; min-height:44px;
-        transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+        padding:10px 14px; font-size:.92rem; min-height:44px; transition:.15s;
         width:100%;
     }
-    .btn-ghost{
-        background:#eef5f6; border:1px solid #cfe7e8; color:#184146;
-    }
+    .btn-ghost{ background:#eef5f6; border:1px solid #cfe7e8; color:#184146; }
     .btn-ghost:hover{ transform:translateY(-1px); box-shadow:0 6px 14px rgba(10,20,30,.10) }
-
-    .btn-outline{
-        background:#fff; border:1px solid var(--pg-primary); color:var(--pg-primary);
-    }
+    .btn-outline{ background:#fff; border:1px solid var(--pg-primary); color:var(--pg-primary); }
     .btn-outline:hover{ background:rgba(18,180,183,.08) }
-
-    .btn-brand{
-        background:var(--pg-primary); border:1px solid var(--pg-primary-700); color:#fff;
-        box-shadow:0 8px 18px rgba(18,180,183,.28);
-    }
+    .btn-brand{ background:var(--pg-primary); border:1px solid var(--pg-primary-700); color:#fff; box-shadow:0 8px 18px rgba(18,180,183,.28); }
     .btn-brand:hover{ transform:translateY(-1px); }
+    .nav-switch,.view-switch{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .view-switch .vbtn,.nav-switch .nbtn{
+        border:1px solid #cfe7e8; background:#fff; color:#1f2a33; border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem; min-height:44px;
+    }
+    .view-switch .vbtn.active{ background:linear-gradient(180deg,#fff,#f0feff); border-color:var(--pg-primary); box-shadow:0 8px 18px rgba(18,180,183,.22); color:var(--pg-primary); }
+    .cal-actions > .btn-group-clean:last-child{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 
-    /* 1ª linha: navegação em 3 colunas iguais */
-    .nav-switch{
-        display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
-    }
-    .view-switch{
-        display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
-    }
-    .view-switch .vbtn, .nav-switch .nbtn{
-        border:1px solid #cfe7e8; background:#fff; color:#1f2a33;
-        border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem; min-height:44px;
-    }
-    .view-switch .vbtn.active{
-        background:linear-gradient(180deg,#fff,#f0feff);
-        border-color:var(--pg-primary);
-        box-shadow:0 8px 18px rgba(18,180,183,.22);
-        color:var(--pg-primary);
-    }
-
-    /* 3ª linha: ações finais em 2 colunas */
-    .cal-actions > .btn-group-clean:last-child{
-        display:grid; grid-template-columns:1fr 1fr; gap:8px;
-    }
-
-    /* ====== DESKTOP (≥768px): volta pro layout lado-a-lado ====== */
     @media (min-width: 768px){
         #calendar-card{ padding:18px; }
-        .calendar-row{
-            grid-template-columns:1fr auto;
-            align-items:center;
-        }
+        .calendar-row{ grid-template-columns:1fr auto; align-items:center; }
         .cal-title{ justify-content:flex-start; text-align:left; }
         .cal-text .cal-head{ font-size:1.25rem; }
-
-        /* mostra todos os chips no desktop */
-        .cal-sub .pg-chip:nth-child(n+2){ display:inline-flex; }
-        .cal-sub .btn-outline{ display:inline-flex; }
-
+        .cal-sub .pg-chip:nth-child(n+2){ display:inline-flex; } .cal-sub .btn-outline{ display:inline-flex; }
         .cal-right{ display:flex; justify-content:flex-end; }
         .cal-actions{ display:flex; flex-wrap:wrap; gap:8px; }
-        .nav-switch, .view-switch{ display:flex; }
-        .nav-switch .nbtn, .view-switch .vbtn{ min-width:auto; }
-        .btn-ghost, .btn-brand, .btn-outline{ width:auto; }
+        .nav-switch,.view-switch{ display:flex; }
+        .nav-switch .nbtn,.view-switch .vbtn{ min-width:auto; }
+        .btn-ghost,.btn-brand,.btn-outline{ width:auto; }
         .divider-dot{ display:inline-block; width:6px; height:6px; border-radius:999px; background:#d7dde6 }
     }
+    @media (min-width: 992px){ .cal-text .cal-head{ font-size:1.35rem; } }
 
-    @media (min-width: 992px){
-        .cal-text .cal-head{ font-size:1.35rem; }
+    /* ===== FullCalendar: estilos de dias ===== */
+
+    /* Finais de semana (todas as views) */
+    .fc .fc-day-sat,
+    .fc .fc-day-sun{
+        background: var(--pg-weekend);
     }
 
-    /* FullCalendar eventos (mantido) */
+    /* Feriados (classe aplicada via JS em dayCellDidMount) */
+    .fc .pg-feriado{
+        background: var(--pg-holiday) !important;
+        box-shadow: inset 0 0 0 1px var(--pg-holiday-border);
+    }
+
+    /* No month view, coloca um selo “Feriado” discreto ao lado do número do dia */
+    .fc-daygrid-day.pg-feriado .fc-daygrid-day-number::after{
+        content: "Feriado";
+        display:inline-block;
+        margin-left:6px;
+        padding:2px 6px;
+        font-size:.65rem;
+        font-weight:700;
+        color:#0b6aa8;
+        background:#dff1ff;
+        border:1px solid var(--pg-holiday-border);
+        border-radius:999px;
+        vertical-align:middle;
+    }
+
+    /* Eventos (mantidos) */
     .fc-event{ border-radius:6px !important; padding:4px !important; font-size:.9rem !important; }
     .fc .fc-event.evento-pago{
         background:linear-gradient(90deg,#28a745,#218838)!important;border:none!important;color:#fff!important;font-weight:700!important;
@@ -218,43 +162,26 @@
     {{-- Cabeçalho moderno PsiGestor (mobile-first) --}}
     <div class="calendar-header">
         <div class="calendar-row">
-            {{-- LINHA 1 (mobile): Título + status --}}
             <div class="cal-left">
                 <div class="cal-title">
-                    <div class="cal-icon">
-                        <i class="bi bi-calendar3-event"></i>
-                    </div>
+                    <div class="cal-icon"><i class="bi bi-calendar3-event"></i></div>
                     <div class="cal-text">
-                        <div class="cal-head">
-                            <span id="calendarTitle">Minha Agenda</span>
-                        </div>
+                        <div class="cal-head"><span id="calendarTitle">Minha Agenda</span></div>
                         <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1 justify-content-center justify-content-md-start">
                             @if(auth()->user()?->google_connected)
-                                <span class="pg-chip chip-success">
-                                    <i class="bi bi-google"></i> Google Agenda conectado
-                                </span>
-                                <a href="{{ route('google.connect') }}" class="pg-chip">
-                                    <i class="bi bi-arrow-repeat"></i> Reautenticar
-                                </a>
-                                <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="pg-chip" title="Desconectar Google">
-                                        <i class="bi bi-x-circle"></i> Desconectar
-                                    </button>
+                                <span class="pg-chip chip-success"><i class="bi bi-google"></i> Google Agenda conectado</span>
+                                <a href="{{ route('google.connect') }}" class="pg-chip"><i class="bi bi-arrow-repeat"></i> Reautenticar</a>
+                                <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">@csrf
+                                    <button type="submit" class="pg-chip" title="Desconectar Google"><i class="bi bi-x-circle"></i> Desconectar</button>
                                 </form>
                             @else
-                                <span class="pg-chip chip-warn">
-                                    <i class="bi bi-exclamation-triangle"></i> Google não conectado
-                                </span>
-                                <a href="{{ route('google.connect') }}" class="btn-outline">
-                                    <i class="bi bi-google me-1"></i> Conectar ao Google
-                                </a>
+                                <span class="pg-chip chip-warn"><i class="bi bi-exclamation-triangle"></i> Google não conectado</span>
+                                <a href="{{ route('google.connect') }}" class="btn-outline"><i class="bi bi-google me-1"></i> Conectar ao Google</a>
                             @endif
                         </div>
                     </div>
                 </div>
 
-                {{-- Legenda compacta (linha própria) --}}
                 <div class="legend mt-3">
                     <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
                     <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
@@ -262,7 +189,6 @@
                 </div>
             </div>
 
-            {{-- LINHA 2/3 (mobile): Navegação + Views + Ações --}}
             <div class="cal-right">
                 <div class="cal-actions">
                     <div class="btn-group-clean nav-switch">
@@ -278,12 +204,8 @@
                     </div>
 
                     <div class="btn-group-clean">
-                        <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'">
-                            <i class="bi bi-list-ul me-1"></i> Lista
-                        </button>
-                        <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao">
-                            <i class="bi bi-plus-lg me-1"></i> Nova sessão
-                        </button>
+                        <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'"><i class="bi bi-list-ul me-1"></i> Lista</button>
+                        <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao"><i class="bi bi-plus-lg me-1"></i> Nova sessão</button>
                     </div>
                 </div>
             </div>
@@ -291,9 +213,7 @@
     </div>
 
     {{-- Calendário --}}
-    <div id="calendar-card">
-        <div id="calendar"></div>
-    </div>
+    <div id="calendar-card"><div id="calendar"></div></div>
 </div>
 
 <!-- Modal Sessão -->
@@ -318,18 +238,15 @@
             </div>
             <div class="col-12">
                 <label class="form-label small text-muted fw-semibold">Data e Hora</label>
-                <input type="datetime-local" name="data_hora" id="data_hora" 
-                       class="form-control form-control-sm shadow-sm" required>
+                <input type="datetime-local" name="data_hora" id="data_hora" class="form-control form-control-sm shadow-sm" required>
             </div>
             <div class="col-6">
                 <label class="form-label small text-muted fw-semibold">Valor (R$)</label>
-                <input type="number" step="0.01" name="valor" id="valor" 
-                       class="form-control form-control-sm shadow-sm" required>
+                <input type="number" step="0.01" name="valor" id="valor" class="form-control form-control-sm shadow-sm" required>
             </div>
             <div class="col-6">
                 <label class="form-label small text-muted fw-semibold">Duração (min)</label>
-                <input type="number" name="duracao" id="duracao" 
-                       class="form-control form-control-sm shadow-sm" value="50" required>
+                <input type="number" name="duracao" id="duracao" class="form-control form-control-sm shadow-sm" value="50" required>
             </div>
             <div class="col-12 form-check">
                 <input type="checkbox" name="foi_pago" id="foi_pago" class="form-check-input">
@@ -347,28 +264,39 @@
 @endsection
 
 @section('scripts')
-<!-- FullCalendar + SweetAlert -->
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl   = document.getElementById('calendar');
-    const calendarH1   = document.getElementById('calendarTitle');
-    const modal        = new bootstrap.Modal(document.getElementById('modalSessao'));
+document.addEventListener('DOMContentLoaded', async function () {
+    const calendarEl = document.getElementById('calendar');
+    const calendarH1 = document.getElementById('calendarTitle');
+    const modal      = new bootstrap.Modal(document.getElementById('modalSessao'));
 
     const campos = {
-        id:        document.getElementById('sessao_id'),
-        paciente:  document.getElementById('paciente_id'),
-        data_hora: document.getElementById('data_hora'),
-        valor:     document.getElementById('valor'),
-        duracao:   document.getElementById('duracao'),
-        foi_pago:  document.getElementById('foi_pago'),
-        titulo:    document.getElementById('modalTitulo'),
+        id:document.getElementById('sessao_id'),
+        paciente:document.getElementById('paciente_id'),
+        data_hora:document.getElementById('data_hora'),
+        valor:document.getElementById('valor'),
+        duracao:document.getElementById('duracao'),
+        foi_pago:document.getElementById('foi_pago'),
+        titulo:document.getElementById('modalTitulo'),
     };
 
     if (!window.FullCalendar || !calendarEl) return;
+
+    // Carrega feriados de um endpoint opcional. Espera um JSON: ["YYYY-MM-DD", ...]
+    let feriadosSet = new Set();
+    try {
+        const r = await fetch('/api/feriados', {headers:{'Accept':'application/json'}});
+        if (r.ok) {
+            const arr = await r.json();
+            if (Array.isArray(arr)) feriadosSet = new Set(arr);
+        }
+    } catch(e) {
+        // silencioso: se não existir endpoint, segue sem feriados
+    }
 
     const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
@@ -387,49 +315,46 @@ document.addEventListener('DOMContentLoaded', function () {
         headerToolbar: false,
         events: '/api/sessoes',
 
-        datesSet: function(info) {
-            if (calendarH1) {
-                calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
-            }
+        datesSet(info) {
+            if (calendarH1) calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
             syncActiveViewButton(info.view.type);
         },
 
-        eventContent: function (arg) {
-            const viewType = arg.view.type;
-            const event    = arg.event;
-
-            const start = event.start;
-            const end   = event.end;
-
-            const formatHora = (date) =>
-                date.getHours().toString().padStart(2, '0') + ':' +
-                date.getMinutes().toString().padStart(2, '0');
-
-            const horaInicio = formatHora(start);
-            const horaFim    = end ? formatHora(end) : '';
-            const titulo     = event.title;
-
-            if (viewType === 'dayGridMonth') {
-                return { html: `<div>${horaInicio} - ${titulo}</div>` };
-            } else {
-                return { html: `<div>${horaInicio} - ${horaFim}</div><div>${titulo}</div>` };
+        // Marca feriados nos "day cells" de todas as views
+        dayCellDidMount(arg) {
+            // arg.date é um Date local; formatamos para YYYY-MM-DD
+            const d = new Date(arg.date.getTime() - (arg.date.getTimezoneOffset()*60000))
+                      .toISOString().slice(0,10);
+            if (feriadosSet.has(d)) {
+                arg.el.classList.add('pg-feriado');
             }
         },
 
-        dateClick: function (info) {
-            abrirModalCriar(info.dateStr);
+        eventContent(arg) {
+            const viewType = arg.view.type;
+            const event = arg.event;
+            const start = event.start;
+            const end   = event.end;
+            const fmt = (date) => date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
+            const hi = fmt(start);
+            const hf = end ? fmt(end) : '';
+            const t  = event.title;
+            if (viewType === 'dayGridMonth') {
+                return { html: `<div>${hi} - ${t}</div>` };
+            } else {
+                return { html: `<div>${hi} - ${hf}</div><div>${t}</div>` };
+            }
         },
 
-        eventClick: async function (info) {
+        dateClick(info){ abrirModalCriar(info.dateStr); },
+
+        async eventClick(info){
             info.jsEvent.preventDefault();
             const id = info.event.id;
-
             try {
                 const res = await fetch(`/sessoes-json/${id}`);
                 if (!res.ok) throw new Error();
-
                 const sessao = await res.json();
-
                 campos.id.value        = sessao.id;
                 campos.paciente.value  = sessao.paciente_id;
                 campos.data_hora.value = sessao.data_hora;
@@ -437,18 +362,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 campos.duracao.value   = sessao.duracao;
                 campos.foi_pago.checked= sessao.foi_pago == true;
                 campos.titulo.innerText= "Editar Sessão";
-
                 modal.show();
             } catch {
                 Swal.fire('Erro', 'Erro ao carregar dados da sessão.', 'error');
             }
         },
 
-        eventDidMount: function (info) {
+        eventDidMount(info){
             const tooltip = info.event.extendedProps.tooltip;
-            if (tooltip) {
-                info.el.setAttribute('title', tooltip);
-            }
+            if (tooltip) info.el.setAttribute('title', tooltip);
         }
     });
 
@@ -458,18 +380,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const prevBtn  = document.getElementById('prevBtn');
     const nextBtn  = document.getElementById('nextBtn');
     const todayBtn = document.getElementById('todayBtn');
-
     if (prevBtn)  prevBtn.onclick  = () => calendar.prev();
     if (nextBtn)  nextBtn.onclick  = () => calendar.next();
     if (todayBtn) todayBtn.onclick = () => calendar.today();
 
     // Views
-    const viewButtons = {
-        monthBtn: 'dayGridMonth',
-        weekBtn:  'timeGridWeek',
-        dayBtn:   'timeGridDay'
-    };
-
+    const viewButtons = { monthBtn:'dayGridMonth', weekBtn:'timeGridWeek', dayBtn:'timeGridDay' };
     Object.keys(viewButtons).forEach(id => {
         const btn = document.getElementById(id);
         if (!btn) return;
@@ -485,30 +401,25 @@ document.addEventListener('DOMContentLoaded', function () {
         if (currentView === 'dayGridMonth') activeId = 'monthBtn';
         if (currentView === 'timeGridWeek')  activeId = 'weekBtn';
         if (currentView === 'timeGridDay')   activeId = 'dayBtn';
-        if (activeId) {
-            const el = document.getElementById(activeId);
-            if (el) el.classList.add('active');
-        }
+        if (activeId) document.getElementById(activeId)?.classList.add('active');
     }
 
     function abrirModalCriar(data) {
-        campos.id.value          = '';
+        campos.id.value = '';
         campos.paciente.selectedIndex = 0;
-        campos.data_hora.value   = data.length <= 10 ? data + 'T09:00' : data;
-        campos.valor.value       = '';
-        campos.duracao.value     = 50;
-        campos.foi_pago.checked  = false;
-        campos.titulo.innerText  = "Nova Sessão";
+        campos.data_hora.value = data.length <= 10 ? data + 'T09:00' : data;
+        campos.valor.value = '';
+        campos.duracao.value = 50;
+        campos.foi_pago.checked = false;
+        campos.titulo.innerText = "Nova Sessão";
         modal.show();
     }
 
     document.getElementById('formSessao').addEventListener('submit', async function (e) {
         e.preventDefault();
-
-        const id     = campos.id.value;
-        const rota   = id ? `/sessoes-json/${id}` : `/sessoes-json`;
+        const id   = campos.id.value;
+        const rota = id ? `/sessoes-json/${id}` : `/sessoes-json`;
         const metodo = id ? 'PUT' : 'POST';
-
         const payload = {
             paciente_id: campos.paciente.value,
             data_hora:   campos.data_hora.value,
@@ -527,43 +438,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify(payload)
             });
-
             const resData = await response.json();
 
             if (!response.ok) {
                 if (resData?.message?.includes("Conflito de horário")) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Conflito de Horário',
-                        text: resData.message,
-                        confirmButtonColor: '#3085d6',
-                    });
+                    Swal.fire({ icon:'error', title:'Conflito de Horário', text:resData.message, confirmButtonColor:'#3085d6' });
                 } else {
                     Swal.fire('Erro', resData.message || 'Erro ao salvar a sessão.', 'error');
                 }
-
                 if (typeof hideSpinner === 'function') hideSpinner();
                 return;
             }
 
             modal.hide();
             calendar.refetchEvents();
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Sucesso!',
-                text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!',
-                timer: 1800,
-                showConfirmButton: false
-            }).then(() => {
-                if (typeof hideSpinner === 'function') hideSpinner();
-            });
+            Swal.fire({ icon:'success', title:'Sucesso!', text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!', timer:1800, showConfirmButton:false })
+                .then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
 
         } catch (error) {
             Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error')
-                .then(() => {
-                    if (typeof hideSpinner === 'function') hideSpinner();
-                });
+                .then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
         }
     });
 });
