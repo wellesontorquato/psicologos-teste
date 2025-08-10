@@ -17,26 +17,27 @@
         --pg-surface:#ffffff;
     }
 
-    /* Card do calendário (mantido) */
+    /* ====== MOBILE FIRST ====== */
+
+    /* Card do calendário */
     #calendar-card{
         border:1px solid var(--pg-border);
         border-radius:16px;
         background:var(--pg-surface);
-        padding:18px;
+        padding:14px;                 /* mobile: um pouco mais compacto */
         box-shadow:0 6px 18px rgba(10,20,30,.06);
     }
 
-    /* ====== CABEÇALHO NOVO ====== */
+    /* Cabeçalho */
     .calendar-header{
         position:relative;
         background:var(--pg-surface);
         border:1px solid var(--pg-border);
         border-radius:16px;
-        padding:16px;
-        margin-bottom:18px;
+        padding:14px;                 /* mobile first */
+        margin-bottom:14px;
         box-shadow:0 8px 28px rgba(10,20,30,.06);
     }
-    /* Barra turquesa sutil no topo */
     .calendar-header:before{
         content:"";
         position:absolute; inset:0 0 auto 0;
@@ -45,47 +46,43 @@
         background:linear-gradient(90deg,var(--pg-primary),#30d1d4);
     }
 
+    /* Grid do cabeçalho: mobile em coluna */
     .calendar-row{
         display:grid;
         gap:12px;
-        grid-template-columns:1fr;
-    }
-    @media (min-width: 768px){
-        .calendar-row{
-            grid-template-columns:1fr auto; /* 1fr à esquerda, ações à direita */
-            align-items:center;
-        }
-        .cal-right   { display:flex; justify-content:flex-end; }
-        .cal-actions { justify-content:flex-end; }
+        grid-template-columns:1fr;    /* mobile: 1 coluna */
     }
 
+    /* Bloco do título */
     .cal-title{
-        display:flex; gap:12px; align-items:center;
+        display:flex; gap:10px; align-items:center; justify-content:center; /* mobile centralizado */
+        text-align:center;
     }
     .cal-icon{
-        width:40px; height:40px; border-radius:12px;
+        width:36px; height:36px; border-radius:10px;
         display:grid; place-items:center;
         background:rgba(18,180,183,.10);
         color:var(--pg-primary);
-        font-size:20px;
+        font-size:18px;
+        flex:0 0 auto;
     }
     .cal-text .cal-head{
         font-weight:800; letter-spacing:.2px;
         color:var(--pg-ink); line-height:1.1;
-        font-size:1.25rem;
+        font-size:1.125rem;           /* mobile */
     }
     .cal-text .cal-sub{
-        color:var(--pg-muted); font-size:.95rem;
+        color:var(--pg-muted); font-size:.9rem;
     }
 
     /* Chips/Badges (contraste reforçado) */
     .pg-chip{
         display:inline-flex; align-items:center; gap:6px;
-        border:1px solid #cfe7e8;              /* antes muito claro */
-        background:rgba(18,180,183,.10);       /* leve turquesa */
+        border:1px solid #cfe7e8;
+        background:rgba(18,180,183,.10);
         color:#0b7f83;
         padding:7px 12px; border-radius:999px; font-weight:700; font-size:.85rem;
-        line-height:1; text-decoration:none;   /* <a> com cara de chip */
+        line-height:1; text-decoration:none;
         white-space:nowrap;
     }
     .pg-chip:hover{ background:rgba(18,180,183,.14) }
@@ -102,15 +99,32 @@
         color:#8e3a0d;
     }
 
-    /* Ações do cabeçalho */
+    /* Área de ações: mobile com rolagem horizontal */
     .cal-actions{
-        display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-start;
+        display:flex;
+        gap:8px;
+        flex-wrap:nowrap;             /* mobile: em linha */
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+        padding-bottom:4px;           /* espaço pro indicador de scroll */
+        scrollbar-width:none;         /* Firefox: some o trilho */
+        justify-content:flex-start;
     }
+    .cal-actions::-webkit-scrollbar{ display:none; } /* Chrome/Safari */
+
+    /* Grupos compactos (cada grupo vira uma "pílula" de botões) */
+    .btn-group-clean{ display:flex; gap:8px; align-items:center; flex:0 0 auto; }
+    .divider-dot{ display:none; } /* some no mobile */
+
+    /* Botões */
     .btn-ghost, .btn-brand, .btn-outline{
         display:inline-flex; align-items:center; justify-content:center; gap:6px;
         border-radius:12px; font-weight:800; letter-spacing:.2px;
         padding:10px 14px; font-size:.92rem;
+        min-height:44px;              /* conforto de toque */
+        min-width:90px;               /* dá corpo aos botões no carrossel */
         transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+        flex:0 0 auto;                /* impede encolher no carrossel */
     }
     .btn-ghost{
         background:#eef5f6; border:1px solid #cfe7e8; color:#184146;
@@ -129,15 +143,13 @@
     }
     .btn-brand:hover{ transform:translateY(-1px); }
 
-    /* Grupos compactos */
-    .btn-group-clean{ display:flex; gap:8px; align-items:center; }
-    .divider-dot{ width:6px; height:6px; border-radius:999px; background:#d7dde6 }
-
-    /* Controles de navegação/view */
+    /* Controles (setas e views) no carrossel */
     .view-switch .vbtn, .nav-switch .nbtn{
         display:inline-flex; align-items:center; justify-content:center;
         border:1px solid #cfe7e8; background:#fff; color:#1f2a33;
         border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem;
+        min-height:44px; min-width:90px;
+        flex:0 0 auto;
     }
     .view-switch .vbtn.active{
         background:linear-gradient(180deg,#fff,#f0feff);
@@ -148,9 +160,9 @@
     .nav-switch .nbtn:hover,
     .view-switch .vbtn:hover{ transform:translateY(-1px) }
 
-    /* Legenda mini (mais visível) */
+    /* Legenda mini: quebra em múltiplas linhas no mobile */
     .legend{
-        display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+        display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center;
     }
     .legend .dot{
         width:12px; height:12px; border-radius:999px; display:inline-block; margin-right:8px;
@@ -159,6 +171,30 @@
     .dot-paid{ background:#28a745 }
     .dot-pending{ background:#dc3545 }
     .dot-late{ background:#00c4ff }
+
+    /* ====== UPGRADES PARA TELAS MÉDIAS+ ====== */
+    @media (min-width: 768px){
+        #calendar-card{ padding:18px; }
+
+        .calendar-row{
+            grid-template-columns:1fr auto;   /* à esquerda título, à direita ações */
+            align-items:center;
+        }
+        .cal-title{ justify-content:flex-start; text-align:left; }
+        .cal-text .cal-head{ font-size:1.25rem; }
+        .divider-dot{ display:inline-block; }
+
+        .cal-right{ display:flex; justify-content:flex-end; }
+        .cal-actions{ overflow:visible; flex-wrap:wrap; }
+        .btn-ghost, .btn-brand, .btn-outline,
+        .view-switch .vbtn, .nav-switch .nbtn{
+            min-width:auto;                  /* em desktop, deixam de ter largura mínima */
+        }
+    }
+
+    @media (min-width: 992px){
+        .cal-text .cal-head{ font-size:1.35rem; }
+    }
 
     /* FullCalendar eventos (mantido) */
     .fc-event{ border-radius:6px !important; padding:4px !important; font-size:.9rem !important; }
@@ -178,10 +214,10 @@
 @section('content')
 <div class="container">
 
-    {{-- Cabeçalho moderno PsiGestor --}}
+    {{-- Cabeçalho moderno PsiGestor (mobile-first) --}}
     <div class="calendar-header">
         <div class="calendar-row">
-            {{-- ESQUERDA: Título + status + legenda --}}
+            {{-- ESQUERDA (no mobile: primeira linha): Título + status + legenda --}}
             <div class="cal-left">
                 <div class="cal-title">
                     <div class="cal-icon">
@@ -191,7 +227,7 @@
                         <div class="cal-head">
                             <span id="calendarTitle">Minha Agenda</span>
                         </div>
-                        <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1">
+                        <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1 justify-content-center justify-content-md-start">
                             @if(auth()->user()?->google_connected)
                                 <span class="pg-chip chip-success">
                                     <i class="bi bi-google"></i> Google Agenda conectado
@@ -217,7 +253,7 @@
                     </div>
                 </div>
 
-                {{-- Legenda compacta --}}
+                {{-- Legenda compacta (central em mobile) --}}
                 <div class="legend mt-3">
                     <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
                     <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
@@ -225,7 +261,7 @@
                 </div>
             </div>
 
-            {{-- DIREITA: Navegação + views + ações rápidas --}}
+            {{-- DIREITA (no mobile: segunda linha): Navegação + views + ações rápidas --}}
             <div class="cal-right">
                 <div class="cal-actions">
                     <div class="btn-group-clean nav-switch">
@@ -425,11 +461,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===== Navegação (setas / hoje) =====
     const prevBtn  = document.getElementById('prevBtn');
     const nextBtn  = document.getElementById('nextBtn');
-    const todayBtn = document.getElementById('todayBtn');
+    theTodayBtn    = document.getElementById('todayBtn');
 
     if (prevBtn)  prevBtn.onclick  = () => calendar.prev();
     if (nextBtn)  nextBtn.onclick  = () => calendar.next();
-    if (todayBtn) todayBtn.onclick = () => calendar.today();
+    if (theTodayBtn) theTodayBtn.onclick = () => calendar.today();
 
     // ===== Views (Mês / Semana / Dia) =====
     const viewButtons = {
@@ -448,15 +484,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function syncActiveViewButton(currentView){
-        // Remove active de todos os botões do novo cabeçalho
         document.querySelectorAll('.view-switch .vbtn').forEach(b => b.classList.remove('active'));
-
-        // Define o id correspondente à view atual
         let activeId = null;
         if (currentView === 'dayGridMonth') activeId = 'monthBtn';
         if (currentView === 'timeGridWeek')  activeId = 'weekBtn';
         if (currentView === 'timeGridDay')   activeId = 'dayBtn';
-
         if (activeId) {
             const el = document.getElementById(activeId);
             if (el) el.classList.add('active');
@@ -471,7 +503,6 @@ document.addEventListener('DOMContentLoaded', function () {
         campos.duracao.value     = 50;
         campos.foi_pago.checked  = false;
         campos.titulo.innerText  = "Nova Sessão";
-
         modal.show();
     }
 
