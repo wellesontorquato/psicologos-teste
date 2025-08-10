@@ -286,18 +286,65 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (!window.FullCalendar || !calendarEl) return;
 
-    // Carrega feriados de um endpoint opcional. Espera um JSON: ["YYYY-MM-DD", ...]
-    let feriadosSet = new Set();
-    try {
-        const r = await fetch('/api/feriados', {headers:{'Accept':'application/json'}});
-        if (r.ok) {
-            const arr = await r.json();
-            if (Array.isArray(arr)) feriadosSet = new Set(arr);
+    // ========= FERIADOS (cache por ano) =========
+    const feriadosDatasCache  = {}; // { 2025: Set(['2025-01-01', ...]) }
+    const feriadosNomesCache  = {}; // { 2025: Map('2025-01-01' => 'Confraternização Universal', ...) }
+
+    async function carregarFeriadosAno(ano) {
+        if (feriadosDatasCache[ano]) return; // já carregado
+        try {
+            // Tenta full=1 para obter nomes; se sua rota estiver sem full, também funciona
+            const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, { headers: { 'Accept':'application/json' } });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json();
+
+            // Aceita array simples ["YYYY-MM-DD", ...] OU array de objetos [{data, nome, tipo}]
+            if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
+                feriadosDatasCache[ano] = new Set(data);
+                feriadosNomesCache[ano] = new Map();
+            } else if (Array.isArray(data)) {
+                const set = new Set();
+                const map = new Map();
+                for (const f of data) {
+                    if (!f || !f.data) continue;
+                    set.add(f.data);
+                    if (f.nome) map.set(f.data, f.nome);
+                }
+                feriadosDatasCache[ano] = set;
+                feriadosNomesCache[ano] = map;
+            } else {
+                feriadosDatasCache[ano] = new Set();
+                feriadosNomesCache[ano] = new Map();
+            }
+        } catch (e) {
+            // em falha, pelo menos evita novas tentativas nesse reload
+            feriadosDatasCache[ano] = new Set();
+            feriadosNomesCache[ano] = new Map();
         }
-    } catch(e) {
-        // silencioso: se não existir endpoint, segue sem feriados
     }
 
+    function toYMDLocal(d) {
+        // normaliza para YYYY-MM-DD em horário local
+        return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    }
+
+    function isFeriado(dateObj) {
+        const ano = dateObj.getFullYear();
+        const ymd = toYMDLocal(dateObj);
+        const set = feriadosDatasCache[ano];
+        return !!(set && set.has(ymd));
+    }
+    function nomeFeriado(dateObj) {
+        const ano = dateObj.getFullYear();
+        const ymd = toYMDLocal(dateObj);
+        const map = feriadosNomesCache[ano];
+        return map ? map.get(ymd) : undefined;
+    }
+
+    // Pré-carrega o ano atual
+    await carregarFeriadosAno(new Date().getFullYear());
+
+    // ========= CALENDÁRIO =========
     const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
     const calendar = new window.FullCalendar.Calendar(calendarEl, {
@@ -315,38 +362,71 @@ document.addEventListener('DOMContentLoaded', async function () {
         headerToolbar: false,
         events: '/api/sessoes',
 
-        datesSet(info) {
+        // Quando o range muda, garanta que os anos visíveis estejam no cache
+        datesSet: async function(info) {
             if (calendarH1) calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
             syncActiveViewButton(info.view.type);
-        },
 
-        // Marca feriados nos "day cells" de todas as views
-        dayCellDidMount(arg) {
-            // arg.date é um Date local; formatamos para YYYY-MM-DD
-            const d = new Date(arg.date.getTime() - (arg.date.getTimezoneOffset()*60000))
-                      .toISOString().slice(0,10);
-            if (feriadosSet.has(d)) {
-                arg.el.classList.add('pg-feriado');
+            const startYear = info.start.getFullYear();
+            const endYear   = new Date(info.end.getTime() - 1).getFullYear();
+            for (let y = startYear; y <= endYear; y++) {
+                await carregarFeriadosAno(y);
             }
+
+            // Re-renderiza só as células (para aplicar .pg-feriado em quem montou antes do fetch)
+            calendar.render(); // simples e eficaz para re-aplicar classes
         },
 
-        eventContent(arg) {
+        // Marca feriados em TODAS as views
+        dayCellDidMount: function(arg) {
+            const y = arg.date.getFullYear();
+            // garante o ano em cache e aplica depois que chegar
+            carregarFeriadosAno(y).then(() => {
+                if (isFeriado(arg.date)) {
+                    arg.el.classList.add('pg-feriado');
+                    const nome = nomeFeriado(arg.date);
+                    if (nome) {
+                        // tooltip nativo
+                        const target = arg.el.querySelector('.fc-daygrid-day-number') || arg.el;
+                        target.setAttribute('title', nome);
+                    }
+                }
+            });
+        },
+
+        eventContent: function (arg) {
             const viewType = arg.view.type;
             const event = arg.event;
-            const start = event.start;
-            const end   = event.end;
-            const fmt = (date) => date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
-            const hi = fmt(start);
-            const hf = end ? fmt(end) : '';
+            const fmt = (d) => d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+            const hi = fmt(event.start);
+            const hf = event.end ? fmt(event.end) : '';
             const t  = event.title;
-            if (viewType === 'dayGridMonth') {
-                return { html: `<div>${hi} - ${t}</div>` };
-            } else {
-                return { html: `<div>${hi} - ${hf}</div><div>${t}</div>` };
-            }
+            return (viewType === 'dayGridMonth')
+                ? { html: `<div>${hi} - ${t}</div>` }
+                : { html: `<div>${hi} - ${hf}</div><div>${t}</div>` };
         },
 
-        dateClick(info){ abrirModalCriar(info.dateStr); },
+        // Clique no dia: se for feriado, pergunta antes
+        dateClick: async function(info) {
+            const d = info.date;
+            const y = d.getFullYear();
+            await carregarFeriadosAno(y);
+
+            if (isFeriado(d)) {
+                const nome = nomeFeriado(d);
+                const { isConfirmed } = await Swal.fire({
+                    icon: 'info',
+                    title: nome ? `Feriado: ${nome}` : 'Feriado',
+                    text: 'Deseja continuar e criar uma sessão para este dia?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Continuar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#12B4B7'
+                });
+                if (!isConfirmed) return;
+            }
+            abrirModalCriar(info.dateStr);
+        },
 
         async eventClick(info){
             info.jsEvent.preventDefault();
@@ -377,12 +457,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     calendar.render();
 
     // Navegação
-    const prevBtn  = document.getElementById('prevBtn');
-    const nextBtn  = document.getElementById('nextBtn');
-    const todayBtn = document.getElementById('todayBtn');
-    if (prevBtn)  prevBtn.onclick  = () => calendar.prev();
-    if (nextBtn)  nextBtn.onclick  = () => calendar.next();
-    if (todayBtn) todayBtn.onclick = () => calendar.today();
+    document.getElementById('prevBtn')?.addEventListener('click', () => calendar.prev());
+    document.getElementById('nextBtn')?.addEventListener('click', () => calendar.next());
+    document.getElementById('todayBtn')?.addEventListener('click', () => calendar.today());
 
     // Views
     const viewButtons = { monthBtn:'dayGridMonth', weekBtn:'timeGridWeek', dayBtn:'timeGridDay' };
@@ -397,10 +474,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     function syncActiveViewButton(currentView){
         document.querySelectorAll('.view-switch .vbtn').forEach(b => b.classList.remove('active'));
-        let activeId = null;
-        if (currentView === 'dayGridMonth') activeId = 'monthBtn';
-        if (currentView === 'timeGridWeek')  activeId = 'weekBtn';
-        if (currentView === 'timeGridDay')   activeId = 'dayBtn';
+        const activeId =
+            currentView === 'dayGridMonth' ? 'monthBtn' :
+            currentView === 'timeGridWeek' ? 'weekBtn'  :
+            currentView === 'timeGridDay'  ? 'dayBtn'   : null;
         if (activeId) document.getElementById(activeId)?.classList.add('active');
     }
 

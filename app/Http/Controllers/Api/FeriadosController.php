@@ -2,53 +2,53 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 
 class FeriadosController extends Controller
 {
     /**
-     * Retorna feriados nacionais de um ano usando API do IBGE.
-     * Exemplo: /api/feriados?ano=2025
+     * GET /api/feriados?ano=2025[&full=1]
+     *
+     * - Sem "full": retorna ["YYYY-MM-DD", ...]
+     * - Com  "full": retorna [{ "data": "...", "nome": "...", "tipo": "..." }, ...]
      */
     public function index(Request $request)
     {
-        $ano = $request->query('ano', now()->year);
+        $ano  = (int) $request->query('ano', now()->year);
+        $full = $request->boolean('full', false);
 
         try {
-            // Endpoint oficial IBGE - Calendário Nacional
             $url = "https://servicodados.ibge.gov.br/api/v2/calendario/nacional/{$ano}";
+            $resp = Http::timeout(12)->get($url);
 
-            $response = Http::timeout(10)->get($url);
-
-            if ($response->failed()) {
-                return response()->json([
-                    'error' => 'Não foi possível obter os feriados do IBGE.'
-                ], 500);
+            if ($resp->failed()) {
+                return response()->json(['error' => 'Falha ao obter feriados do IBGE.'], 502);
             }
 
-            $feriados = $response->json();
+            $dadosIbge = $resp->json();
 
-            // Formata para retornar apenas info importante
-            $dados = collect($feriados)->map(function ($feriado) {
+            // Normaliza para nosso formato
+            $colecao = collect($dadosIbge)->map(function ($f) {
                 return [
-                    'data' => $feriado['date'],
-                    'nome' => $feriado['name'],
-                    'tipo' => $feriado['type'] ?? 'Nacional'
+                    'data' => $f['date'] ?? $f['data'] ?? null,
+                    'nome' => $f['name'] ?? $f['nome'] ?? null,
+                    'tipo' => $f['type'] ?? $f['tipo'] ?? 'Nacional',
                 ];
-            })->values();
+            })->filter(fn ($f) => !empty($f['data']))->values();
 
-            return response()->json([
-                'ano' => $ano,
-                'total' => count($dados),
-                'feriados' => $dados
-            ]);
+            if ($full) {
+                return response()->json($colecao);
+            }
 
-        } catch (\Exception $e) {
+            // Retorna só as datas (string YYYY-MM-DD)
+            return response()->json($colecao->pluck('data')->values());
+
+        } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Erro ao conectar à API do IBGE.',
-                'detalhe' => $e->getMessage()
+                'error'   => 'Erro ao conectar à API do IBGE.',
+                'detalhe' => app()->hasDebugModeEnabled() ? $e->getMessage() : null,
             ], 500);
         }
     }
