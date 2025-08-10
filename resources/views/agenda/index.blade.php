@@ -3,6 +3,9 @@
 @section('title', 'Agenda | PsiGestor')
 
 @section('styles')
+{{-- Bootstrap Icons para os <i class="bi ..."> --}}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
 <style>
     :root{
         --pg-primary:#12B4B7;         /* turquesa PsiGestor */
@@ -49,9 +52,11 @@
     }
     @media (min-width: 768px){
         .calendar-row{
-            grid-template-columns:1.2fr auto;
+            grid-template-columns:1fr auto; /* 1fr à esquerda, ações à direita */
             align-items:center;
         }
+        .cal-right   { display:flex; justify-content:flex-end; }
+        .cal-actions { justify-content:flex-end; }
     }
 
     .cal-title{
@@ -60,7 +65,7 @@
     .cal-icon{
         width:40px; height:40px; border-radius:12px;
         display:grid; place-items:center;
-        background:rgba(18,180,183,.1);
+        background:rgba(18,180,183,.10);
         color:var(--pg-primary);
         font-size:20px;
     }
@@ -73,24 +78,27 @@
         color:var(--pg-muted); font-size:.95rem;
     }
 
-    /* Chips/Badges */
+    /* Chips/Badges (contraste reforçado) */
     .pg-chip{
         display:inline-flex; align-items:center; gap:6px;
-        border:1px solid var(--pg-border);
-        background:#f8fafc; color:#283040;
-        padding:6px 10px; border-radius:999px; font-weight:600; font-size:.84rem;
+        border:1px solid #cfe7e8;              /* antes muito claro */
+        background:rgba(18,180,183,.10);       /* leve turquesa */
+        color:#0b7f83;
+        padding:7px 12px; border-radius:999px; font-weight:700; font-size:.85rem;
+        line-height:1; text-decoration:none;   /* <a> com cara de chip */
         white-space:nowrap;
     }
+    .pg-chip:hover{ background:rgba(18,180,183,.14) }
     .pg-chip i{font-size:1rem}
 
     .chip-success{
-        background:rgba(16,185,129,.12);
-        border-color:rgba(16,185,129,.22);
+        background:rgba(16,185,129,.14);
+        border-color:rgba(16,185,129,.35);
         color:#0e7a56;
     }
     .chip-warn{
-        background:rgba(234,88,12,.12);
-        border-color:rgba(234,88,12,.22);
+        background:rgba(234,88,12,.14);
+        border-color:rgba(234,88,12,.35);
         color:#8e3a0d;
     }
 
@@ -99,52 +107,54 @@
         display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-start;
     }
     .btn-ghost, .btn-brand, .btn-outline{
-        border-radius:10px; font-weight:700; letter-spacing:.2px;
-        padding:8px 14px; font-size:.9rem; transition:.18s ease;
+        display:inline-flex; align-items:center; justify-content:center; gap:6px;
+        border-radius:12px; font-weight:800; letter-spacing:.2px;
+        padding:10px 14px; font-size:.92rem;
+        transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
     .btn-ghost{
-        background:#f3f6f9; border:1px solid var(--pg-border); color:#2a3542;
+        background:#eef5f6; border:1px solid #cfe7e8; color:#184146;
     }
-    .btn-ghost:hover{ background:#e9eef4 }
+    .btn-ghost:hover{ transform:translateY(-1px); box-shadow:0 6px 14px rgba(10,20,30,.10) }
+
     .btn-outline{
-        background:transparent; border:1px solid var(--pg-primary);
+        background:#fff; border:1px solid var(--pg-primary);
         color:var(--pg-primary);
     }
     .btn-outline:hover{ background:rgba(18,180,183,.08) }
+
     .btn-brand{
         background:var(--pg-primary); border:1px solid var(--pg-primary-700); color:#fff;
-        box-shadow:0 6px 16px rgba(18,180,183,.28);
+        box-shadow:0 8px 18px rgba(18,180,183,.28);
     }
-    .btn-brand:hover{ background:var(--pg-primary-600) }
+    .btn-brand:hover{ transform:translateY(-1px); }
 
     /* Grupos compactos */
     .btn-group-clean{ display:flex; gap:8px; align-items:center; }
     .divider-dot{ width:6px; height:6px; border-radius:999px; background:#d7dde6 }
 
     /* Controles de navegação/view */
-    .view-switch .vbtn{
-        border:1px solid var(--pg-border); background:#fff; color:#2b3340;
-        border-radius:10px; padding:8px 12px; font-weight:700; font-size:.9rem;
+    .view-switch .vbtn, .nav-switch .nbtn{
+        display:inline-flex; align-items:center; justify-content:center;
+        border:1px solid #cfe7e8; background:#fff; color:#1f2a33;
+        border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem;
     }
     .view-switch .vbtn.active{
-        background:linear-gradient(180deg,#fff, #f4ffff);
+        background:linear-gradient(180deg,#fff,#f0feff);
         border-color:var(--pg-primary);
-        box-shadow:0 6px 16px rgba(18,180,183,.22);
+        box-shadow:0 8px 18px rgba(18,180,183,.22);
         color:var(--pg-primary);
-    }
-    .nav-switch .nbtn{
-        border:1px solid var(--pg-border); background:#fff; color:#2b3340;
-        border-radius:10px; padding:8px 12px; font-weight:800;
     }
     .nav-switch .nbtn:hover,
     .view-switch .vbtn:hover{ transform:translateY(-1px) }
 
-    /* Legenda mini */
+    /* Legenda mini (mais visível) */
     .legend{
         display:flex; flex-wrap:wrap; gap:8px; align-items:center;
     }
     .legend .dot{
-        width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px
+        width:12px; height:12px; border-radius:999px; display:inline-block; margin-right:8px;
+        box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8;
     }
     .dot-paid{ background:#28a745 }
     .dot-pending{ background:#dc3545 }
@@ -162,7 +172,6 @@
         background:#e3f7ff!important;border:1px dashed #00c4ff!important;color:#006f99!important;font-weight:700!important;
     }
     .fc-daygrid-event-dot{ display:none!important; }
-
 </style>
 @endsection
 
@@ -533,4 +542,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endsection
-
