@@ -287,41 +287,58 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (!window.FullCalendar || !calendarEl) return;
 
     // ========= FERIADOS (cache por ano) =========
-    const feriadosDatasCache  = {}; // { 2025: Set(['2025-01-01', ...]) }
-    const feriadosNomesCache  = {}; // { 2025: Map('2025-01-01' => 'Confraternização Universal', ...) }
+    const feriadosDatasCache  = {};
+    const feriadosNomesCache  = {};
 
     async function carregarFeriadosAno(ano) {
-        if (feriadosDatasCache[ano]) return; // já carregado
-        try {
-            // Tenta full=1 para obter nomes; se sua rota estiver sem full, também funciona
-            const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, { headers: { 'Accept':'application/json' } });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const data = await resp.json();
+        if (feriadosDatasCache[ano]) return;
 
-            // Aceita array simples ["YYYY-MM-DD", ...] OU array de objetos [{data, nome, tipo}]
-            if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
-                feriadosDatasCache[ano] = new Set(data);
-                feriadosNomesCache[ano] = new Map();
-            } else if (Array.isArray(data)) {
-                const set = new Set();
-                const map = new Map();
-                for (const f of data) {
-                    if (!f || !f.data) continue;
-                    set.add(f.data);
-                    if (f.nome) map.set(f.data, f.nome);
-                }
-                feriadosDatasCache[ano] = set;
-                feriadosNomesCache[ano] = map;
-            } else {
-                feriadosDatasCache[ano] = new Set();
-                feriadosNomesCache[ano] = new Map();
-            }
-        } catch (e) {
-            // em falha, pelo menos evita novas tentativas nesse reload
-            feriadosDatasCache[ano] = new Set();
-            feriadosNomesCache[ano] = new Map();
+        try {
+        const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+        let data = await resp.json();
+
+        // Invertexto às vezes retorna direto como array, mas
+        // se vier encapsulado, tentamos achar o array real.
+        if (!Array.isArray(data) && Array.isArray(data?.holidays)) {
+            data = data.holidays;
         }
-    }
+
+        // 1) Caso simples: ["YYYY-MM-DD", ...]
+        if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
+            feriadosDatasCache[ano] = new Set(data);
+            feriadosNomesCache[ano] = new Map();
+            return;
+        }
+
+        // 2) Caso objetos (IBGE normalizado OU Invertexto):
+        //    aceita {data, nome, tipo} OU {date, name, type}
+        const set = new Set();
+        const map = new Map();
+
+        if (Array.isArray(data)) {
+            for (const f of data) {
+            if (!f) continue;
+            const dt = f.data || f.date || f.date_iso || f.dia || f?.date?.split('T')?.[0];
+            const nm = f.nome || f.name || f.titulo || null;
+            if (!dt) continue;
+            set.add(dt);
+            if (nm) map.set(dt, nm);
+            }
+        }
+
+        feriadosDatasCache[ano] = set;
+        feriadosNomesCache[ano] = map;
+
+        } catch (e) {
+        // Em erro, inicializa vazio para não ficar re-tentando neste load
+        feriadosDatasCache[ano] = new Set();
+        feriadosNomesCache[ano] = new Map();
+        }
+  }
 
     function toYMDLocal(d) {
         // normaliza para YYYY-MM-DD em horário local
