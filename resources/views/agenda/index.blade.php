@@ -4,117 +4,20 @@
 
 @section('styles')
 <style>
-    /* ==================================================================
-      NOVOS ESTILOS - Baseado na imagem e no código original
-    ==================================================================
-    */
-
-    /* Reset e Layout Principal */
-    .page-container {
-        /* Usamos um container próprio para o cabeçalho e agenda */
-    }
-    
-    .page-header {
-        margin-bottom: 1.5rem;
-    }
-
-    /* Título principal com ícone customizado */
-    .title-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .title-icon {
-        width: 52px;
-        height: 52px;
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        background-color: #fff;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-    .title-icon .month {
-        background-color: #dc3545; /* Vermelho */
-        color: white;
-        text-align: center;
-        font-size: 0.7rem;
-        font-weight: 600;
-        padding: 2px 0;
-        line-height: 1.2;
-        text-transform: uppercase;
-    }
-    .title-icon .day {
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        font-weight: 500;
-        color: #343a40;
-    }
-    
-    #calendarPageTitle {
-        font-size: 2rem;
-        font-weight: 600;
-        color: #343a40;
-    }
-
-    /* Controles (Google e Navegação) */
-    .controls-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-    }
-    
-    .google-controls, .calendar-controls {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    /* Estilo padrão dos botões para ser fiel à imagem */
-    .btn-control {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        color: #495057;
-        font-size: 0.875rem;
-        padding: 0.375rem 0.75rem;
-        border-radius: 0.375rem;
-        transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-    }
-    .btn-control:hover {
-        background-color: #e9ecef;
-        border-color: #ced4da;
-    }
-    .btn-control.active {
-        background-color: #495057;
-        color: #fff;
-        border-color: #495057;
-    }
-    .btn-control i {
-        vertical-align: middle;
-    }
-
-
-    /* ESTILOS ORIGINAIS MANTIDOS PARA O CALENDÁRIO */
+    /* Card do calendário */
     #calendar-card {
         border: 1px solid #dee2e6;
         border-radius: 12px;
         background: white;
         padding: 15px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
+
+    /* Estilo dos eventos */
     .fc-event {
         border-radius: 6px !important;
         padding: 4px !important;
         font-size: 0.9rem !important;
-        cursor: pointer;
     }
     .fc .fc-event.evento-pago {
         background: linear-gradient(90deg, #28a745, #218838) !important;
@@ -128,64 +31,193 @@
         color: white !important;
         font-weight: 600 !important;
     }
+    .fc .fc-event.evento-apos-meia-noite {
+        background: #e3f7ff !important;
+        border: 1px dashed #00c4ff !important;
+        color: #006f99 !important;
+        font-weight: 600 !important;
+    }
     .fc-daygrid-event-dot { display: none !important; }
+
+    /* Cabeçalho customizado */
+    .calendar-header {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    @media (min-width: 768px) {
+        .calendar-header {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+
+    /* Título responsivo */
+    .calendar-title {
+        font-weight: 700;
+        color: #222;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        line-height: 1.2;
+    }
+    .calendar-title i {
+        font-size: 1.8rem;
+        color: #00aaff;
+    }
+    .calendar-title span {
+        display: flex;
+        flex-direction: column;
+    }
+    .calendar-title .main-title {
+        font-size: 1.2rem;
+        color: #111;
+    }
+    .calendar-title .sub-title {
+        font-size: 0.95rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    @media (min-width: 992px) {
+        .calendar-title .main-title {
+            font-size: 1.6rem;
+        }
+        .calendar-title .sub-title {
+            font-size: 1.1rem;
+        }
+    }
+    @media (max-width: 991px) {
+        .calendar-title .main-title {
+            font-size: 1.4rem;
+        }
+    }
+    @media (max-width: 576px) {
+        .calendar-title {
+            justify-content: center;
+            text-align: center;
+        }
+        .calendar-title .main-title {
+            font-size: 1.2rem;
+        }
+        .calendar-title .sub-title {
+            font-size: 1rem;
+        }
+    }
+
+    /* Botões */
+    .calendar-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+    .calendar-controls button {
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
+        padding: 6px 14px !important;
+        border: 1px solid #ccc;
+        background: #f8f9fa;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        flex: 1 1 auto; /* Ajuste para dividir espaço igualmente */
+        min-width: 90px;
+    }
+    .calendar-controls button:hover {
+        background: #e9ecef;
+        color: #000;
+    }
+    .calendar-controls button.active {
+        background: #00aaff !important;
+        color: #fff !important;
+        border-color: #0090d0 !important;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 170, 255, 0.35);
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        .calendar-controls {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            justify-content: center;
+        }
+        .calendar-controls button {
+            flex: 0 0 auto;
+            min-width: 90px;
+        }
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="container page-container">
+<div class="container">
 
-    <div class="page-header">
-        <div class="title-wrapper">
-            <div class="title-icon">
-                <div class="month">AGO</div>
-                <div class="day">10</div>
-            </div>
-            <h1 id="calendarPageTitle">Minha Agenda</h1>
-        </div>
-
-        <div class="controls-wrapper">
-            <div class="google-controls">
+    {{-- Cabeçalho clean --}}
+    <div class="calendar-header bg-white p-3 rounded shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+    <div class="calendar-title">
+        <i class="bi bi-calendar3 text-primary fs-3"></i>
+        <span class="d-flex flex-column">
+            <span id="calendarTitle" class="fw-bold main-title">Minha Agenda</span>
+            <span class="sub-title">
                 @if(auth()->user()?->google_connected)
-                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle rounded-pill me-2">
-                        <i class="bi bi-google me-1"></i> Google Agenda Conectado
+                    <span class="badge bg-success-subtle text-success border border-success-subtle" title="Integração ativa">
+                        <i class="bi bi-google me-1"></i> Google Agenda conectado
                     </span>
-                    <a href="{{ route('google.connect') }}" class="btn btn-control btn-sm">
-                        <i class="bi bi-arrow-repeat me-1"></i> Reautenticar
-                    </a>
-                    <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Desconectar do Google Agenda?')">
-                        @csrf
-                        <button type="submit" class="btn btn-control btn-sm">
-                            <i class="bi bi-x-circle me-1"></i> Desconectar
-                        </button>
-                    </form>
                 @else
-                    <a href="{{ route('google.connect') }}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-google me-1"></i> Conectar ao Google
-                    </a>
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Conecte para sincronizar">
+                        <i class="bi bi-google me-1"></i> Não conectado
+                    </span>
                 @endif
-            </div>
-
-            <div class="calendar-controls">
-                <div class="btn-group">
-                    <button id="prevBtn" class="btn btn-control btn-sm"><i class="bi bi-chevron-left"></i></button>
-                    <button id="todayBtn" class="btn btn-control btn-sm">Hoje</button>
-                    <button id="nextBtn" class="btn btn-control btn-sm"><i class="bi bi-chevron-right"></i></button>
-                </div>
-                <div class="btn-group">
-                    <button id="monthBtn" class="btn btn-control btn-sm active">Mês</button>
-                    <button id="weekBtn" class="btn btn-control btn-sm">Semana</button>
-                    <button id="dayBtn" class="btn btn-control btn-sm">Dia</button>
-                </div>
-            </div>
-        </div>
+            </span>
+        </span>
     </div>
 
+    <div class="d-flex flex-column flex-md-row align-items-center gap-2">
+        {{-- Botão de integração Google --}}
+        @if(auth()->user()?->google_connected)
+            <div class="d-flex gap-2">
+                <a href="{{ route('google.connect') }}" class="btn btn-outline-success">
+                    <i class="bi bi-arrow-repeat me-1"></i> Reautenticar
+                </a>
+                <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Desconectar do Google Agenda?')">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-x-circle me-1"></i> Desconectar
+                    </button>
+                </form>
+            </div>
+        @else
+            <a href="{{ route('google.connect') }}" class="btn btn-primary">
+                <i class="bi bi-google me-1"></i> Conectar ao Google
+            </a>
+        @endif
+    </div>
+
+    <div class="calendar-controls d-flex flex-wrap gap-2">
+        <button id="prevBtn" class="btn btn-outline-primary px-3">←</button>
+        <button id="todayBtn" class="btn btn-outline-secondary px-3">Hoje</button>
+        <button id="nextBtn" class="btn btn-outline-primary px-3">→</button>
+        <button id="monthBtn" class="btn btn-primary active px-3">Mês</button>
+        <button id="weekBtn" class="btn btn-outline-primary px-3">Semana</button>
+        <button id="dayBtn" class="btn btn-outline-primary px-3">Dia</button>
+    </div>
+</div>
+
+    {{-- Calendário --}}
     <div id="calendar-card">
         <div id="calendar"></div>
     </div>
 </div>
 
+<!-- Modal Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1" aria-labelledby="modalSessaoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form id="formSessao" class="modal-content shadow-sm">
@@ -236,18 +268,15 @@
 @endsection
 
 @section('scripts')
+<!-- FullCalendar + SweetAlert -->
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core/locales/pt-br.global.min.js'></script>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
-    // MODIFICAÇÃO 1: Pegando o novo elemento do título
-    const calendarPageTitle = document.getElementById('calendarPageTitle');
+    const calendarTitle = document.getElementById('calendarTitle');
     const modal = new bootstrap.Modal(document.getElementById('modalSessao'));
 
     const campos = {
@@ -260,39 +289,40 @@ document.addEventListener('DOMContentLoaded', function () {
         titulo: document.getElementById('modalTitulo'),
     };
 
-    // Verificação de segurança, a causa provável do erro anterior
-    if (!window.FullCalendar || !calendarEl) {
-        console.error("FullCalendar não foi carregado ou o elemento #calendar não foi encontrado.");
-        return;
-    }
+    if (!window.FullCalendar || !calendarEl) return;
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        // Renomeei 'plugins' para a chave correta 'locales' para pt-br
-        locale: 'pt-br',
+    const calendar = new window.FullCalendar.Calendar(calendarEl, {
+        plugins: [
+            window.FullCalendar.dayGridPlugin,
+            window.FullCalendar.timeGridPlugin,
+            window.FullCalendar.interactionPlugin,
+            window.FullCalendar.bootstrap5Plugin
+        ],
         themeSystem: 'bootstrap5',
         timeZone: 'local',
         height: 650,
+        locale: window.FullCalendar.ptBr,
         initialView: 'dayGridMonth',
         headerToolbar: false, // desabilita header nativo
         events: '/api/sessoes',
 
         datesSet: function(info) {
-            // MODIFICAÇÃO 2: Atualizando o texto do novo título
-            if(calendarPageTitle) {
-                calendarPageTitle.innerText = info.view.title;
-            }
+            calendarTitle.innerText = "Minha Agenda - " + info.view.title;
         },
 
         eventContent: function (arg) {
             const viewType = arg.view.type;
             const event = arg.event;
+
             const start = event.start;
             const end = event.end;
+
             const formatHora = (date) =>
                 date.getHours().toString().padStart(2, '0') + ':' +
                 date.getMinutes().toString().padStart(2, '0');
 
             const horaInicio = formatHora(start);
+            const horaFim = end ? formatHora(end) : '';
             const titulo = event.title;
 
             if (viewType === 'dayGridMonth') {
@@ -301,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
             } else {
                 return {
-                    html: `<div>${horaInicio} - ${end ? formatHora(end) : ''}</div><div>${titulo}</div>`
+                    html: `<div>${horaInicio} - ${horaFim}</div><div>${titulo}</div>`
                 };
             }
         },
@@ -333,47 +363,59 @@ document.addEventListener('DOMContentLoaded', function () {
                 Swal.fire('Erro', 'Erro ao carregar dados da sessão.', 'error');
             }
         },
+
+        eventDidMount: function (info) {
+            const tooltip = info.event.extendedProps.tooltip;
+            if (tooltip) {
+                info.el.setAttribute('title', tooltip);
+            }
+        }
     });
 
     calendar.render();
 
-    // Botões customizados (seu código original, funcionando com os novos botões)
-    document.getElementById('prevBtn').onclick = () => calendar.prev();
-    document.getElementById('nextBtn').onclick = () => calendar.next();
-    document.getElementById('todayBtn').onclick = () => calendar.today();
+        // Botões customizados
+        document.getElementById('prevBtn').onclick = () => calendar.prev();
+        document.getElementById('nextBtn').onclick = () => calendar.next();
+        document.getElementById('todayBtn').onclick = () => calendar.today();
 
-    const viewButtons = {
-        monthBtn: 'dayGridMonth',
-        weekBtn: 'timeGridWeek',
-        dayBtn: 'timeGridDay'
-    };
+        // Views (Mês / Semana / Dia) com controle de active
+        const viewButtons = {
+            monthBtn: 'dayGridMonth',
+            weekBtn: 'timeGridWeek',
+            dayBtn: 'timeGridDay'
+        };
 
-    Object.keys(viewButtons).forEach(id => {
-        const btn = document.getElementById(id);
-        btn.addEventListener('click', () => {
-            calendar.changeView(viewButtons[id]);
+        Object.keys(viewButtons).forEach(id => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('click', () => {
+                calendar.changeView(viewButtons[id]);
 
-            // Remove active dos outros e adiciona no clicado
-            document.querySelectorAll('.calendar-controls .btn-control').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+                // Remove active dos outros e adiciona no clicado
+                document.querySelectorAll('.calendar-controls button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
         });
-    });
 
     function abrirModalCriar(data) {
         campos.id.value = '';
-        document.getElementById('formSessao').reset(); // Melhor forma de limpar o form
+        campos.paciente.selectedIndex = 0;
         campos.data_hora.value = data.length <= 10 ? data + 'T09:00' : data;
+        campos.valor.value = '';
         campos.duracao.value = 50;
+        campos.foi_pago.checked = false;
         campos.titulo.innerText = "Nova Sessão";
+
         modal.show();
     }
 
     document.getElementById('formSessao').addEventListener('submit', async function (e) {
         e.preventDefault();
-        // ... (seu código de submit, sem alterações)
+
         const id = campos.id.value;
         const rota = id ? `/sessoes-json/${id}` : `/sessoes-json`;
         const metodo = id ? 'PUT' : 'POST';
+
         const payload = {
             paciente_id: campos.paciente.value,
             data_hora: campos.data_hora.value,
@@ -381,6 +423,7 @@ document.addEventListener('DOMContentLoaded', function () {
             duracao: parseInt(campos.duracao.value),
             foi_pago: campos.foi_pago.checked ? 1 : 0,
         };
+
         try {
             const response = await fetch(rota, {
                 method: metodo,
@@ -391,20 +434,43 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify(payload)
             });
+
             const resData = await response.json();
+
             if (!response.ok) {
                 if (resData?.message?.includes("Conflito de horário")) {
-                    Swal.fire({ icon: 'error', title: 'Conflito de Horário', text: resData.message });
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Conflito de Horário',
+                        text: resData.message,
+                        confirmButtonColor: '#3085d6',
+                    });
                 } else {
                     Swal.fire('Erro', resData.message || 'Erro ao salvar a sessão.', 'error');
                 }
+
+                if (typeof hideSpinner === 'function') hideSpinner();
                 return;
             }
+
             modal.hide();
             calendar.refetchEvents();
-            Swal.fire({ icon: 'success', title: 'Sucesso!', text: id ? 'Sessão atualizada!' : 'Sessão criada!', timer: 1800, showConfirmButton: false });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!',
+                timer: 1800,
+                showConfirmButton: false
+            }).then(() => {
+                if (typeof hideSpinner === 'function') hideSpinner();
+            });
+
         } catch (error) {
-            Swal.fire('Erro', error.message || 'Erro inesperado.', 'error');
+            Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error')
+                .then(() => {
+                    if (typeof hideSpinner === 'function') hideSpinner();
+                });
         }
     });
 });
