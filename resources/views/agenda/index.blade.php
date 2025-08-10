@@ -13,7 +13,7 @@
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
-    /* Estilo dos eventos */
+    /* Estilo dos eventos (sessões) */
     .fc-event {
         border-radius: 6px !important;
         padding: 4px !important;
@@ -39,21 +39,34 @@
     }
     .fc-daygrid-event-dot { display: none !important; }
 
+    /* Eventos de fundo (finais de semana & feriados) */
+    .bg-weekend {
+        background-color: rgba(0, 0, 0, 0.035) !important;
+    }
+    .bg-feriado {
+        background: repeating-linear-gradient(
+            -45deg,
+            rgba(255, 193, 7, 0.20),
+            rgba(255, 193, 7, 0.20) 6px,
+            rgba(255, 193, 7, 0.30) 6px,
+            rgba(255, 193, 7, 0.30) 12px
+        ) !important;
+    }
+
     /* Cabeçalho customizado */
     .calendar-header {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
         margin-bottom: 20px;
-        padding: 15px;
+        padding: 12px;
         background: white;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     @media (min-width: 768px) {
         .calendar-header {
-            flex-direction: row;
-            justify-content: space-between;
+            grid-template-columns: 1.2fr auto 1fr;
             align-items: center;
         }
     }
@@ -66,6 +79,7 @@
         align-items: center;
         gap: 10px;
         line-height: 1.2;
+        min-height: 42px;
     }
     .calendar-title i {
         font-size: 1.8rem;
@@ -86,82 +100,74 @@
     }
 
     @media (min-width: 992px) {
-        .calendar-title .main-title {
-            font-size: 1.6rem;
-        }
-        .calendar-title .sub-title {
-            font-size: 1.1rem;
-        }
+        .calendar-title .main-title { font-size: 1.6rem; }
+        .calendar-title .sub-title { font-size: 1.05rem; }
     }
     @media (max-width: 991px) {
-        .calendar-title .main-title {
-            font-size: 1.4rem;
-        }
+        .calendar-title .main-title { font-size: 1.4rem; }
     }
     @media (max-width: 576px) {
-        .calendar-title {
-            justify-content: center;
-            text-align: center;
-        }
-        .calendar-title .main-title {
-            font-size: 1.2rem;
-        }
-        .calendar-title .sub-title {
-            font-size: 1rem;
-        }
+        .calendar-title { justify-content: center; text-align: center; }
+        .calendar-title .main-title { font-size: 1.2rem; }
+        .calendar-title .sub-title { font-size: 1rem; }
     }
 
-    /* Botões */
-    .calendar-controls {
-        display: flex;
-        flex-wrap: wrap;
+    /* Barra de ações (botões) — visual alinhado */
+    .calendar-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
-        justify-content: center;
     }
-    .calendar-controls button {
+    @media (min-width: 768px) {
+        .calendar-actions {
+            grid-template-columns: repeat(4, auto);
+            justify-content: center;
+            align-items: center;
+        }
+    }
+    .calendar-actions .btn {
+        min-height: 42px;
         border-radius: 8px !important;
-        font-size: 0.9rem !important;
+        font-size: 0.95rem !important;
         padding: 6px 14px !important;
-        border: 1px solid #ccc;
-        background: #f8f9fa;
-        color: #333;
         font-weight: 500;
-        transition: all 0.2s ease-in-out;
-        flex: 1 1 auto; /* Ajuste para dividir espaço igualmente */
-        min-width: 90px;
     }
-    .calendar-controls button:hover {
-        background: #e9ecef;
-        color: #000;
+
+    /* Controles de navegação/visualização */
+    .calendar-controls {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px;
+        align-items: center;
     }
-    .calendar-controls button.active {
+    @media (min-width: 768px) {
+        .calendar-controls {
+            grid-template-columns: repeat(6, auto);
+            justify-content: end;
+        }
+    }
+    .calendar-controls .btn {
+        min-height: 42px;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        padding: 6px 14px !important;
+        font-weight: 500;
+    }
+    .calendar-controls .btn.active {
         background: #00aaff !important;
         color: #fff !important;
         border-color: #0090d0 !important;
         font-weight: 600;
         box-shadow: 0 2px 8px rgba(0, 170, 255, 0.35);
     }
-
-    /* Mobile */
-    @media (max-width: 576px) {
-        .calendar-controls {
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            justify-content: center;
-        }
-        .calendar-controls button {
-            flex: 0 0 auto;
-            min-width: 90px;
-        }
-    }
 </style>
-
+@endsection
 
 @section('content')
 <div class="container">
 
-    {{-- Cabeçalho clean --}}
-    <div class="calendar-header bg-white p-3 rounded shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+    {{-- Cabeçalho clean alinhado --}}
+    <div class="calendar-header">
         <div class="calendar-title">
             <i class="bi bi-calendar3 text-primary fs-3"></i>
             <span class="d-flex flex-column">
@@ -180,37 +186,47 @@
             </span>
         </div>
 
-        <div class="d-flex flex-column flex-md-row align-items-center gap-2">
-            {{-- Botão de integração Google --}}
+        <div class="calendar-actions">
+            {{-- Botões de integração Google --}}
             @if(auth()->user()?->google_connected)
-                <div class="d-flex gap-2">
-                    <a href="{{ route('google.connect') }}" class="btn btn-outline-success">
-                        <i class="bi bi-arrow-repeat me-1"></i> Reautenticar
-                    </a>
-                    <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Desconectar do Google Agenda?')">
-                        @csrf
-                        <button type="submit" class="btn btn-outline-danger">
-                            <i class="bi bi-x-circle me-1"></i> Desconectar
-                        </button>
-                    </form>
-                </div>
+                <a href="{{ route('google.connect') }}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-arrow-repeat me-1"></i> Reautenticar
+                </a>
+                <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Desconectar do Google Agenda?')" class="m-0">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-x-circle me-1"></i> Desconectar
+                    </button>
+                </form>
+                <a href="{{ route('sessoes.create') }}" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-circle me-1"></i> Nova Sessão
+                </a>
+                <a href="{{ route('sessoes.index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-list-ul me-1"></i> Ver lista
+                </a>
             @else
-                <a href="{{ route('google.connect') }}" class="btn btn-primary">
+                <a href="{{ route('google.connect') }}" class="btn btn-primary w-100">
                     <i class="bi bi-google me-1"></i> Conectar ao Google
                 </a>
+                <a href="{{ route('sessoes.create') }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-plus-circle me-1"></i> Nova Sessão
+                </a>
+                <a href="{{ route('sessoes.index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-list-ul me-1"></i> Ver lista
+                </a>
+                <div class="d-none d-md-block"></div>
             @endif
         </div>
 
-        <div class="calendar-controls d-flex flex-wrap gap-2">
-            <button id="prevBtn" class="btn btn-outline-primary px-3">←</button>
+        <div class="calendar-controls">
+            <button id="prevBtn" class="btn btn-outline-primary px-3"><i class="bi bi-chevron-left"></i></button>
             <button id="todayBtn" class="btn btn-outline-secondary px-3">Hoje</button>
-            <button id="nextBtn" class="btn btn-outline-primary px-3">→</button>
+            <button id="nextBtn" class="btn btn-outline-primary px-3"><i class="bi bi-chevron-right"></i></button>
             <button id="monthBtn" class="btn btn-primary active px-3">Mês</button>
             <button id="weekBtn" class="btn btn-outline-primary px-3">Semana</button>
             <button id="dayBtn" class="btn btn-outline-primary px-3">Dia</button>
         </div>
     </div>
-
 
     {{-- Calendário --}}
     <div id="calendar-card">
@@ -261,7 +277,7 @@
       </div>
       <div class="modal-footer d-flex flex-column flex-md-row gap-2">
         <button type="button" class="btn btn-secondary w-100 w-md-auto" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-success w-100 w-md-auto">Salvar</button>
+        <button type="submit" id="btnSalvarSessao" class="btn btn-success w-100 w-md-auto">Salvar</button>
       </div>
     </form>
   </div>
@@ -269,8 +285,15 @@
 @endsection
 
 @section('scripts')
-<!-- FullCalendar + SweetAlert -->
-<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+<!-- Bootstrap Icons (necessário p/ ícones bi-*) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+<!-- FullCalendar JS (bundle global) + locales -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
+
+<!-- Bootstrap + SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -279,6 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
     const calendarTitle = document.getElementById('calendarTitle');
     const modal = new bootstrap.Modal(document.getElementById('modalSessao'));
+    const btnSalvar = document.getElementById('btnSalvarSessao');
 
     const campos = {
         id: document.getElementById('sessao_id'),
@@ -292,25 +316,170 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!window.FullCalendar || !calendarEl) return;
 
-    const calendar = new window.FullCalendar.Calendar(calendarEl, {
+    /* ====== Feriados nacionais BR por ano (com datas móveis) ====== */
+    function easterDate(year) {
+        // algoritmo de Meeus/Jones/Butcher
+        const a = year % 19;
+        const b = Math.floor(year / 100);
+        const c = year % 100;
+        const d = Math.floor(b / 4);
+        const e = b % 4;
+        const f = Math.floor((b + 8) / 25);
+        const g = Math.floor((b - f + 1) / 3);
+        const h = (19*a + b - d - g + 15) % 30;
+        const i = Math.floor(c / 4);
+        const k = c % 4;
+        const l = (32 + 2*e + 2*i - h - k) % 7;
+        const m = Math.floor((a + 11*h + 22*l) / 451);
+        const month = Math.floor((h + l - 7*m + 114) / 31); // 3=Março, 4=Abril
+        const day = ((h + l - 7*m + 114) % 31) + 1;
+        return new Date(Date.UTC(year, month - 1, day)); // UTC para ISO simples
+    }
+
+    function toISODate(d) {
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth()+1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function addDays(d, days) {
+        const nd = new Date(d.getTime());
+        nd.setUTCDate(nd.getUTCDate() + days);
+        return nd;
+    }
+
+    function feriadosBRPorAno(year) {
+        const pascoa = easterDate(year);
+        const carnavalTer = addDays(pascoa, -47);
+        const sextaSanta = addDays(pascoa, -2);
+        const corpusChristi = addDays(pascoa, 60);
+
+        // fixos + móveis (principais nacionais)
+        const fixos = [
+            `${year}-01-01`, // Confraternização Universal
+            `${year}-04-21`, // Tiradentes
+            `${year}-05-01`, // Dia do Trabalho
+            `${year}-09-07`, // Independência
+            `${year}-10-12`, // Nossa Senhora Aparecida
+            `${year}-11-02`, // Finados
+            `${year}-11-15`, // Proclamação da República
+            `${year}-12-25`, // Natal
+        ];
+
+        const moveis = [
+            toISODate(carnavalTer),   // Carnaval (terça)
+            toISODate(sextaSanta),    // Sexta-feira Santa
+            toISODate(pascoa),        // Páscoa (domingo)
+            toISODate(corpusChristi), // Corpus Christi
+        ];
+
+        return [...fixos, ...moveis];
+    }
+
+    /* ====== Fonte de eventos de fundo: finais de semana e feriados ====== */
+    // Finais de semana recorrentes
+    const weekendBackground = {
+        events: [
+            {
+                daysOfWeek: [0,6],       // dom(0) e sáb(6)
+                startTime: '00:00',
+                endTime: '24:00',
+                display: 'background',
+                className: 'bg-weekend',
+            }
+        ]
+    };
+
+    // Feriados (carregados dinamicamente conforme a visão exibida)
+    function buildHolidayBgEvents(viewStart, viewEnd) {
+        // Vamos cobrir ano(s) da janela visível
+        const years = new Set();
+        const s = new Date(viewStart.valueOf());
+        const e = new Date(viewEnd.valueOf());
+        for (let y = s.getFullYear(); y <= e.getFullYear(); y++) years.add(y);
+
+        const dates = [];
+        years.forEach(y => dates.push(...feriadosBRPorAno(y)));
+
+        return dates.map(iso => ({
+            start: iso,
+            end: iso,  // FullCalendar lida como all-day
+            allDay: true,
+            display: 'background',
+            className: 'bg-feriado',
+        }));
+    }
+
+    // Manter uma source dinâmica para feriados
+    let feriadosSource = null;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
         plugins: [
-            window.FullCalendar.dayGridPlugin,
-            window.FullCalendar.timeGridPlugin,
-            window.FullCalendar.interactionPlugin,
-            window.FullCalendar.bootstrap5Plugin
+            FullCalendar.dayGridPlugin,
+            FullCalendar.timeGridPlugin,
+            FullCalendar.interactionPlugin,
+            FullCalendar.bootstrap5Plugin
         ],
         themeSystem: 'bootstrap5',
         timeZone: 'local',
         height: 650,
-        locale: window.FullCalendar.ptBr,
+        locale: 'pt-br',
         initialView: 'dayGridMonth',
         headerToolbar: false, // desabilita header nativo
         events: '/api/sessoes',
 
-        datesSet: function(info) {
-            calendarTitle.innerText = "Minha Agenda - " + info.view.title;
+        selectable: true,
+        selectMirror: true,
+        expandRows: true,
+        eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        slotMinTime: '07:00:00',
+        slotMaxTime: '22:00:00',
+
+        // classes visuais conforme props
+        eventClassNames(info) {
+            const cx = [];
+            const x = info.event.extendedProps || {};
+            if (x.foi_pago) cx.push('evento-pago');
+            if (!x.foi_pago) cx.push('evento-pendente');
+
+            // Heurística de atravessar a meia-noite
+            if (info.event.start && info.event.end) {
+                const s = info.event.start; const e = info.event.end;
+                if (s.toDateString() !== e.toDateString()) cx.push('evento-apos-meia-noite');
+            }
+            return cx;
         },
 
+        datesSet(info) {
+            calendarTitle.innerText = "Minha Agenda - " + info.view.title;
+
+            // Atualiza feriados de fundo para a janela atual
+            if (feriadosSource) {
+                calendar.getEventSourceById('feriados-bg')?.remove();
+            }
+            feriadosSource = calendar.addEventSource({
+                id: 'feriados-bg',
+                events: buildHolidayBgEvents(info.start, info.end),
+            });
+        },
+
+        // Sáb/Dom de fundo (recorrente)
+        eventSources: [
+            weekendBackground
+        ],
+
+        // criar por clique/arraste
+        select: (sel) => {
+            abrirModalCriar(sel.startStr.slice(0,16)); // 'YYYY-MM-DDTHH:mm'
+            calendar.unselect();
+        },
+        dateClick: (info) => {
+            const base = info.dateStr.length <= 10 ? info.dateStr + 'T09:00' : info.dateStr;
+            abrirModalCriar(base);
+        },
+
+        // renderização textual
         eventContent: function (arg) {
             const viewType = arg.view.type;
             const event = arg.event;
@@ -322,25 +491,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 date.getHours().toString().padStart(2, '0') + ':' +
                 date.getMinutes().toString().padStart(2, '0');
 
-            const horaInicio = formatHora(start);
+            const horaInicio = start ? formatHora(start) : '';
             const horaFim = end ? formatHora(end) : '';
-            const titulo = event.title;
+            const titulo = event.title || '';
 
             if (viewType === 'dayGridMonth') {
-                return {
-                    html: `<div>${horaInicio} - ${titulo}</div>`
-                };
+                return { html: `<div>${horaInicio} - ${titulo}</div>` };
             } else {
-                return {
-                    html: `<div>${horaInicio} - ${horaFim}</div><div>${titulo}</div>`
-                };
+                return { html: `<div>${horaInicio}${horaFim ? ' - ' + horaFim : ''}</div><div>${titulo}</div>` };
             }
         },
 
-        dateClick: function (info) {
-            abrirModalCriar(info.dateStr);
-        },
-
+        // abrir modal ao clicar no evento
         eventClick: async function (info) {
             info.jsEvent.preventDefault();
             const id = info.event.id;
@@ -356,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 campos.data_hora.value = sessao.data_hora;
                 campos.valor.value = sessao.valor;
                 campos.duracao.value = sessao.duracao;
-                campos.foi_pago.checked = sessao.foi_pago == true;
+                campos.foi_pago.checked = !!sessao.foi_pago;
                 campos.titulo.innerText = "Editar Sessão";
 
                 modal.show();
@@ -366,37 +528,32 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         eventDidMount: function (info) {
-            const tooltip = info.event.extendedProps.tooltip;
-            if (tooltip) {
-                info.el.setAttribute('title', tooltip);
-            }
+            const tooltip = info.event.extendedProps?.tooltip;
+            if (tooltip) info.el.setAttribute('title', tooltip);
         }
     });
 
     calendar.render();
 
-        // Botões customizados
-        document.getElementById('prevBtn').onclick = () => calendar.prev();
-        document.getElementById('nextBtn').onclick = () => calendar.next();
-        document.getElementById('todayBtn').onclick = () => calendar.today();
+    // Botões customizados
+    document.getElementById('prevBtn').onclick = () => calendar.prev();
+    document.getElementById('nextBtn').onclick = () => calendar.next();
+    document.getElementById('todayBtn').onclick = () => calendar.today();
 
-        // Views (Mês / Semana / Dia) com controle de active
-        const viewButtons = {
-            monthBtn: 'dayGridMonth',
-            weekBtn: 'timeGridWeek',
-            dayBtn: 'timeGridDay'
-        };
-
-        Object.keys(viewButtons).forEach(id => {
-            const btn = document.getElementById(id);
-            btn.addEventListener('click', () => {
-                calendar.changeView(viewButtons[id]);
-
-                // Remove active dos outros e adiciona no clicado
-                document.querySelectorAll('.calendar-controls button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
+    // Views (Mês / Semana / Dia) com controle de active
+    const viewButtons = {
+        monthBtn: 'dayGridMonth',
+        weekBtn: 'timeGridWeek',
+        dayBtn: 'timeGridDay'
+    };
+    Object.keys(viewButtons).forEach(id => {
+        const btn = document.getElementById(id);
+        btn.addEventListener('click', () => {
+            calendar.changeView(viewButtons[id]);
+            document.querySelectorAll('.calendar-controls .btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         });
+    });
 
     function abrirModalCriar(data) {
         campos.id.value = '';
@@ -406,7 +563,6 @@ document.addEventListener('DOMContentLoaded', function () {
         campos.duracao.value = 50;
         campos.foi_pago.checked = false;
         campos.titulo.innerText = "Nova Sessão";
-
         modal.show();
     }
 
@@ -426,6 +582,9 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         try {
+            btnSalvar.disabled = true;
+            btnSalvar.innerText = 'Salvando...';
+
             const response = await fetch(rota, {
                 method: metodo,
                 headers: {
@@ -439,18 +598,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const resData = await response.json();
 
             if (!response.ok) {
-                if (resData?.message?.includes("Conflito de horário")) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Conflito de Horário',
-                        text: resData.message,
-                        confirmButtonColor: '#3085d6',
-                    });
+                if (resData?.message?.toLowerCase().includes("sessão") || resData?.message?.toLowerCase().includes("conflito")) {
+                    Swal.fire({ icon: 'error', title: 'Conflito de Horário', text: resData.message });
                 } else {
                     Swal.fire('Erro', resData.message || 'Erro ao salvar a sessão.', 'error');
                 }
-
-                if (typeof hideSpinner === 'function') hideSpinner();
                 return;
             }
 
@@ -461,17 +613,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 icon: 'success',
                 title: 'Sucesso!',
                 text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!',
-                timer: 1800,
+                timer: 1600,
                 showConfirmButton: false
-            }).then(() => {
-                if (typeof hideSpinner === 'function') hideSpinner();
             });
 
         } catch (error) {
-            Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error')
-                .then(() => {
-                    if (typeof hideSpinner === 'function') hideSpinner();
-                });
+            Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error');
+        } finally {
+            btnSalvar.disabled = false;
+            btnSalvar.innerText = 'Salvar';
         }
     });
 });

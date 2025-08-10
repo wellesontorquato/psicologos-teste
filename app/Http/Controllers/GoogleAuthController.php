@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Google\Client as GoogleClient;
+use Google\Service\Calendar as GoogleCalendar;
 
 class GoogleAuthController extends Controller
 {
@@ -13,13 +14,15 @@ class GoogleAuthController extends Controller
         $client->setClientId(config('services.google.client_id'));
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setRedirectUri(config('services.google.redirect'));
+
+        // Token offline p/ refresh; escopos da Agenda
         $client->setAccessType('offline');
         $client->setIncludeGrantedScopes(true);
-        $client->setPrompt('consent');
-        $client->setScopes([
-            'https://www.googleapis.com/auth/calendar',
-            'https://www.googleapis.com/auth/calendar.events',
-        ]);
+        $client->setPrompt('consent'); // garante refresh_token na 1ª vez
+
+        // pode usar as constantes do serviço ou as URLs; equivalentes
+        $client->setScopes([GoogleCalendar::CALENDAR, GoogleCalendar::CALENDAR_EVENTS]);
+
         return $client;
     }
 
@@ -62,15 +65,16 @@ class GoogleAuthController extends Controller
         }
 
         if (isset($token['error'])) {
-            return redirect()->route('agenda')->with('error', 'Erro no OAuth: ' . $token['error']);
+            return redirect()->route('agenda')->with('error', 'Erro no OAuth: '.$token['error']);
         }
 
-        // $token: access_token, expires_in, (refresh_token na 1ª vez), scope, token_type, created
+        // Em algumas respostas o refresh_token vem apenas via getter do client
+        $refreshToken = $token['refresh_token'] ?? $client->getRefreshToken();
+
         $user = $r->user();
         $user->update([
             'google_access_token'     => $token['access_token'] ?? null,
-            // Em reconexões o refresh_token pode não vir; preserva o existente
-            'google_refresh_token'    => $token['refresh_token'] ?? $user->google_refresh_token,
+            'google_refresh_token'    => $refreshToken ?: $user->google_refresh_token,
             'google_token_expires_at' => now()->addSeconds($token['expires_in'] ?? 3500),
             'google_calendar_id'      => 'primary',
             'google_connected'        => true,
@@ -83,16 +87,15 @@ class GoogleAuthController extends Controller
     {
         $user = $r->user();
 
-        // Revoga no Google (tenta com refresh_token; se não tiver, usa access_token)
+        // Revoga no Google (usa refresh_token se houver; senão, access_token)
         try {
             $client = $this->makeClient();
             $tokenToRevoke = $user->google_refresh_token ?: $user->google_access_token;
             if ($tokenToRevoke) {
-                // google/apiclient faz POST para https://oauth2.googleapis.com/revoke
                 $client->revokeToken($tokenToRevoke);
             }
         } catch (\Throwable $e) {
-            // opcional: logar $e->getMessage()
+            // opcional: Log::warning('Falha ao revogar Google OAuth: '.$e->getMessage());
         }
 
         // Limpa credenciais locais

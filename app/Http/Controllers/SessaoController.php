@@ -33,9 +33,9 @@ class SessaoController extends Controller
             $busca = preg_replace('/\D/', '', $request->busca);
             $baseQuery->whereHas('paciente', function ($q) use ($busca) {
                 $q->where('nome', 'like', "%{$busca}%")
-                ->orWhere('telefone', 'like', "%{$busca}%")
-                ->orWhere('email', 'like', "%{$busca}%")
-                ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
+                  ->orWhere('telefone', 'like', "%{$busca}%")
+                  ->orWhere('email', 'like', "%{$busca}%")
+                  ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
             });
         }
 
@@ -53,7 +53,6 @@ class SessaoController extends Controller
             }
         }
 
-        // Ordenação personalizada
         if ($request->ordenar === 'mais_antigo') {
             $baseQuery->orderByRaw("
                 CASE
@@ -74,13 +73,12 @@ class SessaoController extends Controller
             ");
         }
 
-        // 🔽 Separando as sessões em duas queries independentes com paginação
         $agora = \Carbon\Carbon::now('America/Sao_Paulo');
 
         $sessoesMarcadas = (clone $baseQuery)
             ->where(function ($q) use ($agora) {
                 $q->whereNull('data_hora')
-                ->orWhere('data_hora', '>=', $agora);
+                  ->orWhere('data_hora', '>=', $agora);
             })
             ->paginate(10, ['*'], 'marcadas')
             ->withQueryString();
@@ -111,19 +109,17 @@ class SessaoController extends Controller
     {
         $dados = $request->validate([
             'paciente_id' => 'required|exists:pacientes,id',
-            'data_hora' => 'required|date',
-            'duracao' => 'required|integer|min:1',
-            'valor' => 'nullable|numeric',
+            'data_hora'   => 'required|date',
+            'duracao'     => 'required|integer|min:1',
+            'valor'       => 'nullable|numeric',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
         $dados['foi_pago'] = $request->has('foi_pago');
-
-        // Definir data_hora_original na criação
         $dados['data_hora_original'] = $dados['data_hora'];
 
         $inicio = Carbon::parse($dados['data_hora']);
-        $fim = $inicio->copy()->addMinutes($dados['duracao']);
+        $fim    = $inicio->copy()->addMinutes($dados['duracao']);
 
         $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
             ->where('data_hora', '<', $fim)
@@ -139,7 +135,7 @@ class SessaoController extends Controller
 
         AuditHelper::log('created_sessao', 'Criou sessão com o paciente ID ' . $sessao->paciente_id);
 
-        // 🔗 Google Calendar (criar evento)
+        // Google Calendar - criar evento
         $user = $request->user();
         if ($user->google_connected) {
             try {
@@ -172,17 +168,17 @@ class SessaoController extends Controller
     {
         $dados = $request->validate([
             'paciente_id' => 'required|exists:pacientes,id',
-            'data_hora' => 'required|date',
-            'duracao' => 'required|integer|min:1',
-            'valor' => 'nullable|numeric',
-            'foi_pago' => 'boolean',
+            'data_hora'   => 'required|date',
+            'duracao'     => 'required|integer|min:1',
+            'valor'       => 'nullable|numeric',
+            'foi_pago'    => 'boolean',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
         $dados['data_hora_original'] = $dados['data_hora'];
 
         $inicio = Carbon::parse($dados['data_hora']);
-        $fim = $inicio->copy()->addMinutes($dados['duracao']);
+        $fim    = $inicio->copy()->addMinutes($dados['duracao']);
 
         $conflito = Sessao::where('data_hora', '<', $fim)
             ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
@@ -197,7 +193,7 @@ class SessaoController extends Controller
 
         AuditHelper::log('created_sessao_json', 'Criou sessão via JSON para o paciente ID ' . $sessao->paciente_id);
 
-        // 🔗 Google Calendar (criar evento)
+        // Google Calendar - criar evento
         $user = $request->user();
         if ($user->google_connected) {
             try {
@@ -250,18 +246,21 @@ class SessaoController extends Controller
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
-        $sessao->data_hora = Carbon::parse($sessao->data_hora)->format('Y-m-d\TH:i');
+        // NÃO sobrescreve data_hora com string; cria um campo formatado
+        $dataHoraLocal = Carbon::parse($sessao->data_hora)
+            ->timezone(config('app.timezone'))
+            ->format('Y-m-d\TH:i');
 
         AuditHelper::log('edit_sessao_json', 'Acessou edição JSON da sessão ID ' . $id);
 
         return response()->json([
-            'id' => $sessao->id,
+            'id'          => $sessao->id,
             'paciente_id' => $sessao->paciente_id,
-            'data_hora' => $sessao->data_hora->timezone(config('app.timezone'))->format('Y-m-d\TH:i'),
-            'valor' => $sessao->valor,
-            'duracao' => $sessao->duracao,
-            'foi_pago' => $sessao->foi_pago,
-        ]);        
+            'data_hora'   => $dataHoraLocal,
+            'valor'       => $sessao->valor,
+            'duracao'     => $sessao->duracao,
+            'foi_pago'    => $sessao->foi_pago,
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -273,21 +272,19 @@ class SessaoController extends Controller
         }
 
         $dados = $request->validate([
-            'paciente_id' => 'required|exists:pacientes,id',
-            'data_hora' => 'required|date',
-            'duracao' => 'required|integer|min:1',
-            'valor' => 'nullable|numeric',
+            'paciente_id'        => 'required|exists:pacientes,id',
+            'data_hora'          => 'required|date',
+            'duracao'            => 'required|integer|min:1',
+            'valor'              => 'nullable|numeric',
             'status_confirmacao' => 'nullable|string',
-            'foi_pago' => 'boolean',
+            'foi_pago'           => 'boolean',
         ]);
 
         $statusAntigo = $sessao->status_confirmacao;
-
         $dados['foi_pago'] = $request->boolean('foi_pago');
 
         $sessao->update($dados);
 
-        // Se não tiver data_hora_original ainda (dados antigos), seta a primeira vez
         if (is_null($sessao->data_hora_original)) {
             $sessao->update(['data_hora_original' => $dados['data_hora']]);
         }
@@ -298,7 +295,7 @@ class SessaoController extends Controller
 
         AuditHelper::log('updated_sessao', 'Atualizou sessão ID ' . $id);
 
-        // 🔗 Google Calendar (atualizar/criar se não tiver)
+        // Google Calendar - atualizar (ou criar se não existir)
         $user = $request->user();
         if ($user->google_connected) {
             try {
@@ -349,10 +346,10 @@ class SessaoController extends Controller
 
         $dados = $request->validate([
             'paciente_id' => 'required|exists:pacientes,id',
-            'data_hora' => 'required|date',
-            'duracao' => 'required|integer|min:1',
-            'valor' => 'nullable|numeric',
-            'foi_pago' => 'boolean',
+            'data_hora'   => 'required|date',
+            'duracao'     => 'required|integer|min:1',
+            'valor'       => 'nullable|numeric',
+            'foi_pago'    => 'boolean',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
@@ -361,7 +358,7 @@ class SessaoController extends Controller
 
         if ($horarioAlterado) {
             $inicio = Carbon::parse($dados['data_hora']);
-            $fim = $inicio->copy()->addMinutes($dados['duracao']);
+            $fim    = $inicio->copy()->addMinutes($dados['duracao']);
 
             $conflito = Sessao::where('id', '!=', $id)
                 ->where('data_hora', '<', $fim)
@@ -375,7 +372,6 @@ class SessaoController extends Controller
 
         $sessao->update($dados);
 
-        // Se não tiver data_hora_original ainda (dados antigos), seta a primeira vez
         if (is_null($sessao->data_hora_original)) {
             $sessao->update(['data_hora_original' => $dados['data_hora']]);
         }
@@ -386,7 +382,7 @@ class SessaoController extends Controller
 
         AuditHelper::log('updated_sessao_json', 'Atualizou sessão via JSON ID ' . $id);
 
-        // 🔗 Google Calendar (atualizar/criar se não tiver)
+        // Google Calendar - atualizar (ou criar)
         $user = $request->user();
         if ($user->google_connected) {
             try {
@@ -436,13 +432,13 @@ class SessaoController extends Controller
             abort(403, 'ACESSO NEGADO À SESSÃO.');
         }
 
-        // 🔗 Google Calendar (deletar evento)
+        // Google Calendar - deletar evento
         $user = $request->user();
         if ($user->google_connected) {
             try {
                 app(GoogleCalendarService::class)->deleteEvent($user, $sessao->google_event_id);
             } catch (\Throwable $e) {
-                // opcional: logar erro de deleção
+                // opcional: logar erro
             }
         }
 
@@ -472,13 +468,13 @@ class SessaoController extends Controller
             return response()->json(['message' => 'ACESSO NEGADO À SESSÃO.'], 403);
         }
 
-        // 🔗 Google Calendar (deletar evento)
+        // Google Calendar - deletar evento
         $user = auth()->user();
         if ($user && $user->google_connected) {
             try {
                 app(GoogleCalendarService::class)->deleteEvent($user, $sessao->google_event_id);
             } catch (\Throwable $e) {
-                // opcional: logar erro de deleção
+                // opcional: logar erro
             }
         }
 
@@ -569,7 +565,7 @@ class SessaoController extends Controller
     {
         $request->validate([
             'sessao_id' => 'required|exists:sessoes,id',
-            'semanas' => 'required|integer|min:1',
+            'semanas'   => 'required|integer|min:1',
         ]);
 
         $sessaoOriginal = Sessao::with('paciente')->findOrFail($request->sessao_id);
@@ -582,10 +578,12 @@ class SessaoController extends Controller
         $foiPago = $request->has('foi_pago');
         $criadas = 0;
 
+        $user = $request->user();
+
         for ($i = 1; $i <= $semanas; $i++) {
             $novaDataHora = Carbon::parse($sessaoOriginal->data_hora)->addWeeks($i);
             $inicio = $novaDataHora->copy();
-            $fim = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
+            $fim    = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
 
             $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
                 ->where('data_hora', '<', $fim)
@@ -593,16 +591,41 @@ class SessaoController extends Controller
                 ->exists();
 
             if (!$conflito) {
-                Sessao::create([
-                    'user_id' => auth()->id(),
-                    'paciente_id' => $sessaoOriginal->paciente_id,
-                    'data_hora' => $novaDataHora,
+                $nova = Sessao::create([
+                    'user_id'            => auth()->id(),
+                    'paciente_id'        => $sessaoOriginal->paciente_id,
+                    'data_hora'          => $novaDataHora,
                     'data_hora_original' => $novaDataHora,
-                    'duracao' => $sessaoOriginal->duracao,
-                    'valor' => $sessaoOriginal->valor,
-                    'foi_pago' => $foiPago,
-                    'observacoes' => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
+                    'duracao'            => $sessaoOriginal->duracao,
+                    'valor'              => $sessaoOriginal->valor,
+                    'foi_pago'           => $foiPago,
+                    'observacoes'        => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
                 ]);
+
+                // Google: criar evento da recorrência
+                if ($user->google_connected) {
+                    try {
+                        $gcal = app(GoogleCalendarService::class);
+                        $eventId = $gcal->createEvent($user, [
+                            'summary'     => "Sessão com {$nova->paciente->nome}",
+                            'description' => $nova->observacoes ?? null,
+                            'start'       => $inicio,
+                            'end'         => $fim,
+                            'attendees'   => $nova->paciente->email ? [['email' => $nova->paciente->email]] : [],
+                        ]);
+                        $nova->update([
+                            'google_event_id'    => $eventId,
+                            'google_sync_status' => 'ok',
+                            'google_sync_error'  => null,
+                        ]);
+                    } catch (\Throwable $e) {
+                        $nova->update([
+                            'google_sync_status' => 'error',
+                            'google_sync_error'  => substr($e->getMessage(), 0, 1000),
+                        ]);
+                    }
+                }
+
                 $criadas++;
             }
         }
@@ -616,8 +639,8 @@ class SessaoController extends Controller
     {
         $dados = $request->validate([
             'sessao_id' => 'required|exists:sessoes,id',
-            'semanas' => 'required|integer|min:1',
-            'foi_pago' => 'boolean',
+            'semanas'   => 'required|integer|min:1',
+            'foi_pago'  => 'boolean',
         ]);
 
         $sessaoOriginal = Sessao::with('paciente')->findOrFail($dados['sessao_id']);
@@ -630,10 +653,12 @@ class SessaoController extends Controller
         $foiPago = $dados['foi_pago'] ?? false;
         $criadas = 0;
 
+        $user = auth()->user();
+
         for ($i = 1; $i <= $semanas; $i++) {
             $novaDataHora = Carbon::parse($sessaoOriginal->data_hora)->addWeeks($i);
             $inicio = $novaDataHora->copy();
-            $fim = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
+            $fim    = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
 
             $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
                 ->where('data_hora', '<', $fim)
@@ -641,16 +666,41 @@ class SessaoController extends Controller
                 ->exists();
 
             if (!$conflito) {
-                Sessao::create([
-                    'user_id' => auth()->id(),
-                    'paciente_id' => $sessaoOriginal->paciente_id,
-                    'data_hora' => $novaDataHora,
+                $nova = Sessao::create([
+                    'user_id'            => auth()->id(),
+                    'paciente_id'        => $sessaoOriginal->paciente_id,
+                    'data_hora'          => $novaDataHora,
                     'data_hora_original' => $novaDataHora,
-                    'duracao' => $sessaoOriginal->duracao,
-                    'valor' => $sessaoOriginal->valor,
-                    'foi_pago' => $foiPago,
-                    'observacoes' => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
+                    'duracao'            => $sessaoOriginal->duracao,
+                    'valor'              => $sessaoOriginal->valor,
+                    'foi_pago'           => $foiPago,
+                    'observacoes'        => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
                 ]);
+
+                // Google: criar evento da recorrência
+                if ($user->google_connected) {
+                    try {
+                        $gcal = app(GoogleCalendarService::class);
+                        $eventId = $gcal->createEvent($user, [
+                            'summary'     => "Sessão com {$nova->paciente->nome}",
+                            'description' => $nova->observacoes ?? null,
+                            'start'       => $inicio,
+                            'end'         => $fim,
+                            'attendees'   => $nova->paciente->email ? [['email' => $nova->paciente->email]] : [],
+                        ]);
+                        $nova->update([
+                            'google_event_id'    => $eventId,
+                            'google_sync_status' => 'ok',
+                            'google_sync_error'  => null,
+                        ]);
+                    } catch (\Throwable $e) {
+                        $nova->update([
+                            'google_sync_status' => 'error',
+                            'google_sync_error'  => substr($e->getMessage(), 0, 1000),
+                        ]);
+                    }
+                }
+
                 $criadas++;
             }
         }
