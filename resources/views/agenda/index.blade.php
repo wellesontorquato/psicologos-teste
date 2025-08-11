@@ -76,7 +76,13 @@
     .legend .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8; }
     .dot-paid{ background:#28a745 } .dot-pending{ background:#dc3545 } .dot-late{ background:#00c4ff }
 
-    .cal-actions{ display:grid; grid-template-columns:1fr; gap:8px; }
+    .sync-stack{ display:flex; flex-direction:column; gap:8px; align-items:center;}
+    .cal-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .spacer { flex:1; }
+
+    @media (min-width: 768px){
+    .cal-actions{ flex-wrap:nowrap; }
+    }
     .btn-group-clean{ display:flex; gap:8px; align-items:center; }
     .divider-dot{ display:none; }
     .btn-ghost,.btn-brand,.btn-outline{
@@ -193,11 +199,27 @@
                         <div class="cal-head"><span id="calendarTitle">Minha Agenda</span></div>
 
                         {{-- Subtítulo / Chips e botões de integração --}}
-                        <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1 justify-content-center justify-content-md-start">
+                        <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1 justify-content-center">
                             @if(auth()->user()?->google_connected)
-                                <span class="pg-chip chip-success"><i class="bi bi-google"></i> Google Agenda conectado</span>
+                                <span class="pg-chip chip-success">
+                                    <i class="bi bi-google"></i> Google Agenda conectado
+                                </span>
 
-                                {{-- Desconectar (mantém à esquerda) --}}
+                                {{-- EMPILHADO E CENTRALIZADO --}}
+                                <div class="sync-stack">
+                                    <form action="{{ route('google.sync') }}" method="POST" class="d-inline">@csrf
+                                        <button type="submit" class="btn-outline btn-sync">
+                                            <i class="bi bi-arrow-repeat me-1"></i> Sincronizar futuras
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">@csrf
+                                        <button type="submit" class="btn-outline btn-sync">
+                                            <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas
+                                        </button>
+                                    </form>
+                                </div>
+
                                 <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
                                     @csrf
                                     <button type="submit" class="pg-chip" title="Desconectar Google">
@@ -219,43 +241,27 @@
 
             <div class="cal-right">
                 <div class="cal-actions">
-
-                    {{-- Botões de Sincronização (agora à direita, compactos) --}}
-                    @if(auth()->user()?->google_connected)
-                    <div class="btn-group-clean sync-group">
-                        <form action="{{ route('google.sync') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn-outline btn-compact" title="Sincronizar apenas futuras sessões">
-                                <i class="bi bi-arrow-repeat"></i>
-                                <span class="sync-text ms-1">Sincronizar futuras</span>
-                            </button>
-                        </form>
-
-                        <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn-outline btn-compact" title="Sincronizar todas as sessões">
-                                <i class="bi bi-cloud-arrow-up"></i>
-                                <span class="sync-text ms-1">Sincronizar todas</span>
-                            </button>
-                        </form>
-                    </div>
-                    @endif
-
-                    <div class="btn-group-clean nav-switch order-md-1">
+                    <div class="btn-group-clean nav-switch">
                         <button id="prevBtn" class="nbtn btn-ghost" aria-label="Mês anterior">←</button>
                         <button id="todayBtn" class="nbtn btn-ghost">Hoje</button>
                         <button id="nextBtn" class="nbtn btn-ghost" aria-label="Próximo mês">→</button>
                     </div>
 
-                    <div class="btn-group-clean view-switch order-md-2">
+                    <div class="btn-group-clean view-switch">
                         <button id="monthBtn" class="vbtn active">Mês</button>
                         <button id="weekBtn" class="vbtn">Semana</button>
                         <button id="dayBtn" class="vbtn">Dia</button>
                     </div>
 
-                    <<div class="btn-group-clean ms-md-auto order-md-3">
-                        <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'"><i class="bi bi-list-ul me-1"></i> Lista</button>
-                        <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao"><i class="bi bi-plus-lg me-1"></i> Nova sessão</button>
+                    <div class="spacer"></div>
+
+                    <div class="btn-group-clean">
+                        <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'">
+                            <i class="bi bi-list-ul me-1"></i> Lista
+                        </button>
+                        <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao">
+                            <i class="bi bi-plus-lg me-1"></i> Nova sessão
+                        </button>
                     </div>
                 </div>
             </div>
