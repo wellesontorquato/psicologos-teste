@@ -241,19 +241,19 @@
                     </div>
                     @endif
 
-                    <div class="btn-group-clean nav-switch">
+                    <div class="btn-group-clean nav-switch order-md-1">
                         <button id="prevBtn" class="nbtn btn-ghost" aria-label="Mês anterior">←</button>
                         <button id="todayBtn" class="nbtn btn-ghost">Hoje</button>
                         <button id="nextBtn" class="nbtn btn-ghost" aria-label="Próximo mês">→</button>
                     </div>
 
-                    <div class="btn-group-clean view-switch">
+                    <div class="btn-group-clean view-switch order-md-2">
                         <button id="monthBtn" class="vbtn active">Mês</button>
                         <button id="weekBtn" class="vbtn">Semana</button>
                         <button id="dayBtn" class="vbtn">Dia</button>
                     </div>
 
-                    <div class="btn-group-clean">
+                    <<div class="btn-group-clean ms-md-auto order-md-3">
                         <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'"><i class="bi bi-list-ul me-1"></i> Lista</button>
                         <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao"><i class="bi bi-plus-lg me-1"></i> Nova sessão</button>
                     </div>
@@ -269,7 +269,7 @@
     <div class="legend mt-3">
         <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
         <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
-        <span class="pg-chip"><span class="emoji-moon"></span> Após 00:00</span>
+        <span class="pg-chip"><span class="dot emoji-moon"></span> Após 00:00</span>
     </div>
 </div>
 
