@@ -269,7 +269,7 @@
     <div class="legend mt-3">
         <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
         <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
-        <span class="pg-chip"><span class="dot emoji-moon"></span> Após 00:00</span>
+        <span class="pg-chip"><i class="bi bi-moon-stars"></i> Após 00:00</span>
     </div>
 </div>
 
