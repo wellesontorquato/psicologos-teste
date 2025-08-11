@@ -185,7 +185,7 @@
                 <div class="legend mt-3">
                     <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
                     <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
-                    <span class="pg-chip"><span class="dot dot-late"></span> Após 00:00</span>
+                    <span class="pg-chip"><span class="emoji-moon"></span> Após 00:00</span>
                 </div>
             </div>
 

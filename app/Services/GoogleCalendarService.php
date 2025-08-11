@@ -53,6 +53,10 @@ class GoogleCalendarService
             }
 
             $new = $client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
+            if (!empty($new['refresh_token'])) {
+                $user->update(['google_refresh_token' => $new['refresh_token']]);
+            }
+
 
             if (isset($new['error'])) {
                 throw new \RuntimeException('Falha ao atualizar o token Google: '.$new['error']);
@@ -127,15 +131,29 @@ class GoogleCalendarService
                 ['conferenceDataVersion' => $wantConference ? 1 : 0]
             );
         } catch (GoogleServiceException $e) {
-            // Muitos tenants não têm permissão para criar Meet -> 403
+            // 1) Se falhou com Meet, tenta sem Meet
             if ($wantConference && $e->getCode() === 403) {
                 unset($event['conferenceData']);
+                try {
+                    $created = $service->events->insert($this->calendarId($user), $event);
+                } catch (GoogleServiceException $e2) {
+                    // 2) Se ainda assim 400 (p.ex. attendees inválidos), tenta sem attendees
+                    if ($e2->getCode() === 400 && !empty($event['attendees'])) {
+                        unset($event['attendees']);
+                        $created = $service->events->insert($this->calendarId($user), $event);
+                    } else {
+                        throw $e2;
+                    }
+                }
+            } elseif ($e->getCode() === 400 && !empty($event['attendees'])) {
+                // Se falhou por 400 direto, tenta sem attendees
+                unset($event['attendees']);
                 $created = $service->events->insert($this->calendarId($user), $event);
             } else {
                 throw $e;
             }
         }
-
+        
         return $created->id;
     }
 

@@ -18,7 +18,7 @@ class GoogleAuthController extends Controller
         // Token offline p/ refresh; escopos da Agenda
         $client->setAccessType('offline');
         $client->setIncludeGrantedScopes(true);
-        $client->setPrompt('consent'); // garante refresh_token na 1ª vez
+        $client->setPrompt('consent select_account'); // garante refresh_token na 1ª vez
 
         // pode usar as constantes do serviço ou as URLs; equivalentes
         $client->setScopes([GoogleCalendar::CALENDAR, GoogleCalendar::CALENDAR_EVENTS]);

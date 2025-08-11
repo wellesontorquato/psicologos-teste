@@ -180,7 +180,8 @@ class SessaoController extends Controller
         $inicio = Carbon::parse($dados['data_hora']);
         $fim    = $inicio->copy()->addMinutes($dados['duracao']);
 
-        $conflito = Sessao::where('data_hora', '<', $fim)
+        $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+            ->where('data_hora', '<', $fim)
             ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
             ->exists();
 
@@ -360,11 +361,12 @@ class SessaoController extends Controller
             $inicio = Carbon::parse($dados['data_hora']);
             $fim    = $inicio->copy()->addMinutes($dados['duracao']);
 
-            $conflito = Sessao::where('id', '!=', $id)
+            $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+                ->where('id', '!=', $id)
                 ->where('data_hora', '<', $fim)
                 ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
                 ->exists();
-
+                
             if ($conflito) {
                 return response()->json(['message' => 'Já existe uma sessão nesse horário.'], 409);
             }
