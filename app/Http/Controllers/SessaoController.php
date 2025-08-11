@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SessoesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\GoogleCalendarService;
+use Google\Service\Exception as GoogleServiceException;
 
 class SessaoController extends Controller
 {
@@ -153,6 +154,9 @@ class SessaoController extends Controller
                     'google_sync_status' => 'ok',
                     'google_sync_error'  => null,
                 ]);
+            } catch (GoogleServiceException $e) {
+                // re-lança para ver o erro real (Telescope/Logs/Whoops)
+                throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
                     'google_sync_status' => 'error',
@@ -212,6 +216,9 @@ class SessaoController extends Controller
                     'google_sync_status' => 'ok',
                     'google_sync_error'  => null,
                 ]);
+            } catch (GoogleServiceException $e) {
+                // rethrow para você ver o erro real (Telescope/Log/Response)
+                throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
                     'google_sync_status' => 'error',
@@ -219,6 +226,7 @@ class SessaoController extends Controller
                 ]);
             }
         }
+
 
         return response()->json(['message' => 'Sessão criada com sucesso', 'id' => $sessao->id], 201);
     }
@@ -326,6 +334,9 @@ class SessaoController extends Controller
                 $sessao->google_sync_status = 'ok';
                 $sessao->google_sync_error  = null;
                 $sessao->save();
+            } catch (GoogleServiceException $e) {
+                // re-lança para ver o erro real (Telescope/Logs/Whoops)
+                throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
                     'google_sync_status' => 'error',
@@ -366,7 +377,7 @@ class SessaoController extends Controller
                 ->where('data_hora', '<', $fim)
                 ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
                 ->exists();
-                
+
             if ($conflito) {
                 return response()->json(['message' => 'Já existe uma sessão nesse horário.'], 409);
             }
@@ -390,8 +401,7 @@ class SessaoController extends Controller
             try {
                 $inicio = Carbon::parse($sessao->data_hora);
                 $fim    = $inicio->copy()->addMinutes((int) $sessao->duracao);
-
-                $gcal = app(GoogleCalendarService::class);
+                $gcal   = app(GoogleCalendarService::class);
 
                 if ($sessao->google_event_id) {
                     $gcal->updateEvent($user, $sessao->google_event_id, [
@@ -415,6 +425,10 @@ class SessaoController extends Controller
                 $sessao->google_sync_status = 'ok';
                 $sessao->google_sync_error  = null;
                 $sessao->save();
+
+            } catch (GoogleServiceException $e) {
+                // rethrow para inspeção
+                throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
                     'google_sync_status' => 'error',
@@ -422,6 +436,7 @@ class SessaoController extends Controller
                 ]);
             }
         }
+
 
         return response()->json(['message' => 'Sessão atualizada com sucesso']);
     }

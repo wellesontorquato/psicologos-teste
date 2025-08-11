@@ -32,6 +32,7 @@ use App\Http\Controllers\{
     LandingPageController
 };
 use App\Models\News;
+use App\Jobs\SyncUserCalendar;
 
 /*
 |--------------------------------------------------------------------------
@@ -210,6 +211,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/integracoes/google/connect', [\App\Http\Controllers\GoogleAuthController::class, 'redirect'])->name('google.connect');
     Route::get('/oauth/google/callback', [\App\Http\Controllers\GoogleAuthController::class, 'callback'])->name('google.callback');
     Route::post('/integracoes/google/disconnect', [\App\Http\Controllers\GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
+
+    // 🔄 Sincronizar apenas sessões futuras
+    Route::post('/integracoes/google/sync', function (Request $request) {
+        $user = $request->user();
+
+        if (!$user->google_connected) {
+            return back()->with('error', 'Conecte sua conta do Google antes de sincronizar.');
+        }
+
+        dispatch(new SyncUserCalendar($user->id, true)); // só futuras
+        return back()->with('success', 'Sincronização iniciada! Verifique em alguns segundos.');
+    })->middleware('throttle:3,1')->name('google.sync');
+
+    // 🔄 Sincronizar TUDO (inclui passadas)
+    Route::post('/integracoes/google/sync/all', function (Request $request) {
+        $user = $request->user();
+
+        if (!$user->google_connected) {
+            return back()->with('error', 'Conecte sua conta do Google antes de sincronizar.');
+        }
+
+        dispatch(new SyncUserCalendar($user->id, false)); // inclui passadas
+        return back()->with('success', 'Sincronização completa iniciada! Pode levar mais tempo.');
+    })->middleware('throttle:2,1')->name('google.sync.all');
 });
 
 Route::middleware(['auth'])->group(function () {

@@ -67,8 +67,11 @@
     .pg-chip i{font-size:.95rem}
     .chip-success{ background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.35); color:#0e7a56; }
     .chip-warn{ background:rgba(234,88,12,.14); border-color:rgba(234,88,12,.35); color:#8e3a0d; }
-    .cal-sub .pg-chip:nth-child(n+2){ display:none; }
+
+    /* No layout original, .btn-outline some em mobile. Mantemos isso,
+       mas criamos .btn-sync para forçar exibição dos botões de sincronização no mobile. */
     .cal-sub .btn-outline{ display:none; }
+    .cal-sub .btn-sync{ display:inline-flex; }
 
     .legend{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; }
     .legend .pg-chip{ padding:5px 8px; font-weight:700; font-size:.78rem; }
@@ -102,7 +105,7 @@
         .calendar-row{ grid-template-columns:1fr auto; align-items:center; }
         .cal-title{ justify-content:flex-start; text-align:left; }
         .cal-text .cal-head{ font-size:1.25rem; }
-        .cal-sub .pg-chip:nth-child(n+2){ display:inline-flex; } .cal-sub .btn-outline{ display:inline-flex; }
+        .cal-sub .btn-outline{ display:inline-flex; } /* no desktop os btns padrão voltam */
         .cal-right{ display:flex; justify-content:flex-end; }
         .cal-actions{ display:flex; flex-wrap:wrap; gap:8px; }
         .nav-switch,.view-switch{ display:flex; }
@@ -159,6 +162,20 @@
 @section('content')
 <div class="container">
 
+    {{-- Flash messages (success / error) --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     {{-- Cabeçalho moderno PsiGestor (mobile-first) --}}
     <div class="calendar-header">
         <div class="calendar-row">
@@ -167,25 +184,44 @@
                     <div class="cal-icon"><i class="bi bi-calendar3-event"></i></div>
                     <div class="cal-text">
                         <div class="cal-head"><span id="calendarTitle">Minha Agenda</span></div>
+
+                        {{-- Subtítulo / Chips e botões de integração --}}
                         <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1 justify-content-center justify-content-md-start">
                             @if(auth()->user()?->google_connected)
                                 <span class="pg-chip chip-success"><i class="bi bi-google"></i> Google Agenda conectado</span>
-                                <a href="{{ route('google.connect') }}" class="pg-chip"><i class="bi bi-arrow-repeat"></i> Reautenticar</a>
-                                <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">@csrf
-                                    <button type="submit" class="pg-chip" title="Desconectar Google"><i class="bi bi-x-circle"></i> Desconectar</button>
+
+                                {{-- Botões de Sincronização (substituem o "Reautenticar") --}}
+                                <form action="{{ route('google.sync') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn-outline btn-sync">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Sincronizar sessões futuras 
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn-outline btn-sync">
+                                        <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas as sessões
+                                    </button>
+                                </form>
+
+                                {{-- Desconectar --}}
+                                <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="pg-chip" title="Desconectar Google">
+                                        <i class="bi bi-x-circle"></i> Desconectar
+                                    </button>
                                 </form>
                             @else
-                                <span class="pg-chip chip-warn"><i class="bi bi-exclamation-triangle"></i> Google não conectado</span>
-                                <a href="{{ route('google.connect') }}" class="btn-outline"><i class="bi bi-google me-1"></i> Conectar ao Google</a>
+                                <span class="pg-chip chip-warn">
+                                    <i class="bi bi-exclamation-triangle"></i> Google não conectado
+                                </span>
+                                <a href="{{ route('google.connect') }}" class="btn-outline">
+                                    <i class="bi bi-google me-1"></i> Conectar ao Google
+                                </a>
                             @endif
                         </div>
                     </div>
-                </div>
-
-                <div class="legend mt-3">
-                    <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
-                    <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
-                    <span class="pg-chip"><span class="emoji-moon"></span> Após 00:00</span>
                 </div>
             </div>
 
@@ -214,6 +250,13 @@
 
     {{-- Calendário --}}
     <div id="calendar-card"><div id="calendar"></div></div>
+
+    {{-- Legendas AGORA ficam aqui, abaixo do calendário --}}
+    <div class="legend mt-3">
+        <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
+        <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
+        <span class="pg-chip"><span class="emoji-moon"></span> Após 00:00</span>
+    </div>
 </div>
 
 <!-- Modal Sessão -->
@@ -294,54 +337,47 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (feriadosDatasCache[ano]) return;
 
         try {
-        const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, {
-            headers: { 'Accept': 'application/json' }
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
 
-        let data = await resp.json();
+            let data = await resp.json();
 
-        // Invertexto às vezes retorna direto como array, mas
-        // se vier encapsulado, tentamos achar o array real.
-        if (!Array.isArray(data) && Array.isArray(data?.holidays)) {
-            data = data.holidays;
-        }
-
-        // 1) Caso simples: ["YYYY-MM-DD", ...]
-        if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
-            feriadosDatasCache[ano] = new Set(data);
-            feriadosNomesCache[ano] = new Map();
-            return;
-        }
-
-        // 2) Caso objetos (IBGE normalizado OU Invertexto):
-        //    aceita {data, nome, tipo} OU {date, name, type}
-        const set = new Set();
-        const map = new Map();
-
-        if (Array.isArray(data)) {
-            for (const f of data) {
-            if (!f) continue;
-            const dt = f.data || f.date || f.date_iso || f.dia || f?.date?.split('T')?.[0];
-            const nm = f.nome || f.name || f.titulo || null;
-            if (!dt) continue;
-            set.add(dt);
-            if (nm) map.set(dt, nm);
+            if (!Array.isArray(data) && Array.isArray(data?.holidays)) {
+                data = data.holidays;
             }
-        }
 
-        feriadosDatasCache[ano] = set;
-        feriadosNomesCache[ano] = map;
+            if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
+                feriadosDatasCache[ano] = new Set(data);
+                feriadosNomesCache[ano] = new Map();
+                return;
+            }
+
+            const set = new Set();
+            const map = new Map();
+
+            if (Array.isArray(data)) {
+                for (const f of data) {
+                    if (!f) continue;
+                    const dt = f.data || f.date || f.date_iso || f.dia || f?.date?.split('T')?.[0];
+                    const nm = f.nome || f.name || f.titulo || null;
+                    if (!dt) continue;
+                    set.add(dt);
+                    if (nm) map.set(dt, nm);
+                }
+            }
+
+            feriadosDatasCache[ano] = set;
+            feriadosNomesCache[ano] = map;
 
         } catch (e) {
-        // Em erro, inicializa vazio para não ficar re-tentando neste load
-        feriadosDatasCache[ano] = new Set();
-        feriadosNomesCache[ano] = new Map();
+            feriadosDatasCache[ano] = new Set();
+            feriadosNomesCache[ano] = new Map();
         }
-  }
+    }
 
     function toYMDLocal(d) {
-        // normaliza para YYYY-MM-DD em horário local
         return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
     }
 
@@ -358,7 +394,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         return map ? map.get(ymd) : undefined;
     }
 
-    // Pré-carrega o ano atual
     await carregarFeriadosAno(new Date().getFullYear());
 
     // ========= CALENDÁRIO =========
@@ -379,7 +414,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         headerToolbar: false,
         events: '/api/sessoes',
 
-        // Quando o range muda, garanta que os anos visíveis estejam no cache
         datesSet: async function(info) {
             if (calendarH1) calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
             syncActiveViewButton(info.view.type);
@@ -389,21 +423,16 @@ document.addEventListener('DOMContentLoaded', async function () {
             for (let y = startYear; y <= endYear; y++) {
                 await carregarFeriadosAno(y);
             }
-
-            // Re-renderiza só as células (para aplicar .pg-feriado em quem montou antes do fetch)
-            calendar.render(); // simples e eficaz para re-aplicar classes
+            calendar.render();
         },
 
-        // Marca feriados em TODAS as views
         dayCellDidMount: function(arg) {
             const y = arg.date.getFullYear();
-            // garante o ano em cache e aplica depois que chegar
             carregarFeriadosAno(y).then(() => {
                 if (isFeriado(arg.date)) {
                     arg.el.classList.add('pg-feriado');
                     const nome = nomeFeriado(arg.date);
                     if (nome) {
-                        // tooltip nativo
                         const target = arg.el.querySelector('.fc-daygrid-day-number') || arg.el;
                         target.setAttribute('title', nome);
                     }
@@ -423,7 +452,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 : { html: `<div>${hi} - ${hf}</div><div>${t}</div>` };
         },
 
-        // Clique no dia: se for feriado, pergunta antes
         dateClick: async function(info) {
             const d = info.date;
             const y = d.getFullYear();

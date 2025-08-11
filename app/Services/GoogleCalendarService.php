@@ -6,10 +6,10 @@ use Google\Client as GoogleClient;
 use Google\Service\Calendar as GoogleCalendar;
 use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventDateTime;
-use Google\Service\Exception as GoogleServiceException;
-use Illuminate\Support\Carbon;
 use Google\Service\Calendar\EventReminders;
 use Google\Service\Calendar\EventReminder;
+use Google\Service\Exception as GoogleServiceException;
+use Illuminate\Support\Carbon;
 use App\Models\User;
 
 class GoogleCalendarService
@@ -28,6 +28,34 @@ class GoogleCalendarService
         return $obj;
     }
 
+    protected function buildReminders(array $rem = null): ?EventReminders
+    {
+        // sem reminders informados: retorna defaults úteis
+        $rem = $rem ?? [
+            'useDefault' => false,
+            'overrides'  => [
+                ['method' => 'popup', 'minutes' => 1440], // 24h antes
+                ['method' => 'popup', 'minutes' => 60],   // 1h antes
+            ],
+        ];
+
+        $reminders = new EventReminders();
+        $reminders->setUseDefault((bool)($rem['useDefault'] ?? false));
+
+        $overridesObjs = [];
+        if (!empty($rem['overrides']) && is_array($rem['overrides'])) {
+            foreach ($rem['overrides'] as $o) {
+                $r = new EventReminder();
+                if (isset($o['method']))  { $r->setMethod($o['method']); }
+                if (isset($o['minutes'])) { $r->setMinutes((int)$o['minutes']); }
+                $overridesObjs[] = $r;
+            }
+        }
+        $reminders->setOverrides($overridesObjs);
+
+        return $reminders;
+    }
+
     protected function clientFor(User $user): GoogleClient
     {
         $client = new GoogleClient();
@@ -40,7 +68,7 @@ class GoogleCalendarService
             ? max(1, now()->diffInSeconds($user->google_token_expires_at, false))
             : 1;
 
-        // Token atual (created no passado p/ o client conseguir calcular expiração)
+        // token atual — 'created' no passado pro client calcular expiração
         $client->setAccessToken([
             'access_token'  => $user->google_access_token,
             'refresh_token' => $user->google_refresh_token,
@@ -48,17 +76,18 @@ class GoogleCalendarService
             'created'       => now()->subHour()->timestamp,
         ]);
 
-        // Refresh se precisar
+        // refresh se precisar
         if ($client->isAccessTokenExpired()) {
             if (!$user->google_refresh_token) {
                 throw new \RuntimeException('Token do Google expirado e não há refresh_token salvo.');
             }
 
             $new = $client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
+
+            // alguns fluxos podem devolver um refresh_token novo
             if (!empty($new['refresh_token'])) {
                 $user->update(['google_refresh_token' => $new['refresh_token']]);
             }
-
 
             if (isset($new['error'])) {
                 throw new \RuntimeException('Falha ao atualizar o token Google: '.$new['error']);
@@ -76,59 +105,44 @@ class GoogleCalendarService
     }
 
     /**
-     * payload:
-     *  - summary (string) [obrigatório]
+     * payload aceito:
+     *  - id (string)            [opcional] -> ID determinístico (a-z0-9-_, 5..1024 chars)
+     *  - summary (string)       [obrigatório]
      *  - description (string|null)
      *  - start (Carbon|string|DateTimeInterface)
      *  - end   (Carbon|string|DateTimeInterface)
      *  - attendees (array[['email'=>...], ...]) [opcional]
-     *  - reminders (array) [opcional] mesmo formato do Calendar API
-     *  - conference (bool) [opcional] default true -> tenta criar Meet e, se 403, cria sem Meet
+     *  - reminders (array)      [opcional] formato do Calendar API
+     *  - conference (bool)      [opcional] default true (tenta criar Meet)
+     *  - location (string)      [opcional]
      */
     public function createEvent(User $user, array $payload): string
     {
         $client  = $this->clientFor($user);
         $service = new GoogleCalendar($client);
-
         $tz = config('app.timezone', 'America/Sao_Paulo');
 
         $event = new Event([
             'summary'     => $payload['summary'],
             'description' => $payload['description'] ?? null,
             'attendees'   => $payload['attendees'] ?? [],
+            'location'    => $payload['location']   ?? null,
         ]);
+
+        // ID determinístico (opcional)
+        if (!empty($payload['id'])) {
+            $event->setId(strtolower($payload['id']));
+        }
 
         $event->setStart($this->asEventDateTime($payload['start'], $tz));
         $event->setEnd($this->asEventDateTime($payload['end'], $tz));
 
-        // -- Reminders (usa payload ou defaults)
-        $rem = $payload['reminders'] ?? [
-            'useDefault' => false,
-            'overrides'  => [
-                ['method' => 'popup', 'minutes' => 1440],
-                ['method' => 'popup', 'minutes' => 60],
-            ],
-        ];
-
-        $reminders = new EventReminders();
-        $reminders->setUseDefault((bool)($rem['useDefault'] ?? false));
-
-        $overridesObjs = [];
-        if (!empty($rem['overrides']) && is_array($rem['overrides'])) {
-            foreach ($rem['overrides'] as $o) {
-                $r = new EventReminder();
-                if (isset($o['method']))  { $r->setMethod($o['method']); }
-                if (isset($o['minutes'])) { $r->setMinutes((int)$o['minutes']); }
-                $overridesObjs[] = $r;
-            }
-        }
-        $reminders->setOverrides($overridesObjs);
-        $event->setReminders($reminders);
-
+        // reminders (defaults ou payload)
+        $event->setReminders($this->buildReminders($payload['reminders'] ?? null));
 
         $wantConference = array_key_exists('conference', $payload) ? (bool)$payload['conference'] : true;
 
-        // Tenta com Meet; se der 403, cria sem Meet
+        // tenta com Meet; se der 403, cria sem Meet
         if ($wantConference) {
             $event['conferenceData'] = [
                 'createRequest' => [
@@ -151,7 +165,7 @@ class GoogleCalendarService
                 try {
                     $created = $service->events->insert($this->calendarId($user), $event);
                 } catch (GoogleServiceException $e2) {
-                    // 2) Se ainda assim 400 (p.ex. attendees inválidos), tenta sem attendees
+                    // 2) Se ainda assim 400 (ex.: attendees inválidos), tenta sem attendees
                     if ($e2->getCode() === 400 && !empty($event['attendees'])) {
                         unset($event['attendees']);
                         $created = $service->events->insert($this->calendarId($user), $event);
@@ -177,11 +191,14 @@ class GoogleCalendarService
         $service = new GoogleCalendar($client);
 
         $event = $service->events->get($this->calendarId($user), $eventId);
-
         $tz = config('app.timezone', 'America/Sao_Paulo');
 
         $event->setSummary($payload['summary']);
         $event->setDescription($payload['description'] ?? null);
+        if (isset($payload['location'])) {
+            $event->setLocation($payload['location']);
+        }
+
         $event->setStart($this->asEventDateTime($payload['start'], $tz));
         $event->setEnd($this->asEventDateTime($payload['end'], $tz));
 
@@ -189,26 +206,21 @@ class GoogleCalendarService
             $event->setAttendees($payload['attendees']);
         }
         if (isset($payload['reminders'])) {
-        $rem = $payload['reminders'];
+            $event->setReminders($this->buildReminders($payload['reminders']));
+        }
 
-        $reminders = new EventReminders();
-        $reminders->setUseDefault((bool)($rem['useDefault'] ?? false));
-
-        $overridesObjs = [];
-        if (!empty($rem['overrides']) && is_array($rem['overrides'])) {
-            foreach ($rem['overrides'] as $o) {
-                $r = new EventReminder();
-                if (isset($o['method']))  { $r->setMethod($o['method']); }
-                if (isset($o['minutes'])) { $r->setMinutes((int)$o['minutes']); }
-                $overridesObjs[] = $r;
+        // mantém conference como está (não mexe aqui)
+        try {
+            $service->events->update($this->calendarId($user), $eventId, $event);
+        } catch (GoogleServiceException $e) {
+            // fallback: se attendees inválidos (400), tenta atualizar sem attendees
+            if ($e->getCode() === 400 && !empty($event['attendees'])) {
+                unset($event['attendees']);
+                $service->events->update($this->calendarId($user), $eventId, $event);
+            } else {
+                throw $e;
             }
         }
-        $reminders->setOverrides($overridesObjs);
-        $event->setReminders($reminders);
-    }
-
-        // Não tenta alterar conference aqui (mantém o que já existe)
-        $service->events->update($this->calendarId($user), $eventId, $event);
     }
 
     public function deleteEvent(User $user, ?string $eventId): void
@@ -218,10 +230,10 @@ class GoogleCalendarService
         $client  = $this->clientFor($user);
         $service = new GoogleCalendar($client);
 
-        // Se já tiver sido removido manualmente no Google, ignore 410/404
         try {
             $service->events->delete($this->calendarId($user), $eventId);
         } catch (GoogleServiceException $e) {
+            // se já foi removido manualmente no Google, ignore
             if (!in_array($e->getCode(), [404, 410], true)) {
                 throw $e;
             }
