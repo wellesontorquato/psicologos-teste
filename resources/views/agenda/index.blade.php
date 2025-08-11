@@ -16,8 +16,8 @@
         --pg-surface:#ffffff;
 
         /* Cores de realce dos dias */
-        --pg-weekend:#FFF6EA;     /* pêssego bem claro */
-        --pg-holiday:#ECF7FF;     /* azul bem claro */
+        --pg-weekend:#FFF6EA;
+        --pg-holiday:#ECF7FF;
         --pg-holiday-border:#BEE3FF;
     }
 
@@ -56,8 +56,8 @@
         background:rgba(18,180,183,.10); color:var(--pg-primary); font-size:16px; flex:0 0 auto;
     }
     .cal-text .cal-head{ font-weight:800; letter-spacing:.2px; color:var(--pg-ink); line-height:1.1; font-size:1.05rem; }
-    .cal-text .cal-sub{ color:var(--pg-muted); font-size:.86rem; }
 
+    /* chips */
     .pg-chip{
         display:inline-flex; align-items:center; gap:6px;
         border:1px solid #cfe7e8; background:rgba(18,180,183,.10); color:#0b7f83;
@@ -68,21 +68,30 @@
     .chip-success{ background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.35); color:#0e7a56; }
     .chip-warn{ background:rgba(234,88,12,.14); border-color:rgba(234,88,12,.35); color:#8e3a0d; }
 
-    /* No layout original, .btn-outline some em mobile. Mantemos isso. */
-    .cal-sub .btn-outline{ display:none; }
+    /* ===== header – sincronização empilhada e alinhada ===== */
+    /* por padrão o layout original escondia .btn-outline no mobile;
+       aqui garantimos que os botões de sync apareçam sempre */
+    .cal-sub{ display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:center; }
+    .cal-sub .btn-outline{ display:inline-flex; }
+    .cal-sub .btn-sync{ display:inline-flex; }
+
+    .sync-stack{
+        display:flex; flex-direction:column; gap:8px; align-items:center; width:100%;
+    }
+    .sync-stack .btn-outline{ width:220px; } /* largura consistente e compacta */
+
+    @media (min-width:768px){
+        .cal-sub{ align-items:flex-start; justify-content:flex-start; }
+        .sync-stack{ align-items:flex-start; width:auto; }
+    }
 
     .legend{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; }
     .legend .pg-chip{ padding:5px 8px; font-weight:700; font-size:.78rem; }
     .legend .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8; }
     .dot-paid{ background:#28a745 } .dot-pending{ background:#dc3545 } .dot-late{ background:#00c4ff }
 
-    .sync-stack{ display:flex; flex-direction:column; gap:8px; align-items:center;}
     .cal-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .spacer { flex:1; }
-
-    @media (min-width: 768px){
-    .cal-actions{ flex-wrap:nowrap; }
-    }
     .btn-group-clean{ display:flex; gap:8px; align-items:center; }
     .divider-dot{ display:none; }
     .btn-ghost,.btn-brand,.btn-outline{
@@ -104,23 +113,14 @@
     .view-switch .vbtn.active{ background:linear-gradient(180deg,#fff,#f0feff); border-color:var(--pg-primary); box-shadow:0 8px 18px rgba(18,180,183,.22); color:var(--pg-primary); }
     .cal-actions > .btn-group-clean:last-child{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 
-    /* --- ajustes do cabeçalho: botões de sync compactos e alinhamento --- */
     .cal-right{ display:flex; justify-content:flex-end; align-items:center; }
-    .btn-compact{ padding:6px 10px; min-height:36px; font-size:.82rem; border-radius:10px; }
-    .btn-group-clean.sync-group{ gap:6px; }
-    /* Mobile: esconder texto dos botões de sync e reduzir padding */
-    @media (max-width: 767.98px){
-        .sync-text{ display:none; }
-        .btn-compact{ padding:6px 8px; }
-    }
 
     @media (min-width: 768px){
         #calendar-card{ padding:18px; }
         .calendar-row{ grid-template-columns:1fr auto; align-items:center; }
         .cal-title{ justify-content:flex-start; text-align:left; }
         .cal-text .cal-head{ font-size:1.25rem; }
-        .cal-sub .btn-outline{ display:inline-flex; } /* no desktop os btns padrão voltam */
-        .cal-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+        .cal-actions{ flex-wrap:nowrap; }
         .nav-switch,.view-switch{ display:flex; }
         .nav-switch .nbtn,.view-switch .vbtn{ min-width:auto; }
         .btn-ghost,.btn-brand,.btn-outline{ width:auto; }
@@ -129,35 +129,14 @@
     @media (min-width: 992px){ .cal-text .cal-head{ font-size:1.35rem; } }
 
     /* ===== FullCalendar: estilos de dias ===== */
-
-    /* Finais de semana (todas as views) */
-    .fc .fc-day-sat,
-    .fc .fc-day-sun{
-        background: var(--pg-weekend);
-    }
-
-    /* Feriados (classe aplicada via JS em dayCellDidMount) */
-    .fc .pg-feriado{
-        background: var(--pg-holiday) !important;
-        box-shadow: inset 0 0 0 1px var(--pg-holiday-border);
-    }
-
-    /* No month view, coloca um selo “Feriado” discreto ao lado do número do dia */
+    .fc .fc-day-sat, .fc .fc-day-sun{ background: var(--pg-weekend); }
+    .fc .pg-feriado{ background: var(--pg-holiday) !important; box-shadow: inset 0 0 0 1px var(--pg-holiday-border); }
     .fc-daygrid-day.pg-feriado .fc-daygrid-day-number::after{
-        content: "Feriado";
-        display:inline-block;
-        margin-left:6px;
-        padding:2px 6px;
-        font-size:.65rem;
-        font-weight:700;
-        color:#0b6aa8;
-        background:#dff1ff;
-        border:1px solid var(--pg-holiday-border);
-        border-radius:999px;
-        vertical-align:middle;
+        content: "Feriado"; display:inline-block; margin-left:6px; padding:2px 6px;
+        font-size:.65rem; font-weight:700; color:#0b6aa8; background:#dff1ff;
+        border:1px solid var(--pg-holiday-border); border-radius:999px; vertical-align:middle;
     }
 
-    /* Eventos (mantidos) */
     .fc-event{ border-radius:6px !important; padding:4px !important; font-size:.9rem !important; }
     .fc .fc-event.evento-pago{
         background:linear-gradient(90deg,#28a745,#218838)!important;border:none!important;color:#fff!important;font-weight:700!important;
@@ -175,7 +154,7 @@
 @section('content')
 <div class="container">
 
-    {{-- Flash messages (success / error) --}}
+    {{-- Flash messages --}}
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -189,7 +168,7 @@
         </div>
     @endif
 
-    {{-- Cabeçalho moderno PsiGestor (mobile-first) --}}
+    {{-- Cabeçalho --}}
     <div class="calendar-header">
         <div class="calendar-row">
             <div class="cal-left">
@@ -198,21 +177,19 @@
                     <div class="cal-text">
                         <div class="cal-head"><span id="calendarTitle">Minha Agenda</span></div>
 
-                        {{-- Subtítulo / Chips e botões de integração --}}
-                        <div class="cal-sub d-flex flex-wrap align-items-center gap-2 mt-1 justify-content-center">
+                        {{-- Chips e sincronização (empilhado) --}}
+                        <div class="cal-sub">
                             @if(auth()->user()?->google_connected)
                                 <span class="pg-chip chip-success">
                                     <i class="bi bi-google"></i> Google Agenda conectado
                                 </span>
 
-                                {{-- EMPILHADO E CENTRALIZADO --}}
                                 <div class="sync-stack">
                                     <form action="{{ route('google.sync') }}" method="POST" class="d-inline">@csrf
                                         <button type="submit" class="btn-outline btn-sync">
                                             <i class="bi bi-arrow-repeat me-1"></i> Sincronizar futuras
                                         </button>
                                     </form>
-
                                     <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">@csrf
                                         <button type="submit" class="btn-outline btn-sync">
                                             <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas
@@ -271,7 +248,7 @@
     {{-- Calendário --}}
     <div id="calendar-card"><div id="calendar"></div></div>
 
-    {{-- Legendas AGORA ficam aqui, abaixo do calendário --}}
+    {{-- Legendas abaixo do calendário --}}
     <div class="legend mt-3">
         <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
         <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
@@ -349,24 +326,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (!window.FullCalendar || !calendarEl) return;
 
-    // ========= FERIADOS (cache por ano) =========
+    // ========= FERIADOS =========
     const feriadosDatasCache  = {};
     const feriadosNomesCache  = {};
 
     async function carregarFeriadosAno(ano) {
         if (feriadosDatasCache[ano]) return;
-
         try {
-            const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, {
-                headers: { 'Accept': 'application/json' }
-            });
+            const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, { headers: { 'Accept': 'application/json' }});
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
             let data = await resp.json();
-
-            if (!Array.isArray(data) && Array.isArray(data?.holidays)) {
-                data = data.holidays;
-            }
+            if (!Array.isArray(data) && Array.isArray(data?.holidays)) data = data.holidays;
 
             if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
                 feriadosDatasCache[ano] = new Set(data);
@@ -374,45 +344,25 @@ document.addEventListener('DOMContentLoaded', async function () {
                 return;
             }
 
-            const set = new Set();
-            const map = new Map();
-
+            const set = new Set(); const map = new Map();
             if (Array.isArray(data)) {
                 for (const f of data) {
                     if (!f) continue;
                     const dt = f.data || f.date || f.date_iso || f.dia || f?.date?.split('T')?.[0];
                     const nm = f.nome || f.name || f.titulo || null;
                     if (!dt) continue;
-                    set.add(dt);
-                    if (nm) map.set(dt, nm);
+                    set.add(dt); if (nm) map.set(dt, nm);
                 }
             }
-
-            feriadosDatasCache[ano] = set;
-            feriadosNomesCache[ano] = map;
-
+            feriadosDatasCache[ano] = set; feriadosNomesCache[ano] = map;
         } catch (e) {
-            feriadosDatasCache[ano] = new Set();
-            feriadosNomesCache[ano] = new Map();
+            feriadosDatasCache[ano] = new Set(); feriadosNomesCache[ano] = new Map();
         }
     }
 
-    function toYMDLocal(d) {
-        return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
-    }
-
-    function isFeriado(dateObj) {
-        const ano = dateObj.getFullYear();
-        const ymd = toYMDLocal(dateObj);
-        const set = feriadosDatasCache[ano];
-        return !!(set && set.has(ymd));
-    }
-    function nomeFeriado(dateObj) {
-        const ano = dateObj.getFullYear();
-        const ymd = toYMDLocal(dateObj);
-        const map = feriadosNomesCache[ano];
-        return map ? map.get(ymd) : undefined;
-    }
+    function toYMDLocal(d) { return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+    function isFeriado(dateObj) { const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const set=feriadosDatasCache[y]; return !!(set && set.has(ymd)); }
+    function nomeFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const map=feriadosNomesCache[y]; return map ? map.get(ymd) : undefined; }
 
     await carregarFeriadosAno(new Date().getFullYear());
 
@@ -440,9 +390,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             const startYear = info.start.getFullYear();
             const endYear   = new Date(info.end.getTime() - 1).getFullYear();
-            for (let y = startYear; y <= endYear; y++) {
-                await carregarFeriadosAno(y);
-            }
+            for (let y = startYear; y <= endYear; y++) await carregarFeriadosAno(y);
             calendar.render();
         },
 
@@ -473,10 +421,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         },
 
         dateClick: async function(info) {
-            const d = info.date;
-            const y = d.getFullYear();
+            const d = info.date; const y = d.getFullYear();
             await carregarFeriadosAno(y);
-
             if (isFeriado(d)) {
                 const nome = nomeFeriado(d);
                 const { isConfirmed } = await Swal.fire({
