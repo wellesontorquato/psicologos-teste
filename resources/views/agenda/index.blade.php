@@ -68,10 +68,8 @@
     .chip-success{ background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.35); color:#0e7a56; }
     .chip-warn{ background:rgba(234,88,12,.14); border-color:rgba(234,88,12,.35); color:#8e3a0d; }
 
-    /* No layout original, .btn-outline some em mobile. Mantemos isso,
-       mas criamos .btn-sync para forçar exibição dos botões de sincronização no mobile. */
+    /* No layout original, .btn-outline some em mobile. Mantemos isso. */
     .cal-sub .btn-outline{ display:none; }
-    .cal-sub .btn-sync{ display:inline-flex; }
 
     .legend{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; }
     .legend .pg-chip{ padding:5px 8px; font-weight:700; font-size:.78rem; }
@@ -100,13 +98,22 @@
     .view-switch .vbtn.active{ background:linear-gradient(180deg,#fff,#f0feff); border-color:var(--pg-primary); box-shadow:0 8px 18px rgba(18,180,183,.22); color:var(--pg-primary); }
     .cal-actions > .btn-group-clean:last-child{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 
+    /* --- ajustes do cabeçalho: botões de sync compactos e alinhamento --- */
+    .cal-right{ display:flex; justify-content:flex-end; align-items:center; }
+    .btn-compact{ padding:6px 10px; min-height:36px; font-size:.82rem; border-radius:10px; }
+    .btn-group-clean.sync-group{ gap:6px; }
+    /* Mobile: esconder texto dos botões de sync e reduzir padding */
+    @media (max-width: 767.98px){
+        .sync-text{ display:none; }
+        .btn-compact{ padding:6px 8px; }
+    }
+
     @media (min-width: 768px){
         #calendar-card{ padding:18px; }
         .calendar-row{ grid-template-columns:1fr auto; align-items:center; }
         .cal-title{ justify-content:flex-start; text-align:left; }
         .cal-text .cal-head{ font-size:1.25rem; }
         .cal-sub .btn-outline{ display:inline-flex; } /* no desktop os btns padrão voltam */
-        .cal-right{ display:flex; justify-content:flex-end; }
         .cal-actions{ display:flex; flex-wrap:wrap; gap:8px; }
         .nav-switch,.view-switch{ display:flex; }
         .nav-switch .nbtn,.view-switch .vbtn{ min-width:auto; }
@@ -190,22 +197,7 @@
                             @if(auth()->user()?->google_connected)
                                 <span class="pg-chip chip-success"><i class="bi bi-google"></i> Google Agenda conectado</span>
 
-                                {{-- Botões de Sincronização (substituem o "Reautenticar") --}}
-                                <form action="{{ route('google.sync') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn-outline btn-sync">
-                                        <i class="bi bi-arrow-repeat me-1"></i> Sincronizar sessões futuras 
-                                    </button>
-                                </form>
-
-                                <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn-outline btn-sync">
-                                        <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas as sessões
-                                    </button>
-                                </form>
-
-                                {{-- Desconectar --}}
+                                {{-- Desconectar (mantém à esquerda) --}}
                                 <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
                                     @csrf
                                     <button type="submit" class="pg-chip" title="Desconectar Google">
@@ -227,6 +219,28 @@
 
             <div class="cal-right">
                 <div class="cal-actions">
+
+                    {{-- Botões de Sincronização (agora à direita, compactos) --}}
+                    @if(auth()->user()?->google_connected)
+                    <div class="btn-group-clean sync-group">
+                        <form action="{{ route('google.sync') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn-outline btn-compact" title="Sincronizar apenas futuras sessões">
+                                <i class="bi bi-arrow-repeat"></i>
+                                <span class="sync-text ms-1">Sincronizar futuras</span>
+                            </button>
+                        </form>
+
+                        <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn-outline btn-compact" title="Sincronizar todas as sessões">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                                <span class="sync-text ms-1">Sincronizar todas</span>
+                            </button>
+                        </form>
+                    </div>
+                    @endif
+
                     <div class="btn-group-clean nav-switch">
                         <button id="prevBtn" class="nbtn btn-ghost" aria-label="Mês anterior">←</button>
                         <button id="todayBtn" class="nbtn btn-ghost">Hoje</button>
