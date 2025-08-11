@@ -8,6 +8,8 @@ use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventDateTime;
 use Google\Service\Exception as GoogleServiceException;
 use Illuminate\Support\Carbon;
+use Google\Service\Calendar\EventReminders;
+use Google\Service\Calendar\EventReminder;
 use App\Models\User;
 
 class GoogleCalendarService
@@ -99,18 +101,30 @@ class GoogleCalendarService
         $event->setStart($this->asEventDateTime($payload['start'], $tz));
         $event->setEnd($this->asEventDateTime($payload['end'], $tz));
 
-        if (isset($payload['reminders'])) {
-            $event->setReminders($payload['reminders']);
-        } else {
-            // defaultzinho útil
-            $event->setReminders([
-                'useDefault' => false,
-                'overrides'  => [
-                    ['method' => 'popup', 'minutes' => 1440],
-                    ['method' => 'popup', 'minutes' => 60],
-                ],
-            ]);
+        // -- Reminders (usa payload ou defaults)
+        $rem = $payload['reminders'] ?? [
+            'useDefault' => false,
+            'overrides'  => [
+                ['method' => 'popup', 'minutes' => 1440],
+                ['method' => 'popup', 'minutes' => 60],
+            ],
+        ];
+
+        $reminders = new EventReminders();
+        $reminders->setUseDefault((bool)($rem['useDefault'] ?? false));
+
+        $overridesObjs = [];
+        if (!empty($rem['overrides']) && is_array($rem['overrides'])) {
+            foreach ($rem['overrides'] as $o) {
+                $r = new EventReminder();
+                if (isset($o['method']))  { $r->setMethod($o['method']); }
+                if (isset($o['minutes'])) { $r->setMinutes((int)$o['minutes']); }
+                $overridesObjs[] = $r;
+            }
         }
+        $reminders->setOverrides($overridesObjs);
+        $event->setReminders($reminders);
+
 
         $wantConference = array_key_exists('conference', $payload) ? (bool)$payload['conference'] : true;
 
@@ -153,7 +167,7 @@ class GoogleCalendarService
                 throw $e;
             }
         }
-        
+
         return $created->id;
     }
 
@@ -175,8 +189,23 @@ class GoogleCalendarService
             $event->setAttendees($payload['attendees']);
         }
         if (isset($payload['reminders'])) {
-            $event->setReminders($payload['reminders']);
+        $rem = $payload['reminders'];
+
+        $reminders = new EventReminders();
+        $reminders->setUseDefault((bool)($rem['useDefault'] ?? false));
+
+        $overridesObjs = [];
+        if (!empty($rem['overrides']) && is_array($rem['overrides'])) {
+            foreach ($rem['overrides'] as $o) {
+                $r = new EventReminder();
+                if (isset($o['method']))  { $r->setMethod($o['method']); }
+                if (isset($o['minutes'])) { $r->setMinutes((int)$o['minutes']); }
+                $overridesObjs[] = $r;
+            }
         }
+        $reminders->setOverrides($overridesObjs);
+        $event->setReminders($reminders);
+    }
 
         // Não tenta alterar conference aqui (mantém o que já existe)
         $service->events->update($this->calendarId($user), $eventId, $event);
