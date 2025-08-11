@@ -15,13 +15,10 @@
         --pg-border:#e6eaef;
         --pg-surface:#ffffff;
 
-        /* Cores de realce dos dias */
         --pg-weekend:#FFF6EA;
         --pg-holiday:#ECF7FF;
         --pg-holiday-border:#BEE3FF;
     }
-
-    /* ====== MOBILE FIRST ====== */
 
     #calendar-card{
         border:1px solid var(--pg-border);
@@ -68,21 +65,13 @@
     .chip-success{ background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.35); color:#0e7a56; }
     .chip-warn{ background:rgba(234,88,12,.14); border-color:rgba(234,88,12,.35); color:#8e3a0d; }
 
-    /* ===== header – sincronização empilhada e alinhada ===== */
-    /* por padrão o layout original escondia .btn-outline no mobile;
-       aqui garantimos que os botões de sync apareçam sempre */
-    .cal-sub{ display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:center; }
-    .cal-sub .btn-outline{ display:inline-flex; }
-    .cal-sub .btn-sync{ display:inline-flex; }
-
-    .sync-stack{
-        display:flex; flex-direction:column; gap:8px; align-items:center; width:100%;
-    }
-    .sync-stack .btn-outline{ width:220px; } /* largura consistente e compacta */
-
-    @media (min-width:768px){
-        .cal-sub{ align-items:flex-start; justify-content:flex-start; }
-        .sync-stack{ align-items:flex-start; width:auto; }
+    /* ===== header (como o 2º print) ===== */
+    .cal-sub{ display:flex; flex-direction:column; gap:10px; }
+    .connect-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .sync-row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .sync-row .btn-outline{
+        background:#fff; border:1px solid var(--pg-primary); color:var(--pg-primary);
+        border-radius:12px; font-weight:800; padding:10px 14px; min-height:44px; min-width:230px;
     }
 
     .legend{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; }
@@ -93,7 +82,6 @@
     .cal-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .spacer { flex:1; }
     .btn-group-clean{ display:flex; gap:8px; align-items:center; }
-    .divider-dot{ display:none; }
     .btn-ghost,.btn-brand,.btn-outline{
         display:inline-flex; align-items:center; justify-content:center; gap:6px;
         border-radius:12px; font-weight:800; letter-spacing:.2px;
@@ -102,8 +90,6 @@
     }
     .btn-ghost{ background:#eef5f6; border:1px solid #cfe7e8; color:#184146; }
     .btn-ghost:hover{ transform:translateY(-1px); box-shadow:0 6px 14px rgba(10,20,30,.10) }
-    .btn-outline{ background:#fff; border:1px solid var(--pg-primary); color:var(--pg-primary); }
-    .btn-outline:hover{ background:rgba(18,180,183,.08) }
     .btn-brand{ background:var(--pg-primary); border:1px solid var(--pg-primary-700); color:#fff; box-shadow:0 8px 18px rgba(18,180,183,.28); }
     .btn-brand:hover{ transform:translateY(-1px); }
     .nav-switch,.view-switch{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
@@ -111,9 +97,26 @@
         border:1px solid #cfe7e8; background:#fff; color:#1f2a33; border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem; min-height:44px;
     }
     .view-switch .vbtn.active{ background:linear-gradient(180deg,#fff,#f0feff); border-color:var(--pg-primary); box-shadow:0 8px 18px rgba(18,180,183,.22); color:var(--pg-primary); }
-    .cal-actions > .btn-group-clean:last-child{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 
     .cal-right{ display:flex; justify-content:flex-end; align-items:center; }
+
+    @media (max-width:767.98px){
+    .cal-title{ justify-content:center; text-align:center; }
+    .cal-sub{ align-items:center; }
+    .connect-row, .sync-row{ justify-content:center; }   /* chips e botões de sync centralizados */
+
+    .cal-right{ justify-content:center; }                /* área dos controles à direita */
+    .cal-actions{ justify-content:center; align-items:center; }
+    .nav-switch, .view-switch, .cal-actions .btn-group-clean{ justify-content:center; }
+    .spacer{ display:none; }                             /* remove o “empurra” no mobile */
+
+    /* nos controles da direita, os botões não ocupam 100% no mobile */
+    .cal-actions .btn-ghost,
+    .cal-actions .btn-brand,
+    .cal-actions .btn-outline,
+    .cal-actions .vbtn,
+    .cal-actions .nbtn{ width:auto; } /* empilha bem no mobile */ 
+}
 
     @media (min-width: 768px){
         #calendar-card{ padding:18px; }
@@ -124,11 +127,10 @@
         .nav-switch,.view-switch{ display:flex; }
         .nav-switch .nbtn,.view-switch .vbtn{ min-width:auto; }
         .btn-ghost,.btn-brand,.btn-outline{ width:auto; }
-        .divider-dot{ display:inline-block; width:6px; height:6px; border-radius:999px; background:#d7dde6 }
     }
     @media (min-width: 992px){ .cal-text .cal-head{ font-size:1.35rem; } }
 
-    /* ===== FullCalendar: estilos de dias ===== */
+    /* ===== FullCalendar ===== */
     .fc .fc-day-sat, .fc .fc-day-sun{ background: var(--pg-weekend); }
     .fc .pg-feriado{ background: var(--pg-holiday) !important; box-shadow: inset 0 0 0 1px var(--pg-holiday-border); }
     .fc-daygrid-day.pg-feriado .fc-daygrid-day-number::after{
@@ -136,7 +138,6 @@
         font-size:.65rem; font-weight:700; color:#0b6aa8; background:#dff1ff;
         border:1px solid var(--pg-holiday-border); border-radius:999px; vertical-align:middle;
     }
-
     .fc-event{ border-radius:6px !important; padding:4px !important; font-size:.9rem !important; }
     .fc .fc-event.evento-pago{
         background:linear-gradient(90deg,#28a745,#218838)!important;border:none!important;color:#fff!important;font-weight:700!important;
@@ -153,8 +154,6 @@
 
 @section('content')
 <div class="container">
-
-    {{-- Flash messages --}}
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -168,7 +167,6 @@
         </div>
     @endif
 
-    {{-- Cabeçalho --}}
     <div class="calendar-header">
         <div class="calendar-row">
             <div class="cal-left">
@@ -177,39 +175,43 @@
                     <div class="cal-text">
                         <div class="cal-head"><span id="calendarTitle">Minha Agenda</span></div>
 
-                        {{-- Chips e sincronização (empilhado) --}}
-                        <div class="cal-sub">
+                        <div class="cal-sub mt-2">
                             @if(auth()->user()?->google_connected)
-                                <span class="pg-chip chip-success">
-                                    <i class="bi bi-google"></i> Google Agenda conectado
-                                </span>
-
-                                <div class="sync-stack">
-                                    <form action="{{ route('google.sync') }}" method="POST" class="d-inline">@csrf
-                                        <button type="submit" class="btn-outline btn-sync">
-                                            <i class="bi bi-arrow-repeat me-1"></i> Sincronizar futuras
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">@csrf
-                                        <button type="submit" class="btn-outline btn-sync">
-                                            <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas
+                                <!-- linha 1: status + desconectar -->
+                                <div class="connect-row">
+                                    <span class="pg-chip chip-success">
+                                        <i class="bi bi-google"></i> Google Agenda conectado
+                                    </span>
+                                    <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="pg-chip" title="Desconectar Google">
+                                            <i class="bi bi-x-circle"></i> Desconectar
                                         </button>
                                     </form>
                                 </div>
 
-                                <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="pg-chip" title="Desconectar Google">
-                                        <i class="bi bi-x-circle"></i> Desconectar
-                                    </button>
-                                </form>
+                                <!-- linha 2: botões lado-a-lado -->
+                                <div class="sync-row">
+                                    <form action="{{ route('google.sync') }}" method="POST" class="d-inline">@csrf
+                                        <button type="submit" class="btn-outline">
+                                            <i class="bi bi-arrow-repeat me-1"></i> Sincronizar futuras
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">@csrf
+                                        <button type="submit" class="btn-outline">
+                                            <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas
+                                        </button>
+                                    </form>
+                                </div>
                             @else
-                                <span class="pg-chip chip-warn">
-                                    <i class="bi bi-exclamation-triangle"></i> Google não conectado
-                                </span>
-                                <a href="{{ route('google.connect') }}" class="btn-outline">
-                                    <i class="bi bi-google me-1"></i> Conectar ao Google
-                                </a>
+                                <div class="connect-row">
+                                    <span class="pg-chip chip-warn">
+                                        <i class="bi bi-exclamation-triangle"></i> Google não conectado
+                                    </span>
+                                    <a href="{{ route('google.connect') }}" class="pg-chip">
+                                        <i class="bi bi-google me-1"></i> Conectar ao Google
+                                    </a>
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -245,14 +247,12 @@
         </div>
     </div>
 
-    {{-- Calendário --}}
     <div id="calendar-card"><div id="calendar"></div></div>
 
-    {{-- Legendas abaixo do calendário --}}
     <div class="legend mt-3">
         <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
         <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
-        <span class="pg-chip"><i class="bi bi-moon-stars"></i> Após 00:00</span>
+        <span class="pg-chip"><i class="bi bi-moon-fill text-warning"></i> Após 00:00</span>
     </div>
 </div>
 
@@ -326,7 +326,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (!window.FullCalendar || !calendarEl) return;
 
-    // ========= FERIADOS =========
     const feriadosDatasCache  = {};
     const feriadosNomesCache  = {};
 
@@ -360,13 +359,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    function toYMDLocal(d) { return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
-    function isFeriado(dateObj) { const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const set=feriadosDatasCache[y]; return !!(set && set.has(ymd)); }
+    function toYMDLocal(d){ return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+    function isFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const set=feriadosDatasCache[y]; return !!(set && set.has(ymd)); }
     function nomeFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const map=feriadosNomesCache[y]; return map ? map.get(ymd) : undefined; }
 
     await carregarFeriadosAno(new Date().getFullYear());
 
-    // ========= CALENDÁRIO =========
     const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
     const calendar = new window.FullCalendar.Calendar(calendarEl, {
@@ -467,12 +465,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     calendar.render();
 
-    // Navegação
     document.getElementById('prevBtn')?.addEventListener('click', () => calendar.prev());
     document.getElementById('nextBtn')?.addEventListener('click', () => calendar.next());
     document.getElementById('todayBtn')?.addEventListener('click', () => calendar.today());
 
-    // Views
     const viewButtons = { monthBtn:'dayGridMonth', weekBtn:'timeGridWeek', dayBtn:'timeGridDay' };
     Object.keys(viewButtons).forEach(id => {
         const btn = document.getElementById(id);
