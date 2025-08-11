@@ -21,13 +21,23 @@ class Sessao extends Model
         'foi_pago',
         'observacoes',
         'status_confirmacao',
-        'lembrete_enviado', 
+        'lembrete_enviado',
+
+        // ✅ Integração Google Calendar
+        'google_event_id',
+        'google_sync_status', // pending|ok|error
+        'google_sync_error',
     ];
 
     protected $casts = [
         'foi_pago' => 'boolean',
         'data_hora' => 'datetime',
         'data_hora_original' => 'datetime',
+    ];
+
+    // opcional: garante default caso a migration não tenha colocado
+    protected $attributes = [
+        'google_sync_status' => 'pending',
     ];
 
     public function paciente()
