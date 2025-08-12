@@ -190,6 +190,7 @@
     src="https://www.facebook.com/tr?id=1112759344219140&ev=PageView&noscript=1"
     /></noscript>
     <!-- End Facebook Meta Pixel -->
+     @include('layouts.partials.ga')
 </head>
 <body class="font-sans antialiased">
     <div class="sidebar">

@@ -143,6 +143,7 @@
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1112759344219140&ev=PageView&noscript=1"
     /></noscript>
+    @include('layouts.partials.ga')
 </head>
 <body>
     <div class="page-wrapper">
@@ -201,34 +202,75 @@
 
     {{-- Funções de Cookies (Globais) --}}
     <script>
-        function aceitarCookies() {
-            localStorage.setItem('cookieConsent', 'all');
-            document.getElementById('cookie-banner').style.display = 'none';
+        (function () {
+        const STORAGE_KEY = 'cookieConsent';
+        const BANNER_ID = 'cookie-banner';
+        const MODAL_ID  = 'cookie-modal';
+
+        // Atualiza o consentimento nos tags (GA4 + opcional FB Pixel)
+        function updateConsent({ analytics, marketing }) {
+            if (window.gtag) {
+            gtag('consent', 'update', {
+                analytics_storage:   analytics ? 'granted' : 'denied',
+                ad_storage:          marketing ? 'granted' : 'denied',
+                ad_user_data:        marketing ? 'granted' : 'denied',
+                ad_personalization:  marketing ? 'granted' : 'denied',
+            });
+            }
+            // Se usar Facebook Pixel:
+            if (window.fbq) {
+            fbq('consent', marketing ? 'grant' : 'revoke');
+            }
         }
 
-        function rejeitarCookies() {
-            localStorage.setItem('cookieConsent', 'none');
-            document.getElementById('cookie-banner').style.display = 'none';
-        }
+        function show(id){ const el = document.getElementById(id); if (el) el.style.display = 'block'; }
+        function hide(id){ const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
-        function abrirConfiguracoesCookies() {
-            document.getElementById('cookie-modal').style.display = 'block';
-        }
+        // BOTÕES DO BANNER
+        window.aceitarCookies = function () {
+            localStorage.setItem(STORAGE_KEY, 'all');
+            updateConsent({ analytics: true, marketing: true });
+            hide(BANNER_ID); hide(MODAL_ID);
+        };
 
-        function fecharModalCookies() {
-            document.getElementById('cookie-modal').style.display = 'none';
-        }
+        window.rejeitarCookies = function () {
+            localStorage.setItem(STORAGE_KEY, 'none');
+            updateConsent({ analytics: false, marketing: false });
+            hide(BANNER_ID); hide(MODAL_ID);
+        };
 
-        function salvarPreferenciasCookies() {
-            const analytics = document.getElementById('cookie-analytics').checked;
-            const marketing = document.getElementById('cookie-marketing').checked;
-            const preferencias = { analytics, marketing };
-            localStorage.setItem('cookieConsent', JSON.stringify(preferencias));
-            document.getElementById('cookie-banner').style.display = 'none';
-            fecharModalCookies();
-        }
+        // MODAL DE PREFERÊNCIAS
+        window.abrirConfiguracoesCookies = function () { show(MODAL_ID); };
+        window.fecharModalCookies = function () { hide(MODAL_ID); };
+
+        window.salvarPreferenciasCookies = function () {
+            const analytics = !!document.getElementById('cookie-analytics')?.checked;
+            const marketing = !!document.getElementById('cookie-marketing')?.checked;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ analytics, marketing }));
+            updateConsent({ analytics, marketing });
+            hide(BANNER_ID); hide(MODAL_ID);
+        };
+
+        // Ao carregar: aplica o que foi salvo (ou mostra o banner se não houver decisão)
+        document.addEventListener('DOMContentLoaded', function () {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) { show(BANNER_ID); return; }
+
+            let analytics = false, marketing = false;
+            if (saved === 'all') {
+            analytics = marketing = true;
+            } else if (saved !== 'none') {
+            try {
+                const obj = JSON.parse(saved);
+                analytics = !!obj.analytics;
+                marketing = !!obj.marketing;
+            } catch (_) {}
+            }
+            updateConsent({ analytics, marketing });
+        });
+        })();
     </script>
-
+    
     {{-- Scripts que rodam após o HTML estar pronto (rápidos) --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
