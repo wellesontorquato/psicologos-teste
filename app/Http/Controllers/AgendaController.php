@@ -22,7 +22,11 @@ class AgendaController extends Controller
 
         $sessoes = Sessao::with('paciente')
             ->whereHas('paciente', fn ($q) => $q->where('user_id', $userId))
-            ->whereNotIn('status_confirmacao', ['CANCELADA', 'REMARCAR'])
+            ->where('status_confirmacao', '!=', 'CANCELADA')
+            ->where(function ($q) {
+                $q->where('status_confirmacao', '!=', 'REMARCAR')
+                ->orWhereNotNull('data_hora');
+            })
             ->get();
 
         $eventos = $sessoes->map(function ($sessao) {
