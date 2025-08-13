@@ -534,6 +534,10 @@ function closeSessionPopover(){
   document.head.appendChild(popupCSS);
 
   async function abrirPopupSessao(info, clickX, clickY){
+    // garante que não há estado "hiding" preso de um fechamento anterior
+    clearTimeout(hideTimer);
+    sessionPopover.classList.remove('hiding');
+
     const id = info.event.id;
 
     // Busca dados completos no backend
@@ -614,8 +618,8 @@ function closeSessionPopover(){
       </div>
     `;
 
-    // Mostrar + animar
     sessionPopover.style.display = 'block';
+    void sessionPopover.offsetWidth; 
     positionPopover(clickX, clickY);
     requestAnimationFrame(() => sessionPopover.classList.add('show'));
 
