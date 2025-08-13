@@ -155,7 +155,6 @@ class SessaoController extends Controller
                     'google_sync_error'  => null,
                 ]);
             } catch (GoogleServiceException $e) {
-                // re-lança para ver o erro real (Telescope/Logs/Whoops)
                 throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
@@ -163,6 +162,12 @@ class SessaoController extends Controller
                     'google_sync_error'  => substr($e->getMessage(), 0, 1000),
                 ]);
             }
+        } else {
+            // não conectado → deixa para os botões de sincronizar
+            $sessao->update([
+                'google_sync_status' => 'pending',
+                'google_sync_error'  => null,
+            ]);
         }
 
         return redirect()->route('sessoes.index')->with('success', 'Sessão cadastrada!');
@@ -217,7 +222,6 @@ class SessaoController extends Controller
                     'google_sync_error'  => null,
                 ]);
             } catch (GoogleServiceException $e) {
-                // rethrow para você ver o erro real (Telescope/Log/Response)
                 throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
@@ -226,7 +230,6 @@ class SessaoController extends Controller
                 ]);
             }
         }
-
 
         return response()->json(['message' => 'Sessão criada com sucesso', 'id' => $sessao->id], 201);
     }
@@ -255,7 +258,6 @@ class SessaoController extends Controller
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
-        // NÃO sobrescreve data_hora com string; cria um campo formatado
         $dataHoraLocal = Carbon::parse($sessao->data_hora)
             ->timezone(config('app.timezone'))
             ->format('Y-m-d\TH:i');
@@ -335,7 +337,6 @@ class SessaoController extends Controller
                 $sessao->google_sync_error  = null;
                 $sessao->save();
             } catch (GoogleServiceException $e) {
-                // re-lança para ver o erro real (Telescope/Logs/Whoops)
                 throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
@@ -343,6 +344,12 @@ class SessaoController extends Controller
                     'google_sync_error'  => substr($e->getMessage(), 0, 1000),
                 ]);
             }
+        } else {
+            // não conectado → deixa para os botões de sincronizar
+            $sessao->update([
+                'google_sync_status' => 'pending',
+                'google_sync_error'  => null,
+            ]);
         }
 
         return redirect()->route('sessoes.index')->with('success', 'Sessão atualizada!');
@@ -427,7 +434,6 @@ class SessaoController extends Controller
                 $sessao->save();
 
             } catch (GoogleServiceException $e) {
-                // rethrow para inspeção
                 throw $e;
             } catch (\Throwable $e) {
                 $sessao->update([
@@ -436,7 +442,6 @@ class SessaoController extends Controller
                 ]);
             }
         }
-
 
         return response()->json(['message' => 'Sessão atualizada com sucesso']);
     }
@@ -641,6 +646,12 @@ class SessaoController extends Controller
                             'google_sync_error'  => substr($e->getMessage(), 0, 1000),
                         ]);
                     }
+                } else {
+                    // não conectado → deixa para os botões de sincronizar
+                    $nova->update([
+                        'google_sync_status' => 'pending',
+                        'google_sync_error'  => null,
+                    ]);
                 }
 
                 $criadas++;
@@ -694,7 +705,6 @@ class SessaoController extends Controller
                     'observacoes'        => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
                 ]);
 
-                // Google: criar evento da recorrência
                 if ($user->google_connected) {
                     try {
                         $gcal = app(GoogleCalendarService::class);
@@ -765,7 +775,187 @@ class SessaoController extends Controller
             'valor'          => $sessao->valor,
             'duracao'        => (int) $sessao->duracao,
             'foi_pago'       => (bool) $sessao->foi_pago,
-            'meet_url'       => $meetUrl, // se não quiser expor, remova esta linha; o front trata como opcional
+            'meet_url'       => $meetUrl,
+        ]);
+    }
+
+    private function queryBaseSync($apenasFuturas = true)
+    {
+        $userId = auth()->id();
+        $q = Sessao::with('paciente')
+            ->whereHas('paciente', fn($qq) => $qq->where('user_id', $userId))
+            ->whereIn('google_sync_status', ['pending','error'])
+            ->whereNotNull('data_hora');
+
+        if ($apenasFuturas) {
+            $q->where('data_hora', '>=', now('America/Sao_Paulo'));
+        }
+
+        return $q->orderBy('id');
+    }
+
+    private function upsertEventoGoogle(\App\Models\Sessao $sessao, \App\Models\User $user): array
+    {
+        try {
+            $gcal = app(\App\Services\GoogleCalendarService::class);
+
+            // cancelada ou REMARCAR sem data → remover do Google e dar ok local
+            $cancelada = $sessao->status_confirmacao === 'CANCELADA';
+            $remarcarSemData = ($sessao->status_confirmacao === 'REMARCAR') && empty($sessao->data_hora);
+            if ($cancelada || $remarcarSemData) {
+                if ($sessao->google_event_id) {
+                    $gcal->deleteEvent($user, $sessao->google_event_id);
+                    $sessao->google_event_id = null;
+                }
+                $sessao->google_sync_status = 'ok';
+                $sessao->google_sync_error  = null;
+                $sessao->save();
+                return ['ok' => true, 'op' => $cancelada ? 'deleted_cancel' : 'skipped_no_date'];
+            }
+
+            // sem data (qualquer outra situação) → nada para sincronizar
+            if (!$sessao->data_hora) {
+                if ($sessao->google_event_id) {
+                    $gcal->deleteEvent($user, $sessao->google_event_id);
+                    $sessao->google_event_id = null;
+                }
+                $sessao->google_sync_status = 'ok';
+                $sessao->google_sync_error  = null;
+                $sessao->save();
+                return ['ok' => true, 'op' => 'skipped_no_date'];
+            }
+
+            $inicio = \Illuminate\Support\Carbon::parse($sessao->data_hora);
+            $fim    = $inicio->copy()->addMinutes((int) $sessao->duracao);
+
+            if ($sessao->google_event_id) {
+                // update
+                $gcal->updateEvent($user, $sessao->google_event_id, [
+                    'summary'     => "Sessão com {$sessao->paciente->nome}",
+                    'description' => $sessao->observacoes ?? null,
+                    'start'       => $inicio,
+                    'end'         => $fim,
+                ]);
+            } else {
+                // create
+                $eventId = $gcal->createEvent($user, [
+                    'summary'     => "Sessão com {$sessao->paciente->nome}",
+                    'description' => $sessao->observacoes ?? null,
+                    'start'       => $inicio,
+                    'end'         => $fim,
+                    'attendees'   => $sessao->paciente->email ? [['email'=>$sessao->paciente->email]] : [],
+                    'conference'  => true,
+                ]);
+                $sessao->google_event_id = $eventId;
+            }
+
+            $sessao->google_sync_status = 'ok';
+            $sessao->google_sync_error  = null;
+            $sessao->save();
+
+            return ['ok' => true, 'op' => $sessao->wasChanged('google_event_id') ? 'created' : 'updated'];
+
+        } catch (\Google\Service\Exception $ge) {
+            $code = $ge->getCode();
+            $msg  = substr($ge->getMessage() ?? 'Google error', 0, 500);
+            $sessao->update([
+                'google_sync_status' => 'error',
+                'google_sync_error'  => $msg,
+            ]);
+            if (in_array($code, [403, 429], true) && str_contains(strtolower($msg), 'rate')) {
+                return ['ok' => false, 'op' => 'rate_limit', 'msg' => $msg];
+            }
+            return ['ok' => false, 'op' => 'error', 'msg' => $msg];
+
+        } catch (\Throwable $e) {
+            $msg = substr($e->getMessage() ?? 'Erro', 0, 500);
+            $sessao->update([
+                'google_sync_status' => 'error',
+                'google_sync_error'  => $msg,
+            ]);
+            return ['ok' => false, 'op' => 'error', 'msg' => $msg];
+        }
+    }
+
+    // --- endpoints WEB (redirect) ---
+    public function syncFuturas(Request $request)
+    {
+        return $this->runSync($request, true, false);
+    }
+
+    public function syncTodas(Request $request)
+    {
+        return $this->runSync($request, false, false);
+    }
+
+    // --- endpoints JSON (mantidos, mas sem alterações funcionais extras) ---
+    public function syncFuturasJson(Request $request)
+    {
+        return $this->runSync($request, true, true);
+    }
+
+    public function syncTodasJson(Request $request)
+    {
+        return $this->runSync($request, false, true);
+    }
+
+    // --- núcleo do processamento em lote ---
+    private function runSync(Request $request, bool $apenasFuturas, bool $json)
+    {
+        $user = $request->user();
+
+        if (!$user->google_connected) {
+            $msg = 'Conecte sua conta do Google para sincronizar.';
+            return $json
+                ? response()->json(['ok'=>false, 'synced'=>0, 'errors'=>[$msg]], 400)
+                : back()->with('error', $msg);
+        }
+
+        $synced = 0; $created = 0; $updated = 0; $deleted = 0; $skipped = 0;
+        $errors = []; $rateLimited = false;
+
+        $this->queryBaseSync($apenasFuturas)->chunkById(100, function($chunk) use ($user, &$synced,&$created,&$updated,&$deleted,&$skipped,&$errors,&$rateLimited) {
+            foreach ($chunk as $sessao) {
+                $res = $this->upsertEventoGoogle($sessao, $user);
+                if ($res['ok']) {
+                    $synced++;
+                    if ($res['op'] === 'created')  $created++;
+                    if ($res['op'] === 'updated')  $updated++;
+                    if ($res['op'] === 'deleted' || $res['op'] === 'deleted_cancel')  $deleted++;
+                    if ($res['op'] === 'skipped_no_date') $skipped++;
+                } else {
+                    $errors[] = "Sessão #{$sessao->id}: " . ($res['msg'] ?? 'erro');
+                    if (($res['op'] ?? '') === 'rate_limit') {
+                        $rateLimited = true;
+                        break;
+                    }
+                }
+            }
+            return !$rateLimited;
+        });
+
+        $summary = "Sincronizadas: {$synced} (criadas {$created}, atualizadas {$updated}, deletadas {$deleted}, puladas {$skipped})";
+        if ($rateLimited) {
+            $errors[] = 'Limite de taxa do Google atingido. Tente novamente em alguns minutos.';
+        }
+
+        if ($json) {
+            $status = ($synced > 0 || empty($errors)) ? 200 : 207;
+            return response()->json([
+                'ok'      => empty($errors),
+                'synced'  => $synced,
+                'created' => $created,
+                'updated' => $updated,
+                'deleted' => $deleted,
+                'skipped' => $skipped,
+                'errors'  => $errors,
+                'summary' => $summary,
+            ], $status);
+        }
+
+        return back()->with([
+            'success' => $summary,
+            'errors'  => $errors,
         ]);
     }
 }

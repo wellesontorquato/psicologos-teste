@@ -271,12 +271,12 @@
 
                                 <!-- linha 2: botões lado-a-lado -->
                                 <div class="sync-row">
-                                    <form action="{{ route('google.sync') }}" method="POST" class="d-inline">@csrf
+                                    <form action="{{ route('sessoes.sync.futuras') }}" method="POST" class="d-inline">@csrf
                                         <button type="submit" class="btn-outline">
                                             <i class="bi bi-arrow-repeat me-1"></i> Sincronizar futuras
                                         </button>
                                     </form>
-                                    <form action="{{ route('google.sync.all') }}" method="POST" class="d-inline">@csrf
+                                    <form action="{{ route('sessoes.sync.todas') }}" method="POST" class="d-inline">@csrf
                                         <button type="submit" class="btn-outline">
                                             <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas
                                         </button>
@@ -439,19 +439,29 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.body.appendChild(sessionPopover);
   }
 
-  function closeSessionPopover(){
-    if (sessionPopover.style.display === 'none') return;
-    // animação de saída
-    sessionPopover.classList.add('hiding');
-    sessionPopover.classList.remove('show');
-    const onEnd = () => {
-      sessionPopover.style.display = 'none';
-      sessionPopover.classList.remove('hiding');
-      sessionPopover.innerHTML = '';
-      sessionPopover.removeEventListener('transitionend', onEnd);
-    };
-    sessionPopover.addEventListener('transitionend', onEnd, { once:true });
-  }
+  let hideTimer = null;
+
+function closeSessionPopover(){
+  // se já está escondido, não faz nada
+  if (sessionPopover.style.display === 'none') return;
+
+  // inicia animação de saída
+  sessionPopover.classList.remove('show');
+  sessionPopover.classList.add('hiding');
+
+  const finish = () => {
+    sessionPopover.style.display = 'none';
+    sessionPopover.classList.remove('hiding'); // <- IMPORTANTÍSSIMO
+    sessionPopover.innerHTML = '';
+  };
+
+  // tenta ouvir o fim da transição...
+  sessionPopover.addEventListener('transitionend', finish, { once:true });
+
+  // ...mas garante com fallback, caso 'transitionend' não dispare
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(finish, 300); // >= ao tempo da sua transition (0.22s)
+}
 
   function two(n){ return String(n).padStart(2,'0'); }
   function fmtHora(d){ return two(d.getHours()) + ':' + two(d.getMinutes()); }

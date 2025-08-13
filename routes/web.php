@@ -159,90 +159,71 @@ Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->gr
 Route::middleware(['auth', 'verified', CheckSubscription::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::post('/sessoes-json', [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
-    Route::put('/sessoes-json/{id}', [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
-    Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
-    Route::get('/sessoes-json/{id}', [SessaoController::class, 'showJson'])->name('sessoes.showJson');
+    // JSON de sessões
+    Route::post('/sessoes-json',        [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
+    Route::put('/sessoes-json/{id}',    [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
+    Route::get('/sessoes-json/{id}/edit',[SessaoController::class, 'editJson'])->name('sessoes.editJson'); // <- corrigido
+    Route::get('/sessoes-json/{id}',    [SessaoController::class, 'showJson'])->name('sessoes.showJson');
     Route::delete('/sessoes-json/{id}', [SessaoController::class, 'destroyJson'])->name('sessoes.destroyJson');
 
-
-
     Route::resource('pacientes', PacienteController::class);
-    Route::resource('evolucoes', EvolucaoController::class)->parameters([
-        'evolucoes' => 'evolucao',
-    ]);
+    Route::resource('evolucoes', EvolucaoController::class)->parameters(['evolucoes' => 'evolucao']);
 
-    Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
+    Route::get('/dashboard/pdf',   [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
     Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
-    Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');
-    Route::get('/pacientes/{paciente}/historico/pdf', [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');
-    Route::get('/pacientes/{id}/sessoes', [App\Http\Controllers\EvolucaoController::class, 'getSessoes'])->name('pacientes.sessoes');
 
-    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
-    Route::get('/api/sessoes', [AgendaController::class, 'eventos'])->name('agenda.eventos');
+    Route::get('/pacientes/{paciente}/historico',      [PacienteController::class, 'historico'])->name('pacientes.historico');
+    Route::get('/pacientes/{paciente}/historico/pdf',  [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');
+    Route::get('/pacientes/{id}/sessoes',              [EvolucaoController::class, 'getSessoes'])->name('pacientes.sessoes');
+
+    Route::get('/agenda',         [AgendaController::class, 'index'])->name('agenda');
+    Route::get('/api/sessoes',    [AgendaController::class, 'eventos'])->name('agenda.eventos');
 
     Route::prefix('pacientes/{paciente}/arquivos')->group(function () {
-        Route::get('/', [ArquivoController::class, 'index'])->name('arquivos.index');
+        Route::get('/',  [ArquivoController::class, 'index'])->name('arquivos.index');
         Route::post('/', [ArquivoController::class, 'store'])->name('arquivos.store');
     });
-    Route::delete('/arquivos/{arquivo}', [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
-    Route::put('/arquivos/{arquivo}/renomear', [ArquivoController::class, 'renomear'])->name('arquivos.rename');
+    Route::delete('/arquivos/{arquivo}',           [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
+    Route::put('/arquivos/{arquivo}/renomear',     [ArquivoController::class, 'renomear'])->name('arquivos.rename');
 
     // Área admin
     Route::middleware([EnsureUserIsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index');
-        Route::get('/auditoria/exportar-pdf', [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
-        Route::get('/auditoria/exportar-excel', [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
-        Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
+        Route::get('/auditoria',                 [AuditController::class, 'index'])->name('auditoria.index');
+        Route::get('/auditoria/exportar-pdf',    [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
+        Route::get('/auditoria/exportar-excel',  [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
+        Route::get('/usuarios',                  [UserController::class, 'index'])->name('usuarios.index');
         Route::patch('/usuarios/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('usuarios.toggleAdmin');
-        Route::resource('news', NewsController::class);
+        Route::resource('news', \App\Http\Controllers\NewsController::class);
     });
 
-    Route::get('/sessoes/export', [SessaoController::class, 'export'])->name('sessoes.export');
-    Route::post('/sessoes/gerar-recorrencias', [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
+    // Sessões (HTML)
+    Route::get('/sessoes/export',                   [SessaoController::class, 'export'])->name('sessoes.export');
+    Route::post('/sessoes/gerar-recorrencias',      [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
     Route::resource('sessoes', SessaoController::class)->except(['show']);
-    Route::get('/sessoes/importar', [SessaoController::class, 'importarView'])->name('sessoes.importar.view');
-    Route::post('/sessoes/importar', [SessaoController::class, 'importar'])->name('sessoes.importar');
-    Route::get('/sessoes/modelo', [SessaoController::class, 'baixarModeloImportacao'])->name('sessoes.modelo');
+    Route::get('/sessoes/importar',                 [SessaoController::class, 'importarView'])->name('sessoes.importar.view');
+    Route::post('/sessoes/importar',                [SessaoController::class, 'importar'])->name('sessoes.importar');
+    Route::get('/sessoes/modelo',                   [SessaoController::class, 'baixarModeloImportacao'])->name('sessoes.modelo');
+    Route::post('/sessoes/sync/futuras',            [SessaoController::class, 'syncFuturas'])->name('sessoes.sync.futuras');
+    Route::post('/sessoes/sync/todas',              [SessaoController::class, 'syncTodas'])->name('sessoes.sync.todas');
 
-    Route::get('/notificacoes', [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
-    Route::get('/notificacoes/{id}/acao', [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
-    Route::post('/notificacoes/ler-todas', [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
+    // Notificações
+    Route::get('/notificacoes',                 [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
+    Route::get('/notificacoes/{id}/acao',       [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
+    Route::post('/notificacoes/ler-todas',      [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
+
+    // API auxiliar
     Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
 });
 
+// Integração Google + jobs de sync por usuário (mantidos, não conflitam com /sessoes/sync/*)
 Route::middleware('auth')->group(function () {
-    Route::get('/integracoes/google/connect', [\App\Http\Controllers\GoogleAuthController::class, 'redirect'])->name('google.connect');
-    Route::get('/oauth/google/callback', [\App\Http\Controllers\GoogleAuthController::class, 'callback'])->name('google.callback');
+    Route::get('/integracoes/google/connect',     [\App\Http\Controllers\GoogleAuthController::class, 'redirect'])->name('google.connect');
+    Route::get('/oauth/google/callback',          [\App\Http\Controllers\GoogleAuthController::class, 'callback'])->name('google.callback');
     Route::post('/integracoes/google/disconnect', [\App\Http\Controllers\GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
-
-    // 🔄 Sincronizar apenas sessões futuras
-    Route::post('/integracoes/google/sync', function (Request $request) {
-        $user = $request->user();
-
-        if (!$user->google_connected) {
-            return back()->with('error', 'Conecte sua conta do Google antes de sincronizar.');
-        }
-
-        dispatch(new SyncUserCalendar($user->id, true)); // só futuras
-        return back()->with('success', 'Sincronização iniciada! Verifique em alguns segundos.');
-    })->middleware('throttle:3,1')->name('google.sync');
-
-    // 🔄 Sincronizar TUDO (inclui passadas)
-    Route::post('/integracoes/google/sync/all', function (Request $request) {
-        $user = $request->user();
-
-        if (!$user->google_connected) {
-            return back()->with('error', 'Conecte sua conta do Google antes de sincronizar.');
-        }
-
-        dispatch(new SyncUserCalendar($user->id, false)); // inclui passadas
-        return back()->with('success', 'Sincronização completa iniciada! Pode levar mais tempo.');
-    })->middleware('throttle:2,1')->name('google.sync.all');
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/billing/portal', [App\Http\Controllers\AssinaturaController::class, 'portal'])->name('billing.portal');
+    Route::get('/billing/portal', [\App\Http\Controllers\AssinaturaController::class, 'portal'])->name('billing.portal');
 });
 
 /*
@@ -258,12 +239,6 @@ Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 |--------------------------------------------------------------------------
 */
 
-Route::get('/ver-log-whatsapp', function () {
-$logFile = storage_path('logs/whatsapp.log');
-$logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
-return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
-})->middleware('auth');
-
 require __DIR__.'/auth.php';
 
 /*
@@ -274,12 +249,19 @@ require __DIR__.'/auth.php';
 Route::get('/{slug}', [LandingPageController::class, 'show'])
     ->name('landing.show')
     ->where('slug', '[A-Za-z0-9\-]+');
-
 /*
 |--------------------------------------------------------------------------
 | Auth padrão do Laravel
 |--------------------------------------------------------------------------
 */
+
+
+//Route::get('/ver-log-whatsapp', function () {
+// $logFile = storage_path('logs/whatsapp.log');
+// $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
+// return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
+// })->middleware('auth');
+// };
 
 // Route::get('/force-clear', function () {
 //     Artisan::call('config:clear');
