@@ -173,7 +173,7 @@ class GoogleCalendarService
             $created = $service->events->insert(
                 $this->calendarId($user),
                 $event,
-                ['conferenceDataVersion' => $wantConference ? 1 : 0]
+                ['conferenceDataVersion' => 1]
             );
         } catch (GoogleServiceException $e) {
             if ($wantConference && $e->getCode() === 403) {
@@ -205,36 +205,68 @@ class GoogleCalendarService
         $client  = $this->clientFor($user);
         $service = new GoogleCalendar($client);
 
-        $event = $service->events->get($this->calendarId($user), $eventId);
+        // 👇 traga o evento já com conferenceData
+        $event = $service->events->get(
+            $this->calendarId($user),
+            $eventId,
+            ['conferenceDataVersion' => 1]
+        );
+
         $tz = config('app.timezone', 'America/Sao_Paulo');
 
         $event->setSummary($payload['summary']);
         $event->setDescription($payload['description'] ?? null);
-        if (isset($payload['location'])) {
+
+        if (array_key_exists('location', $payload)) {
             $event->setLocation($payload['location']);
         }
 
         $event->setStart($this->asEventDateTime($payload['start'], $tz));
         $event->setEnd($this->asEventDateTime($payload['end'], $tz));
 
-        if (isset($payload['attendees'])) {
+        if (array_key_exists('attendees', $payload)) {
             $event->setAttendees($payload['attendees']);
         }
-        if (isset($payload['reminders'])) {
+        if (array_key_exists('reminders', $payload)) {
             $event->setReminders($this->buildReminders($payload['reminders']));
         }
 
+        // 👇 se ainda não existe Meet, cria agora
+        $hasConference = $event->getConferenceData()
+            && $event->getConferenceData()->getEntryPoints();
+
+        if (!$hasConference) {
+            $event['conferenceData'] = [
+                'createRequest' => [
+                    'requestId' => 'psigestor-' . uniqid('', true),
+                    'conferenceSolutionKey' => ['type' => 'hangoutsMeet'],
+                ],
+            ];
+        }
+
         try {
-            $service->events->update($this->calendarId($user), $eventId, $event);
+            // 👇 atualize sempre com conferenceDataVersion=1
+            $service->events->update(
+                $this->calendarId($user),
+                $eventId,
+                $event,
+                ['conferenceDataVersion' => 1]
+            );
         } catch (GoogleServiceException $e) {
             if ($e->getCode() === 400 && !empty($event['attendees'])) {
                 unset($event['attendees']);
-                $service->events->update($this->calendarId($user), $eventId, $event);
+                $service->events->update(
+                    $this->calendarId($user),
+                    $eventId,
+                    $event,
+                    ['conferenceDataVersion' => 1]
+                );
             } else {
                 throw $e;
             }
         }
     }
+
 
     /** Remove um evento (idempotente). */
     public function deleteEvent(User $user, ?string $eventId): void
