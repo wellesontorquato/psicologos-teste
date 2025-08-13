@@ -161,7 +161,45 @@
     border-radius: 14px;
     box-shadow: 0 12px 28px rgba(10,20,30,.18);
     overflow: hidden;
+
+    /* --- animação / estados --- */
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+    visibility: hidden;
+    pointer-events: none;
+    will-change: opacity, transform;
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease,
+        box-shadow 0.22s ease;
     }
+
+    /* Estado visível (abre suave) */
+    .session-popover.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+    pointer-events: auto;
+    }
+
+    /* Estado de saída (fecha suave) */
+    .session-popover.hiding {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+    pointer-events: none;
+    }
+
+    /* Acessibilidade: reduz movimento se o usuário preferir */
+    @media (prefers-reduced-motion: reduce) {
+    .session-popover,
+    .session-popover.show,
+    .session-popover.hiding {
+        transition: none !important;
+        transform: none !important;
+    }
+    }
+
+    /* Cabeçalho / conteúdo */
     .session-popover .sp-head{
     display:flex; align-items:center; justify-content:space-between;
     gap:8px; padding:10px 12px; border-bottom:1px solid var(--pg-border);
@@ -189,6 +227,7 @@
     .session-popover .pill{
     background:#f5f7fa; border:1px solid #e5e7eb; padding:6px 10px; border-radius:999px; font-size:.85rem;
     }
+
 </style>
 @endsection
 
@@ -390,6 +429,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     sessionPopover = document.createElement('div');
     sessionPopover.id = 'session-popover';
     sessionPopover.className = 'session-popover';
+    // base (sem animação; as transições virão via <style> abaixo)
     sessionPopover.style.cssText =
       'display:none;position:absolute;z-index:1060;width:320px;max-width:calc(100vw - 24px);background:#fff;border:1px solid #e6eaef;border-radius:14px;box-shadow:0 12px 28px rgba(10,20,30,.18);overflow:hidden';
     // Acessibilidade
@@ -399,7 +439,20 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.body.appendChild(sessionPopover);
   }
 
-  function closeSessionPopover(){ sessionPopover.style.display='none'; sessionPopover.innerHTML=''; }
+  function closeSessionPopover(){
+    if (sessionPopover.style.display === 'none') return;
+    // animação de saída
+    sessionPopover.classList.add('hiding');
+    sessionPopover.classList.remove('show');
+    const onEnd = () => {
+      sessionPopover.style.display = 'none';
+      sessionPopover.classList.remove('hiding');
+      sessionPopover.innerHTML = '';
+      sessionPopover.removeEventListener('transitionend', onEnd);
+    };
+    sessionPopover.addEventListener('transitionend', onEnd, { once:true });
+  }
+
   function two(n){ return String(n).padStart(2,'0'); }
   function fmtHora(d){ return two(d.getHours()) + ':' + two(d.getMinutes()); }
   function addMinutos(date, min){ return new Date(date.getTime() + min*60000); }
@@ -418,14 +471,42 @@ document.addEventListener('DOMContentLoaded', async function () {
     sessionPopover.style.left = left + 'px';
     sessionPopover.style.top  = top  + 'px';
   }
+
+  // Fecha com ESC
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSessionPopover(); });
+  // Fecha ao clicar fora; impede fechar ao clicar dentro
   document.addEventListener('click', (e)=>{
-    if (!sessionPopover.contains(e.target) && !e.target.closest('.fc-event')) closeSessionPopover();
+    if (sessionPopover.style.display !== 'none' &&
+        !sessionPopover.contains(e.target) &&
+        !e.target.closest('.fc-event')) {
+      closeSessionPopover();
+    }
   });
+  // evita “fechar fora” se clicar dentro do popover
+  sessionPopover.addEventListener('click', (e)=>{ e.stopPropagation(); });
+  // fecha ao rolar (evita ficar mal posicionado)
   window.addEventListener('scroll', closeSessionPopover, { passive: true });
 
+  // Estilos do popup + ANIMAÇÃO
   const popupCSS = document.createElement('style');
   popupCSS.textContent = `
+    .session-popover{
+      opacity:0; transform:translateY(-8px) scale(0.985);
+      visibility:hidden; pointer-events:none;
+      will-change:opacity,transform;
+      transition: opacity .22s ease, transform .22s ease, box-shadow .22s ease;
+    }
+    .session-popover.show{
+      opacity:1; transform:translateY(0) scale(1);
+      visibility:visible; pointer-events:auto;
+    }
+    .session-popover.hiding{
+      opacity:0; transform:translateY(-6px) scale(0.985);
+      pointer-events:none;
+    }
+    @media (prefers-reduced-motion: reduce){
+      .session-popover, .session-popover.show, .session-popover.hiding{ transition:none !important; transform:none !important; }
+    }
     .session-popover .sp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid #e6eaef}
     .session-popover .sp-title{display:flex;align-items:center;gap:8px;font-weight:700;color:#111;margin:0}
     .session-popover .sp-title .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
@@ -445,10 +526,12 @@ document.addEventListener('DOMContentLoaded', async function () {
   async function abrirPopupSessao(info, clickX, clickY){
     const id = info.event.id;
 
-    // Busca os dados completos no backend
+    // Busca dados completos no backend
     let sessao = null;
     try{
-      const r = await fetch(`/sessoes-json/${id}`);
+      const r = await fetch(`/sessoes-json/${id}`, {
+        headers: { 'Accept':'application/json', 'X-Requested-With':'XMLHttpRequest' }
+      });
       if (!r.ok) {
         const body = await r.json().catch(()=>({}));
         if (promptReconnectIfNeeded(body?.message, r.status)) return;
@@ -521,13 +604,16 @@ document.addEventListener('DOMContentLoaded', async function () {
       </div>
     `;
 
+    // Mostrar + animar
     sessionPopover.style.display = 'block';
     positionPopover(clickX, clickY);
+    requestAnimationFrame(() => sessionPopover.classList.add('show'));
 
-    document.getElementById('sp-close')?.addEventListener('click', closeSessionPopover);
+    document.getElementById('sp-close')?.addEventListener('click', (e)=>{ e.stopPropagation(); closeSessionPopover(); });
 
     if (meetUrl) {
-      document.getElementById('sp-copy-meet')?.addEventListener('click', async ()=>{
+      document.getElementById('sp-copy-meet')?.addEventListener('click', async (e)=>{
+        e.stopPropagation();
         try{
           await navigator.clipboard.writeText(meetUrl);
           Swal.fire({ icon:'success', title:'Link copiado', timer:1200, showConfirmButton:false });
@@ -536,11 +622,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Editar
-    document.getElementById('sp-edit')?.addEventListener('click', async ()=>{
+    document.getElementById('sp-edit')?.addEventListener('click', async (e)=>{
+      e.stopPropagation();
       try{
-        if (!sessao){
-          const r = await fetch(`/sessoes-json/${id}`); sessao = await r.json();
-        }
         campos.id.value        = sessao.id;
         campos.paciente.value  = sessao.paciente_id;
         campos.data_hora.value = sessao.data_hora;
@@ -555,8 +639,9 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
     });
 
-    // Excluir
-    document.getElementById('sp-delete')?.addEventListener('click', async ()=>{
+    // Excluir (robusto: 204/200/JSON, 419 CSRF, 401/403 reconexão)
+    document.getElementById('sp-delete')?.addEventListener('click', async (e)=>{
+      e.stopPropagation();
       const ok = await Swal.fire({
         icon:'warning', title:'Excluir sessão?', text:'Esta ação não pode ser desfeita.',
         showCancelButton:true, confirmButtonText:'Excluir', cancelButtonText:'Cancelar',
@@ -564,22 +649,39 @@ document.addEventListener('DOMContentLoaded', async function () {
       }).then(r=>r.isConfirmed);
       if(!ok) return;
 
+      const csrf = document.querySelector('input[name="_token"]')?.value
+                || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
       try{
         const res = await fetch(`/sessoes-json/${id}`, {
           method:'DELETE',
-          headers:{ 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Accept':'application/json' }
+          headers:{
+            'Accept':'application/json',
+            'X-Requested-With':'XMLHttpRequest',
+            ...(csrf ? {'X-CSRF-TOKEN': csrf} : {})
+          }
         });
-        const body = await res.json().catch(()=>({}));
+
+        // Pode vir 204 sem corpo, 200 com JSON, ou 4xx com JSON/HTML
+        let body = {};
+        const text = await res.text();
+        try { body = text ? JSON.parse(text) : {}; } catch(_) { body = {}; }
+
         if(!res.ok){
           if (promptReconnectIfNeeded(body?.message, res.status)) return;
+          if (res.status === 419){ // CSRF
+            Swal.fire('Sessão expirada', 'Atualize a página e tente novamente.', 'warning');
+            return;
+          }
           throw new Error(body?.message || 'Erro ao excluir');
         }
+
         closeSessionPopover();
         calendar.refetchEvents();
         Swal.fire({ icon:'success', title:'Sessão excluída', timer:1400, showConfirmButton:false });
       }catch(e){
         if (!promptReconnectIfNeeded(e?.message)) {
-          Swal.fire('Erro', 'Falha ao excluir a sessão.', 'error');
+          Swal.fire('Erro', e?.message || 'Falha ao excluir a sessão.', 'error');
         }
       }
     });
@@ -593,7 +695,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   async function carregarFeriadosAno(ano) {
     if (feriadosDatasCache[ano]) return;
     try {
-      const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, { headers: { 'Accept': 'application/json' }});
+      const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, { headers: { 'Accept': 'application/json', 'X-Requested-With':'XMLHttpRequest' }});
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       let data = await resp.json();
       if (!Array.isArray(data) && Array.isArray(data?.holidays)) data = data.holidays;
@@ -761,11 +863,15 @@ document.addEventListener('DOMContentLoaded', async function () {
       foi_pago:    campos.foi_pago.checked ? 1 : 0,
     };
 
+    const csrf = document.querySelector('input[name="_token"]')?.value
+              || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
     try {
       const response = await fetch(rota, {
         method: metodo,
         headers: {
-          'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+          'X-CSRF-TOKEN': csrf || '',
+          'X-Requested-With': 'XMLHttpRequest',
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
@@ -775,7 +881,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       if (!response.ok) {
         if (promptReconnectIfNeeded(resData?.message, response.status)) return;
-        if (resData?.message?.includes("Conflito de horário")) {
+        if (response.status === 419){
+          Swal.fire('Sessão expirada', 'Atualize a página e tente novamente.', 'warning');
+        } else if (resData?.message?.includes("Conflito de horário")) {
           Swal.fire({ icon:'error', title:'Conflito de Horário', text:resData.message, confirmButtonColor:'#3085d6' });
         } else {
           Swal.fire('Erro', resData?.message || 'Erro ao salvar a sessão.', 'error');

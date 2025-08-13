@@ -163,6 +163,8 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     Route::put('/sessoes-json/{id}', [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
     Route::get('/sessoes-json/{id}', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
     Route::get('/sessoes-json/{id}', [SessaoController::class, 'showJson'])->name('sessoes.showJson');
+    Route::delete('/sessoes-json/{id}', [SessaoController::class, 'destroyJson'])->name('sessoes.destroyJson');
+
 
 
     Route::resource('pacientes', PacienteController::class);
