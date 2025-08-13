@@ -149,6 +149,46 @@
         background:#e3f7ff!important;border:1px dashed #00c4ff!important;color:#006f99!important;font-weight:700!important;
     }
     .fc-daygrid-event-dot{ display:none!important; }
+
+    /* ===== Popup de sessão (card flutuante) ===== */
+    .session-popover {
+    position: absolute;
+    z-index: 1060; /* acima do calendário e abaixo do modal */
+    width: 320px;
+    max-width: calc(100vw - 24px);
+    background: #fff;
+    border: 1px solid var(--pg-border);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(10,20,30,.18);
+    overflow: hidden;
+    }
+    .session-popover .sp-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px; padding:10px 12px; border-bottom:1px solid var(--pg-border);
+    }
+    .session-popover .sp-title{
+    display:flex; align-items:center; gap:8px; font-weight:700; color:#111; margin:0;
+    }
+    .session-popover .sp-title .dot{
+    width:10px; height:10px; border-radius:999px; display:inline-block;
+    }
+    .session-popover .sp-actions{ display:flex; gap:6px; }
+    .session-popover .icon-btn{
+    border:none; background:transparent; padding:6px; border-radius:8px; cursor:pointer;
+    }
+    .session-popover .icon-btn:hover{ background:#f3f6f8; }
+    .session-popover .sp-body{ padding:10px 12px; display:grid; gap:10px; }
+    .session-popover .row-line{ display:flex; align-items:center; gap:10px; }
+    .session-popover .row-line i{ font-size:1rem; color:#555; }
+    .session-popover .muted{ color:#6b7280; font-size:.92rem; }
+    .session-popover .link-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid #e5e7eb; padding:8px 10px; border-radius:10px; text-decoration:none;
+    }
+    .session-popover .sp-footer{ padding:10px 12px; border-top:1px solid var(--pg-border); display:flex; gap:8px; flex-wrap:wrap; }
+    .session-popover .pill{
+    background:#f5f7fa; border:1px solid #e5e7eb; padding:6px 10px; border-radius:999px; font-size:.85rem;
+    }
 </style>
 @endsection
 
@@ -256,6 +296,9 @@
     </div>
 </div>
 
+<!-- Container para o popup de sessão (inicialmente vazio) -->
+<div id="session-popover" class="session-popover" style="display:none;" role="dialog" aria-modal="true" aria-live="polite"></div>
+
 <!-- Modal Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1" aria-labelledby="modalSessaoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -310,240 +353,450 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendarH1 = document.getElementById('calendarTitle');
-    const modal      = new bootstrap.Modal(document.getElementById('modalSessao'));
+  const calendarEl = document.getElementById('calendar');
+  const calendarH1 = document.getElementById('calendarTitle');
+  const modal      = new bootstrap.Modal(document.getElementById('modalSessao'));
 
-    const campos = {
-        id:document.getElementById('sessao_id'),
-        paciente:document.getElementById('paciente_id'),
-        data_hora:document.getElementById('data_hora'),
-        valor:document.getElementById('valor'),
-        duracao:document.getElementById('duracao'),
-        foi_pago:document.getElementById('foi_pago'),
-        titulo:document.getElementById('modalTitulo'),
+  const campos = {
+    id:document.getElementById('sessao_id'),
+    paciente:document.getElementById('paciente_id'),
+    data_hora:document.getElementById('data_hora'),
+    valor:document.getElementById('valor'),
+    duracao:document.getElementById('duracao'),
+    foi_pago:document.getElementById('foi_pago'),
+    titulo:document.getElementById('modalTitulo'),
+  };
+
+  if (!window.FullCalendar || !calendarEl) return;
+
+  /** ===== Helper: pede reconexão do Google quando necessário ===== */
+  function promptReconnectIfNeeded(message, status){
+    const needs = /Reconecte sua conta do Google|conexão com o Google expirou|tokens? do Google inválidos/i.test(message || '')
+               || (status === 401 || status === 403);
+    if (!needs) return false;
+    Swal.fire({
+      icon: 'warning',
+      title: 'Conexão com o Google expirada',
+      text: 'Reconecte sua conta para voltar a usar o Google Agenda.',
+      confirmButtonText: 'Reconectar agora',
+      showCancelButton: true
+    }).then(r => { if (r.isConfirmed) window.location.href = "{{ route('google.connect') }}"; });
+    return true;
+  }
+
+  /* ===================== POPUP (card flutuante) ===================== */
+  let sessionPopover = document.getElementById('session-popover');
+  if (!sessionPopover) {
+    sessionPopover = document.createElement('div');
+    sessionPopover.id = 'session-popover';
+    sessionPopover.className = 'session-popover';
+    sessionPopover.style.cssText =
+      'display:none;position:absolute;z-index:1060;width:320px;max-width:calc(100vw - 24px);background:#fff;border:1px solid #e6eaef;border-radius:14px;box-shadow:0 12px 28px rgba(10,20,30,.18);overflow:hidden';
+    // Acessibilidade
+    sessionPopover.setAttribute('role','dialog');
+    sessionPopover.setAttribute('aria-modal','true');
+    sessionPopover.setAttribute('aria-live','polite');
+    document.body.appendChild(sessionPopover);
+  }
+
+  function closeSessionPopover(){ sessionPopover.style.display='none'; sessionPopover.innerHTML=''; }
+  function two(n){ return String(n).padStart(2,'0'); }
+  function fmtHora(d){ return two(d.getHours()) + ':' + two(d.getMinutes()); }
+  function addMinutos(date, min){ return new Date(date.getTime() + min*60000); }
+  function fmtDataLonga(d){
+    const opt = { weekday:'long', day:'2-digit', month:'long' };
+    return d.toLocaleDateString('pt-BR', opt);
+  }
+  function positionPopover(x, y){
+    const W = sessionPopover.offsetWidth || 320, H = sessionPopover.offsetHeight || 260;
+    const vw = window.innerWidth, vh = window.innerHeight, sy = window.scrollY, sx = window.scrollX;
+    let left = x + 12 + sx, top = y + 12 + sy;
+    if (left + W > vw + sx) left = vw - W - 12 + sx;
+    if (top + H > vh + sy)  top  = vh - H - 12 + sy;
+    if (left < 12 + sx) left = 12 + sx;
+    if (top  < 12 + sy) top  = 12 + sy;
+    sessionPopover.style.left = left + 'px';
+    sessionPopover.style.top  = top  + 'px';
+  }
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSessionPopover(); });
+  document.addEventListener('click', (e)=>{
+    if (!sessionPopover.contains(e.target) && !e.target.closest('.fc-event')) closeSessionPopover();
+  });
+  window.addEventListener('scroll', closeSessionPopover, { passive: true });
+
+  const popupCSS = document.createElement('style');
+  popupCSS.textContent = `
+    .session-popover .sp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid #e6eaef}
+    .session-popover .sp-title{display:flex;align-items:center;gap:8px;font-weight:700;color:#111;margin:0}
+    .session-popover .sp-title .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+    .session-popover .sp-actions{display:flex;gap:6px}
+    .session-popover .icon-btn{border:none;background:transparent;padding:6px;border-radius:8px;cursor:pointer}
+    .session-popover .icon-btn:hover{background:#f3f6f8}
+    .session-popover .sp-body{padding:10px 12px;display:grid;gap:10px}
+    .session-popover .row-line{display:flex;align-items:center;gap:10px}
+    .session-popover .row-line i{font-size:1rem;color:#555}
+    .session-popover .muted{color:#6b7280;font-size:.92rem}
+    .session-popover .link-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid #e5e7eb;padding:8px 10px;border-radius:10px;text-decoration:none}
+    .session-popover .sp-footer{padding:10px 12px;border-top:1px solid #e6eaef;display:flex;gap:8px;flex-wrap:wrap}
+    .session-popover .pill{background:#f5f7fa;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-size:.85rem}
+  `;
+  document.head.appendChild(popupCSS);
+
+  async function abrirPopupSessao(info, clickX, clickY){
+    const id = info.event.id;
+
+    // Busca os dados completos no backend
+    let sessao = null;
+    try{
+      const r = await fetch(`/sessoes-json/${id}`);
+      if (!r.ok) {
+        const body = await r.json().catch(()=>({}));
+        if (promptReconnectIfNeeded(body?.message, r.status)) return;
+        throw new Error(body?.message || 'Erro ao carregar sessão');
+      }
+      sessao = await r.json();
+    }catch(e){
+      if (!promptReconnectIfNeeded(e?.message)) {
+        Swal.fire('Erro', 'Não foi possível carregar os dados desta sessão.', 'error');
+      }
+      return;
+    }
+
+    const start = info.event.start;
+    const dur   = (sessao?.duracao ?? 50);
+    const end   = info.event.end || addMinutos(start, dur);
+
+    const pacienteNome  = sessao?.paciente_nome ?? info.event.title ?? 'Paciente';
+    const pacienteEmail = sessao?.paciente_email ?? '';
+    const meetUrl       = sessao?.meet_url || ''; // apenas do backend
+    const pago          = !!sessao?.foi_pago;
+    const corDot        = pago ? '#28a745' : '#dc3545';
+
+    const dataLonga = fmtDataLonga(start);
+    const horaIni   = fmtHora(start);
+    const horaFim   = fmtHora(end);
+
+    sessionPopover.innerHTML = `
+      <div class="sp-head">
+        <h6 class="sp-title">
+          <span class="dot" style="background:${corDot}"></span>
+          <span>Sessão com ${pacienteNome}</span>
+        </h6>
+        <div class="sp-actions">
+          <button class="icon-btn" id="sp-edit" title="Editar"><i class="bi bi-pencil"></i></button>
+          <button class="icon-btn" id="sp-delete" title="Excluir"><i class="bi bi-trash"></i></button>
+          <button class="icon-btn" id="sp-close" title="Fechar"><i class="bi bi-x-lg"></i></button>
+        </div>
+      </div>
+
+      <div class="sp-body">
+        <div class="row-line"><i class="bi bi-calendar-event"></i>
+          <div>
+            <div><strong>${dataLonga}</strong></div>
+            <div class="muted">${horaIni} – ${horaFim}</div>
+          </div>
+        </div>
+
+        ${meetUrl ? `
+          <div class="row-line">
+            <i class="bi bi-camera-video"></i>
+            <a class="link-btn" href="${meetUrl}" target="_blank" rel="noopener">
+              <i class="bi bi-google"></i> Entrar com o Google Meet
+            </a>
+            <button class="icon-btn" id="sp-copy-meet" title="Copiar link"><i class="bi bi-clipboard"></i></button>
+          </div>
+        ` : ''}
+
+        <div class="row-line">
+          <i class="bi bi-people"></i>
+          <div>
+            <div class="muted">1 convidado • pendente</div>
+            ${pacienteEmail ? `<div>${pacienteEmail}</div>` : ``}
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-footer">
+        <span class="pill">${pago ? 'Pago' : 'Pendente'}</span>
+      </div>
+    `;
+
+    sessionPopover.style.display = 'block';
+    positionPopover(clickX, clickY);
+
+    document.getElementById('sp-close')?.addEventListener('click', closeSessionPopover);
+
+    if (meetUrl) {
+      document.getElementById('sp-copy-meet')?.addEventListener('click', async ()=>{
+        try{
+          await navigator.clipboard.writeText(meetUrl);
+          Swal.fire({ icon:'success', title:'Link copiado', timer:1200, showConfirmButton:false });
+        }catch(_){}
+      });
+    }
+
+    // Editar
+    document.getElementById('sp-edit')?.addEventListener('click', async ()=>{
+      try{
+        if (!sessao){
+          const r = await fetch(`/sessoes-json/${id}`); sessao = await r.json();
+        }
+        campos.id.value        = sessao.id;
+        campos.paciente.value  = sessao.paciente_id;
+        campos.data_hora.value = sessao.data_hora;
+        campos.valor.value     = sessao.valor;
+        campos.duracao.value   = sessao.duracao ?? 50;
+        campos.foi_pago.checked= !!sessao.foi_pago;
+        campos.titulo.innerText= "Editar Sessão";
+        closeSessionPopover();
+        modal.show();
+      }catch{
+        Swal.fire('Erro', 'Não foi possível carregar a sessão para edição.', 'error');
+      }
+    });
+
+    // Excluir
+    document.getElementById('sp-delete')?.addEventListener('click', async ()=>{
+      const ok = await Swal.fire({
+        icon:'warning', title:'Excluir sessão?', text:'Esta ação não pode ser desfeita.',
+        showCancelButton:true, confirmButtonText:'Excluir', cancelButtonText:'Cancelar',
+        confirmButtonColor:'#dc3545'
+      }).then(r=>r.isConfirmed);
+      if(!ok) return;
+
+      try{
+        const res = await fetch(`/sessoes-json/${id}`, {
+          method:'DELETE',
+          headers:{ 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Accept':'application/json' }
+        });
+        const body = await res.json().catch(()=>({}));
+        if(!res.ok){
+          if (promptReconnectIfNeeded(body?.message, res.status)) return;
+          throw new Error(body?.message || 'Erro ao excluir');
+        }
+        closeSessionPopover();
+        calendar.refetchEvents();
+        Swal.fire({ icon:'success', title:'Sessão excluída', timer:1400, showConfirmButton:false });
+      }catch(e){
+        if (!promptReconnectIfNeeded(e?.message)) {
+          Swal.fire('Erro', 'Falha ao excluir a sessão.', 'error');
+        }
+      }
+    });
+  }
+  /* =================== /POPUP =================== */
+
+  /* =================== FERIADOS =================== */
+  const feriadosDatasCache  = {};
+  const feriadosNomesCache  = {};
+
+  async function carregarFeriadosAno(ano) {
+    if (feriadosDatasCache[ano]) return;
+    try {
+      const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, { headers: { 'Accept': 'application/json' }});
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      let data = await resp.json();
+      if (!Array.isArray(data) && Array.isArray(data?.holidays)) data = data.holidays;
+
+      if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
+        feriadosDatasCache[ano] = new Set(data);
+        feriadosNomesCache[ano] = new Map();
+        return;
+      }
+
+      const set = new Set(); const map = new Map();
+      if (Array.isArray(data)) {
+        for (const f of data) {
+          if (!f) continue;
+          const dt = f.data || f.date || f.date_iso || f.dia || f?.date?.split('T')?.[0];
+          const nm = f.nome || f.name || f.titulo || null;
+          if (!dt) continue;
+          set.add(dt); if (nm) map.set(dt, nm);
+        }
+      }
+      feriadosDatasCache[ano] = set; feriadosNomesCache[ano] = map;
+    } catch (e) {
+      feriadosDatasCache[ano] = new Set(); feriadosNomesCache[ano] = new Map();
+    }
+  }
+
+  function toYMDLocal(d){ return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+  function isFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const set=feriadosDatasCache[y]; return !!(set && set.has(ymd)); }
+  function nomeFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const map=feriadosNomesCache[y]; return map ? map.get(ymd) : undefined; }
+
+  await carregarFeriadosAno(new Date().getFullYear());
+  /* =================== /FERIADOS =================== */
+
+  const prettyTitle = (t) => t.replace(/ de /g, ' · ');
+
+  const calendar = new window.FullCalendar.Calendar(calendarEl, {
+    plugins: [
+      window.FullCalendar.dayGridPlugin,
+      window.FullCalendar.timeGridPlugin,
+      window.FullCalendar.interactionPlugin,
+      window.FullCalendar.bootstrap5Plugin
+    ],
+    themeSystem: 'bootstrap5',
+    timeZone: 'local',
+    height: 650,
+    locale: window.FullCalendar.ptBr,
+    initialView: 'dayGridMonth',
+    headerToolbar: false,
+    events: '/api/sessoes',
+
+    datesSet: async function(info) {
+      if (calendarH1) calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
+      syncActiveViewButton(info.view.type);
+
+      const startYear = info.start.getFullYear();
+      const endYear   = new Date(info.end.getTime() - 1).getFullYear();
+      for (let y = startYear; y <= endYear; y++) await carregarFeriadosAno(y);
+      calendar.render();
+    },
+
+    dayCellDidMount: function(arg) {
+      const y = arg.date.getFullYear();
+      carregarFeriadosAno(y).then(() => {
+        if (isFeriado(arg.date)) {
+          arg.el.classList.add('pg-feriado');
+          const nome = nomeFeriado(arg.date);
+          if (nome) {
+            const target = arg.el.querySelector('.fc-daygrid-day-number') || arg.el;
+            target.setAttribute('title', nome);
+          }
+        }
+      });
+    },
+
+    eventContent: function (arg) {
+      const viewType = arg.view.type;
+      const event = arg.event;
+      const fmt = (d) => two(d.getHours()) + ':' + two(d.getMinutes());
+      const hi = fmt(event.start);
+      const hf = event.end ? fmt(event.end) : '';
+      const t  = event.title;
+      return (viewType === 'dayGridMonth')
+        ? { html: `<div>${hi} - ${t}</div>` }
+        : { html: `<div>${hi} - ${hf}</div><div>${t}</div>` };
+    },
+
+    dateClick: async function(info) {
+      const d = info.date; const y = d.getFullYear();
+      await carregarFeriadosAno(y);
+      if (isFeriado(d)) {
+        const nome = nomeFeriado(d);
+        const { isConfirmed } = await Swal.fire({
+          icon: 'info',
+          title: nome ? `Feriado: ${nome}` : 'Feriado',
+          text: 'Deseja continuar e criar uma sessão para este dia?',
+          showCancelButton: true,
+          confirmButtonText: 'Continuar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#12B4B7'
+        });
+        if (!isConfirmed) return;
+      }
+      abrirModalCriar(info.dateStr);
+    },
+
+    eventClick: function(info){
+      info.jsEvent.preventDefault();
+      closeSessionPopover();
+      const { clientX, clientY } = info.jsEvent;
+      abrirPopupSessao(info, clientX, clientY);
+    },
+
+    eventDidMount(info){
+      const tooltip = info.event.extendedProps.tooltip;
+      if (tooltip) info.el.setAttribute('title', tooltip);
+    }
+  });
+
+  calendar.render();
+
+  document.getElementById('prevBtn')?.addEventListener('click', () => calendar.prev());
+  document.getElementById('nextBtn')?.addEventListener('click', () => calendar.next());
+  document.getElementById('todayBtn')?.addEventListener('click', () => calendar.today());
+
+  const viewButtons = { monthBtn:'dayGridMonth', weekBtn:'timeGridWeek', dayBtn:'timeGridDay' };
+  Object.keys(viewButtons).forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      calendar.changeView(viewButtons[id]);
+      syncActiveViewButton(viewButtons[id]);
+    });
+  });
+
+  function syncActiveViewButton(currentView){
+    document.querySelectorAll('.view-switch .vbtn').forEach(b => b.classList.remove('active'));
+    const activeId =
+      currentView === 'dayGridMonth' ? 'monthBtn' :
+      currentView === 'timeGridWeek' ? 'weekBtn'  :
+      currentView === 'timeGridDay'  ? 'dayBtn'   : null;
+    if (activeId) document.getElementById(activeId)?.classList.add('active');
+  }
+
+  function abrirModalCriar(data) {
+    campos.id.value = '';
+    campos.paciente.selectedIndex = 0;
+    campos.data_hora.value = data.length <= 10 ? data + 'T09:00' : data;
+    campos.valor.value = '';
+    campos.duracao.value = 50;
+    campos.foi_pago.checked = false;
+    campos.titulo.innerText = "Nova Sessão";
+    modal.show();
+  }
+
+  document.getElementById('formSessao').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const id   = campos.id.value;
+    const rota = id ? `/sessoes-json/${id}` : `/sessoes-json`;
+    const metodo = id ? 'PUT' : 'POST';
+    const payload = {
+      paciente_id: campos.paciente.value,
+      data_hora:   campos.data_hora.value,
+      valor:       campos.valor.value,
+      duracao:     parseInt(campos.duracao.value),
+      foi_pago:    campos.foi_pago.checked ? 1 : 0,
     };
 
-    if (!window.FullCalendar || !calendarEl) return;
+    try {
+      const response = await fetch(rota, {
+        method: metodo,
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+      const resData = await response.json().catch(()=>({}));
 
-    const feriadosDatasCache  = {};
-    const feriadosNomesCache  = {};
-
-    async function carregarFeriadosAno(ano) {
-        if (feriadosDatasCache[ano]) return;
-        try {
-            const resp = await fetch(`/api/feriados?ano=${ano}&full=1`, { headers: { 'Accept': 'application/json' }});
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            let data = await resp.json();
-            if (!Array.isArray(data) && Array.isArray(data?.holidays)) data = data.holidays;
-
-            if (Array.isArray(data) && data.length && typeof data[0] === 'string') {
-                feriadosDatasCache[ano] = new Set(data);
-                feriadosNomesCache[ano] = new Map();
-                return;
-            }
-
-            const set = new Set(); const map = new Map();
-            if (Array.isArray(data)) {
-                for (const f of data) {
-                    if (!f) continue;
-                    const dt = f.data || f.date || f.date_iso || f.dia || f?.date?.split('T')?.[0];
-                    const nm = f.nome || f.name || f.titulo || null;
-                    if (!dt) continue;
-                    set.add(dt); if (nm) map.set(dt, nm);
-                }
-            }
-            feriadosDatasCache[ano] = set; feriadosNomesCache[ano] = map;
-        } catch (e) {
-            feriadosDatasCache[ano] = new Set(); feriadosNomesCache[ano] = new Map();
+      if (!response.ok) {
+        if (promptReconnectIfNeeded(resData?.message, response.status)) return;
+        if (resData?.message?.includes("Conflito de horário")) {
+          Swal.fire({ icon:'error', title:'Conflito de Horário', text:resData.message, confirmButtonColor:'#3085d6' });
+        } else {
+          Swal.fire('Erro', resData?.message || 'Erro ao salvar a sessão.', 'error');
         }
+        if (typeof hideSpinner === 'function') hideSpinner();
+        return;
+      }
+
+      modal.hide();
+      closeSessionPopover();
+      calendar.refetchEvents();
+      Swal.fire({ icon:'success', title:'Sucesso!', text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!', timer:1800, showConfirmButton:false })
+        .then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
+
+    } catch (error) {
+      if (!promptReconnectIfNeeded(error?.message)) {
+        Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error')
+          .then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
+      }
     }
-
-    function toYMDLocal(d){ return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
-    function isFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const set=feriadosDatasCache[y]; return !!(set && set.has(ymd)); }
-    function nomeFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const map=feriadosNomesCache[y]; return map ? map.get(ymd) : undefined; }
-
-    await carregarFeriadosAno(new Date().getFullYear());
-
-    const prettyTitle = (t) => t.replace(/ de /g, ' · ');
-
-    const calendar = new window.FullCalendar.Calendar(calendarEl, {
-        plugins: [
-            window.FullCalendar.dayGridPlugin,
-            window.FullCalendar.timeGridPlugin,
-            window.FullCalendar.interactionPlugin,
-            window.FullCalendar.bootstrap5Plugin
-        ],
-        themeSystem: 'bootstrap5',
-        timeZone: 'local',
-        height: 650,
-        locale: window.FullCalendar.ptBr,
-        initialView: 'dayGridMonth',
-        headerToolbar: false,
-        events: '/api/sessoes',
-
-        datesSet: async function(info) {
-            if (calendarH1) calendarH1.innerHTML = `<span>${prettyTitle(info.view.title)}</span>`;
-            syncActiveViewButton(info.view.type);
-
-            const startYear = info.start.getFullYear();
-            const endYear   = new Date(info.end.getTime() - 1).getFullYear();
-            for (let y = startYear; y <= endYear; y++) await carregarFeriadosAno(y);
-            calendar.render();
-        },
-
-        dayCellDidMount: function(arg) {
-            const y = arg.date.getFullYear();
-            carregarFeriadosAno(y).then(() => {
-                if (isFeriado(arg.date)) {
-                    arg.el.classList.add('pg-feriado');
-                    const nome = nomeFeriado(arg.date);
-                    if (nome) {
-                        const target = arg.el.querySelector('.fc-daygrid-day-number') || arg.el;
-                        target.setAttribute('title', nome);
-                    }
-                }
-            });
-        },
-
-        eventContent: function (arg) {
-            const viewType = arg.view.type;
-            const event = arg.event;
-            const fmt = (d) => d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
-            const hi = fmt(event.start);
-            const hf = event.end ? fmt(event.end) : '';
-            const t  = event.title;
-            return (viewType === 'dayGridMonth')
-                ? { html: `<div>${hi} - ${t}</div>` }
-                : { html: `<div>${hi} - ${hf}</div><div>${t}</div>` };
-        },
-
-        dateClick: async function(info) {
-            const d = info.date; const y = d.getFullYear();
-            await carregarFeriadosAno(y);
-            if (isFeriado(d)) {
-                const nome = nomeFeriado(d);
-                const { isConfirmed } = await Swal.fire({
-                    icon: 'info',
-                    title: nome ? `Feriado: ${nome}` : 'Feriado',
-                    text: 'Deseja continuar e criar uma sessão para este dia?',
-                    showCancelButton: true,
-                    confirmButtonText: 'Continuar',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#12B4B7'
-                });
-                if (!isConfirmed) return;
-            }
-            abrirModalCriar(info.dateStr);
-        },
-
-        async eventClick(info){
-            info.jsEvent.preventDefault();
-            const id = info.event.id;
-            try {
-                const res = await fetch(`/sessoes-json/${id}`);
-                if (!res.ok) throw new Error();
-                const sessao = await res.json();
-                campos.id.value        = sessao.id;
-                campos.paciente.value  = sessao.paciente_id;
-                campos.data_hora.value = sessao.data_hora;
-                campos.valor.value     = sessao.valor;
-                campos.duracao.value   = sessao.duracao;
-                campos.foi_pago.checked= sessao.foi_pago == true;
-                campos.titulo.innerText= "Editar Sessão";
-                modal.show();
-            } catch {
-                Swal.fire('Erro', 'Erro ao carregar dados da sessão.', 'error');
-            }
-        },
-
-        eventDidMount(info){
-            const tooltip = info.event.extendedProps.tooltip;
-            if (tooltip) info.el.setAttribute('title', tooltip);
-        }
-    });
-
-    calendar.render();
-
-    document.getElementById('prevBtn')?.addEventListener('click', () => calendar.prev());
-    document.getElementById('nextBtn')?.addEventListener('click', () => calendar.next());
-    document.getElementById('todayBtn')?.addEventListener('click', () => calendar.today());
-
-    const viewButtons = { monthBtn:'dayGridMonth', weekBtn:'timeGridWeek', dayBtn:'timeGridDay' };
-    Object.keys(viewButtons).forEach(id => {
-        const btn = document.getElementById(id);
-        if (!btn) return;
-        btn.addEventListener('click', () => {
-            calendar.changeView(viewButtons[id]);
-            syncActiveViewButton(viewButtons[id]);
-        });
-    });
-
-    function syncActiveViewButton(currentView){
-        document.querySelectorAll('.view-switch .vbtn').forEach(b => b.classList.remove('active'));
-        const activeId =
-            currentView === 'dayGridMonth' ? 'monthBtn' :
-            currentView === 'timeGridWeek' ? 'weekBtn'  :
-            currentView === 'timeGridDay'  ? 'dayBtn'   : null;
-        if (activeId) document.getElementById(activeId)?.classList.add('active');
-    }
-
-    function abrirModalCriar(data) {
-        campos.id.value = '';
-        campos.paciente.selectedIndex = 0;
-        campos.data_hora.value = data.length <= 10 ? data + 'T09:00' : data;
-        campos.valor.value = '';
-        campos.duracao.value = 50;
-        campos.foi_pago.checked = false;
-        campos.titulo.innerText = "Nova Sessão";
-        modal.show();
-    }
-
-    document.getElementById('formSessao').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const id   = campos.id.value;
-        const rota = id ? `/sessoes-json/${id}` : `/sessoes-json`;
-        const metodo = id ? 'PUT' : 'POST';
-        const payload = {
-            paciente_id: campos.paciente.value,
-            data_hora:   campos.data_hora.value,
-            valor:       campos.valor.value,
-            duracao:     parseInt(campos.duracao.value),
-            foi_pago:    campos.foi_pago.checked ? 1 : 0,
-        };
-
-        try {
-            const response = await fetch(rota, {
-                method: metodo,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            const resData = await response.json();
-
-            if (!response.ok) {
-                if (resData?.message?.includes("Conflito de horário")) {
-                    Swal.fire({ icon:'error', title:'Conflito de Horário', text:resData.message, confirmButtonColor:'#3085d6' });
-                } else {
-                    Swal.fire('Erro', resData.message || 'Erro ao salvar a sessão.', 'error');
-                }
-                if (typeof hideSpinner === 'function') hideSpinner();
-                return;
-            }
-
-            modal.hide();
-            calendar.refetchEvents();
-            Swal.fire({ icon:'success', title:'Sucesso!', text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!', timer:1800, showConfirmButton:false })
-                .then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
-
-        } catch (error) {
-            Swal.fire('Erro', error.message || 'Erro inesperado ao salvar a sessão.', 'error')
-                .then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
-        }
-    });
+  });
 });
 </script>
 @endsection

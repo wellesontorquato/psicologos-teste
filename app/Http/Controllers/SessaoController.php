@@ -738,4 +738,34 @@ class SessaoController extends Controller
 
         return response()->json($sessoes);
     }
+
+    public function showJson(Request $request, $id)
+    {
+        $sessao = Sessao::with('paciente')
+            ->whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))
+            ->findOrFail($id);
+
+        $meetUrl = null;
+        if ($sessao->google_event_id && $request->user()?->google_connected) {
+            $gcal  = app(\App\Services\GoogleCalendarService::class);
+            try {
+                $event   = $gcal->getEvent($request->user(), $sessao->google_event_id);
+                $meetUrl = $gcal->extractMeetUrl($event);
+            } catch (\Throwable $e) {
+                // silencie/registre se quiser
+            }
+        }
+
+        return response()->json([
+            'id'             => $sessao->id,
+            'paciente_id'    => $sessao->paciente_id,
+            'paciente_nome'  => $sessao->paciente->nome,
+            'paciente_email' => $sessao->paciente->email,
+            'data_hora'      => $sessao->data_hora,
+            'valor'          => $sessao->valor,
+            'duracao'        => (int) $sessao->duracao,
+            'foi_pago'       => (bool) $sessao->foi_pago,
+            'meet_url'       => $meetUrl, // se não quiser expor, remova esta linha; o front trata como opcional
+        ]);
+    }
 }

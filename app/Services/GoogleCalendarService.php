@@ -30,12 +30,11 @@ class GoogleCalendarService
 
     protected function buildReminders(array $rem = null): ?EventReminders
     {
-        // sem reminders informados: retorna defaults úteis
         $rem = $rem ?? [
             'useDefault' => false,
             'overrides'  => [
-                ['method' => 'popup', 'minutes' => 1440], // 24h antes
-                ['method' => 'popup', 'minutes' => 60],   // 1h antes
+                ['method' => 'popup', 'minutes' => 1440],
+                ['method' => 'popup', 'minutes' => 60],
             ],
         ];
 
@@ -56,6 +55,17 @@ class GoogleCalendarService
         return $reminders;
     }
 
+    /** Marca o usuário como desconectado do Google e limpa tokens. */
+    protected function disconnectUser(User $user): void
+    {
+        $user->forceFill([
+            'google_access_token'     => null,
+            'google_refresh_token'    => null,
+            'google_token_expires_at' => null,
+            'google_connected'        => false,
+        ])->save();
+    }
+
     protected function clientFor(User $user): GoogleClient
     {
         $client = new GoogleClient();
@@ -64,11 +74,11 @@ class GoogleCalendarService
         $client->setAccessType('offline');
         $client->setScopes([GoogleCalendar::CALENDAR, GoogleCalendar::CALENDAR_EVENTS]);
 
+        // Access token atual (pode estar expirado)
         $expiresIn = $user->google_token_expires_at
             ? max(1, now()->diffInSeconds($user->google_token_expires_at, false))
             : 1;
 
-        // token atual — 'created' no passado pro client calcular expiração
         $client->setAccessToken([
             'access_token'  => $user->google_access_token,
             'refresh_token' => $user->google_refresh_token,
@@ -76,27 +86,36 @@ class GoogleCalendarService
             'created'       => now()->subHour()->timestamp,
         ]);
 
-        // refresh se precisar
+        // Se expirou, tenta refrescar; se falhar, desconecta e orienta reconexão
         if ($client->isAccessTokenExpired()) {
             if (!$user->google_refresh_token) {
-                throw new \RuntimeException('Token do Google expirado e não há refresh_token salvo.');
+                $this->disconnectUser($user);
+                throw new \RuntimeException('Sua conexão com o Google expirou. Reconecte sua conta do Google.');
             }
 
-            $new = $client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
+            try {
+                $new = $client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
+            } catch (\Throwable $e) {
+                $this->disconnectUser($user);
+                throw new \RuntimeException('Não foi possível renovar o acesso ao Google. Conecte novamente sua conta.');
+            }
 
-            // alguns fluxos podem devolver um refresh_token novo
+            // Erro explícito do Google ou ausência de access_token → invalida conexão
+            if (isset($new['error']) || empty($new['access_token'])) {
+                // Opcional: \Log::warning('Google token refresh falhou', ['user_id'=>$user->id,'error'=>$new['error'] ?? 'no_access_token']);
+                $this->disconnectUser($user);
+                throw new \RuntimeException('Tokens do Google inválidos/revogados. Reconecte sua conta do Google.');
+            }
+
+            // Alguns fluxos devolvem refresh_token novo
             if (!empty($new['refresh_token'])) {
-                $user->update(['google_refresh_token' => $new['refresh_token']]);
+                $user->google_refresh_token = $new['refresh_token'];
             }
 
-            if (isset($new['error'])) {
-                throw new \RuntimeException('Falha ao atualizar o token Google: '.$new['error']);
-            }
-
-            $user->update([
-                'google_access_token'     => $new['access_token'] ?? null,
-                'google_token_expires_at' => now()->addSeconds($new['expires_in'] ?? 3500),
-            ]);
+            $user->google_access_token     = $new['access_token'];
+            $user->google_token_expires_at = now()->addSeconds($new['expires_in'] ?? 3500);
+            $user->google_connected        = true; // segue conectado
+            $user->save();
 
             $client->setAccessToken(array_merge($client->getAccessToken() ?: [], $new));
         }
@@ -105,16 +124,18 @@ class GoogleCalendarService
     }
 
     /**
-     * payload aceito:
-     *  - id (string)            [opcional] -> ID determinístico (a-z0-9-_, 5..1024 chars)
-     *  - summary (string)       [obrigatório]
+     * Cria um evento no Google Calendar.
+     *
+     * payload:
+     *  - id (string) [opcional] -> ID determinístico
+     *  - summary (string) [obrigatório]
      *  - description (string|null)
      *  - start (Carbon|string|DateTimeInterface)
      *  - end   (Carbon|string|DateTimeInterface)
      *  - attendees (array[['email'=>...], ...]) [opcional]
-     *  - reminders (array)      [opcional] formato do Calendar API
-     *  - conference (bool)      [opcional] default true (tenta criar Meet)
-     *  - location (string)      [opcional]
+     *  - reminders (array) [opcional]
+     *  - conference (bool) [opcional] default true (tenta criar Meet)
+     *  - location (string) [opcional]
      */
     public function createEvent(User $user, array $payload): string
     {
@@ -129,20 +150,16 @@ class GoogleCalendarService
             'location'    => $payload['location']   ?? null,
         ]);
 
-        // ID determinístico (opcional)
         if (!empty($payload['id'])) {
             $event->setId(strtolower($payload['id']));
         }
 
         $event->setStart($this->asEventDateTime($payload['start'], $tz));
         $event->setEnd($this->asEventDateTime($payload['end'], $tz));
-
-        // reminders (defaults ou payload)
         $event->setReminders($this->buildReminders($payload['reminders'] ?? null));
 
         $wantConference = array_key_exists('conference', $payload) ? (bool)$payload['conference'] : true;
 
-        // tenta com Meet; se der 403, cria sem Meet
         if ($wantConference) {
             $event['conferenceData'] = [
                 'createRequest' => [
@@ -159,13 +176,11 @@ class GoogleCalendarService
                 ['conferenceDataVersion' => $wantConference ? 1 : 0]
             );
         } catch (GoogleServiceException $e) {
-            // 1) Se falhou com Meet, tenta sem Meet
             if ($wantConference && $e->getCode() === 403) {
                 unset($event['conferenceData']);
                 try {
                     $created = $service->events->insert($this->calendarId($user), $event);
                 } catch (GoogleServiceException $e2) {
-                    // 2) Se ainda assim 400 (ex.: attendees inválidos), tenta sem attendees
                     if ($e2->getCode() === 400 && !empty($event['attendees'])) {
                         unset($event['attendees']);
                         $created = $service->events->insert($this->calendarId($user), $event);
@@ -174,7 +189,6 @@ class GoogleCalendarService
                     }
                 }
             } elseif ($e->getCode() === 400 && !empty($event['attendees'])) {
-                // Se falhou por 400 direto, tenta sem attendees
                 unset($event['attendees']);
                 $created = $service->events->insert($this->calendarId($user), $event);
             } else {
@@ -185,6 +199,7 @@ class GoogleCalendarService
         return $created->id;
     }
 
+    /** Atualiza um evento existente. */
     public function updateEvent(User $user, string $eventId, array $payload): void
     {
         $client  = $this->clientFor($user);
@@ -209,11 +224,9 @@ class GoogleCalendarService
             $event->setReminders($this->buildReminders($payload['reminders']));
         }
 
-        // mantém conference como está (não mexe aqui)
         try {
             $service->events->update($this->calendarId($user), $eventId, $event);
         } catch (GoogleServiceException $e) {
-            // fallback: se attendees inválidos (400), tenta atualizar sem attendees
             if ($e->getCode() === 400 && !empty($event['attendees'])) {
                 unset($event['attendees']);
                 $service->events->update($this->calendarId($user), $eventId, $event);
@@ -223,6 +236,7 @@ class GoogleCalendarService
         }
     }
 
+    /** Remove um evento (idempotente). */
     public function deleteEvent(User $user, ?string $eventId): void
     {
         if (!$eventId) return;
@@ -233,10 +247,39 @@ class GoogleCalendarService
         try {
             $service->events->delete($this->calendarId($user), $eventId);
         } catch (GoogleServiceException $e) {
-            // se já foi removido manualmente no Google, ignore
             if (!in_array($e->getCode(), [404, 410], true)) {
                 throw $e;
             }
         }
+    }
+
+    /** Busca um evento com conferenceData (para extrair link do Meet). */
+    public function getEvent(User $user, string $eventId): Event
+    {
+        $client  = $this->clientFor($user);
+        $service = new GoogleCalendar($client);
+
+        return $service->events->get(
+            $this->calendarId($user),
+            $eventId,
+            ['conferenceDataVersion' => 1]
+        );
+    }
+
+    /** Extrai o link do Google Meet de um Event (quando existir). */
+    public function extractMeetUrl(Event $event): ?string
+    {
+        if ($event->getHangoutLink()) {
+            return $event->getHangoutLink();
+        }
+        $conf = $event->getConferenceData();
+        if ($conf && $conf->getEntryPoints()) {
+            foreach ($conf->getEntryPoints() as $ep) {
+                if ($ep->getEntryPointType() === 'video' && $ep->getUri()) {
+                    return $ep->getUri();
+                }
+            }
+        }
+        return null;
     }
 }
