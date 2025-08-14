@@ -88,8 +88,10 @@
                         <td>{{ Str::limit($evolucao->texto, 50) }}</td>
                         <td>
                             <a href="{{ route('evolucoes.edit', $evolucao) }}" class="btn btn-warning btn-sm">Editar</a>
-                            <form action="{{ route('evolucoes.destroy', $evolucao) }}" method="POST" 
-                                  class="form-excluir d-inline no-spinner">
+                            <a href="{{ route('evolucoes.print', $evolucao) }}" target="_blank" rel="noopener" class="btn btn-info btn-sm">
+                                <i class="bi bi-printer"></i> Imprimir
+                            </a>
+                            <form action="{{ route('evolucoes.destroy', $evolucao) }}" method="POST" class="form-excluir d-inline no-spinner">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                             </form>
@@ -122,8 +124,10 @@
                     
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('evolucoes.edit', $evolucao) }}" class="btn btn-sm btn-warning">Editar</a>
-                        <form action="{{ route('evolucoes.destroy', $evolucao) }}" method="POST" 
-                              class="form-excluir d-inline no-spinner">
+                        <a href="{{ route('evolucoes.print', $evolucao) }}" target="_blank" rel="noopener" class="btn btn-sm btn-info">
+                            <i class="bi bi-printer"></i> Imprimir
+                        </a>
+                        <form action="{{ route('evolucoes.destroy', $evolucao) }}" method="POST" class="form-excluir d-inline no-spinner">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
                         </form>
