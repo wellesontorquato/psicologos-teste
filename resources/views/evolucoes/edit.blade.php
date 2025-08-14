@@ -54,18 +54,20 @@
         @else
             <div class="mb-3">
                 <label class="form-label fw-semibold">Sessão (opcional)</label>
-                @php
-                    $sessoesPaciente = \App\Models\Sessao::where('paciente_id', $evolucao->paciente_id)
-                        ->whereNotNull('data_hora')     // <- evita null
-                        ->orderBy('data_hora', 'desc')
-                        ->get();
-                @endphp
-
                 <select id="sessaoSelect" name="sessao_id" class="form-select shadow-sm">
                     <option value="">-- Selecionar sessão --</option>
                     @foreach($sessoesPaciente as $s)
+                        @php
+                            // Se seu model Sessao tem cast: 'data_hora' => 'datetime', dá pra usar optional()
+                            $labelData = optional($s->data_hora)?->format('d/m/Y H:i');
+                            if (!$labelData && $s->data_hora) {
+                                // caso não tenha cast, garante formatação
+                                $labelData = \Illuminate\Support\Carbon::parse($s->data_hora)->format('d/m/Y H:i');
+                            }
+                            $label = $labelData ? $labelData . ' (' . (int)($s->duracao ?? 0) . 'min)' : 'Sem data / remarcar';
+                        @endphp
                         <option value="{{ $s->id }}" {{ (int)$evolucao->sessao_id === (int)$s->id ? 'selected' : '' }}>
-                            {{ \Illuminate\Support\Carbon::parse($s->data_hora)->format('d/m/Y H:i') }}
+                            {{ $label }}
                         </option>
                     @endforeach
                 </select>

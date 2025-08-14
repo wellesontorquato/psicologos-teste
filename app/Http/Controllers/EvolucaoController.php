@@ -106,16 +106,26 @@ class EvolucaoController extends Controller
     // 🌐 WEB: Formulário de edição
     public function edit(Evolucao $evolucao)
     {
-        $evolucao = Evolucao::with(['paciente', 'sessao'])->findOrFail($evolucao->id);
+        // Evita novo findOrFail: já vem por model binding
+        $evolucao->load(['paciente', 'sessao']);
 
+        // Multitenancy / autorização básica
         if (!$evolucao->paciente || $evolucao->paciente->user_id !== auth()->id()) {
             abort(403, 'Acesso negado.');
         }
 
+        // Lista de pacientes do usuário (para o select)
         $pacientes = Paciente::where('user_id', auth()->id())
             ->orderBy('nome', 'asc')
             ->get();
-        return view('evolucoes.edit', compact('evolucao', 'pacientes'));
+
+        // TODAS as sessões do paciente (inclui as sem data), null por último
+        $sessoesPaciente = \App\Models\Sessao::where('paciente_id', $evolucao->paciente_id)
+            ->whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id())) // reforça o escopo do usuário
+            ->orderByRaw("CASE WHEN data_hora IS NULL THEN 1 ELSE 0 END, data_hora DESC")
+            ->get(['id', 'data_hora', 'duracao']);
+
+        return view('evolucoes.edit', compact('evolucao', 'pacientes', 'sessoesPaciente'));
     }
 
     // 🌐 WEB: Atualizar evolução
