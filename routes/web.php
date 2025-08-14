@@ -195,7 +195,7 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
         Route::get('/auditoria/exportar-excel',  [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
         Route::get('/usuarios',                  [UserController::class, 'index'])->name('usuarios.index');
         Route::patch('/usuarios/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('usuarios.toggleAdmin');
-        Route::resource('news', \App\Http\Controllers\NewsController::class);
+        Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
     });
 
     // Sessões (HTML)
@@ -235,6 +235,15 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 
+Route::get('/force-clear', function () {
+     Artisan::call('config:clear');
+     Artisan::call('route:clear');
+     Artisan::call('cache:clear');
+     Artisan::call('view:clear');
+
+     return 'Caches TOTALMENTE limpos 🚀!';
+ });
+
 /*
 |--------------------------------------------------------------------------
 | Auth
@@ -264,15 +273,6 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 // return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
 // })->middleware('auth');
 // };
-
-// Route::get('/force-clear', function () {
-//     Artisan::call('config:clear');
-//     Artisan::call('route:clear');
-//     Artisan::call('cache:clear');
-//     Artisan::call('view:clear');
-
-//     return 'Caches TOTALMENTE limpos 🚀!';
-// });
 
 // // Crie rapidamente um comando em routes/web.php só para forçar isso:
 //     Route::get('/fix-perms', function() {
