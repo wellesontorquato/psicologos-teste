@@ -68,18 +68,27 @@ class EvolucaoController extends Controller
         $sessao = null;
 
         if ($request->filled('sessao_id')) {
-        $sessao = Sessao::with('paciente')
-            ->where('id', $request->sessao_id)
-            ->whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
-            ->firstOrFail();
+            $sessao = Sessao::with('paciente')
+                ->where('id', $request->sessao_id)
+                ->whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+                ->firstOrFail();
 
-        $pacienteSelecionado = $sessao->paciente_id;
-        // 👉 aqui usamos a data da sessão
-        $dataSelecionada = optional($sessao->data_hora)->format('Y-m-d'); 
-    }
+            $pacienteSelecionado = $sessao->paciente_id;
+
+            // seguro para null ou string
+            if (!empty($sessao->data_hora)) {
+                $dt = $sessao->data_hora instanceof \Carbon\Carbon
+                    ? $sessao->data_hora
+                    : \Carbon\Carbon::parse($sessao->data_hora);
+                $dataSelecionada = $dt->format('Y-m-d');
+            } else {
+                $dataSelecionada = null;
+            }
+        }
 
         return view('evolucoes.create', compact('pacientes', 'pacienteSelecionado', 'dataSelecionada', 'sessao'));
-}
+    }
+
 
 
     // 🌐 WEB: Armazenar evolução
@@ -181,16 +190,32 @@ class EvolucaoController extends Controller
             ->firstOrFail();
 
         $sessoes = Sessao::where('paciente_id', $paciente->id)
-            ->orderBy('data_hora', 'desc')
-            ->get(['id', 'data_hora']);
+            ->orderByRaw("CASE WHEN data_hora IS NULL THEN 1 ELSE 0 END, data_hora DESC")
+            ->get(['id', 'data_hora', 'duracao']);
 
-        return response()->json($sessoes->map(function ($s) {
+        $payload = $sessoes->map(function ($s) {
+            $dt = null;
+            if (!empty($s->data_hora)) {
+                $dt = $s->data_hora instanceof \Carbon\Carbon
+                    ? $s->data_hora
+                    : \Carbon\Carbon::parse($s->data_hora);
+            }
+
             return [
-                'id' => $s->id,
-                'data_hora' => $s->data_hora->format('d/m/Y H:i')
+                'id'        => (int)$s->id,
+                // label pronto para o <option>
+                'label'     => $dt
+                    ? $dt->format('d/m/Y H:i') . ' (' . (int)($s->duracao ?? 0) . 'min)'
+                    : 'Sem data / remarcar',
+                // útil se precisar do valor original
+                'data_hora' => $dt ? $dt->format('Y-m-d H:i') : null,
+                'duracao'   => (int)($s->duracao ?? 0),
             ];
-        }));
+        });
+
+        return response()->json($payload);
     }
+
     
     // 🌐 WEB: Imprimir evolução
     public function imprimir(\App\Models\Evolucao $evolucao)
@@ -214,23 +239,36 @@ class EvolucaoController extends Controller
             ->orderBy('data', 'desc')
             ->get()
             ->map(function ($e) {
+                $sessao = null;
+
+                if ($e->sessao) {
+                    $dt = null;
+                    if (!empty($e->sessao->data_hora)) {
+                        $dt = $e->sessao->data_hora instanceof \Carbon\Carbon
+                            ? $e->sessao->data_hora
+                            : \Carbon\Carbon::parse($e->sessao->data_hora);
+                    }
+                    $sessao = [
+                        'id'        => $e->sessao->id,
+                        'data_hora' => $dt ? $dt->format('Y-m-d H:i') : null,
+                    ];
+                }
+
                 return [
-                    'id' => $e->id,
-                    'data' => \Carbon\Carbon::parse($e->data)->format('Y-m-d'),
-                    'texto' => $e->texto,
+                    'id'       => $e->id,
+                    'data'     => \Carbon\Carbon::parse($e->data)->format('Y-m-d'),
+                    'texto'    => $e->texto,
                     'paciente' => [
-                        'id' => $e->paciente->id,
+                        'id'   => $e->paciente->id,
                         'nome' => $e->paciente->nome,
                     ],
-                    'sessao' => $e->sessao ? [
-                        'id' => $e->sessao->id,
-                        'data_hora' => $e->sessao->data_hora->format('Y-m-d H:i'),
-                    ] : null,
+                    'sessao'   => $sessao,
                 ];
             });
 
         return response()->json($evolucoes);
     }
+
 
     // 📲 API: Criar evolução (Flutter)
     public function storeJson(Request $request)

@@ -45,11 +45,20 @@
         @endif
 
         {{-- Sessão vinculada --}}
+        @php
+            $sessaoDt = null;
+            if ($evolucao->sessao && $evolucao->sessao->data_hora) {
+                $sessaoDt = $evolucao->sessao->data_hora instanceof \Carbon\Carbon
+                    ? $evolucao->sessao->data_hora
+                    : \Carbon\Carbon::parse($evolucao->sessao->data_hora);
+            }
+        @endphp
+
         @if($evolucao->sessao)
             <input type="hidden" name="sessao_id" value="{{ $evolucao->sessao->id }}">
             <p class="text-muted">
                 Evolução vinculada à sessão de
-                <strong>{{ $evolucao->sessao->data_hora->format('d/m/Y H:i') }}</strong>.
+                <strong>{{ $sessaoDt ? $sessaoDt->format('d/m/Y H:i') : 'Sem data definida' }}</strong>.
             </p>
         @else
             <div class="mb-3">
@@ -92,49 +101,54 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const pacienteSelect = document.getElementById('pacienteSelect');
-    const sessaoSelect = document.getElementById('sessaoSelect');
+  const pacienteSelect = document.getElementById('pacienteSelect');
+  const sessaoSelect   = document.getElementById('sessaoSelect');
 
-    // só ativa AJAX se a evolução NÃO estiver vinculada a uma sessão
-    @if(!$evolucao->sessao)
-        if (pacienteSelect && sessaoSelect) {
-            pacienteSelect.addEventListener('change', function() {
-                const pacienteId = this.value;
-                sessaoSelect.innerHTML = '<option value="">Carregando sessões...</option>';
+  @if(!$evolucao->sessao)
+  if (pacienteSelect && sessaoSelect) {
+    pacienteSelect.addEventListener('change', function () {
+      const pacienteId = this.value;
+      sessaoSelect.innerHTML = '<option value="">Carregando sessões...</option>';
 
-                if (pacienteId) {
-                    fetch(`/pacientes/${pacienteId}/sessoes`)
-                        .then(res => res.json())
-                        .then(data => {
-                            sessaoSelect.innerHTML = '<option value="">-- Sem vínculo --</option>';
-                            if (data.length === 0) {
-                                sessaoSelect.innerHTML = '<option value="">Nenhuma sessão encontrada</option>';
-                            } else {
-                                data.forEach(sessao => {
-                                    const opt = document.createElement('option');
-                                    opt.value = sessao.id;
-                                    opt.textContent = sessao.data_hora;
-                                    if ("{{ $evolucao->sessao_id }}" == sessao.id) {
-                                        opt.selected = true;
-                                    }
-                                    sessaoSelect.appendChild(opt);
-                                });
-                            }
-                        })
-                        .catch(() => {
-                            sessaoSelect.innerHTML = '<option value="">Erro ao carregar sessões</option>';
-                        });
-                } else {
-                    sessaoSelect.innerHTML = '<option value="">-- Selecione o paciente --</option>';
-                }
-            });
+      if (!pacienteId) {
+        sessaoSelect.innerHTML = '<option value="">-- Selecione o paciente --</option>';
+        return;
+      }
 
-            // carrega automaticamente se já houver paciente selecionado
-            if (pacienteSelect.value) {
-                pacienteSelect.dispatchEvent(new Event('change'));
-            }
-        }
-    @endif
+      fetch(`/pacientes/${pacienteId}/sessoes`, { headers:{ 'X-Requested-With':'XMLHttpRequest' }})
+        .then(async (res) => {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then((lista) => {
+          sessaoSelect.innerHTML = '<option value="">-- Sem vínculo --</option>';
+
+          if (!Array.isArray(lista) || lista.length === 0) {
+            sessaoSelect.insertAdjacentHTML('beforeend','<option value="">Nenhuma sessão encontrada</option>');
+            return;
+          }
+
+          const selecionada = String({{ (int) $evolucao->sessao_id ?? 0 }});
+          lista.forEach((s) => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.label || s.data_hora || 'Sem data / remarcar';
+            if (String(s.id) === selecionada) opt.selected = true;
+            sessaoSelect.appendChild(opt);
+          });
+        })
+        .catch(() => {
+          sessaoSelect.innerHTML = '<option value="">Erro ao carregar sessões</option>';
+        });
+    });
+
+    // carrega automaticamente se já houver paciente selecionado
+    if (pacienteSelect.value) {
+      pacienteSelect.dispatchEvent(new Event('change'));
+    }
+  }
+  @endif
 });
 </script>
 @endsection
+
