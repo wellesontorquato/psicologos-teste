@@ -181,6 +181,20 @@ class EvolucaoController extends Controller
             ];
         }));
     }
+    
+    // 🌐 WEB: Imprimir evolução
+    public function imprimir(\App\Models\Evolucao $evolucao)
+    {
+        // segurança básica: evolução precisa pertencer ao usuário logado
+        if (!$evolucao->paciente || $evolucao->paciente->user_id !== auth()->id()) {
+            abort(403, 'Acesso não autorizado.');
+        }
+
+        return view('evolucoes.print', [
+            'evolucao' => $evolucao,
+            'user'     => auth()->user(),
+        ]);
+    }
 
     // 📲 API: Listar evoluções (Flutter)
     public function indexJson(Request $request)

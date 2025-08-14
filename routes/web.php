@@ -185,6 +185,8 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     });
     Route::delete('/arquivos/{arquivo}',           [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
     Route::put('/arquivos/{arquivo}/renomear',     [ArquivoController::class, 'renomear'])->name('arquivos.rename');
+    Route::get('/evolucoes/{evolucao}/imprimir', [\App\Http\Controllers\EvolucaoController::class, 'imprimir'])
+    ->name('evolucoes.print');
 
     // Área admin
     Route::middleware([EnsureUserIsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
