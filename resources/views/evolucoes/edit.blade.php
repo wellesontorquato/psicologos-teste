@@ -54,11 +54,18 @@
         @else
             <div class="mb-3">
                 <label class="form-label fw-semibold">Sessão (opcional)</label>
+                @php
+                    $sessoesPaciente = \App\Models\Sessao::where('paciente_id', $evolucao->paciente_id)
+                        ->whereNotNull('data_hora')     // <- evita null
+                        ->orderBy('data_hora', 'desc')
+                        ->get();
+                @endphp
+
                 <select id="sessaoSelect" name="sessao_id" class="form-select shadow-sm">
-                    <option value="">-- Selecione o paciente --</option>
-                    @foreach(\App\Models\Sessao::where('paciente_id', $evolucao->paciente_id)->orderBy('data_hora', 'desc')->get() as $s)
-                        <option value="{{ $s->id }}" {{ $evolucao->sessao_id == $s->id ? 'selected' : '' }}>
-                            {{ $s->data_hora->format('d/m/Y H:i') }}
+                    <option value="">-- Selecionar sessão --</option>
+                    @foreach($sessoesPaciente as $s)
+                        <option value="{{ $s->id }}" {{ (int)$evolucao->sessao_id === (int)$s->id ? 'selected' : '' }}>
+                            {{ \Illuminate\Support\Carbon::parse($s->data_hora)->format('d/m/Y H:i') }}
                         </option>
                     @endforeach
                 </select>
