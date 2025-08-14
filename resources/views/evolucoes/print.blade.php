@@ -7,49 +7,53 @@
         /* Margens da página no PDF */
         @page { margin: 28px 36px; }
 
-        /* Base */
+        /* Base de tipografia */
         body{
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 12.5px;
             color:#222; margin:0; padding:0; background:#fff;
-            line-height: 1.55;
+            line-height: 1.6;
         }
         h1,h2,h3,h4{ margin:0; }
         .muted{ color:#666; }
         .bold{ font-weight:700; }
 
-        /* Header */
+        /* ===== Layout principal (container estreito) ===== */
+        .wrapper{
+            max-width: 720px;   /* <- largura visual mais “magazine” */
+            margin: 0 auto;
+            padding: 0 10px 60px; /* espaço extra embaixo por causa do rodapé fixo */
+        }
+
+        /* ===== Header ===== */
         .header{
             text-align:center;
-            padding: 4px 0 12px 0;
-            margin-bottom: 10px;
+            padding: 8px 0 14px 0;
+            margin-bottom: 14px;
             border-bottom: 2px solid #0aa9ff;
         }
         .logo{
-            max-height: 64px;
+            max-height: 56px;
             display: inline-block;
-            margin: 2px auto 6px auto;
+            margin: 2px auto 8px auto;
         }
         .title{
-            font-size: 21px;
+            font-size: 20px;
             color:#0aa9ff;
             font-weight: 800;
+            letter-spacing:.2px;
             margin-bottom: 2px;
         }
         .subtitle{
-            font-size: 11px; color:#777;
-        }
-        .title-band{
-            height: 4px;
-            background: #0aa9ff;
-            margin-top: 10px;
-            border-radius: 2px;
+            font-size: 11px; color:#7a8a99;
         }
 
-        /* Toolbar (somente ao abrir no navegador) */
+        /* Toolbar (somente no navegador) */
         .toolbar{
             text-align:right;
-            margin: 10px 0 0 0;
+            margin: 10px auto 0;
+            max-width: 720px;
+            padding: 0 10px;
         }
         .btn{
             display:inline-block;
@@ -64,37 +68,36 @@
         }
         .btn-primary{ background:#0aa9ff; color:#fff; border-color:#0a90da; }
 
-        /* Info em tabela – mais estável no DomPDF */
+        /* ===== Metadados (tabela estável p/ DomPDF) ===== */
         .info{
             width:100%;
             border-collapse: collapse;
-            margin: 12px 0 14px 0;
+            margin: 12px 0 16px 0;
             table-layout: fixed;
         }
         .info th, .info td{
             text-align:left;
-            padding: 6px 8px;
+            padding: 7px 9px;
             vertical-align: top;
+            border:1px solid #e9eef6;
         }
         .info th{
-            width: 160px;
-            color:#555;
+            width: 170px;
+            color:#4c5a67;
             font-weight:700;
             background:#f6fafe;
-            border:1px solid #e9eef6;
         }
         .info td{
-            border:1px solid #e9eef6;
             background:#fff;
         }
 
-        /* Card da evolução */
+        /* ===== Card da evolução ===== */
         .card{
             border:1px solid #e9eef6;
-            background:#f9fbff;
+            background:#fbfdff;
             border-left: 4px solid #0d6efd;
             border-radius: 6px;
-            padding: 10px 12px;
+            padding: 12px 14px;
             page-break-inside: avoid;
         }
         .card h4{
@@ -108,20 +111,20 @@
         }
         .meta-line .time{ color:#666; }
         .content{
-            font-size: 12.5px;
-            color:#222;
+            font-size: 13px;
+            color:#1a1d23;
             word-wrap: break-word;
             white-space: pre-wrap; /* respeita quebras de linha digitadas */
         }
 
-        /* Rodapé fixo */
+        /* ===== Rodapé fixo ===== */
         .footer{
             position: fixed;
             bottom: 0; left: 0; right: 0;
             text-align:center;
             font-size:10px;
-            color:#999;
-            border-top:1px solid #eee;
+            color:#99a3af;
+            border-top:1px solid #eef1f4;
             padding:8px 10px;
             background: #fff;
         }
@@ -134,9 +137,13 @@
 @php
     use Illuminate\Support\Carbon;
 
-    // logo: public_path (PDF) ou asset (navegador)
+    // ► IMPORTANTE:
+    // Se estiver renderizando via DomPDF ($pdf definido), use o caminho físico.
+    // Se estiver abrindo no navegador (impressão do browser), use asset().
     $logoPublic = public_path('images/logo-psigestor.png');
-    $logoSrc    = file_exists($logoPublic) ? $logoPublic : asset('images/logo-psigestor.png');
+    $logoSrc    = (isset($pdf) && file_exists($logoPublic))
+                    ? $logoPublic
+                    : asset('images/logo-psigestor.png');
 
     $dataEvo = Carbon::parse($evolucao->data);
     $sessao  = $evolucao->sessao;
@@ -145,53 +152,53 @@
     $texto   = strip_tags($evolucao->texto, '<b><strong><em><i><u><br>');
 @endphp
 
-{{-- Toolbar só para navegação web --}}
+{{-- Toolbar (somente web) --}}
 <div class="toolbar">
     <button class="btn" onclick="window.close()">Fechar</button>
     <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
 </div>
 
-<!-- Cabeçalho -->
-<div class="header">
-    <img class="logo" src="{{ $logoSrc }}" alt="PsiGestor Logo">
-    <div class="title">Evolução de {{ $evolucao->paciente->nome }}</div>
-    <div class="subtitle">{{ config('app.name') }} • gerado em {{ now()->format('d/m/Y H:i') }}</div>
-    <div class="title-band"></div>
-</div>
-
-<!-- Metadados -->
-<table class="info">
-    <tr>
-        <th>Paciente</th>
-        <td>{{ $evolucao->paciente->nome }}</td>
-        <th>Profissional</th>
-        <td>{{ $user->name }}</td>
-    </tr>
-    <tr>
-        <th>Data da evolução</th>
-        <td>{{ $dataEvo->format('d/m/Y') }}</td>
-        <th>Sessão</th>
-        <td>
-            @if($sessao)
-                {{ Carbon::parse($sessao->data_hora)->format('d/m/Y H:i') }}
-                ({{ (int)$sessao->duracao }} min)
-            @else
-                — Sem vínculo
-            @endif
-        </td>
-    </tr>
-</table>
-
-<!-- Conteúdo da evolução -->
-<div class="card">
-    <h4>Evolução</h4>
-    <div class="meta-line">
-        <span class="bold">{{ $dataEvo->format('d/m/Y') }}</span>
-        @if($sessao)
-            <span class="time">às {{ Carbon::parse($sessao->data_hora)->format('H:i') }}</span>
-        @endif
+<div class="wrapper">
+    <!-- Cabeçalho -->
+    <div class="header">
+        <img class="logo" src="{{ $logoSrc }}" alt="PsiGestor Logo">
+        <div class="title">Evolução de {{ $evolucao->paciente->nome }}</div>
     </div>
-    <div class="content">{!! $texto !!}</div>
+
+    <!-- Metadados -->
+    <table class="info">
+        <tr>
+            <th>Paciente</th>
+            <td>{{ $evolucao->paciente->nome }}</td>
+            <th>Profissional</th>
+            <td>{{ $user->name }}</td>
+        </tr>
+        <tr>
+            <th>Data da evolução</th>
+            <td>{{ $dataEvo->format('d/m/Y') }}</td>
+            <th>Sessão</th>
+            <td>
+                @if($sessao)
+                    {{ Carbon::parse($sessao->data_hora)->format('d/m/Y H:i') }}
+                    ({{ (int)$sessao->duracao }} min)
+                @else
+                    — Sem vínculo
+                @endif
+            </td>
+        </tr>
+    </table>
+
+    <!-- Conteúdo da evolução -->
+    <div class="card">
+        <h4>Evolução</h4>
+        <div class="meta-line">
+            <span class="bold">{{ $dataEvo->format('d/m/Y') }}</span>
+            @if($sessao)
+                <span class="time">às {{ Carbon::parse($sessao->data_hora)->format('H:i') }}</span>
+            @endif
+        </div>
+        <div class="content">{!! $texto !!}</div>
+    </div>
 </div>
 
 {{-- Paginação quando renderizado via DomPDF --}}
