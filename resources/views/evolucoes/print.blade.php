@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <title>Evolução de {{ $evolucao->paciente->nome }}</title>
     <style>
-        /* Margens da página no PDF */
+        /* Margens da página (PDF e impressão do navegador) */
         @page { margin: 28px 36px; }
 
-        /* Base de tipografia */
+        /* Base */
         body{
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 12.5px;
@@ -15,14 +15,13 @@
             line-height: 1.6;
         }
         h1,h2,h3,h4{ margin:0; }
-        .muted{ color:#666; }
         .bold{ font-weight:700; }
 
-        /* ===== Layout principal (container estreito) ===== */
+        /* ===== Layout principal (estreito na tela) ===== */
         .wrapper{
-            max-width: 720px;   /* <- largura visual mais “magazine” */
+            max-width: 720px;         /* visual mais confortável */
             margin: 0 auto;
-            padding: 0 10px 60px; /* espaço extra embaixo por causa do rodapé fixo */
+            padding: 0 10px 60px;     /* espaço extra por causa do rodapé fixo */
         }
 
         /* ===== Header ===== */
@@ -43,9 +42,6 @@
             font-weight: 800;
             letter-spacing:.2px;
             margin-bottom: 2px;
-        }
-        .subtitle{
-            font-size: 11px; color:#7a8a99;
         }
 
         /* Toolbar (somente no navegador) */
@@ -68,7 +64,7 @@
         }
         .btn-primary{ background:#0aa9ff; color:#fff; border-color:#0a90da; }
 
-        /* ===== Metadados (tabela estável p/ DomPDF) ===== */
+        /* ===== Metadados ===== */
         .info{
             width:100%;
             border-collapse: collapse;
@@ -87,9 +83,7 @@
             font-weight:700;
             background:#f6fafe;
         }
-        .info td{
-            background:#fff;
-        }
+        .info td{ background:#fff; }
 
         /* ===== Card da evolução ===== */
         .card{
@@ -105,16 +99,13 @@
             color:#0d6efd;
             margin-bottom: 6px;
         }
-        .meta-line{
-            font-size: 12px;
-            margin-bottom: 6px;
-        }
+        .meta-line{ font-size: 12px; margin-bottom: 6px; }
         .meta-line .time{ color:#666; }
         .content{
             font-size: 13px;
             color:#1a1d23;
             word-wrap: break-word;
-            white-space: pre-wrap; /* respeita quebras de linha digitadas */
+            white-space: pre-wrap;
         }
 
         /* ===== Rodapé fixo ===== */
@@ -129,17 +120,25 @@
             background: #fff;
         }
 
-        /* Impressão: esconde toolbar */
-        @media print { .toolbar{ display:none !important; } }
+        /* ===== Somente na impressão ===== */
+        @media print {
+            .toolbar{ display:none !important; }                 /* esconde botões */
+            .wrapper{ max-width: 100% !important; padding: 0 6px 0; } /* ESTICA o conteúdo */
+            .header, .card, .info{
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;                        /* mantém cores */
+            }
+        }
+
+        /* Quando renderizado via DomPDF, também queremos esticar */
+        .is-pdf .wrapper{ max-width: 100%; padding: 0 6px 0; }
     </style>
 </head>
-<body>
+<body class="{{ isset($pdf) ? 'is-pdf' : '' }}">
 @php
     use Illuminate\Support\Carbon;
 
-    // ► IMPORTANTE:
-    // Se estiver renderizando via DomPDF ($pdf definido), use o caminho físico.
-    // Se estiver abrindo no navegador (impressão do browser), use asset().
+    // Usa caminho físico no PDF; usa asset() no navegador (logo aparece nos dois)
     $logoPublic = public_path('images/logo-psigestor.png');
     $logoSrc    = (isset($pdf) && file_exists($logoPublic))
                     ? $logoPublic
@@ -148,7 +147,6 @@
     $dataEvo = Carbon::parse($evolucao->data);
     $sessao  = $evolucao->sessao;
 
-    // Permite apenas tags básicas
     $texto   = strip_tags($evolucao->texto, '<b><strong><em><i><u><br>');
 @endphp
 
