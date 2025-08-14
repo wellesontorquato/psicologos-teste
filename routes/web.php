@@ -235,15 +235,6 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 
-Route::get('/force-clear', function () {
-     Artisan::call('config:clear');
-     Artisan::call('route:clear');
-     Artisan::call('cache:clear');
-     Artisan::call('view:clear');
-
-     return 'Caches TOTALMENTE limpos 🚀!';
- });
-
 /*
 |--------------------------------------------------------------------------
 | Auth
@@ -273,6 +264,15 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 // return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
 // })->middleware('auth');
 // };
+
+// Route::get('/force-clear', function () {
+//     Artisan::call('config:clear');
+//     Artisan::call('route:clear');
+//     Artisan::call('cache:clear');
+//     Artisan::call('view:clear');
+
+//     return 'Caches TOTALMENTE limpos 🚀!';
+// });
 
 // // Crie rapidamente um comando em routes/web.php só para forçar isso:
 //     Route::get('/fix-perms', function() {

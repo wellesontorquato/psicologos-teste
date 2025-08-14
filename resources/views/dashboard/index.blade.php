@@ -21,19 +21,19 @@
     @endif
 
     {{-- MENSAGEM DE BOAS-VINDAS --}}
-    <div class="welcome-header mb-5">
-        <h1 class="display-6">
-            Bem-vindo(a) de volta, 
-            <span class="fw-bold">{{ explode(' ', Auth::user()->name)[0] }}</span>!
-        </h1>
-        <p class="text-muted">
-            Aqui está um resumo da sua atividade recente. Tenha um ótimo dia de trabalho!
-        </p>
+    <div class="welcome-header mt-4 mb-5">
+    <h1 class="display-6 mb-1">
+        Bem-vindo(a) de volta,
+        <span class="fw-bold">{{ explode(' ', Auth::user()->name)[0] }}</span>!
+    </h1>
+    <p class="text-muted mb-0">
+        Aqui está um resumo da sua atividade recente. Tenha um ótimo dia de trabalho!
+    </p>
     </div>
 
     <h2 class="mb-4">
-        <i class="bi bi-speedometer2"></i> Dashboard
-        <small class="text-muted fs-6">Visão geral do sistema</small>
+    <i class="bi bi-speedometer2"></i> Dashboard
+    <small class="text-muted fs-6">Visão geral do sistema</small>
     </h2>
 
     <div class="text-end mb-4">
