@@ -28,7 +28,7 @@
     <p class="text-muted mb-0">Aqui está um resumo da sua atividade recente. Tenha um ótimo dia de trabalho!</p>
     </div>
 
-    <h2 class="mb-3">
+    <h2 class="mb-3 mt-n1">
     <i class="bi bi-speedometer2"></i> Dashboard
     <small class="text-muted fs-6">Visão geral do sistema</small>
     </h2>

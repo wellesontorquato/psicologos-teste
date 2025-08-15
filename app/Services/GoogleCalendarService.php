@@ -72,7 +72,7 @@ class GoogleCalendarService
         $client->setClientId(config('services.google.client_id'));
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setAccessType('offline');
-        $client->setScopes([GoogleCalendar::CALENDAR, GoogleCalendar::CALENDAR_EVENTS]);
+        $client->setScopes([GoogleCalendar::CALENDAR_EVENTS]);
 
         // Access token atual (pode estar expirado)
         $expiresIn = $user->google_token_expires_at

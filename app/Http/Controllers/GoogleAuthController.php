@@ -21,7 +21,7 @@ class GoogleAuthController extends Controller
         $client->setPrompt('consent select_account'); // garante refresh_token na 1ª vez
 
         // pode usar as constantes do serviço ou as URLs; equivalentes
-        $client->setScopes([GoogleCalendar::CALENDAR, GoogleCalendar::CALENDAR_EVENTS]);
+        $client->setScopes([GoogleCalendar::CALENDAR_EVENTS]);
 
         return $client;
     }
