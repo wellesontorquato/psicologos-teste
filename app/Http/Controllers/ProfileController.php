@@ -108,16 +108,39 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'password-updated');
     }
 
+    /**
+     * Atualiza a foto de perfil no S3 (Contabo) com visibilidade pública e headers corretos.
+     */
     public function updatePhoto(Request $request): JsonResponse
     {
         $request->validate(['photo' => 'required|image|max:2048']);
         $user = $request->user();
 
+        // Remove a foto antiga (ignora falhas para ser idempotente)
         if ($user->profile_photo_path) {
-            Storage::disk('s3')->delete($user->profile_photo_path);
+            try {
+                Storage::disk('s3')->delete($user->profile_photo_path);
+            } catch (\Throwable $e) {
+                // opcional: logar $e->getMessage()
+            }
         }
 
-        $path = $request->file('photo')->store('profile-photos', 's3');
+        $uploaded = $request->file('photo');
+
+        // Faz upload público, preservando Content-Type e com cache agressivo
+        $path = $uploaded->storePubliclyAs(
+            'profile-photos',
+            $uploaded->hashName(),
+            [
+                'disk' => 's3',
+                'visibility' => 'public',
+                'headers' => [
+                    'Cache-Control' => 'public, max-age=31536000, immutable',
+                    'Content-Type'  => $uploaded->getMimeType(),
+                ],
+            ]
+        );
+
         $user->profile_photo_path = $path;
         $user->save();
         $user->refresh();
@@ -127,7 +150,7 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Foto atualizada com sucesso!',
-            'url' => $user->profile_photo_url,
+            'url' => $user->profile_photo_url, // accessor monta CDN + prefixo
         ], 200);
     }
 
@@ -135,8 +158,15 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        if ($user->profile_photo_path && Storage::disk('s3')->exists($user->profile_photo_path)) {
-            Storage::disk('s3')->delete($user->profile_photo_path);
+        if ($user->profile_photo_path) {
+            try {
+                if (Storage::disk('s3')->exists($user->profile_photo_path)) {
+                    Storage::disk('s3')->delete($user->profile_photo_path);
+                }
+            } catch (\Throwable $e) {
+                // opcional: logar $e->getMessage()
+            }
+
             $user->profile_photo_path = null;
             $user->save();
 

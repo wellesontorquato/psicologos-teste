@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Helpers\AuditHelper;
+use Illuminate\Support\Str;
 
 class ArquivoController extends Controller
 {
@@ -28,37 +29,53 @@ class ArquivoController extends Controller
     }
 
     /**
-     * Salva um novo arquivo para o paciente (upload para S3).
+     * Salva um novo arquivo para o paciente (upload para S3/Contabo).
      */
     public function store(Request $request, Paciente $paciente)
     {
         $this->authorize('update', $paciente);
 
         $request->validate([
-            'arquivo' => 'required|file|max:5120', // 5MB máx
+            'arquivo' => 'required|file|max:5120', // 5MB
         ]);
 
         $file = $request->file('arquivo');
 
-        // ✅ Define o caminho com subpasta por paciente (opcional)
-        $caminho = 'arquivos/' . $paciente->id . '/' . uniqid() . '_' . $file->getClientOriginalName();
+        // Pasta por paciente
+        $dir = 'arquivos/' . $paciente->id;
 
-        // ✅ Salva no S3
-        Storage::disk('s3')->put($caminho, file_get_contents($file), 'public');
+        // Nome de arquivo seguro: slug do nome + extensão, com prefixo único
+        $origName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $ext      = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $safeName = Str::slug($origName, '-') ?: 'arquivo';
+        $filename = uniqid('', true) . '_' . $safeName . '.' . $ext;
+
+        // Upload público com headers adequados (MIME + cache)
+        // Use putFileAs para evitar carregar o arquivo na memória (stream)
+        $path = Storage::disk('s3')->putFileAs(
+            $dir,
+            $file,
+            $filename,
+            [
+                'visibility'   => 'public',
+                'CacheControl' => 'public, max-age=31536000, immutable',
+                'ContentType'  => $file->getMimeType(), // garante exibição correta
+            ]
+        );
 
         $arquivo = Arquivo::create([
             'paciente_id' => $paciente->id,
-            'nome' => $file->getClientOriginalName(),
-            'caminho' => $caminho, // salva só o caminho relativo
+            'nome'        => $file->getClientOriginalName(), // mantém o nome "humano"
+            'caminho'     => $path,                           // salva caminho relativo
         ]);
 
         AuditHelper::log('uploaded_file', 'Enviou o arquivo "' . $arquivo->nome . '" para o paciente ' . $paciente->nome);
 
-        return redirect()->back()->with('success', 'Arquivo enviado com sucesso!');
+        return back()->with('success', 'Arquivo enviado com sucesso!');
     }
 
     /**
-     * Renomeia um arquivo (apenas no banco, não muda o S3).
+     * Renomeia um arquivo (apenas no banco, não muda no S3).
      */
     public function renomear(Request $request, Arquivo $arquivo)
     {
@@ -83,12 +100,16 @@ class ArquivoController extends Controller
     {
         $this->authorize('delete', $arquivo);
 
-        // ✅ Remove no S3 se existir
-        if (Storage::disk('s3')->exists($arquivo->caminho)) {
-            Storage::disk('s3')->delete($arquivo->caminho);
+        // Remove no S3 (idempotente e silencioso em caso de erro)
+        try {
+            if (Storage::disk('s3')->exists($arquivo->caminho)) {
+                Storage::disk('s3')->delete($arquivo->caminho);
+            }
+        } catch (\Throwable $e) {
+            // opcional: logar $e->getMessage()
         }
 
-        $nome = $arquivo->nome;
+        $nome     = $arquivo->nome;
         $paciente = $arquivo->paciente->nome ?? 'Desconhecido';
 
         $arquivo->delete();
