@@ -11,51 +11,73 @@ class News extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title',
-        'subtitle',
-        'category',
-        'slug',
-        'excerpt',
-        'content',
-        'image',
+        'title', 'subtitle', 'category', 'slug', 'excerpt', 'content', 'image',
     ];
 
-    // Usa slug nas rotas
     public function getRouteKeyName()
     {
         return 'slug';
     }
 
-    // Prefixo base do Contabo
-    private function getContaboPrefix()
+    /**
+     * Base pública para servir os arquivos.
+     * Ex.: https://cdn.psigestor.com/d1f52aa...:psigestor-files
+     *     (prefixo vem do .env)
+     */
+    private function getAssetsBaseUrl(): string
     {
-        return rtrim('https://usc1.contabostorage.com/' . trim(env('CONTABO_PUBLIC_PREFIX'), '/'), '/');
+        $scheme  = env('ASSET_CDN_SCHEME', 'https');
+        $host    = env('ASSET_CDN_HOST', 'usc1.contabostorage.com'); // troque no .env
+        $prefix  = ltrim(env('CONTABO_PUBLIC_PREFIX', ''), '/');     // ex.: d1f52...:psigestor-files
+
+        // monta https://host/prefix  (sem barra final)
+        $base = rtrim("$scheme://$host/" . $prefix, '/');
+        return $base;
     }
 
-    // URL da imagem original
+    /**
+     * Retorna URL absoluta para a imagem original.
+     * Se já estiver salva como URL absoluta no banco, apenas retorna.
+     */
     public function getImageUrlAttribute()
     {
-        return $this->image
-            ? $this->getContaboPrefix() . '/' . ltrim($this->image, '/')
-            : null;
+        if (!$this->image) {
+            return null;
+        }
+
+        if (Str::startsWith($this->image, ['http://', 'https://'])) {
+            return $this->image;
+        }
+
+        return $this->getAssetsBaseUrl() . '/' . ltrim($this->image, '/');
     }
 
-    // URL da versão WebP (gera direto, sem checar fisicamente)
+    /**
+     * Retorna URL "derivada" em .webp (assume que o .webp exista no mesmo caminho).
+     */
     public function getImageWebpUrlAttribute()
     {
         if (!$this->image) {
             return null;
         }
 
-        $pathInfo = pathinfo($this->image);
-        $dir = $pathInfo['dirname'] !== '.' ? $pathInfo['dirname'].'/' : '';
-        $webpFile = $dir . $pathInfo['filename'] . '.webp';
+        // se já vier absoluta e terminar com .webp, retorna
+        if (Str::startsWith($this->image, ['http://', 'https://']) && Str::endsWith($this->image, '.webp')) {
+            return $this->image;
+        }
 
-        // Assume que o arquivo WebP existe no mesmo bucket Contabo
-        return $this->getContaboPrefix() . '/' . ltrim($webpFile, '/');
+        $pathInfo = pathinfo($this->image);
+        $dir      = ($pathInfo['dirname'] ?? '.') !== '.' ? $pathInfo['dirname'].'/' : '';
+        $webpFile = $dir . ($pathInfo['filename'] ?? 'image') . '.webp';
+
+        // se for absoluta, apenas troca a extensão mantendo host/caminho
+        if (Str::startsWith($this->image, ['http://', 'https://'])) {
+            return preg_replace('/\.[a-zA-Z0-9]+$/', '.webp', $this->image);
+        }
+
+        return $this->getAssetsBaseUrl() . '/' . ltrim($webpFile, '/');
     }
 
-    // Garante que o slug seja salvo em minúsculas e sem espaços
     public function setSlugAttribute($value)
     {
         $this->attributes['slug'] = Str::slug($value);
