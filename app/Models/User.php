@@ -65,16 +65,28 @@ class User extends Authenticatable
     ];
 
     /**
-     * Retorna a URL da foto de perfil (Contabo ou Avatar padrão)
+     * URL da foto de perfil (CDN/Contabo ou avatar padrão).
      */
     public function getProfilePhotoUrlAttribute()
     {
-        if ($this->profile_photo_path) {
-            $prefix = rtrim(env('CONTABO_PUBLIC_PREFIX'), '/');
-            return 'https://usc1.contabostorage.com/' . $prefix . '/' . ltrim($this->profile_photo_path, '/');
+        // 1) Se não há foto, gera avatar padrão
+        if (!$this->profile_photo_path) {
+            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
         }
 
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+        // 2) Se já está salva como URL absoluta, retorna direto
+        if (Str::startsWith($this->profile_photo_path, ['http://', 'https://'])) {
+            return $this->profile_photo_path;
+        }
+
+        // 3) Monta a base a partir do .env (mesmo padrão dos outros models)
+        $scheme = env('ASSET_CDN_SCHEME', 'https');
+        $host   = env('ASSET_CDN_HOST', 'usc1.contabostorage.com');
+        $prefix = ltrim(env('CONTABO_PUBLIC_PREFIX', ''), '/'); // ex.: d1f52...:psigestor-files
+
+        $base = rtrim("$scheme://$host/$prefix", '/');
+
+        return $base . '/' . ltrim($this->profile_photo_path, '/');
     }
 
     /**
