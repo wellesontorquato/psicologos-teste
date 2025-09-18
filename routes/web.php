@@ -117,9 +117,9 @@ Route::view('/termos-de-uso', 'pages.termos-de-uso')->name('termos-de-uso');
 // Política de Cookies
 Route::view('/politica-de-cookies', 'pages.cookies')->name('cookies');
 
-Route::get('/cdn/{path}', [FileProxyController::class, 'public'])
+Route::get('/cdn/{path}', [\App\Http\Controllers\FileProxyController::class, 'servePublic'])
     ->where('path', '.*');
-
+    
 /*
 |--------------------------------------------------------------------------
 | Área de Assinaturas
