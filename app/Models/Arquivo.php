@@ -18,7 +18,7 @@ class Arquivo extends Model
     }
 
     /**
-     * URL pública via proxy do Laravel (/cdn/{path}).
+     * URL pública via proxy do Laravel (/cdn/{path}) com cache busting.
      * Não expõe Contabo.
      */
     public function getUrlAttribute()
@@ -32,7 +32,8 @@ class Arquivo extends Model
             return $this->caminho;
         }
 
-        // Sempre aponta para o proxy público
-        return url('/cdn/' . ltrim($this->caminho, '/'));
+        // Sempre aponta para o proxy público, adicionando versão baseada no updated_at
+        return url('/cdn/' . ltrim($this->caminho, '/'))
+            . '?v=' . ($this->updated_at?->timestamp ?? time());
     }
 }
