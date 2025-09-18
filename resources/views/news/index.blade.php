@@ -60,18 +60,23 @@
             <tbody>
                 @forelse ($news as $article)
                     <tr>
+                        {{-- Tabela --}}
                         <td class="text-center align-middle">
                             @if ($article->image)
+                                @php
+                                    $webp = $article->image_webp_url; // pode vir null
+                                    $orig = $article->image_url;      // sempre definido quando image != null
+                                @endphp
                                 <picture>
-                                    {{-- WebP otimizado --}}
-                                    <source srcset="{{ $article->image_webp_url }}" type="image/webp">
-                                    {{-- Fallback JPG/PNG --}}
-                                    <img src="{{ $article->image_url }}"
-                                         alt="{{ $article->title }}"
-                                         loading="lazy"
-                                         width="60" height="60"
-                                         class="rounded shadow-sm"
-                                         style="object-fit: cover;">
+                                    @if($webp)
+                                        <source srcset="{{ $webp }}" type="image/webp">
+                                    @endif
+                                    <img src="{{ $orig }}"
+                                        alt="{{ $article->title }}"
+                                        loading="lazy"
+                                        width="60" height="60"
+                                        class="rounded shadow-sm"
+                                        style="object-fit: cover;">
                                 </picture>
                             @endif
                         </td>
@@ -117,15 +122,22 @@
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
+                        {{-- Card (mobile) --}}
                         @if ($article->image)
+                            @php
+                                $webp = $article->image_webp_url;
+                                $orig = $article->image_url;
+                            @endphp
                             <picture>
-                                <source srcset="{{ $article->image_webp_url }}" type="image/webp">
-                                <img src="{{ $article->image_url }}"
-                                     alt="{{ $article->title }}"
-                                     loading="lazy"
-                                     width="60" height="60"
-                                     class="rounded shadow-sm me-3"
-                                     style="object-fit: cover;">
+                                @if($webp)
+                                    <source srcset="{{ $webp }}" type="image/webp">
+                                @endif
+                                <img src="{{ $orig }}"
+                                    alt="{{ $article->title }}"
+                                    loading="lazy"
+                                    width="60" height="60"
+                                    class="rounded shadow-sm me-3"
+                                    style="object-fit: cover;">
                             </picture>
                         @endif
                         <h5 class="card-title mb-0">{{ $article->title }}</h5>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage; // ⬅️ importa Storage
 
 class News extends Model
 {
@@ -19,47 +20,43 @@ class News extends Model
         return 'slug';
     }
 
-    /**
-     * URL da imagem original via proxy (/cdn).
-     */
+    /** URL da imagem original via proxy (/cdn). */
     public function getImageUrlAttribute()
     {
-        if (!$this->image) {
-            return null;
-        }
+        if (!$this->image) return null;
 
-        // se já estiver salva como URL absoluta
         if (Str::startsWith($this->image, ['http://', 'https://'])) {
-            return $this->image;
+            return $this->image; // legado absoluto
         }
 
         return url('/cdn/' . ltrim($this->image, '/'));
     }
 
-    /**
-     * URL derivada em .webp via proxy (/cdn).
-     */
+    /** URL .webp via proxy (/cdn) — só retorna se existir; senão, null (fallback usa a original). */
     public function getImageWebpUrlAttribute()
     {
-        if (!$this->image) {
-            return null;
-        }
+        if (!$this->image) return null;
 
-        // se já for absoluta terminando em .webp, mantém
+        // Se já for absoluta e terminar com .webp, mantém (não tem como checar existência externa)
         if (Str::startsWith($this->image, ['http://', 'https://']) && Str::endsWith($this->image, '.webp')) {
             return $this->image;
         }
 
-        // se já for absoluta mas não .webp, só troca a extensão
-        if (Str::startsWith($this->image, ['http://', 'https://'])) {
-            return preg_replace('/\.[a-zA-Z0-9]+$/', '.webp', $this->image);
-        }
-
+        // Caminho relativo: calcula o .webp
         $info = pathinfo($this->image);
         $dir  = ($info['dirname'] ?? '.') !== '.' ? $info['dirname'].'/' : '';
-        $webp = $dir . ($info['filename'] ?? 'image') . '.webp';
+        $webpRel = $dir . ($info['filename'] ?? 'image') . '.webp';
 
-        return url('/cdn/' . ltrim($webp, '/'));
+        // Só retorna se existir no bucket; senão, null
+        try {
+            if (Storage::disk('s3')->exists($webpRel)) {
+                return url('/cdn/' . ltrim($webpRel, '/'));
+            }
+        } catch (\Throwable $e) {
+            // se der algum erro na checagem, silenciosamente não usa webp
+        }
+
+        return null; // força o <img> usar $this->image_url
     }
 
     public function setSlugAttribute($value)

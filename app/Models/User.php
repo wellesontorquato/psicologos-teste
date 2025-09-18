@@ -74,8 +74,9 @@ class User extends Authenticatable
             return $this->profile_photo_path;
         }
 
-        // senão, monta URL passando pelo proxy /cdn
-        return url('/cdn/' . ltrim($this->profile_photo_path, '/'));
+        // senão, monta URL passando pelo proxy /cdn + cache busting
+        return url('/cdn/' . ltrim($this->profile_photo_path, '/'))
+            . '?v=' . ($this->updated_at?->timestamp ?? time());
     }
 
     public function setLinkPrincipalAttribute($value)
