@@ -29,7 +29,8 @@ use App\Http\Controllers\{
     NotificacaoController,
     AssinaturaController,
     BlogController,
-    LandingPageController
+    LandingPageController,
+    FileProxyController
 };
 use App\Models\News;
 use App\Jobs\SyncUserCalendar;
@@ -115,6 +116,9 @@ Route::view('/politica-de-privacidade', 'pages.politica-de-privacidade')->name('
 Route::view('/termos-de-uso', 'pages.termos-de-uso')->name('termos-de-uso');
 // Política de Cookies
 Route::view('/politica-de-cookies', 'pages.cookies')->name('cookies');
+
+Route::get('/cdn/{path}', [FileProxyController::class, 'public'])
+    ->where('path', '.*');
 
 /*
 |--------------------------------------------------------------------------

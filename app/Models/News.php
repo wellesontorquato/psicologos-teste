@@ -20,24 +20,7 @@ class News extends Model
     }
 
     /**
-     * Base pública para servir os arquivos.
-     * Ex.: https://cdn.psigestor.com/d1f52aa...:psigestor-files
-     *     (prefixo vem do .env)
-     */
-    private function getAssetsBaseUrl(): string
-    {
-        $scheme  = env('ASSET_CDN_SCHEME', 'https');
-        $host    = env('ASSET_CDN_HOST', 'usc1.contabostorage.com'); // troque no .env
-        $prefix  = ltrim(env('CONTABO_PUBLIC_PREFIX', ''), '/');     // ex.: d1f52...:psigestor-files
-
-        // monta https://host/prefix  (sem barra final)
-        $base = rtrim("$scheme://$host/" . $prefix, '/');
-        return $base;
-    }
-
-    /**
-     * Retorna URL absoluta para a imagem original.
-     * Se já estiver salva como URL absoluta no banco, apenas retorna.
+     * URL da imagem original via proxy (/cdn).
      */
     public function getImageUrlAttribute()
     {
@@ -45,15 +28,16 @@ class News extends Model
             return null;
         }
 
+        // se já estiver salva como URL absoluta
         if (Str::startsWith($this->image, ['http://', 'https://'])) {
             return $this->image;
         }
 
-        return $this->getAssetsBaseUrl() . '/' . ltrim($this->image, '/');
+        return url('/cdn/' . ltrim($this->image, '/'));
     }
 
     /**
-     * Retorna URL "derivada" em .webp (assume que o .webp exista no mesmo caminho).
+     * URL derivada em .webp via proxy (/cdn).
      */
     public function getImageWebpUrlAttribute()
     {
@@ -61,21 +45,21 @@ class News extends Model
             return null;
         }
 
-        // se já vier absoluta e terminar com .webp, retorna
+        // se já for absoluta terminando em .webp, mantém
         if (Str::startsWith($this->image, ['http://', 'https://']) && Str::endsWith($this->image, '.webp')) {
             return $this->image;
         }
 
-        $pathInfo = pathinfo($this->image);
-        $dir      = ($pathInfo['dirname'] ?? '.') !== '.' ? $pathInfo['dirname'].'/' : '';
-        $webpFile = $dir . ($pathInfo['filename'] ?? 'image') . '.webp';
-
-        // se for absoluta, apenas troca a extensão mantendo host/caminho
+        // se já for absoluta mas não .webp, só troca a extensão
         if (Str::startsWith($this->image, ['http://', 'https://'])) {
             return preg_replace('/\.[a-zA-Z0-9]+$/', '.webp', $this->image);
         }
 
-        return $this->getAssetsBaseUrl() . '/' . ltrim($webpFile, '/');
+        $info = pathinfo($this->image);
+        $dir  = ($info['dirname'] ?? '.') !== '.' ? $info['dirname'].'/' : '';
+        $webp = $dir . ($info['filename'] ?? 'image') . '.webp';
+
+        return url('/cdn/' . ltrim($webp, '/'));
     }
 
     public function setSlugAttribute($value)

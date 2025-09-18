@@ -10,11 +10,7 @@ class Arquivo extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'paciente_id',
-        'nome',
-        'caminho',
-    ];
+    protected $fillable = ['paciente_id','nome','caminho'];
 
     public function paciente()
     {
@@ -22,7 +18,8 @@ class Arquivo extends Model
     }
 
     /**
-     * URL absoluta para o arquivo no storage/CDN.
+     * URL pública via proxy do Laravel (/cdn/{path}).
+     * Não expõe Contabo.
      */
     public function getUrlAttribute()
     {
@@ -30,17 +27,12 @@ class Arquivo extends Model
             return null;
         }
 
-        // se já estiver salvo como URL completa, apenas retorna
+        // Se já for URL absoluta, retorna como está (caso legado)
         if (Str::startsWith($this->caminho, ['http://', 'https://'])) {
             return $this->caminho;
         }
 
-        $scheme  = env('ASSET_CDN_SCHEME', 'https');
-        $host    = env('ASSET_CDN_HOST', 'usc1.contabostorage.com');
-        $prefix  = ltrim(env('CONTABO_PUBLIC_PREFIX', ''), '/');
-
-        $baseUrl = rtrim("$scheme://$host/$prefix", '/');
-
-        return $baseUrl . '/' . ltrim($this->caminho, '/');
+        // Sempre aponta para o proxy público
+        return url('/cdn/' . ltrim($this->caminho, '/'));
     }
 }
