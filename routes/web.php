@@ -10,6 +10,7 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Laravel\Cashier\Http\Controllers\WebhookController;
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Controllers\Admin\NewsController;
 use App\Models\Paciente;
 use App\Http\Controllers\{
@@ -237,7 +238,8 @@ Route::middleware(['auth'])->group(function () {
 | Stripe Webhook
 |--------------------------------------------------------------------------
 */
-Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
+Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])
+    ->withoutMiddleware([VerifyCsrfToken::class]);
 
 /*
 |--------------------------------------------------------------------------
