@@ -9,6 +9,7 @@ use Laravel\Cashier\Billable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\CustomVerifyEmail;
 use Illuminate\Support\Str;
+use Laravel\Cashier\Subscription as CashierSubscription;
 
 class User extends Authenticatable
 {
@@ -107,5 +108,36 @@ class User extends Authenticatable
     public function sendEmailVerificationNotification()
     {
         $this->notify(new CustomVerifyEmail);
+    }
+
+    /**
+     * Retorna SEMPRE a assinatura mais recente e não cancelada (ends_at NULL)
+     * com o nome 'default'. Evita pegar registros antigos.
+     */
+    public function currentSubscription(): ?CashierSubscription
+    {
+        return $this->subscriptions()
+            ->where('name', 'default')
+            ->whereNull('ends_at')
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Regra central de acesso pago.
+     * Libera para 'active', 'trialing' e (opcionalmente) 'past_due',
+     * além do trial "global" do usuário (onTrial()).
+     */
+    public function hasPaidAccess(bool $allowPastDue = true): bool
+    {
+        $sub = $this->currentSubscription();
+
+        $valid = ['active', 'trialing'];
+        if ($allowPastDue) {
+            $valid[] = 'past_due';
+        }
+
+        return ($sub && in_array($sub->stripe_status, $valid, true))
+            || $this->onTrial();
     }
 }
