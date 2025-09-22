@@ -117,7 +117,7 @@ class User extends Authenticatable
     public function currentSubscription(): ?CashierSubscription
     {
         return $this->subscriptions()
-            ->where('name', 'default')
+            ->where('type', 'default')
             ->whereNull('ends_at')
             ->latest('id')
             ->first();

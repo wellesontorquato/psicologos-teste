@@ -19,7 +19,7 @@ class CheckSubscription
 
         // Pega SEMPRE a assinatura mais recente não cancelada (ends_at = null)
         $sub = $user->subscriptions()
-            ->where('name', 'default')
+            ->where('type', 'default')
             ->whereNull('ends_at')
             ->latest('id')
             ->first();
