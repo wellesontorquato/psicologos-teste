@@ -266,20 +266,20 @@ class WebhookWhatsappController extends Controller
     /**
      * Envia mensagem usando WPPConnect-Server:
      * POST {base_url}/api/{session}/send-message
-     * Body:
-     *  - phone: 5521999999999
-     *  - isGroup: false
-     *  - isNewsletter: false
-     *  - isLid: false
-     *  - message: "texto"
      */
     private function responderNoWhatsapp(string $numero, string $mensagem): void
     {
+        // normaliza número e garante DDI 55
         $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
 
         $baseUrl = rtrim(config('services.wppconnect.base_url'), '/');
         $session = config('services.wppconnect.session', 'psigestor');
         $token   = config('services.wppconnect.token');
+
+        if (!$baseUrl || !$token) {
+            Log::channel('whatsapp')->error('[Webhook] ❌ base_url ou token do WPPConnect não configurados');
+            return;
+        }
 
         $endpoint = "{$baseUrl}/api/{$session}/send-message";
 
@@ -289,16 +289,10 @@ class WebhookWhatsappController extends Controller
             'endpoint' => $endpoint,
         ]);
 
-        if (!$token) {
-            Log::channel('whatsapp')->error('[Webhook] ❌ WPPCONNECT_TOKEN não configurado no .env');
-            return;
-        }
-
         try {
-            $response = Http::withHeaders([
-                    'Authorization' => "Bearer {$session}:{$token}",
-                    'Accept'        => 'application/json',
-                ])
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->asJson()
                 ->post($endpoint, [
                     'phone'        => $numeroComPrefixo,
                     'isGroup'      => false,
@@ -307,7 +301,7 @@ class WebhookWhatsappController extends Controller
                     'message'      => $mensagem,
                 ]);
 
-            if (!$response->successful()) {
+            if ($response->failed()) {
                 Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem via WPPConnect', [
                     'numero' => $numeroComPrefixo,
                     'status' => $response->status(),
@@ -319,13 +313,12 @@ class WebhookWhatsappController extends Controller
                     'res'    => $response->json(),
                 ]);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem via WPPConnect', [
                 'erro' => $e->getMessage(),
             ]);
         }
     }
-
 
     public function testeManual(Request $request)
     {
