@@ -40,9 +40,34 @@
             </div>
 
             <div class="col-6 col-md-3">
-                <label for="valor" class="form-label fw-semibold">Valor (R$)</label>
-                <input type="number" step="0.01" name="valor" id="valor" class="form-control"
-                       value="{{ $sessao->valor }}">
+                <label class="form-label fw-semibold">Valor</label>
+                
+                <div class="input-group">
+                    <select name="moeda" id="moeda" class="form-select" style="max-width: 110px;">
+                        @php
+                            $moedas = ['BRL', 'USD', 'EUR', 'GBP', 'ARS', 'CLP', 'MXN', 'CAD', 'AUD'];
+                            $moedaSessao = $sessao->moeda ?? 'BRL';
+                        @endphp
+
+                        @foreach($moedas as $m)
+                            <option value="{{ $m }}" {{ $moedaSessao === $m ? 'selected' : '' }}>
+                                {{ $m }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <input 
+                        type="number" 
+                        step="0.01" 
+                        name="valor" 
+                        id="valor" 
+                        class="form-control"
+                        value="{{ $sessao->valor }}"
+                        placeholder="0,00">
+                </div>
+                <small class="text-muted">
+                    Valor cobrado na moeda selecionada.
+                </small>
             </div>
         </div>
 

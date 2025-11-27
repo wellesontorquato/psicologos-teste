@@ -65,7 +65,30 @@
                     </div>
                     <div>
                         <p class="text-muted mb-1">Recebido no Período</p>
-                        <h4 class="fw-bold mb-0">R$ {{ number_format($totalMesAtual, 2, ',', '.') }}</h4>
+                        @php
+                            $moedaSelecionada = request('moeda', 'BRL');
+
+                            $simbolos = [
+                                'BRL' => 'R$',
+                                'USD' => 'US$',
+                                'EUR' => '€',
+                                'GBP' => '£',
+                                'ARS' => 'AR$',
+                                'CLP' => 'CLP$',
+                                'MXN' => 'MX$',
+                                'CAD' => 'C$',
+                                'AUD' => 'A$',
+                            ];
+
+                            $simbolo = $simbolos[$moedaSelecionada] ?? $moedaSelecionada;
+
+                            // Total convertido da controller
+                            $totalGrafico = $totalConvertido ?? $totalMesAtual;
+                        @endphp
+
+                        <h4 class="fw-bold mb-0">
+                            {{ $simbolo }} {{ number_format($totalGrafico, 2, ',', '.') }}
+                        </h4>
                     </div>
                 </div>
             </div>
@@ -305,8 +328,8 @@
         data: {
             labels: valoresDiasLabels,
             datasets: [{
-                label: 'Valor Recebido (R$) por Dia',
-                data: valoresDiasValores,
+                label: 'Valor Recebido ({{ request("moeda", "BRL") }}) por Dia',
+                data: {!! json_encode($valoresDiasConvertidos) !!},
                 fill: true,
                 tension: 0.4,
                 borderColor: '#198754',

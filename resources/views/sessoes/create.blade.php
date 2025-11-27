@@ -55,11 +55,25 @@
         </div>
 
         <div class="mb-3">
-            <label for="valor" class="form-label fw-semibold">Valor (R$)</label>
+            <label for="valor" class="form-label fw-semibold">Valor</label>
             <input type="number" step="0.01" name="valor" id="valor" 
                    class="form-control shadow-sm"
                    value="{{ old('valor') }}">
         </div>
+        <div class="mb-3">
+
+        <label for="moeda" class="form-label fw-semibold">Moeda</label>
+        <select name="moeda" id="moeda" class="form-select shadow-sm" required>
+            <option value="BRL" {{ old('moeda') === 'BRL' ? 'selected' : '' }}>R$ - Real Brasileiro (BRL)</option>
+            <option value="USD" {{ old('moeda') === 'USD' ? 'selected' : '' }}>US$ - Dólar Americano (USD)</option>
+            <option value="EUR" {{ old('moeda') === 'EUR' ? 'selected' : '' }}>€ - Euro (EUR)</option>
+            <option value="GBP" {{ old('moeda') === 'GBP' ? 'selected' : '' }}>£ - Libra Esterlina (GBP)</option>
+            <option value="ARS" {{ old('moeda') === 'ARS' ? 'selected' : '' }}>AR$ - Peso Argentino (ARS)</option>
+            <option value="CLP" {{ old('moeda') === 'CLP' ? 'selected' : '' }}>CLP - Peso Chileno (CLP)</option>
+            <option value="MXN" {{ old('moeda') === 'MXN' ? 'selected' : '' }}>MX$ - Peso Mexicano (MXN)</option>
+            <option value="CAD" {{ old('moeda') === 'CAD' ? 'selected' : '' }}>C$ - Dólar Canadense (CAD)</option>
+        </select>
+    </div>
 
         <div class="mb-3 form-check">
             <input type="checkbox" name="foi_pago" id="foi_pago" class="form-check-input"

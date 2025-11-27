@@ -42,7 +42,31 @@
                         @endif
                     </td>
                     <td>{{ $sessao->duracao }} min</td>
-                    <td>R$ {{ number_format($sessao->valor, 2, ',', '.') }}</td>
+                    <td>
+                        @php
+                            $moeda = $sessao->moeda ?? 'BRL';
+
+                            $simbolos = [
+                                'BRL' => 'R$',
+                                'USD' => 'US$',
+                                'EUR' => '€',
+                                'GBP' => '£',
+                                'ARS' => 'AR$',
+                                'CLP' => 'CLP$',
+                                'MXN' => 'MX$',
+                                'CAD' => 'C$',
+                                'AUD' => 'A$',
+                            ];
+
+                            $simbolo = $simbolos[$moeda] ?? $moeda;
+                        @endphp
+
+                        <span class="fw-bold">{{ $simbolo }} {{ number_format($sessao->valor, 2, ',', '.') }}</span>
+
+                        <span class="badge bg-light text-dark border ms-1" style="font-size: 0.7rem;">
+                            {{ $moeda }}
+                        </span>
+                    </td>
                     <td>
                         <span class="badge {{ $sessao->foi_pago ? 'bg-success' : 'bg-secondary' }}">
                             {{ $sessao->foi_pago ? 'Sim' : 'Não' }}
@@ -119,7 +143,32 @@
                     @endif
                 </p>
                 <p class="mb-1"><i class="bi bi-clock"></i> {{ $sessao->duracao }} min</p>
-                <p class="mb-1"><i class="bi bi-cash-coin"></i> R$ {{ number_format($sessao->valor, 2, ',', '.') }}</p>
+                @php
+                    $moeda = $sessao->moeda ?? 'BRL';
+
+                    $simbolos = [
+                        'BRL' => 'R$',
+                        'USD' => 'US$',
+                        'EUR' => '€',
+                        'GBP' => '£',
+                        'ARS' => 'AR$',
+                        'CLP' => 'CLP$',
+                        'MXN' => 'MX$',
+                        'CAD' => 'C$',
+                        'AUD' => 'A$',
+                    ];
+
+                    $simbolo = $simbolos[$moeda] ?? $moeda;
+                @endphp
+
+                <p class="mb-1">
+                    <i class="bi bi-cash-coin"></i> 
+                    <span class="fw-bold">{{ $simbolo }} {{ number_format($sessao->valor, 2, ',', '.') }}</span>
+
+                    <span class="badge bg-light text-dark border ms-1" style="font-size: 0.7rem;">
+                        {{ $moeda }}
+                    </span>
+                </p>
                 <p class="mb-1"><i class="bi bi-credit-card"></i> 
                     <span class="badge {{ $sessao->foi_pago ? 'bg-success' : 'bg-secondary' }}">
                         {{ $sessao->foi_pago ? 'Sim' : 'Não' }}

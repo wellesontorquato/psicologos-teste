@@ -18,6 +18,7 @@ class Sessao extends Model
         'data_hora_original',
         'duracao',
         'valor',
+        'moeda',
         'foi_pago',
         'observacoes',
         'status_confirmacao',

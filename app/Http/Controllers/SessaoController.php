@@ -113,11 +113,15 @@ class SessaoController extends Controller
             'data_hora'   => 'required|date',
             'duracao'     => 'required|integer|min:1',
             'valor'       => 'nullable|numeric',
+            'moeda'       => 'nullable|string|size:5',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
         $dados['foi_pago'] = $request->has('foi_pago');
         $dados['data_hora_original'] = $dados['data_hora'];
+
+        // moeda: se vier no request usa, senão BRL
+        $dados['moeda'] = strtoupper($request->input('moeda', 'BRL'));
 
         $inicio = Carbon::parse($dados['data_hora']);
         $fim    = $inicio->copy()->addMinutes($dados['duracao']);
@@ -181,10 +185,14 @@ class SessaoController extends Controller
             'duracao'     => 'required|integer|min:1',
             'valor'       => 'nullable|numeric',
             'foi_pago'    => 'boolean',
+            'moeda'       => 'nullable|string|size:5',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
         $dados['data_hora_original'] = $dados['data_hora'];
+
+        // moeda com default BRL
+        $dados['moeda'] = strtoupper($request->input('moeda', 'BRL'));
 
         $inicio = Carbon::parse($dados['data_hora']);
         $fim    = $inicio->copy()->addMinutes($dados['duracao']);
@@ -231,7 +239,7 @@ class SessaoController extends Controller
             }
         }
 
-        return response()->json(['message' => 'Sessão criada com sucesso', 'id' => $sessao->id], 201);
+        return response()->json(['message' => 'Sessão criada com sucesso', 'id' => $sessao->id, 'moeda' => $sessao->moeda,],  201);
     }
 
     public function edit($id)
@@ -271,6 +279,7 @@ class SessaoController extends Controller
             'valor'       => $sessao->valor,
             'duracao'     => $sessao->duracao,
             'foi_pago'    => $sessao->foi_pago,
+            'moeda'       => $sessao->moeda,
         ]);
     }
 
@@ -289,10 +298,14 @@ class SessaoController extends Controller
             'valor'              => 'nullable|numeric',
             'status_confirmacao' => 'nullable|string',
             'foi_pago'           => 'boolean',
+            'moeda'              => 'nullable|string|size:5',
         ]);
 
         $statusAntigo = $sessao->status_confirmacao;
         $dados['foi_pago'] = $request->boolean('foi_pago');
+
+        // normalizar moeda com default
+        $dados['moeda'] = strtoupper($request->input('moeda', $sessao->moeda ?? 'BRL'));
 
         $sessao->update($dados);
 
@@ -369,9 +382,13 @@ class SessaoController extends Controller
             'duracao'     => 'required|integer|min:1',
             'valor'       => 'nullable|numeric',
             'foi_pago'    => 'boolean',
+            'moeda'       => 'nullable|string|size:5',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
+
+        // default moeda: mantém a antiga se não vier nada
+        $dados['moeda'] = strtoupper($request->input('moeda', $sessao->moeda ?? 'BRL'));
 
         $horarioAlterado = $dados['data_hora'] !== $sessao->data_hora || $dados['duracao'] !== (int)$sessao->duracao;
 
@@ -620,6 +637,7 @@ class SessaoController extends Controller
                     'data_hora_original' => $novaDataHora,
                     'duracao'            => $sessaoOriginal->duracao,
                     'valor'              => $sessaoOriginal->valor,
+                    'moeda'              => $sessaoOriginal->moeda ?? 'BRL', // <-- NOVO
                     'foi_pago'           => $foiPago,
                     'observacoes'        => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
                 ]);
@@ -701,6 +719,7 @@ class SessaoController extends Controller
                     'data_hora_original' => $novaDataHora,
                     'duracao'            => $sessaoOriginal->duracao,
                     'valor'              => $sessaoOriginal->valor,
+                    'moeda'              => $sessaoOriginal->moeda ?? 'BRL',
                     'foi_pago'           => $foiPago,
                     'observacoes'        => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
                 ]);
@@ -775,6 +794,7 @@ class SessaoController extends Controller
             'valor'          => $sessao->valor,
             'duracao'        => (int) $sessao->duracao,
             'foi_pago'       => (bool) $sessao->foi_pago,
+            'moeda'          => $sessao->moeda, // <-- NOVO
             'meet_url'       => $meetUrl,
         ]);
     }
