@@ -20,19 +20,19 @@ class WebhookWhatsappController extends Controller
 {
     public function receberMensagem(Request $request)
     {
-        Log::channel('whatsapp')->info('[Webhook] 🔔 VENOM-BOT INICIADO');
+        Log::channel('whatsapp')->info('[Webhook] 🔔 WPPConnect Webhook recebido');
 
         // Diagnóstico completo da requisição
         Log::channel('whatsapp')->info('[Webhook] 🩺 Diagnóstico da requisição recebida', [
-            'method'        => $request->method(),
-            'content_type'  => $request->header('Content-Type'),
-            'headers'       => $request->headers->all(),
-            'body_raw'      => $request->getContent(),
-            'all_inputs'    => $request->all(),
-            'ip'            => $request->ip(),
+            'method'       => $request->method(),
+            'content_type' => $request->header('Content-Type'),
+            'headers'      => $request->headers->all(),
+            'body_raw'     => $request->getContent(),
+            'all_inputs'   => $request->all(),
+            'ip'           => $request->ip(),
         ]);
 
-        // Captura conteúdo cru
+        // Conteúdo cru
         $rawContent = $request->getContent();
         Log::channel('whatsapp')->info('[Webhook] 📩 Conteúdo cru recebido', ['raw' => $rawContent]);
 
@@ -43,29 +43,51 @@ class WebhookWhatsappController extends Controller
             $dados = $request->all();
         }
 
-        // Flexibilidade: se houver 'event', espera 'data'. Se não houver, assume que tudo já está em $dados.
-        $evento = strtolower($dados['event'] ?? 'onmessage'); // Assume padrão 'onmessage'
-        $data = $dados['data'] ?? $dados;
+        // Estrutura típica do WPPConnect:
+        // {
+        //   "event": "onmessage",
+        //   "session": "psigestor",
+        //   "data": { ... mensagem ... }
+        // }
+        $evento = strtolower($dados['event'] ?? 'onmessage');
+        $data   = $dados['data'] ?? $dados;
 
-        // Validação mínima
+        // Evita loop: se vier mensagem enviada POR VOCÊ, ignora
+        $fromMe = $data['fromMe'] ?? $data['isMe'] ?? false;
+        if ($fromMe) {
+            Log::channel('whatsapp')->info('[Webhook] 🔁 Ignorado (mensagem enviada pelo próprio bot).', [
+                'evento' => $evento,
+            ]);
+            return response()->json(['message' => 'Mensagem do próprio bot ignorada.'], 200);
+        }
+
+        // Só processa eventos de mensagem
+        if (!in_array($evento, ['onmessage', 'message', 'onmessageany'])) {
+            Log::channel('whatsapp')->info('[Webhook] ℹ️ Evento ignorado (não é mensagem de chat).', ['event' => $evento]);
+            return response()->json(['message' => 'Evento ignorado.'], 200);
+        }
+
+        // WPPConnect geralmente envia:
+        // data.from  => "55XXXXXXXXXXX@c.us"
+        // data.body  => texto da mensagem
         $from = $data['from'] ?? null;
-        $body = $data['body'] ?? null;
+        $body = $data['body'] ?? ($data['message'] ?? null);
 
         if (!$from || !$body || !str_contains($from, '@c.us')) {
             Log::channel('whatsapp')->info('[Webhook] Ignorado: dados incompletos ou número inválido.', compact('evento', 'from', 'body'));
             return response()->json(['message' => 'Evento ignorado ou inválido.'], 200);
         }
 
-        // Normaliza dados
-        $numeroLimpo = $this->normalizarNumero($from);
+        // Normaliza
+        $numeroLimpo   = $this->normalizarNumero($from);
         $mensagemLimpa = strtoupper(Str::ascii(trim($body)));
 
         Log::channel('whatsapp')->info('[Webhook] 🧪 Dados normalizados', [
-            'numero' => $numeroLimpo,
+            'numero'   => $numeroLimpo,
             'mensagem' => $mensagemLimpa,
         ]);
 
-        // Busca paciente
+        // Busca paciente pelo telefone
         $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
         if (!$paciente) {
             Log::channel('whatsapp')->warning('[Webhook] ❌ Paciente não encontrado.', ['numero' => $numeroLimpo]);
@@ -97,22 +119,30 @@ class WebhookWhatsappController extends Controller
         }
 
         try {
-            Sessao::withoutGlobalScopes()->where('id', $sessao->id)->update($sessao->getDirty());
-            Log::channel('whatsapp')->info('[Webhook] 💾 Sessão atualizada com sucesso.', ['sessao_id' => $sessao->id, 'status' => $status]);
+            Sessao::withoutGlobalScopes()
+                ->where('id', $sessao->id)
+                ->update($sessao->getDirty());
+
+            Log::channel('whatsapp')->info('[Webhook] 💾 Sessão atualizada com sucesso.', [
+                'sessao_id' => $sessao->id,
+                'status'    => $status,
+            ]);
         } catch (\Exception $e) {
-            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao salvar sessão', ['erro' => $e->getMessage()]);
+            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao salvar sessão', [
+                'erro' => $e->getMessage(),
+            ]);
             $this->responderNoWhatsapp($numeroLimpo, "🚨 Erro ao processar sua resposta. Já fomos notificados.");
             return response()->json(['message' => 'Erro ao salvar sessão.'], 500);
         }
 
-        // Dispara evento
+        // Dispara evento de domínio
         match ($status) {
             'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
             'CANCELADA'  => event(new SessaoCancelada($sessao)),
             'REMARCAR'   => event(new SessaoRemarcada($sessao)),
         };
 
-        // Mensagem final
+        // Mensagem de retorno
         $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}. Sua sessão foi marcada como: *{$status}*.";
         if ($status === 'REMARCAR') {
             $mensagem .= "\n\nVamos entrar em contato para reagendar.";
@@ -122,58 +152,93 @@ class WebhookWhatsappController extends Controller
         return response()->json(['message' => 'Sessão atualizada com sucesso.'], 200);
     }
 
-
     private function encontrarSessaoValidaParaConfirmacao(Paciente $paciente): ?Sessao
     {
-        $hoje = Carbon::today(config('app.timezone'));
+        $hoje       = Carbon::today(config('app.timezone'));
         $dataLimite = $hoje->copy()->addDays(5);
 
-        // Usamos withoutGlobalScopes() para garantir que vemos TODAS as sessões.
         $sessoesCandidatas = Sessao::withoutGlobalScopes()
-                                ->where('paciente_id', $paciente->id)
-                                ->where('status_confirmacao', 'PENDENTE')
-                                ->orderBy('data_hora', 'asc')
-                                ->get();
-        
+            ->where('paciente_id', $paciente->id)
+            ->where('status_confirmacao', 'PENDENTE')
+            ->orderBy('data_hora', 'asc')
+            ->get();
+
         if ($sessoesCandidatas->isEmpty()) {
-            Log::channel('whatsapp')->warning('[DIAGNÓSTICO] Nenhuma sessão com status PENDENTE encontrada para o paciente.', ['paciente_id' => $paciente->id]);
+            Log::channel('whatsapp')->warning('[DIAGNÓSTICO] Nenhuma sessão com status PENDENTE encontrada para o paciente.', [
+                'paciente_id' => $paciente->id,
+            ]);
             return null;
         }
-        
+
         foreach ($sessoesCandidatas as $sessao) {
             $lembreteOk = $sessao->lembrete_enviado == 1;
-            if (!$lembreteOk) continue;
-            
+            if (!$lembreteOk) {
+                continue;
+            }
+
             $dataSessao = Carbon::parse($sessao->data_hora)->startOfDay();
-            $dataOk = $dataSessao->betweenIncluded($hoje, $dataLimite);
-            if (!$dataOk) continue;
+            $dataOk     = $dataSessao->betweenIncluded($hoje, $dataLimite);
+            if (!$dataOk) {
+                continue;
+            }
 
             return $sessao;
         }
-        
-        Log::channel('whatsapp')->warning('[DIAGNÓSTICO] Nenhuma das sessões candidatas passou em todos os critérios de validação (lembrete ou data).');
+
+        Log::channel('whatsapp')->warning('[DIAGNÓSTICO] Nenhuma das sessões candidatas passou nos critérios (lembrete/data).');
         return null;
     }
-    
+
     private function encontrarPacientePorTelefone(string $numeroLimpo)
     {
         return Paciente::where(function ($query) use ($numeroLimpo) {
-                $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroLimpo]);
-                if (strlen($numeroLimpo) === 10) {
-                    $ddd = substr($numeroLimpo, 0, 2);
-                    $resto = substr($numeroLimpo, 2);
-                    $numeroComNove = $ddd . '9' . $resto;
-                    $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroComNove]);
-                }
-            })->first();
+            $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroLimpo]);
+
+            // Tenta também com "9" inserido (caso cadastro esteja diferente)
+            if (strlen($numeroLimpo) === 10) {
+                $ddd          = substr($numeroLimpo, 0, 2);
+                $resto        = substr($numeroLimpo, 2);
+                $numeroComNove = $ddd . '9' . $resto;
+                $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroComNove]);
+            }
+        })->first();
     }
-    
+
     private function mapearRespostaParaStatus(string $bodyLimpo): ?string
     {
         $mapa = [
-            'NAO VOU' => 'CANCELADA', 'NÃO VOU' => 'CANCELADA', 'CANCELAR' => 'CANCELADA', 'CANCELADO' => 'CANCELADA', 'CANCELADA' => 'CANCELADA', 'DESMARCAR' => 'CANCELADA', 'DESMARQUE' => 'CANCELADA', 'CANCELE' => 'CANCELADA',
-            'REMARCAR' => 'REMARCAR', 'REMARCAÇÃO' => 'REMARCAR', 'REAGENDAR' => 'REMARCAR', 'REAGENDAMENTO' => 'REMARCAR', 'REMARQUE' => 'REMARCAR', 'MUDAR' => 'REMARCAR', 'TROCAR' => 'REMARCAR', 'ADIAR' => 'REMARCAR',
-            'CONFIRMADO' => 'CONFIRMADA', 'CONFIRMAR' => 'CONFIRMADA', 'CONFIRMADA' => 'CONFIRMADA', 'CONFIRMEI' => 'CONFIRMADA', 'OK' => 'CONFIRMADA', 'CERTO' => 'CONFIRMADA', 'SIM' => 'CONFIRMADA', 'VOU' => 'CONFIRMADA', 'ESTAREI' => 'CONFIRMADA', 'CONFIRMA' => 'CONFIRMADA',
+            // CANCELAR
+            'NAO VOU'     => 'CANCELADA',
+            'NÃO VOU'     => 'CANCELADA',
+            'CANCELAR'    => 'CANCELADA',
+            'CANCELADO'   => 'CANCELADA',
+            'CANCELADA'   => 'CANCELADA',
+            'DESMARCAR'   => 'CANCELADA',
+            'DESMARQUE'   => 'CANCELADA',
+            'CANCELE'     => 'CANCELADA',
+
+            // REMARCAR
+            'REMARCAR'    => 'REMARCAR',
+            'REMARCACAO'  => 'REMARCAR',
+            'REMARCAÇÃO'  => 'REMARCAR',
+            'REAGENDAR'   => 'REMARCAR',
+            'REAGENDAMENTO' => 'REMARCAR',
+            'REMARQUE'    => 'REMARCAR',
+            'MUDAR'       => 'REMARCAR',
+            'TROCAR'      => 'REMARCAR',
+            'ADIAR'       => 'REMARCAR',
+
+            // CONFIRMAR
+            'CONFIRMADO'  => 'CONFIRMADA',
+            'CONFIRMAR'   => 'CONFIRMADA',
+            'CONFIRMADA'  => 'CONFIRMADA',
+            'CONFIRMEI'   => 'CONFIRMADA',
+            'OK'          => 'CONFIRMADA',
+            'CERTO'       => 'CONFIRMADA',
+            'SIM'         => 'CONFIRMADA',
+            'VOU'         => 'CONFIRMADA',
+            'ESTAREI'     => 'CONFIRMADA',
+            'CONFIRMA'    => 'CONFIRMADA',
         ];
 
         foreach ($mapa as $chave => $valor) {
@@ -181,44 +246,78 @@ class WebhookWhatsappController extends Controller
                 return $valor;
             }
         }
+
         return null;
     }
-    
+
     private function normalizarNumero(string $numero): string
     {
+        // Remove tudo que não for número
         $num = preg_replace('/\D/', '', $numero);
+
+        // Remove o 55 se vier com DDI
         if (str_starts_with($num, '55')) {
-            return substr($num, 2);
+            $num = substr($num, 2);
         }
+
         return $num;
     }
-    
-    private function responderNoWhatsapp($numero, $mensagem)
+
+    /**
+     * Envia mensagem usando WPPConnect-Server:
+     * POST {base_url}/api/{session}/send-message
+     * Body:
+     *  - phone: 5521999999999
+     *  - isGroup: false
+     *  - isNewsletter: false
+     *  - isLid: false
+     *  - message: "texto"
+     */
+    private function responderNoWhatsapp(string $numero, string $mensagem): void
     {
         $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
-        $urlBase = config('services.venom.url');
 
-        Log::channel('whatsapp')->info('[Webhook] 🚀 Preparando envio WhatsApp', [
-            'numero' => $numeroComPrefixo,
+        $baseUrl = rtrim(config('services.wppconnect.base_url'), '/');
+        $session = config('services.wppconnect.session', 'psigestor');
+        $token   = config('services.wppconnect.token');
+
+        $endpoint = "{$baseUrl}/api/{$session}/send-message";
+
+        Log::channel('whatsapp')->info('[Webhook] 🚀 Enviando resposta via WPPConnect', [
+            'numero'   => $numeroComPrefixo,
             'mensagem' => $mensagem,
-            'endpoint' => $urlBase . '/sendText',
+            'endpoint' => $endpoint,
         ]);
 
+        if (!$token) {
+            Log::channel('whatsapp')->error('[Webhook] ❌ WPPCONNECT_TOKEN não configurado no .env');
+            return;
+        }
+
         try {
-            $response = Http::post(rtrim($urlBase, '/') . '/sendText', [
-                'to' => $numeroComPrefixo . '@c.us',
-                'text' => $mensagem,
-            ]);
+            $response = Http::withToken($token)
+                ->post($endpoint, [
+                    'phone'        => $numeroComPrefixo,
+                    'isGroup'      => false,
+                    'isNewsletter' => false,
+                    'isLid'        => false,
+                    'message'      => $mensagem,
+                ]);
 
             if (!$response->successful()) {
-                Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem de resposta ao WhatsApp', [
+                Log::channel('whatsapp')->error('[Webhook] ❌ Falha ao enviar mensagem via WPPConnect', [
                     'numero' => $numeroComPrefixo,
                     'status' => $response->status(),
-                    'body' => $response->body(),
+                    'body'   => $response->body(),
+                ]);
+            } else {
+                Log::channel('whatsapp')->info('[Webhook] ✅ Mensagem enviada com sucesso via WPPConnect', [
+                    'numero' => $numeroComPrefixo,
+                    'res'    => $response->json(),
                 ]);
             }
         } catch (\Exception $e) {
-            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem', [
+            Log::channel('whatsapp')->error('[Webhook] 💥 Erro ao enviar mensagem via WPPConnect', [
                 'erro' => $e->getMessage(),
             ]);
         }
@@ -227,15 +326,20 @@ class WebhookWhatsappController extends Controller
     public function testeManual(Request $request)
     {
         $dados = [
-            'event' => 'message',
-            'data' => [
+            'event' => 'onmessage',
+            'data'  => [
                 'from' => '5582999405099@c.us',
                 'body' => 'Confirmado',
-            ]
+                'fromMe' => false,
+            ],
         ];
 
         $symfonyRequest = SymfonyRequest::create(
-            '/api/webhook/whatsapp', 'POST', [], [], [],
+            '/api/webhook/whatsapp',
+            'POST',
+            [],
+            [],
+            [],
             ['CONTENT_TYPE' => 'application/json'],
             json_encode($dados)
         );
@@ -246,17 +350,18 @@ class WebhookWhatsappController extends Controller
 
     public function handle(Request $request)
     {
-        Log::channel('whatsapp')->info('✅ Webhook recebido!', [
-            'data' => $request->all(),
-            'ip' => $request->ip(),
+        Log::channel('whatsapp')->info('✅ Webhook recebido (handle simples)', [
+            'data'    => $request->all(),
+            'ip'      => $request->ip(),
             'headers' => $request->headers->all(),
         ]);
+
         return response()->json(['status' => 'ok']);
     }
 
     public function verLogWhatsapp()
     {
-        $hoje = now()->format('Y-m-d');
+        $hoje    = now()->format('Y-m-d');
         $logPath = storage_path("logs/whatsapp-{$hoje}.log");
 
         if (!File::exists($logPath)) {
@@ -271,5 +376,4 @@ class WebhookWhatsappController extends Controller
 
         return '<pre style="color: green;">' . htmlentities($conteudo) . '</pre>';
     }
-
 }

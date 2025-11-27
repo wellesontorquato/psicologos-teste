@@ -35,9 +35,11 @@ return [
         ],
     ],
     
-    'venom' => [
-    'url' => env('VENOM_URL', 'http://localhost:3000'),
-],
+    'wppconnect' => [
+        'base_url' => env('WPPCONNECT_URL', 'http://127.0.0.1:3000'),
+        'session'  => env('WPPCONNECT_SESSION', 'psigestor'),
+        'token'    => env('WPPCONNECT_TOKEN'), // aqui você cola aquele token gerado
+    ],
 
     'google' => [
     'client_id'     => env('GOOGLE_CLIENT_ID'),
