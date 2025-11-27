@@ -195,7 +195,7 @@ class DashboardController extends Controller
             'pendenciasFinanceiras'  => $pendenciasFinanceiras,
             'pendenciasEvolucao'     => $pendenciasEvolucao,
             'totalMesAtual'          => $totalMesAtual,
-            'totalConvertido'        => $totalMesAtual, // já está na moeda filtrada (ou tudo BRL se não tiver coluna)
+            'totalConvertido'        => $totalMesAtual,
             'ultimosArquivos'        => $ultimosArquivos,
             'proximasSessoes'        => $proximasSessoes,
             'pacientesAtivos'        => $pacientesAtivos,

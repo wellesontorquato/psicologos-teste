@@ -113,7 +113,7 @@ class SessaoController extends Controller
             'data_hora'   => 'required|date',
             'duracao'     => 'required|integer|min:1',
             'valor'       => 'nullable|numeric',
-            'moeda'       => 'nullable|string|size:5',
+            'moeda'       => 'nullable|string|size:3',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
@@ -185,7 +185,7 @@ class SessaoController extends Controller
             'duracao'     => 'required|integer|min:1',
             'valor'       => 'nullable|numeric',
             'foi_pago'    => 'boolean',
-            'moeda'       => 'nullable|string|size:5',
+            'moeda'       => 'nullable|string|size:3',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
@@ -298,7 +298,7 @@ class SessaoController extends Controller
             'valor'              => 'nullable|numeric',
             'status_confirmacao' => 'nullable|string',
             'foi_pago'           => 'boolean',
-            'moeda'              => 'nullable|string|size:5',
+            'moeda'              => 'nullable|string|size:3',
         ]);
 
         $statusAntigo = $sessao->status_confirmacao;
@@ -382,7 +382,7 @@ class SessaoController extends Controller
             'duracao'     => 'required|integer|min:1',
             'valor'       => 'nullable|numeric',
             'foi_pago'    => 'boolean',
-            'moeda'       => 'nullable|string|size:5',
+            'moeda'       => 'nullable|string|size:3',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];

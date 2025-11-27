@@ -52,38 +52,14 @@
         <small class="text-muted fs-6">Visão geral do sistema</small>
     </h2>
 
-    {{-- Seletor de moeda + botões de exportação --}}
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
-        <div>
-            {{-- Seleção de Moeda --}}
-            <form method="GET" class="mb-0 d-inline-block">
-                <select name="moeda" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
-                    @php
-                        $moedas = ['BRL','USD','EUR','GBP','ARS','CLP','MXN','CAD','AUD'];
-                    @endphp
-
-                    @foreach($moedas as $m)
-                        <option value="{{ $m }}" {{ $moedaSelecionada === $m ? 'selected' : '' }}>
-                            {{ $m }}
-                        </option>
-                    @endforeach
-                </select>
-
-                {{-- Mantém os filtros antigos juntos --}}
-                @foreach(request()->except('moeda') as $campo => $valor)
-                    <input type="hidden" name="{{ $campo }}" value="{{ $valor }}">
-                @endforeach
-            </form>
-        </div>
-
-        <div class="text-md-end">
-            <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-danger me-2 no-spinner-on-download">
-                <i class="bi bi-file-earmark-pdf"></i> Exportar PDF ({{ $moedaSelecionada }})
-            </a>
-            <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-success no-spinner-on-download">
-                <i class="bi bi-file-earmark-excel"></i> Exportar Excel ({{ $moedaSelecionada }})
-            </a>
-        </div>
+    {{-- Botões de exportação (Movidos para cima, separados do seletor de moeda) --}}
+    <div class="d-flex flex-column flex-md-row justify-content-end align-items-md-center mb-4 gap-2">
+        <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-danger me-2 no-spinner-on-download">
+            <i class="bi bi-file-earmark-pdf"></i> Exportar PDF ({{ $moedaSelecionada }})
+        </a>
+        <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-success no-spinner-on-download">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Excel ({{ $moedaSelecionada }})
+        </a>
     </div>
 
     {{-- Cards principais --}}
@@ -143,6 +119,7 @@
                 </div>
             </div>
         </div>
+        {{-- CARD DE FILTRO UNIFICADO (COM SELETOR DE MOEDA INTEGRADO) --}}
         <div class="col-md-3 d-flex">
             <div class="card shadow-sm border-0 h-100 w-100">
                 <div class="card-body">
@@ -150,11 +127,27 @@
                         <i class="bi bi-clock-history"></i>
                     </div>
                     <div>
-                        <p class="text-muted mb-1">Período Selecionado</p>
+                        <p class="text-muted mb-1">Período e Moeda</p>
                         <h6 class="fw-semibold mb-3">{{ $dataInicial->format('d/m/Y') }} a {{ $dataFinal->format('d/m/Y') }}</h6>
                         
-                        {{-- Formulário de filtros --}}
+                        {{-- Formulário de filtros UNIFICADO --}}
                         <form method="GET" class="d-flex flex-column gap-2">
+                            {{-- Seleção de Moeda --}}
+                            <div class="d-flex gap-2">
+                                <select name="moeda" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    @php
+                                        $moedas = ['BRL','USD','EUR','GBP','ARS','CLP','MXN','CAD','AUD'];
+                                    @endphp
+
+                                    @foreach($moedas as $m)
+                                        <option value="{{ $m }}" {{ $moedaSelecionada === $m ? 'selected' : '' }}>
+                                            Moeda: {{ $m }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Filtros Rápidos + Botão --}}
                             <div class="d-flex gap-2">
                                 <select name="periodo" class="form-select form-select-sm" onchange="this.form.submit()">
                                     <option value="">Rápido...</option>
@@ -164,15 +157,23 @@
                                 </select>
                                 <button type="submit" class="btn btn-sm btn-outline-secondary">🔍</button>
                             </div>
+
+                            {{-- Filtros de Data --}}
                             <div class="d-flex gap-2">
                                 <input type="date" name="de" value="{{ request('de') }}" class="form-control form-control-sm">
                                 <input type="date" name="ate" value="{{ request('ate') }}" class="form-control form-control-sm">
                             </div>
+
+                            {{-- Mantém os filtros antigos juntos (exceto os que já estão no form) --}}
+                            @foreach(request()->except(['moeda', 'de', 'ate', 'periodo']) as $campo => $valor)
+                                <input type="hidden" name="{{ $campo }}" value="{{ $valor }}">
+                            @endforeach
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+        {{-- FIM DO CARD DE FILTRO UNIFICADO --}}
     </div>
 
     {{-- Modal de Pendências --}}
@@ -320,6 +321,17 @@
     .welcome-header h1 { font-size: 1.8rem; }
     .welcome-header p { font-size: 1rem; margin-top: 0.5rem; }
     .form-control-sm, .form-select-sm { font-size: 0.85rem; }
+
+    /* Estilo para ícones dos cards */
+    .icon-wrapper {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 1.5rem;
+    }
 </style>
 @endsection
 
