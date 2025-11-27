@@ -295,7 +295,10 @@ class WebhookWhatsappController extends Controller
         }
 
         try {
-            $response = Http::withToken($token)
+            $response = Http::withHeaders([
+                    'Authorization' => "Bearer {$session}:{$token}",
+                    'Accept'        => 'application/json',
+                ])
                 ->post($endpoint, [
                     'phone'        => $numeroComPrefixo,
                     'isGroup'      => false,
@@ -322,6 +325,7 @@ class WebhookWhatsappController extends Controller
             ]);
         }
     }
+
 
     public function testeManual(Request $request)
     {
