@@ -216,6 +216,7 @@ class WebhookWhatsappController extends Controller
             'DESMARCAR'   => 'CANCELADA',
             'DESMARQUE'   => 'CANCELADA',
             'CANCELE'     => 'CANCELADA',
+            '3'           => 'CANCELADA',
 
             // REMARCAR
             'REMARCAR'    => 'REMARCAR',
@@ -227,6 +228,7 @@ class WebhookWhatsappController extends Controller
             'MUDAR'       => 'REMARCAR',
             'TROCAR'      => 'REMARCAR',
             'ADIAR'       => 'REMARCAR',
+            '2'           => 'REMARCAR',
 
             // CONFIRMAR
             'CONFIRMADO'  => 'CONFIRMADA',
@@ -239,6 +241,7 @@ class WebhookWhatsappController extends Controller
             'VOU'         => 'CONFIRMADA',
             'ESTAREI'     => 'CONFIRMADA',
             'CONFIRMA'    => 'CONFIRMADA',
+            '1'           => 'CONFIRMADA',
         ];
 
         foreach ($mapa as $chave => $valor) {

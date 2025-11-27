@@ -82,7 +82,7 @@ class LembreteController extends Controller
 
             $mensagem = "👋 Olá {$paciente->nome}, tudo bem? 😊\n\n" .
                         "Lembrando da sua sessão agendada para 📅 {$dataHoraFormatada} com o(a) 🧑‍⚕️ {$nomeProfissional} ({$profissao}).\n\n" .
-                        "Por favor, responda com *CONFIRMAR*, *REMARCAR* ou *CANCELAR*.";
+                        "Por favor, responda com *1- CONFIRMAR*, *2- REMARCAR* ou *3- CANCELAR*.";
 
             Log::channel('whatsapp')->info('[Lembretes] 🚀 Enviando lembrete via WPPConnect', [
                 'sessao_id' => $sessao->id,
