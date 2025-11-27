@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\DashboardExport;
 use App\Helpers\AuditHelper;
+use Illuminate\Support\Facades\Schema; // 👈 IMPORTANTE
 
 class DashboardController extends Controller
 {
@@ -50,6 +51,9 @@ class DashboardController extends Controller
         // 🔹 Moeda selecionada (default BRL)
         $moedaSelecionada = $request->get('moeda', 'BRL');
 
+        // 👇 Verifica se a coluna 'moeda' existe na tabela 'sessoes'
+        $temColunaMoeda = Schema::hasColumn('sessoes', 'moeda');
+
         // 🔎 Filtro de período
         $periodo     = $request->get('periodo');
         $dataInicial = $request->get('de') ? Carbon::parse($request->get('de')) : null;
@@ -65,8 +69,13 @@ class DashboardController extends Controller
             $dataFinal   = $hoje->copy()->endOfDay();
         }
 
-        // Helper de filtro por moeda (BRL = BRL ou NULL, resto = exatamente aquela moeda)
-        $filtroMoeda = function ($query) use ($moedaSelecionada) {
+        // Helper de filtro por moeda (só aplica se a coluna existir)
+        $filtroMoeda = function ($query) use ($moedaSelecionada, $temColunaMoeda) {
+            if (!$temColunaMoeda) {
+                // Se não tem coluna, não filtra nada (se comporta como antes)
+                return;
+            }
+
             if ($moedaSelecionada === 'BRL') {
                 $query->where(function ($q) {
                     $q->whereNull('moeda')
@@ -84,7 +93,7 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
-        // 💰 Total financeiro no período (na moeda selecionada)
+        // 💰 Total financeiro no período (na moeda selecionada, se coluna existir)
         $totalMesAtual = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
             ->where('foi_pago', true)
@@ -105,7 +114,7 @@ class DashboardController extends Controller
             ->orderBy('mes')
             ->get();
 
-        // 💰 Valor recebido por mês (filtrado pela moeda selecionada)
+        // 💰 Valor recebido por mês (filtrado pela moeda se existir coluna)
         $valorPorMes = Sessao::selectRaw("DATE_FORMAT(data_hora, '%Y-%m') as mes, sum(valor) as total")
             ->whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
@@ -117,7 +126,7 @@ class DashboardController extends Controller
             ->orderBy('mes')
             ->get();
 
-        // 📈 Valor por dia (apenas sessões pagas, na moeda selecionada)
+        // 📈 Valor por dia (apenas sessões pagas, com filtro de moeda se existir)
         $valoresPorDia = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
             ->where('foi_pago', true)
@@ -128,7 +137,7 @@ class DashboardController extends Controller
             ->groupBy(fn($s) => Carbon::parse($s->data_hora)->format('Y-m-d'))
             ->map(fn($group) => $group->sum('valor'));
 
-        // 👉 Array só com os valores (já na moeda filtrada)
+        // 👉 Array só com os valores (já na moeda filtrada, se aplicável)
         $valoresDiasConvertidos = $valoresPorDia->values();
 
         // 🗓️ Sessões de hoje (contagem)
@@ -173,24 +182,24 @@ class DashboardController extends Controller
             ->get();
 
         return [
-            'totais'                => $totais,
-            'valores'               => $valores,
-            'sessaoPorMes'          => $sessaoPorMes,
-            'valorPorMes'           => $valorPorMes,
-            'valoresPorDia'         => $valoresPorDia,
-            'valoresDiasConvertidos'=> $valoresDiasConvertidos,
-            'dataInicial'           => $dataInicial,
-            'dataFinal'             => $dataFinal,
-            'sessoesHoje'           => $sessoesHoje,
-            'pendenciasTotal'       => $pendenciasTotal,
-            'pendenciasFinanceiras' => $pendenciasFinanceiras,
-            'pendenciasEvolucao'    => $pendenciasEvolucao,
-            'totalMesAtual'         => $totalMesAtual,
-            'totalConvertido'       => $totalMesAtual, // já está na moeda filtrada
-            'ultimosArquivos'       => $ultimosArquivos,
-            'proximasSessoes'       => $proximasSessoes,
-            'pacientesAtivos'       => $pacientesAtivos,
-            'moedaSelecionada'      => $moedaSelecionada,
+            'totais'                 => $totais,
+            'valores'                => $valores,
+            'sessaoPorMes'           => $sessaoPorMes,
+            'valorPorMes'            => $valorPorMes,
+            'valoresPorDia'          => $valoresPorDia,
+            'valoresDiasConvertidos' => $valoresDiasConvertidos,
+            'dataInicial'            => $dataInicial,
+            'dataFinal'              => $dataFinal,
+            'sessoesHoje'            => $sessoesHoje,
+            'pendenciasTotal'        => $pendenciasTotal,
+            'pendenciasFinanceiras'  => $pendenciasFinanceiras,
+            'pendenciasEvolucao'     => $pendenciasEvolucao,
+            'totalMesAtual'          => $totalMesAtual,
+            'totalConvertido'        => $totalMesAtual, // já está na moeda filtrada (ou tudo BRL se não tiver coluna)
+            'ultimosArquivos'        => $ultimosArquivos,
+            'proximasSessoes'        => $proximasSessoes,
+            'pacientesAtivos'        => $pacientesAtivos,
+            'moedaSelecionada'       => $moedaSelecionada,
         ];
     }
 }
