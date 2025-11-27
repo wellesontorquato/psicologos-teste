@@ -332,7 +332,7 @@
     const valoresDiasLabels = {!! json_encode($valoresPorDia->keys()) !!};
 
     // Backend já deve enviar esses valores na moeda selecionada
-    const valoresDiasValores = {!! json_encode($valoresDiasConvertidos) !!};
+    const valoresDiasValores = {!! json_encode($valoresDiasConvertidos ?? $valoresDiasValores ?? []) !!};
 
     const gradient = (ctx, color) => {
         const gradient = ctx.createLinearGradient(0, 0, 0, 200);

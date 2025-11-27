@@ -45,38 +45,59 @@ class DashboardController extends Controller
     public function obterDadosDashboard(Request $request)
     {
         $userId = auth()->id();
-        $hoje = Carbon::today();
+        $hoje   = Carbon::today();
+
+        // 🔹 Moeda selecionada (default BRL)
+        $moedaSelecionada = $request->get('moeda', 'BRL');
 
         // 🔎 Filtro de período
-        $periodo = $request->get('periodo');
+        $periodo     = $request->get('periodo');
         $dataInicial = $request->get('de') ? Carbon::parse($request->get('de')) : null;
-        $dataFinal = $request->get('ate') ? Carbon::parse($request->get('ate'))->endOfDay() : null;
+        $dataFinal   = $request->get('ate') ? Carbon::parse($request->get('ate'))->endOfDay() : null;
 
         if ($dataInicial && $dataFinal) {
             // datas manuais aplicadas
         } elseif ($periodo) {
             $dataInicial = $hoje->copy()->subDays($periodo);
-            $dataFinal = $hoje->copy()->endOfDay();
+            $dataFinal   = $hoje->copy()->endOfDay();
         } else {
             $dataInicial = $hoje->copy()->subDays(7);
-            $dataFinal = $hoje->copy()->endOfDay();
+            $dataFinal   = $hoje->copy()->endOfDay();
         }
 
-        // 📊 Totais de sessões
+        // Helper de filtro por moeda (BRL = BRL ou NULL, resto = exatamente aquela moeda)
+        $filtroMoeda = function ($query) use ($moedaSelecionada) {
+            if ($moedaSelecionada === 'BRL') {
+                $query->where(function ($q) {
+                    $q->whereNull('moeda')
+                      ->orWhere('moeda', 'BRL');
+                });
+            } else {
+                $query->where('moeda', $moedaSelecionada);
+            }
+        };
+
+        // 📊 Totais de sessões (apenas contagem, independe da moeda)
         $totais = [
             'sessoes' => Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
                 ->whereBetween('data_hora', [$dataInicial, $dataFinal])
                 ->count(),
         ];
 
+        // 💰 Total financeiro no período (na moeda selecionada)
+        $totalMesAtual = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
+            ->whereBetween('data_hora', [$dataInicial, $dataFinal])
+            ->where('foi_pago', true)
+            ->where(function ($q) use ($filtroMoeda) {
+                $filtroMoeda($q);
+            })
+            ->sum('valor');
+
         $valores = [
-            'total' => Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
-                ->whereBetween('data_hora', [$dataInicial, $dataFinal])
-                ->where('foi_pago', true)
-                ->sum('valor'),
+            'total' => $totalMesAtual,
         ];
 
-        // 📅 Sessões por mês
+        // 📅 Sessões por mês (contagem, não depende da moeda)
         $sessaoPorMes = Sessao::selectRaw("DATE_FORMAT(data_hora, '%Y-%m') as mes, count(*) as total")
             ->whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
@@ -84,29 +105,38 @@ class DashboardController extends Controller
             ->orderBy('mes')
             ->get();
 
-        // 💰 Valor recebido por mês
+        // 💰 Valor recebido por mês (filtrado pela moeda selecionada)
         $valorPorMes = Sessao::selectRaw("DATE_FORMAT(data_hora, '%Y-%m') as mes, sum(valor) as total")
             ->whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
             ->where('foi_pago', true)
+            ->where(function ($q) use ($filtroMoeda) {
+                $filtroMoeda($q);
+            })
             ->groupBy('mes')
             ->orderBy('mes')
             ->get();
 
-        // 📈 Valor por dia
+        // 📈 Valor por dia (apenas sessões pagas, na moeda selecionada)
         $valoresPorDia = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
             ->where('foi_pago', true)
+            ->where(function ($q) use ($filtroMoeda) {
+                $filtroMoeda($q);
+            })
             ->get()
-            ->groupBy(fn ($s) => Carbon::parse($s->data_hora)->format('Y-m-d'))
-            ->map(fn ($group) => $group->sum('valor'));
+            ->groupBy(fn($s) => Carbon::parse($s->data_hora)->format('Y-m-d'))
+            ->map(fn($group) => $group->sum('valor'));
 
-        // 🗓️ Sessões de hoje
+        // 👉 Array só com os valores (já na moeda filtrada)
+        $valoresDiasConvertidos = $valoresPorDia->values();
+
+        // 🗓️ Sessões de hoje (contagem)
         $sessoesHoje = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereDate('data_hora', $hoje)
             ->count();
 
-        // ⚠️ Pendências detalhadas
+        // ⚠️ Pendências detalhadas (não filtrei por moeda, pois são “sessões a resolver”)
         $pendenciasFinanceiras = Sessao::with('paciente')
             ->whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->where('foi_pago', false)
@@ -123,12 +153,6 @@ class DashboardController extends Controller
 
         $pendenciasTotal = $pendenciasFinanceiras->count() + $pendenciasEvolucao->count();
 
-        // 💸 Total no período
-        $totalMesAtual = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
-            ->whereBetween('data_hora', [$dataInicial, $dataFinal])
-            ->where('foi_pago', true)
-            ->sum('valor');
-
         // Total de pacientes atendidos no período
         $pacientesAtivos = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
             ->whereBetween('data_hora', [$dataInicial, $dataFinal])
@@ -137,7 +161,9 @@ class DashboardController extends Controller
 
         // 📂 Últimos arquivos enviados
         $ultimosArquivos = Arquivo::whereHas('paciente', fn($q) => $q->where('user_id', $userId))
-            ->latest()->take(5)->get();
+            ->latest()
+            ->take(5)
+            ->get();
 
         // 📅 Próximas sessões (7 dias à frente)
         $proximasSessoes = Sessao::with('paciente')
@@ -147,21 +173,24 @@ class DashboardController extends Controller
             ->get();
 
         return [
-            'totais' => $totais,
-            'valores' => $valores,
-            'sessaoPorMes' => $sessaoPorMes,
-            'valorPorMes' => $valorPorMes,
-            'valoresPorDia' => $valoresPorDia,
-            'dataInicial' => $dataInicial,
-            'dataFinal' => $dataFinal,
-            'sessoesHoje' => $sessoesHoje,
-            'pendenciasTotal' => $pendenciasTotal,
+            'totais'                => $totais,
+            'valores'               => $valores,
+            'sessaoPorMes'          => $sessaoPorMes,
+            'valorPorMes'           => $valorPorMes,
+            'valoresPorDia'         => $valoresPorDia,
+            'valoresDiasConvertidos'=> $valoresDiasConvertidos,
+            'dataInicial'           => $dataInicial,
+            'dataFinal'             => $dataFinal,
+            'sessoesHoje'           => $sessoesHoje,
+            'pendenciasTotal'       => $pendenciasTotal,
             'pendenciasFinanceiras' => $pendenciasFinanceiras,
-            'pendenciasEvolucao' => $pendenciasEvolucao,
-            'totalMesAtual' => $totalMesAtual,
-            'ultimosArquivos' => $ultimosArquivos,
-            'proximasSessoes' => $proximasSessoes,
-            'pacientesAtivos' => $pacientesAtivos,
+            'pendenciasEvolucao'    => $pendenciasEvolucao,
+            'totalMesAtual'         => $totalMesAtual,
+            'totalConvertido'       => $totalMesAtual, // já está na moeda filtrada
+            'ultimosArquivos'       => $ultimosArquivos,
+            'proximasSessoes'       => $proximasSessoes,
+            'pacientesAtivos'       => $pacientesAtivos,
+            'moedaSelecionada'      => $moedaSelecionada,
         ];
     }
 }
