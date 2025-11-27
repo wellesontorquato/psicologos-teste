@@ -5,6 +5,25 @@
 @section('content')
 <div class="container">
 
+    @php
+        // Moeda selecionada e símbolo padrão
+        $moedaSelecionada = request('moeda', 'BRL');
+
+        $simbolos = [
+            'BRL' => 'R$',
+            'USD' => 'US$',
+            'EUR' => '€',
+            'GBP' => '£',
+            'ARS' => 'AR$',
+            'CLP' => 'CLP$',
+            'MXN' => 'MX$',
+            'CAD' => 'C$',
+            'AUD' => 'A$',
+        ];
+
+        $simbolo = $simbolos[$moedaSelecionada] ?? $moedaSelecionada;
+    @endphp
+
     {{-- Mensagens de status --}}
     @if (session('status') === 'email-just-verified')
         <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
@@ -22,24 +41,49 @@
 
     {{-- MENSAGEM DE BOAS-VINDAS --}}
     <div class="welcome-header mt-4 mb-3">
-    <h1 class="display-6 mb-1">
-        Bem-vindo(a) de volta, <span class="fw-bold">{{ explode(' ', Auth::user()->name)[0] }}</span>!
-    </h1>
-    <p class="text-muted mb-0">Aqui está um resumo da sua atividade recente. Tenha um ótimo dia de trabalho!</p>
+        <h1 class="display-6 mb-1">
+            Bem-vindo(a) de volta, <span class="fw-bold">{{ explode(' ', Auth::user()->name)[0] }}</span>!
+        </h1>
+        <p class="text-muted mb-0">Aqui está um resumo da sua atividade recente. Tenha um ótimo dia de trabalho!</p>
     </div>
 
     <h2 class="mb-3 mt-n1">
-    <i class="bi bi-speedometer2"></i> Dashboard
-    <small class="text-muted fs-6">Visão geral do sistema</small>
+        <i class="bi bi-speedometer2"></i> Dashboard
+        <small class="text-muted fs-6">Visão geral do sistema</small>
     </h2>
 
-    <div class="text-end mb-4">
-        <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-danger me-2 no-spinner-on-download">
-            <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
-        </a>
-        <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-success no-spinner-on-download">
-            <i class="bi bi-file-earmark-excel"></i> Exportar Excel
-        </a>
+    {{-- Seletor de moeda + botões de exportação --}}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+        <div>
+            {{-- Seleção de Moeda --}}
+            <form method="GET" class="mb-0 d-inline-block">
+                <select name="moeda" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                    @php
+                        $moedas = ['BRL','USD','EUR','GBP','ARS','CLP','MXN','CAD','AUD'];
+                    @endphp
+
+                    @foreach($moedas as $m)
+                        <option value="{{ $m }}" {{ $moedaSelecionada === $m ? 'selected' : '' }}>
+                            {{ $m }}
+                        </option>
+                    @endforeach
+                </select>
+
+                {{-- Mantém os filtros antigos juntos --}}
+                @foreach(request()->except('moeda') as $campo => $valor)
+                    <input type="hidden" name="{{ $campo }}" value="{{ $valor }}">
+                @endforeach
+            </form>
+        </div>
+
+        <div class="text-md-end">
+            <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-danger me-2 no-spinner-on-download">
+                <i class="bi bi-file-earmark-pdf"></i> Exportar PDF ({{ $moedaSelecionada }})
+            </a>
+            <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-success no-spinner-on-download">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel ({{ $moedaSelecionada }})
+            </a>
+        </div>
     </div>
 
     {{-- Cards principais --}}
@@ -66,23 +110,7 @@
                     <div>
                         <p class="text-muted mb-1">Recebido no Período</p>
                         @php
-                            $moedaSelecionada = request('moeda', 'BRL');
-
-                            $simbolos = [
-                                'BRL' => 'R$',
-                                'USD' => 'US$',
-                                'EUR' => '€',
-                                'GBP' => '£',
-                                'ARS' => 'AR$',
-                                'CLP' => 'CLP$',
-                                'MXN' => 'MX$',
-                                'CAD' => 'C$',
-                                'AUD' => 'A$',
-                            ];
-
-                            $simbolo = $simbolos[$moedaSelecionada] ?? $moedaSelecionada;
-
-                            // Total convertido da controller
+                            // Total convertido vindo da controller (se existir)
                             $totalGrafico = $totalConvertido ?? $totalMesAtual;
                         @endphp
 
@@ -166,7 +194,10 @@
                                         <strong>{{ $pendencia->paciente->nome ?? 'Paciente removido' }}</strong><br>
                                         <small class="text-muted">{{ \Carbon\Carbon::parse($pendencia->data_hora)->format('d/m/Y H:i') }}</small>
                                     </div>
-                                    <span class="badge bg-danger">R$ {{ number_format($pendencia->valor, 2, ',', '.') }}</span>
+                                    <span class="badge bg-danger">
+                                        {{ $simbolo }}
+                                        {{ number_format($pendencia->valor_convertido ?? $pendencia->valor, 2, ',', '.') }}
+                                    </span>
                                 </li>
                             @endforeach
                         </ul>
@@ -257,7 +288,10 @@
                             <span class="badge bg-{{ $sessao->foi_pago ? 'success' : 'danger' }}">
                                 {{ $sessao->foi_pago ? 'Pago' : 'Pendente' }}
                             </span><br>
-                            <small class="text-muted">R$ {{ number_format($sessao->valor, 2, ',', '.') }}</small>
+                            <small class="text-muted">
+                                {{ $simbolo }}
+                                {{ number_format($sessao->valor_convertido ?? $sessao->valor, 2, ',', '.') }}
+                            </small>
                         </div>
                     </li>
                 @endforeach
@@ -296,7 +330,9 @@
     const totalSessoes = {!! json_encode($sessaoPorMes->pluck('total')) !!};
 
     const valoresDiasLabels = {!! json_encode($valoresPorDia->keys()) !!};
-    const valoresDiasValores = {!! json_encode($valoresPorDia->values()) !!};
+
+    // Backend já deve enviar esses valores na moeda selecionada
+    const valoresDiasValores = {!! json_encode($valoresDiasConvertidos) !!};
 
     const gradient = (ctx, color) => {
         const gradient = ctx.createLinearGradient(0, 0, 0, 200);
@@ -320,7 +356,11 @@
                 borderWidth: 1,
             }]
         },
-        options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            scales: { y: { beginAtZero: true } }
+        }
     });
 
     new Chart(valoresCanvas, {
@@ -328,8 +368,8 @@
         data: {
             labels: valoresDiasLabels,
             datasets: [{
-                label: 'Valor Recebido ({{ request("moeda", "BRL") }}) por Dia',
-                data: {!! json_encode($valoresDiasConvertidos) !!},
+                label: 'Valor Recebido ({{ $moedaSelecionada }}) por Dia',
+                data: valoresDiasValores,
                 fill: true,
                 tension: 0.4,
                 borderColor: '#198754',
@@ -342,7 +382,10 @@
         options: {
             responsive: true,
             plugins: { legend: { position: 'top' } },
-            scales: { y: { beginAtZero: true }, x: { ticks: { autoSkip: true, maxRotation: 90, minRotation: 30 } } }
+            scales: {
+                y: { beginAtZero: true },
+                x: { ticks: { autoSkip: true, maxRotation: 90, minRotation: 30 } }
+            }
         }
     });
 </script>
