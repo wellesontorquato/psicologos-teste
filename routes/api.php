@@ -12,6 +12,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Api\FeriadosController;
+use App\Http\Controllers\WppconnectDiagnosticoController;
+use App\Http\Controllers\LembreteController;
+
 
 // 🔍 Health check
 Route::get('/ping', function () {
@@ -20,9 +23,12 @@ Route::get('/ping', function () {
 
 Route::get('/feriados', [FeriadosController::class, 'index']);
 
-Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem']);
+Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem'])
+    ->name('webhook.whatsapp');
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
 Route::get('/diagnostico-wpp', [WppconnectDiagnosticoController::class, 'executar']);
+Route::get('/lembretes/testar', [LembreteController::class, 'enviarLembretesManualmente']);
+
 
 Route::get('/executar-schedule-seguro/{token}', function ($token) {
     if ($token !== env('TOKEN_CRON_SEGURA')) {
