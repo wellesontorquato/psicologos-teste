@@ -11,8 +11,8 @@ class LembreteController extends Controller
 {
     public function enviarLembretesManualmente()
     {
-        $agora = Carbon::now(config('app.timezone'));
-        $amanha = $agora->copy()->addDay()->toDateString();
+        $agora   = Carbon::now(config('app.timezone'));
+        $amanha  = $agora->copy()->addDay()->toDateString();
         $segunda = $agora->isFriday()
             ? Carbon::parse($agora)->addDays(3)->toDateString()
             : null;
@@ -24,30 +24,28 @@ class LembreteController extends Controller
                     $query->orWhereDate('data_hora', $segunda);
                 }
             })
-            // <-- AJUSTE 1: Adicionado 'usuario' para carregar os dados do profissional.
-            ->with('paciente.user') 
+            ->with('paciente.user')
             ->get();
 
         $detalhes = $sessoes->map(function ($sessao) {
-            // <-- AJUSTE 2: Adicionado o nome do profissional aos logs para facilitar a depuração.
             return [
-                'sessao_id' => $sessao->id,
-                'data_hora' => $sessao->data_hora,
-                'lembrete_enviado' => $sessao->lembrete_enviado,
-                'paciente' => $sessao->paciente->nome ?? 'SEM PACIENTE',
-                'telefone' => $sessao->paciente->telefone ?? 'NÃO INFORMADO',
-                'profissional' => $sessao->paciente?->user?->name ?? 'SEM PROFISSIONAL',
-                'enviar' => $sessao->lembrete_enviado == 0 ? 'SIM' : 'NÃO',
+                'sessao_id'         => $sessao->id,
+                'data_hora'         => $sessao->data_hora,
+                'lembrete_enviado'  => $sessao->lembrete_enviado,
+                'paciente'          => $sessao->paciente->nome ?? 'SEM PACIENTE',
+                'telefone'          => $sessao->paciente->telefone ?? 'NÃO INFORMADO',
+                'profissional'      => $sessao->paciente?->user?->name ?? 'SEM PROFISSIONAL',
+                'enviar'            => $sessao->lembrete_enviado == 0 ? 'SIM' : 'NÃO',
             ];
         });
 
-        Log::info('📬 Scanner de lembretes gerado:', [
+        Log::channel('whatsapp')->info('📬 Scanner de lembretes gerado:', [
             'verificando_para' => [
-                'amanha' => $amanha,
+                'amanha'  => $amanha,
                 'segunda' => $segunda,
             ],
-            'hoje' => $agora->toDateTimeString(),
-            'total' => $sessoes->count(),
+            'hoje'     => $agora->toDateTimeString(),
+            'total'    => $sessoes->count(),
             'detalhes' => $detalhes,
         ]);
 
@@ -57,58 +55,74 @@ class LembreteController extends Controller
 
         $erros = [];
 
+        // Config WPPConnect
+        $baseUrl = rtrim(config('services.wppconnect.base_url'), '/');
+        $token   = config('services.wppconnect.token');
+
         foreach ($sessoes as $sessao) {
             $paciente = $sessao->paciente;
-            // <-- AJUSTE 3: Definida a variável $usuario para ser usada logo abaixo.
-            $usuario = $sessao->paciente?->user;
+            $usuario  = $sessao->paciente?->user;
 
-            // <-- AJUSTE 4: Adicionada verificação para garantir que o profissional existe.
             if (!$paciente || !$paciente->telefone || !$usuario) {
-                $erros[] = "Dados incompletos (paciente, telefone ou profissional não encontrado): Sessão ID {$sessao->id}";
+                $msg = "Dados incompletos (paciente, telefone ou profissional não encontrado): Sessão ID {$sessao->id}";
+                Log::channel('whatsapp')->warning('[Lembretes] ⚠️ ' . $msg);
+                $erros[] = $msg;
                 continue;
             }
 
+            // Normaliza número: só dígitos + prefixo 55
             $numero = preg_replace('/\D/', '', $paciente->telefone);
             if (!str_starts_with($numero, '55')) {
                 $numero = '55' . $numero;
             }
 
-            // Este bloco agora funcionará sem erros.
             $dataHoraFormatada = Carbon::parse($sessao->data_hora)->format('d/m/Y \à\s H:i');
-            $nomeProfissional = $usuario->name;
-            $profissao = $usuario->tipo_profissional ?? 'Profissional';
+            $nomeProfissional  = $usuario->name;
+            $profissao         = $usuario->tipo_profissional ?? 'Profissional';
 
             $mensagem = "👋 Olá {$paciente->nome}, tudo bem? 😊\n\n" .
                         "Lembrando da sua sessão agendada para 📅 {$dataHoraFormatada} com o(a) 🧑‍⚕️ {$nomeProfissional} ({$profissao}).\n\n" .
                         "Por favor, responda com *CONFIRMAR*, *REMARCAR* ou *CANCELAR*.";
-                        
-            $url = rtrim(config('services.venom.url'), '/') . '/sendText';
 
-            $resposta = Http::post($url, [
-                'to' => $numero . '@c.us',
-                'text' => $mensagem,
+            Log::channel('whatsapp')->info('[Lembretes] 🚀 Enviando lembrete via WPPConnect', [
+                'sessao_id' => $sessao->id,
+                'paciente'  => $paciente->nome,
+                'numero'    => $numero,
+                'mensagem'  => $mensagem,
             ]);
 
-            $json = $resposta->json();
+            try {
+                $resposta = Http::withHeaders([
+                        'Authorization' => "Bearer {$token}",
+                        'Accept'        => 'application/json',
+                    ])
+                    ->post("{$baseUrl}/api/psigestor/send-message", [
+                        'phone'   => $numero,
+                        'message' => $mensagem,
+                    ]);
 
-            if (
-                $resposta->successful() &&
-                isset($json['status']) &&
-                $json['status'] === 'success' &&
-                isset($json['result']['to']['_serialized'])
-            ) {
-                $sessao->lembrete_enviado = 1;
-                $sessao->save();
+                $json = $resposta->json();
 
-                Log::info('✅ Lembrete enviado com sucesso', [
-                    'sessao_id' => $sessao->id,
-                    'paciente' => $paciente->nome,
-                    'numero' => $numero,
-                ]);
-            }
-            else {
-                $erroMsg = "❌ Erro ao enviar para {$paciente->nome} (Sessão ID {$sessao->id}). Código: {$resposta->status()} - " . $resposta->body();
-                Log::error($erroMsg);
+                if ($resposta->successful() && ($json['status'] ?? null) === 'success') {
+                    $sessao->lembrete_enviado = 1;
+                    $sessao->save();
+
+                    Log::channel('whatsapp')->info('✅ Lembrete enviado com sucesso via WPPConnect', [
+                        'sessao_id' => $sessao->id,
+                        'paciente'  => $paciente->nome,
+                        'numero'    => $numero,
+                        'response'  => $json,
+                    ]);
+                } else {
+                    $erroMsg = "❌ Erro ao enviar para {$paciente->nome} (Sessão ID {$sessao->id}). " .
+                               "Status HTTP: {$resposta->status()} - Resposta: " . $resposta->body();
+
+                    Log::channel('whatsapp')->error('[Lembretes] ' . $erroMsg);
+                    $erros[] = $erroMsg;
+                }
+            } catch (\Exception $e) {
+                $erroMsg = "💥 Exceção ao enviar para {$paciente->nome} (Sessão ID {$sessao->id}): {$e->getMessage()}";
+                Log::channel('whatsapp')->error('[Lembretes] ' . $erroMsg);
                 $erros[] = $erroMsg;
             }
         }

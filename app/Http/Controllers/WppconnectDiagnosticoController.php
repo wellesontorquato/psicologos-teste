@@ -3,44 +3,79 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class WppconnectDiagnosticoController extends Controller
 {
     public function executar()
     {
-        $token = config('services.wppconnect.token'); // Certifique-se de que está correto no config/services.php
-        $session = 'psicologo';
-        $baseUrl = 'http://localhost:21465/api/' . $session;
+        // CONFIG WPPConnect via services.php
+        $token    = config('services.wppconnect.token');
+        $baseUrl  = rtrim(config('services.wppconnect.base_url'), '/');
+        $session  = 'psigestor';
 
+        $apiBase = "{$baseUrl}/api/{$session}";
         $resultados = [];
 
-        // 1. STATUS SESSION
-        $status = Http::withHeaders([
-            'Authorization' => "Bearer $token",
-        ])->get("{$baseUrl}/status-session");
+        Log::info('[Diagnóstico WPPConnect] Iniciando diagnóstico...');
 
-        $resultados['status-session'] = $status->json();
+        // -------------------------------------------------------------------
+        // 1. STATUS DA SESSÃO
+        // -------------------------------------------------------------------
+        try {
+            $status = Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'Accept'        => 'application/json',
+            ])->get("{$apiBase}/status-session");
 
+            $resultados['status-session'] = $status->json();
+        } catch (\Exception $e) {
+            $resultados['status-session'] = [
+                'error' => $e->getMessage(),
+            ];
+        }
+
+        // -------------------------------------------------------------------
         // 2. START SESSION COM WEBHOOK
-        $start = Http::withHeaders([
-            'Authorization' => "Bearer $token",
-            'Content-Type' => 'application/json',
-        ])->post("{$baseUrl}/start-session", [
-            'webhook' => route('webhook.whatsapp'), // certifique-se que essa rota existe no api.php
-        ]);
+        // -------------------------------------------------------------------
+        try {
+            $start = Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'Accept'        => 'application/json',
+            ])->post("{$apiBase}/start-session", [
+                'webhook' => route('webhook.whatsapp'), // sua rota no api.php
+            ]);
 
-        $resultados['start-session'] = $start->json();
+            $resultados['start-session'] = $start->json();
+        } catch (\Exception $e) {
+            $resultados['start-session'] = [
+                'error' => $e->getMessage(),
+            ];
+        }
 
+        // -------------------------------------------------------------------
         // 3. ENVIO DE MENSAGEM TESTE
-        $mensagem = Http::withHeaders([
-            'Authorization' => "Bearer $token",
-        ])->post("{$baseUrl}/send-message", [
-            'phone' => '5582999405099', // número de teste
-            'message' => '✅ Diagnóstico Laravel: Teste de envio via controller.',
-        ]);
+        // -------------------------------------------------------------------
+        try {
+            $mensagem = Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'Accept'        => 'application/json',
+            ])->post("{$apiBase}/send-message", [
+                'phone'   => '5582999405099', // número de teste
+                'message' => '✅ Diagnóstico Laravel: Teste de envio via controller.',
+            ]);
 
-        $resultados['envio-teste'] = $mensagem->json();
+            $resultados['envio-teste'] = $mensagem->json();
+        } catch (\Exception $e) {
+            $resultados['envio-teste'] = [
+                'error' => $e->getMessage(),
+            ];
+        }
+
+        // LOG FINAL
+        Log::info('[Diagnóstico WPPConnect] Resultado:', $resultados);
 
         return response()->json($resultados);
     }
 }
+    

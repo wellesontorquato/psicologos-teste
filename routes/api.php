@@ -22,6 +22,7 @@ Route::get('/feriados', [FeriadosController::class, 'index']);
 
 Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem']);
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
+Route::get('/diagnostico-wpp', [WppconnectDiagnosticoController::class, 'executar']);
 
 Route::get('/executar-schedule-seguro/{token}', function ($token) {
     if ($token !== env('TOKEN_CRON_SEGURA')) {
