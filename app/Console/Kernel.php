@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 use App\Console\Commands\VerificarSessoesNaoPagas;
 use App\Console\Commands\ChecarAniversariantes;
 use App\Console\Commands\EnviarLembretesDiarios;
+use App\Console\Commands\BackupBancoMysql;
+
 
 class Kernel extends ConsoleKernel
 {
@@ -41,5 +43,6 @@ class Kernel extends ConsoleKernel
         VerificarSessoesNaoPagas::class,
         ChecarAniversariantes::class,
         EnviarLembretesDiarios::class,
+        BackupBancoMysql::class,
     ];
 }
