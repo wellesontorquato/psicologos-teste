@@ -179,14 +179,6 @@
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{ route('sessoes.edit', $sessao) }}" class="btn btn-warning btn-sm">Editar</a>
 
-                    <form action="{{ route('sessoes.destroy', $sessao) }}" method="POST" class="form-excluir d-inline no-spinner">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="query_string" value="">
-                        <input type="hidden" name="aba" value="">
-                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                    </form>
-
                     <button type="button"
                         class="btn btn-outline-primary btn-sm"
                         data-bs-toggle="modal"
@@ -203,6 +195,14 @@
                     class="btn btn-outline-success btn-sm">
                         Evolução
                     </a>
+
+                    <form action="{{ route('sessoes.destroy', $sessao) }}" method="POST" class="form-excluir d-inline no-spinner">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="query_string" value="">
+                        <input type="hidden" name="aba" value="">
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
                 </div>
             </div>
         </div>
