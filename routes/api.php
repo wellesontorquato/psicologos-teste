@@ -29,6 +29,24 @@ Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, '
 Route::get('/diagnostico-wpp', [WppconnectDiagnosticoController::class, 'executar']);
 Route::get('/lembretes/testar', [LembreteController::class, 'enviarLembretesManualmente']);
 
+Route::get('/health', function (Request $request) {
+    return response()->json([
+        'ok' => true,
+        'service' => 'psigestor-api',
+        'time' => now()->toIso8601String(),
+        'request_id' => $request->attributes->get('request_id'),
+    ]);
+});
+
+Route::get('/webhook/whatsapp/health', function (Request $request) {
+    return response()->json([
+        'ok' => true,
+        'webhook' => 'whatsapp',
+        'time' => now()->toIso8601String(),
+        'request_id' => $request->attributes->get('request_id'),
+    ]);
+});
+
 
 Route::get('/executar-schedule-seguro/{token}', function ($token) {
     if ($token !== env('TOKEN_CRON_SEGURA')) {

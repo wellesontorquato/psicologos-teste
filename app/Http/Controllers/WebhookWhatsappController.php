@@ -20,168 +20,56 @@ class WebhookWhatsappController extends Controller
 {
     public function receberMensagem(Request $request)
     {
+        $rid = $request->attributes->get('request_id');
+
         try {
-            Log::channel('whatsapp')->info('[Webhook] 🔔 WPPConnect Webhook recebido');
+            $dados = $request->json()->all();
+            if (!is_array($dados) || empty($dados)) $dados = json_decode($request->getContent(), true);
+            if (!is_array($dados) || empty($dados)) $dados = $request->all();
 
-            // Diagnóstico completo da requisição
-            Log::channel('whatsapp')->info('[Webhook] 🩺 Diagnóstico da requisição recebida', [
-                'method'       => $request->method(),
-                'content_type' => $request->header('Content-Type'),
-                'headers'      => $request->headers->all(),
-                'body_raw'     => $request->getContent(),
-                'all_inputs'   => $request->all(),
-                'ip'           => $request->ip(),
-            ]);
-
-            // Conteúdo cru
-            $rawContent = $request->getContent();
-            Log::channel('whatsapp')->info('[Webhook] 📩 Conteúdo cru recebido', ['raw' => $rawContent]);
-
-            // Decodifica JSON ou usa fallback
-            $dados = json_decode($rawContent, true);
-            if (json_last_error() !== JSON_ERROR_NONE || !is_array($dados)) {
-                Log::channel('whatsapp')->warning('[Webhook] ⚠️ JSON inválido. Usando request->all() como fallback.');
-                $dados = $request->all();
-            }
-
-            // Estrutura típica do WPPConnect:
-            // { "event": "...", "session": "...", "data": {...} }
             $evento = strtolower(data_get($dados, 'event', 'onmessage'));
             $data   = data_get($dados, 'data', $dados);
 
-            // Evita loop: se vier mensagem enviada POR VOCÊ, ignora
-            $fromMe = (bool) (data_get($data, 'fromMe') ?? data_get($data, 'isMe') ?? false);
-            if ($fromMe) {
-                Log::channel('whatsapp')->info('[Webhook] 🔁 Ignorado (mensagem enviada pelo próprio bot).', [
-                    'evento' => $evento,
-                ]);
-                return response()->json(['message' => 'Mensagem do próprio bot ignorada.'], 200);
+            $from = data_get($data, 'from') ?? data_get($data, 'sender.id') ?? data_get($data, 'chatId') ?? data_get($data, 'id.remote');
+            $body = data_get($data, 'body') ?? data_get($data, 'message') ?? data_get($data, 'text') ?? data_get($data, 'content') ?? data_get($data, 'caption');
+
+            // message_id se existir; se não, hash estável
+            $remoteId = data_get($data, 'id') ?? data_get($data, 'messageId') ?? data_get($data, 'id._serialized');
+            $stableKey = $remoteId ?: hash('sha256', $evento.'|'.(string)$from.'|'.(string)$body.'|'.(string)data_get($data,'t',''));
+
+            $inbox = WebhookInbox::firstOrCreate(
+                ['message_key' => $stableKey],
+                [
+                    'source' => 'wppconnect',
+                    'request_id' => $rid,
+                    'event' => $evento,
+                    'from' => (string) $from,
+                    'body' => (string) $body,
+                    'status' => 'RECEIVED',
+                    'payload_json' => json_encode($dados, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),
+                ]
+            );
+
+            if (!$inbox->wasRecentlyCreated && $inbox->status === 'PROCESSED') {
+                return response()->json(['ok' => true, 'message' => 'Duplicado ignorado.', 'request_id' => $rid], 200);
             }
 
-            // Só processa eventos de mensagem
-            if (!in_array($evento, ['onmessage', 'message', 'onmessageany', 'onanymessage', 'onmessagecreate'])) {
-                Log::channel('whatsapp')->info('[Webhook] ℹ️ Evento ignorado (não é mensagem de chat).', ['event' => $evento]);
-                return response()->json(['message' => 'Evento ignorado.'], 200);
-            }
+            ProcessWhatsappWebhookJob::dispatch($inbox->id)->onQueue('webhooks');
 
-            /**
-             * Extração mais resiliente (WPPConnect muda campos conforme versões/config)
-             */
-            $from =
-                data_get($data, 'from')
-                ?? data_get($data, 'sender.id')
-                ?? data_get($data, 'chatId')
-                ?? data_get($data, 'id.remote')
-                ?? null;
-
-            $body =
-                data_get($data, 'body')
-                ?? data_get($data, 'message')
-                ?? data_get($data, 'text')
-                ?? data_get($data, 'content')
-                ?? data_get($data, 'caption')
-                ?? null;
-
-            // Normaliza "from" para formato esperado (tentar garantir @c.us quando vier sem)
-            if ($from && !str_contains($from, '@c.us') && preg_match('/^\d{10,13}$/', preg_replace('/\D/', '', $from))) {
-                $from = preg_replace('/\D/', '', $from) . '@c.us';
-            }
-
-            if (!$from || !$body || !str_contains($from, '@c.us')) {
-                Log::channel('whatsapp')->info('[Webhook] Ignorado: dados incompletos ou número inválido.', [
-                    'evento' => $evento,
-                    'from'   => $from,
-                    'body'   => $body,
-                    'data'   => $data,
-                ]);
-                return response()->json(['message' => 'Evento ignorado ou inválido.'], 200);
-            }
-
-            // Normaliza
-            $numeroLimpo   = $this->normalizarNumero($from);
-            $mensagemLimpa = strtoupper(Str::ascii(trim((string) $body)));
-
-            Log::channel('whatsapp')->info('[Webhook] 🧪 Dados normalizados', [
-                'numero'   => $numeroLimpo,
-                'mensagem' => $mensagemLimpa,
-            ]);
-
-            // Busca paciente pelo telefone
-            $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
-            if (!$paciente) {
-                Log::channel('whatsapp')->warning('[Webhook] ❌ Paciente não encontrado.', ['numero' => $numeroLimpo]);
-                $this->responderNoWhatsapp($numeroLimpo, '❌ Não encontramos seu cadastro. Verifique com o(a) profissional.');
-                return response()->json(['message' => 'Paciente não encontrado.'], 200);
-            }
-
-            Log::channel('whatsapp')->info('[Webhook] ✅ Paciente identificado', ['paciente_id' => $paciente->id]);
-
-            // Interpreta a resposta
-            $status = $this->mapearRespostaParaStatus($mensagemLimpa);
-            if (!$status) {
-                $mensagemErro = "⚠️ Desculpe, não entendi sua resposta.\n\nResponda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*";
-                $this->responderNoWhatsapp($numeroLimpo, $mensagemErro);
-                return response()->json(['message' => 'Mensagem inválida.'], 200);
-            }
-
-            // Procura sessão válida
-            $sessao = $this->encontrarSessaoValidaParaConfirmacao($paciente);
-            if (!$sessao) {
-                $this->responderNoWhatsapp($numeroLimpo, "Olá {$paciente->nome}, não encontramos uma sessão pendente para você.");
-                return response()->json(['message' => 'Sessão não encontrada.'], 200);
-            }
-
-            // Atualiza status e data se necessário
-            $sessao->status_confirmacao = $status;
-            if (in_array($status, ['REMARCAR', 'CANCELADA'])) {
-                $sessao->data_hora = null;
-            }
-
-            // Salva com proteção (se isso quebrar, cai no catch externo com detalhe)
-            Sessao::withoutGlobalScopes()
-                ->where('id', $sessao->id)
-                ->update($sessao->getDirty());
-
-            Log::channel('whatsapp')->info('[Webhook] 💾 Sessão atualizada com sucesso.', [
-                'sessao_id' => $sessao->id,
-                'status'    => $status,
-            ]);
-
-            // Dispara evento de domínio
-            match ($status) {
-                'CONFIRMADA' => event(new SessaoConfirmada($sessao)),
-                'CANCELADA'  => event(new SessaoCancelada($sessao)),
-                'REMARCAR'   => event(new SessaoRemarcada($sessao)),
-            };
-
-            // Mensagem de retorno
-            $mensagem = "✅ Obrigado pela resposta, {$paciente->nome}. Sua sessão foi marcada como: *{$status}*.";
-            if ($status === 'REMARCAR') {
-                $mensagem .= "\n\nVamos entrar em contato para reagendar.";
-            }
-
-            $this->responderNoWhatsapp($numeroLimpo, $mensagem);
-            return response()->json(['message' => 'Sessão atualizada com sucesso.'], 200);
+            return response()->json([
+                'ok' => true,
+                'message' => 'Recebido e enfileirado.',
+                'request_id' => $rid,
+                'inbox_id' => $inbox->id,
+            ], 200);
 
         } catch (Throwable $e) {
-
-            // Log completo (railway logs / laravel logs)
-            Log::channel('whatsapp')->error('[Webhook] 💥 ERRO NO WEBHOOK (500)', [
-                'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-                'trace'   => substr($e->getTraceAsString(), 0, 2000),
-                'ip'      => $request->ip(),
-                'body'    => $request->getContent(),
+            Log::channel('whatsapp')->error('[Webhook] Erro no recebimento', [
+                'request_id' => $rid,
+                'error' => $e->getMessage(),
             ]);
 
-            // TEMPORÁRIO: devolve detalhes pro WPPConnect registrar no log
-            return response()->json([
-                'ok'    => false,
-                'error' => $e->getMessage(),
-                'file'  => basename($e->getFile()),
-                'line'  => $e->getLine(),
-            ], 500);
+            return response()->json(['ok' => false, 'message' => 'Falha ao receber webhook.', 'request_id' => $rid], 500);
         }
     }
 
