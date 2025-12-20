@@ -93,10 +93,9 @@ return [
 
         // ✅ Canal de log personalizado para WhatsApp
         'whatsapp' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/whatsapp.log'),
-            'level' => 'debug',
-            'days' => 14,
+            'driver' => 'errorlog',
+            'level'  => 'debug',
+            'replace_placeholders' => true,
         ],
 
         // ✅ Canal de log personalizado para CSP (segurança)
