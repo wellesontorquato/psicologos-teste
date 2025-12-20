@@ -14,14 +14,18 @@ use App\Events\SessaoCancelada;
 use App\Events\SessaoRemarcada;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Illuminate\Support\Str;
+use App\Models\WebhookInbox;
+use App\Jobs\ProcessWhatsappWebhookJob;
 use Throwable;
 
 class WebhookWhatsappController extends Controller
 {
     public function receberMensagem(Request $request)
     {
-        $rid = $request->attributes->get('request_id');
-
+        $rid = $request->attributes->get('request_id')
+            ?? $request->header('X-Request-Id')
+            ?? (string) Str::uuid();
+        
         try {
             $dados = $request->json()->all();
             if (!is_array($dados) || empty($dados)) $dados = json_decode($request->getContent(), true);
