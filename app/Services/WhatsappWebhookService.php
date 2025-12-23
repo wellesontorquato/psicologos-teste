@@ -17,32 +17,42 @@ class WhatsappWebhookService
 {
     public function processar(array $dados, ?string $requestId = null): void
     {
-        $evento = strtolower(data_get($dados, 'event', 'onmessage'));
-        $data   = data_get($dados, 'data', $dados);
+        $evento = strtolower((string) data_get($dados, 'event', 'onmessage'));
+        $data   = (array) data_get($dados, 'data', $dados);
 
+        // ignora mensagens enviadas por você/bot
         $fromMe = (bool) (data_get($data, 'fromMe') ?? data_get($data, 'isMe') ?? false);
         if ($fromMe) return;
 
-        if (!in_array($evento, ['onmessage', 'message', 'onmessageany', 'onanymessage', 'onmessagecreate'])) return;
+        // aceita eventos comuns do WPPConnect
+        if (!in_array($evento, ['onmessage', 'message', 'onmessageany', 'onanymessage', 'onmessagecreate'], true)) {
+            return;
+        }
 
+        // tenta achar o "from" em vários formatos
         $from = data_get($data, 'from')
             ?? data_get($data, 'sender.id')
             ?? data_get($data, 'chatId')
-            ?? data_get($data, 'id.remote');
+            ?? data_get($data, 'id.remote')
+            ?? data_get($data, 'key.remoteJid')
+            ?? data_get($data, 'message.from');
 
+        // tenta achar o "body" em vários formatos
         $body = data_get($data, 'body')
             ?? data_get($data, 'message')
             ?? data_get($data, 'text')
             ?? data_get($data, 'content')
-            ?? data_get($data, 'caption');
+            ?? data_get($data, 'caption')
+            ?? data_get($data, 'message.body')
+            ?? data_get($data, 'message.text');
 
-        if ($from && !str_contains($from, '@c.us') && preg_match('/^\d{10,13}$/', preg_replace('/\D/', '', $from))) {
-            $from = preg_replace('/\D/', '', $from) . '@c.us';
-        }
+        // precisa ter mensagem
+        if (!$body) return;
 
-        if (!$from || !$body || !str_contains($from, '@c.us')) return;
+        // extrai/normaliza telefone (c.us / lid / shortName / fallback)
+        $numeroLimpo = $this->extrairTelefoneDoPayload($data, is_string($from) ? $from : null);
+        if (!$numeroLimpo) return;
 
-        $numeroLimpo   = $this->normalizarNumero($from);
         $mensagemLimpa = strtoupper(Str::ascii(trim((string) $body)));
 
         $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
@@ -53,7 +63,10 @@ class WhatsappWebhookService
 
         $status = $this->mapearRespostaParaStatus($mensagemLimpa);
         if (!$status) {
-            $this->responderNoWhatsapp($numeroLimpo, "⚠️ Desculpe, não entendi sua resposta.\n\nResponda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*");
+            $this->responderNoWhatsapp(
+                $numeroLimpo,
+                "⚠️ Desculpe, não entendi sua resposta.\n\nResponda com:\n\n*✔️ Confirmar*\n*🔄 Remarcar*\n*❌ Cancelar*"
+            );
             return;
         }
 
@@ -64,7 +77,7 @@ class WhatsappWebhookService
         }
 
         // preserva data antiga antes de limpar
-        if (in_array($status, ['REMARCAR', 'CANCELADA'])) {
+        if (in_array($status, ['REMARCAR', 'CANCELADA'], true)) {
             if ($sessao->data_hora && !$sessao->data_hora_original) {
                 $sessao->data_hora_original = $sessao->data_hora;
             }
@@ -119,6 +132,7 @@ class WhatsappWebhookService
         return Paciente::where(function ($query) use ($numeroLimpo) {
             $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroLimpo]);
 
+            // se vier com 10 dígitos (sem 9), tenta também com 11 dígitos (com 9)
             if (strlen($numeroLimpo) === 10) {
                 $ddd = substr($numeroLimpo, 0, 2);
                 $resto = substr($numeroLimpo, 2);
@@ -144,6 +158,54 @@ class WhatsappWebhookService
         foreach ($mapa as $chave => $valor) {
             if (Str::contains($bodyLimpo, $chave)) return $valor;
         }
+
+        return null;
+    }
+
+    private function extrairTelefoneDoPayload(array $data, ?string $from): ?string
+    {
+        // Caso padrão (@c.us)
+        if ($from && str_contains($from, '@c.us')) {
+            return $this->normalizarNumero($from);
+        }
+
+        // Caso LID (ex.: "...@lid"): tenta pegar do shortName
+        $short  = (string) (data_get($data, 'shortName') ?? '');
+        $digits = preg_replace('/\D/', '', $short);
+
+        if ($digits) {
+            // shortName geralmente vem com 55
+            if (str_starts_with($digits, '55')) $digits = substr($digits, 2);
+            return $digits;
+        }
+
+        // Outros possíveis campos onde pode aparecer o número (variações comuns)
+        $candidatos = [
+            data_get($data, 'sender.id'),
+            data_get($data, 'sender.pushname'),
+            data_get($data, 'sender.shortName'),
+            data_get($data, 'id.participant'),
+            data_get($data, 'participant'),
+        ];
+
+        foreach ($candidatos as $cand) {
+            if (!is_string($cand) || $cand === '') continue;
+            $d = preg_replace('/\D/', '', $cand);
+            if (strlen($d) >= 10) {
+                if (str_starts_with($d, '55')) $d = substr($d, 2);
+                return $d;
+            }
+        }
+
+        // fallback: tenta extrair dígitos do próprio "from"
+        if ($from) {
+            $digits = preg_replace('/\D/', '', $from);
+            if (strlen($digits) >= 10) {
+                if (str_starts_with($digits, '55')) $digits = substr($digits, 2);
+                return $digits;
+            }
+        }
+
         return null;
     }
 
@@ -158,9 +220,9 @@ class WhatsappWebhookService
     {
         $numeroComPrefixo = '55' . preg_replace('/[^0-9]/', '', $numero);
 
-        $baseUrl = rtrim(config('services.wppconnect.base_url'), '/');
-        $session = config('services.wppconnect.session', 'psigestor');
-        $token   = config('services.wppconnect.token');
+        $baseUrl = rtrim((string) config('services.wppconnect.base_url'), '/');
+        $session = (string) config('services.wppconnect.session', 'psigestor');
+        $token   = (string) config('services.wppconnect.token');
 
         if (!$baseUrl || !$token) {
             Log::channel('whatsapp')->error('[WPP] base_url ou token não configurados');
@@ -188,7 +250,9 @@ class WhatsappWebhookService
                 ]);
             }
         } catch (Throwable $e) {
-            Log::channel('whatsapp')->error('[WPP] Erro ao enviar mensagem', ['erro' => $e->getMessage()]);
+            Log::channel('whatsapp')->error('[WPP] Erro ao enviar mensagem', [
+                'erro' => $e->getMessage(),
+            ]);
         }
     }
 }
