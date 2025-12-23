@@ -107,4 +107,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/pacientes-json/{id}', [PacienteController::class, 'updateJson']);
     Route::delete('/pacientes-json/{id}', [PacienteController::class, 'destroyJson']);
     Route::get('/pacientes-json/{id}', [PacienteController::class, 'showJson']);
+
 });
