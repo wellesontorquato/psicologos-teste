@@ -24,7 +24,7 @@ RUN ln -snf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && echo "Americ
 # Instala Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copia aplicação html 
+# Copia aplicação
 COPY . /var/www/html
 
 # Define diretório de trabalho
@@ -46,12 +46,15 @@ RUN chmod +x /entrypoint.sh
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Define limites de upload do PHP corretamente (acrescenta em vez de sobrescrever)
+# Define limites de upload do PHP corretamente
 RUN echo "upload_max_filesize=15M" > /usr/local/etc/php/conf.d/uploads.ini && \
     echo "post_max_size=16M" >> /usr/local/etc/php/conf.d/uploads.ini
 
-# Expõe porta usada pelo nginx
+# Railway geralmente injeta PORT; nginx precisa ouvir nessa porta.
+# (Seu nginx.conf tem que usar ${PORT} ou 8080 fixo; confirmamos já já)
 EXPOSE 8080
 
-# Usa o entrypoint para garantir permissões sempre que sobe
 ENTRYPOINT ["/entrypoint.sh"]
+
+# ✅ IMPORTANTE: garante que sempre vai subir o supervisor (nginx + php-fpm + queue)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
