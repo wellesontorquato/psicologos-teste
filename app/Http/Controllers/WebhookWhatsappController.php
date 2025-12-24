@@ -84,7 +84,7 @@ class WebhookWhatsappController extends Controller
 
         $sessoesCandidatas = Sessao::withoutGlobalScopes()
             ->where('paciente_id', $paciente->id)
-            ->where('status_confirmacao', 'PENDENTE')
+            ->whereRaw('UPPER(status_confirmacao) = ?', ['PENDENTE'])
             ->orderBy('data_hora', 'asc')
             ->get();
 

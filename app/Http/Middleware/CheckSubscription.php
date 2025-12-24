@@ -15,73 +15,77 @@ class CheckSubscription
     {
         $user = Auth::user();
 
-        // Deixa passar páginas de planos e webhooks/Stripe, senão dá loop
         if ($request->routeIs('assinaturas.*') || $request->is('stripe/*')) {
             return $next($request);
         }
 
-        // Admin sempre passa
         if ($user->is_admin) {
             return $next($request);
         }
 
-        // 1) Tenta achar a assinatura "viva" localmente (mais recente e sem ends_at)
+        // Pega a assinatura local mais recente do tipo default
         $sub = $user->subscriptions()
-            ->where('type', 'default')   // usa 'type' pois seu schema está assim
-            ->whereNull('ends_at')
+            ->where('type', 'default')
             ->latest('id')
             ->first();
 
-        // 2) Se não achou, faz uma auto-reconciliação com a Stripe (uma vez por request)
-        if (!$sub && $user->stripe_id) {
+        // Se não tem assinatura local, tenta olhar no Stripe
+        $stripeSub = null;
+
+        if ($user->stripe_id) {
             try {
-                $stripe = Cashier::stripe();
-                $subs = $stripe->subscriptions->all([
-                    'customer' => $user->stripe_id,
-                    'status'   => 'all',
-                    'limit'    => 10,
-                ]);
+                // Se temos uma stripe_id local, melhor ainda:
+                if ($sub && $sub->stripe_id) {
+                    $stripeSub = $sub->asStripeSubscription();
+                } else {
+                    // fallback: lista e escolhe a mais relevante
+                    $stripe = Cashier::stripe();
+                    $subs = $stripe->subscriptions->all([
+                        'customer' => $user->stripe_id,
+                        'status'   => 'all',
+                        'limit'    => 10,
+                    ]);
 
-                // Pega a assinatura "mais promissora" (ativa/trialing/past_due) mais recente
-                $candidate = collect($subs->data)
-                    ->filter(function ($s) {
-                        return in_array($s->status, ['active', 'trialing', 'past_due'], true);
-                    })
-                    ->sortByDesc(function ($s) {
-                        // ordena pela janela corrente mais longa (fim do período atual)
-                        return $s->current_period_end ?? 0;
-                    })
-                    ->first();
+                    $stripeSub = collect($subs->data)
+                        ->sortByDesc(fn($s) => $s->current_period_end ?? 0)
+                        ->first();
+                }
 
-                if ($candidate) {
-                    // Garante que existe/atualiza a linha local desta assinatura
+                // Se achou algo no Stripe, sincroniza o essencial no banco
+                if ($stripeSub) {
+                    $periodEnd = Carbon::createFromTimestamp($stripeSub->current_period_end);
+
                     $sub = CashierSubscription::updateOrCreate(
-                        ['stripe_id' => $candidate->id],
+                        ['stripe_id' => $stripeSub->id],
                         [
-                            'user_id'        => $user->id,
-                            'type'           => 'default', // seu schema
-                            'stripe_status'  => $candidate->status, // 'active', 'trialing' ou 'past_due'
-                            'stripe_price'   => $candidate->items->data[0]->price->id ?? null,
-                            'quantity'       => $candidate->items->data[0]->quantity ?? 1,
-                            'trial_ends_at'  => $candidate->trial_end ? Carbon::createFromTimestamp($candidate->trial_end) : null,
-                            // ⚠️ zera ends_at se a assinatura está válida
-                            'ends_at'        => in_array($candidate->status, ['active','trialing','past_due'], true) ? null : now(),
+                            'user_id'       => $user->id,
+                            'type'          => 'default',
+                            'stripe_status' => $stripeSub->status,
+                            'stripe_price'  => $stripeSub->items->data[0]->price->id ?? null,
+                            'quantity'      => $stripeSub->items->data[0]->quantity ?? 1,
+                            'trial_ends_at' => $stripeSub->trial_end ? Carbon::createFromTimestamp($stripeSub->trial_end) : null,
+
+                            // ✅ se está cancelando ao fim do período, gravamos ends_at = current_period_end
+                            // ✅ se não, deixa ends_at NULL (assinatura recorrente)
+                            'ends_at'       => ($stripeSub->cancel_at_period_end ?? false) ? $periodEnd : null,
                         ]
                     );
                 }
             } catch (\Throwable $e) {
-                // Não quebre a navegação por erro de API; apenas logue
-                \Log::warning('Auto-sync Stripe falhou no middleware', [
+                \Log::warning('Stripe sync falhou no middleware', [
                     'user_id' => $user->id,
                     'err' => $e->getMessage(),
                 ]);
             }
         }
 
-        // 3) Regra final de acesso: status válido OU trial global ainda vigente
-        $temAcesso = (
-            $sub && in_array($sub->stripe_status, ['active', 'trialing', 'past_due'], true)
-        ) || $user->onTrial();
+        // ✅ Regra final: tem acesso se:
+        // - está em trial, OU
+        // - assinatura está "valida" e (não tem ends_at) OU (agora < ends_at)
+        $statusValido = $sub && in_array($sub->stripe_status, ['active', 'trialing', 'past_due'], true);
+        $naJanela = $sub && (!$sub->ends_at || now()->lt($sub->ends_at));
+
+        $temAcesso = $user->onTrial() || ($statusValido && $naJanela);
 
         if ($temAcesso) {
             return $next($request);
@@ -89,6 +93,6 @@ class CheckSubscription
 
         return redirect()
             ->route('assinaturas.index')
-            ->with('error', 'Você precisa ter uma assinatura ativa para acessar essa área.');
+            ->with('error', 'Sua assinatura expirou. Assine para continuar.');
     }
 }

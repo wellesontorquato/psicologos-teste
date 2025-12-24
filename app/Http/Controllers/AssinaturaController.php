@@ -25,9 +25,15 @@ class AssinaturaController extends Controller
 
     public function checkout(Request $request)
     {
-        $request->validate([
-            'price_id' => 'required|string',
-        ]);
+        $request->validate(['price_id' => 'required|string']);
+        $user = Auth::user();
+
+        // ✅ se já existe assinatura default ativa ou em grace, não cria outra
+        $sub = $user->subscription('default');
+        if ($sub && ( $sub->valid() || $sub->onGracePeriod() )) {
+            return redirect()->route('assinaturas.minha')
+                ->with('info', 'Você já possui uma assinatura. Gerencie por "Minha Assinatura".');
+        }
 
         $user = Auth::user();
 
@@ -65,13 +71,37 @@ class AssinaturaController extends Controller
     public function cancelar()
     {
         $user = Auth::user();
+        $sub = $user->subscription('default');
 
-        if ($user->subscribed('default')) {
-            $user->subscription('default')->cancel();
-            return redirect()->route('assinaturas.minha')->with('success', 'Assinatura cancelada com sucesso.');
+        if (!$sub) {
+            return redirect()->route('assinaturas.index')
+                ->with('error', 'Você não possui assinatura.');
         }
 
-        return redirect()->route('assinaturas.index')->with('error', 'Você não possui uma assinatura ativa.');
+        if ($sub->canceled()) {
+            return redirect()->route('assinaturas.minha')
+                ->with('info', 'Sua assinatura já está cancelada.');
+        }
+
+        // Cancela ao fim do período (padrão)
+        $sub->cancel();
+
+        // ✅ puxa do Stripe e grava a data do fim do período (pra não depender de webhook)
+        try {
+            $stripeSub = $sub->asStripeSubscription();
+            if (($stripeSub->cancel_at_period_end ?? false) && !empty($stripeSub->current_period_end)) {
+                $sub->ends_at = \Carbon\Carbon::createFromTimestamp($stripeSub->current_period_end);
+                $sub->save();
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Falha ao sincronizar ends_at após cancelamento', [
+                'user_id' => $user->id,
+                'err' => $e->getMessage(),
+            ]);
+        }
+
+        return redirect()->route('assinaturas.minha')
+            ->with('success', 'Assinatura cancelada. Você terá acesso até o fim do período atual.');
     }
 
     public function reativar()
