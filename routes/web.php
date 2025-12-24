@@ -99,8 +99,15 @@ Route::get('/robots.txt', function () {
 */
 Route::get('/', function () {
     $news = \App\Models\News::latest()->take(3)->get();
-    return view('index', compact('news'));
+
+    return response()
+        ->view('index', compact('news'))
+        // ✅ não cachear a HOME (browser + proxies)
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
 })->name('home');
+
 
 Route::view('/funcionalidades', 'pages.funcionalidades')->name('funcionalidades');
 Route::view('/planos', 'pages.planos')->name('planos');
