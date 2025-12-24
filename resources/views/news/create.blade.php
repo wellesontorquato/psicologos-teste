@@ -25,6 +25,10 @@
         font-weight: 600;
         color: #374151;
         margin-bottom: 0.3rem;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
     }
 
     .form-control,
@@ -45,20 +49,48 @@
         width: 100%;
         transition: background 0.2s;
     }
-    .btn-submit:hover {
-        background-color: #008ecc;
+    .btn-submit:hover { background-color: #008ecc; }
+
+    /* Contador estilo Twitter */
+    .char-counter {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6b7280; /* cinza */
+        white-space: nowrap;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+    }
+    .char-counter.near {
+        color: #92400e;
+        background: #fffbeb;
+        border-color: #fcd34d;
+    }
+    .char-counter.over {
+        color: #991b1b;
+        background: #fef2f2;
+        border-color: #fca5a5;
+    }
+
+    .help-text {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 0.35rem;
     }
 
     /* Responsivo */
     @media (min-width: 768px) {
-        .news-form-container h2 {
-            font-size: 1.8rem;
-        }
-        .btn-submit {
-            width: auto;
-        }
+        .news-form-container h2 { font-size: 1.8rem; }
+        .btn-submit { width: auto; }
     }
 </style>
+
+@php
+    // ✅ Defina seus limites aqui
+    $TITLE_MAX = 120;
+    $SUBTITLE_MAX = 200;
+@endphp
 
 <div class="container py-5">
     <div class="news-form-container">
@@ -69,14 +101,43 @@
 
             {{-- TÍTULO --}}
             <div class="mb-3">
-                <label class="form-label">Título</label>
-                <input type="text" name="title" value="{{ old('title') }}" class="form-control" required>
+                <label class="form-label" for="title">
+                    <span>Título</span>
+                    <span class="char-counter" data-for="title" data-max="{{ $TITLE_MAX }}">
+                        0/{{ $TITLE_MAX }}
+                    </span>
+                </label>
+                <input
+                    id="title"
+                    type="text"
+                    name="title"
+                    value="{{ old('title') }}"
+                    class="form-control"
+                    required
+                    maxlength="{{ $TITLE_MAX }}"
+                    autocomplete="off"
+                >
+                <div class="help-text">Máximo de {{ $TITLE_MAX }} caracteres.</div>
             </div>
 
             {{-- SUBTÍTULO --}}
             <div class="mb-3">
-                <label class="form-label">Subtítulo (opcional)</label>
-                <input type="text" name="subtitle" value="{{ old('subtitle') }}" class="form-control">
+                <label class="form-label" for="subtitle">
+                    <span>Subtítulo (opcional)</span>
+                    <span class="char-counter" data-for="subtitle" data-max="{{ $SUBTITLE_MAX }}">
+                        0/{{ $SUBTITLE_MAX }}
+                    </span>
+                </label>
+                <input
+                    id="subtitle"
+                    type="text"
+                    name="subtitle"
+                    value="{{ old('subtitle') }}"
+                    class="form-control"
+                    maxlength="{{ $SUBTITLE_MAX }}"
+                    autocomplete="off"
+                >
+                <div class="help-text">Máximo de {{ $SUBTITLE_MAX }} caracteres.</div>
             </div>
 
             {{-- CATEGORIA --}}
@@ -129,6 +190,42 @@
 @push('scripts')
 <script src="{{ asset('libs/tinymce/tinymce.min.js') }}"></script>
 <script>
+    // ✅ Contador estilo Twitter (digitado / máximo)
+    function setupCounter(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        const counter = document.querySelector(`.char-counter[data-for="${inputId}"]`);
+        if (!counter) return;
+
+        const max = parseInt(counter.dataset.max || '0', 10);
+        const warnAt = Math.max(0, Math.floor(max * 0.85)); // 85%
+
+        function render() {
+            const len = (input.value || '').length;
+            counter.textContent = `${len}/${max}`;
+
+            counter.classList.remove('near', 'over');
+
+            if (len > max) {
+                counter.classList.add('over');
+            } else if (len >= warnAt) {
+                counter.classList.add('near');
+            }
+        }
+
+        // Atualiza em tudo: digitar, colar, desfazer, etc.
+        ['input', 'change', 'keyup', 'paste'].forEach(evt => {
+            input.addEventListener(evt, render);
+        });
+
+        // Inicial (para old())
+        render();
+    }
+
+    setupCounter('title');
+    setupCounter('subtitle');
+
     tinymce.init({
         selector: '#editor',
         height: 400,
