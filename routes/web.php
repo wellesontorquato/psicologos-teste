@@ -137,7 +137,6 @@ Route::get('/api/home-news', function () {
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0');
 })->name('home.news');
-
     
 /*
 |--------------------------------------------------------------------------
