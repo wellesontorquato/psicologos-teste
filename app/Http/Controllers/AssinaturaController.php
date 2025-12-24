@@ -16,9 +16,9 @@ class AssinaturaController extends Controller
     {
         return view('assinaturas', [
             'precos' => [
-                'mensal' => 'price_1RVxueC1nNYXXNDRXZRHr2N3',
-                'trimestral' => 'price_1RVxv5C1nNYXXNDRYJlrrwG5',
-                'anual' => 'price_1RVxvdC1nNYXXNDR2URxfXFz',
+                'mensal'      => 'price_1RVxueC1nNYXXNDRXZRHr2N3',
+                'trimestral'  => 'price_1RVxv5C1nNYXXNDRYJlrrwG5',
+                'anual'       => 'price_1RVxvdC1nNYXXNDR2URxfXFz',
             ]
         ]);
     }
@@ -26,16 +26,19 @@ class AssinaturaController extends Controller
     public function checkout(Request $request)
     {
         $request->validate(['price_id' => 'required|string']);
+
         $user = Auth::user();
 
-        // ✅ se já existe assinatura default ativa ou em grace, não cria outra
+        // ✅ Evita criar múltiplas assinaturas "default" se já existe uma válida (ou em grace e ainda não expirou)
         $sub = $user->subscription('default');
-        if ($sub && ( $sub->valid() || $sub->onGracePeriod() )) {
-            return redirect()->route('assinaturas.minha')
-                ->with('info', 'Você já possui uma assinatura. Gerencie por "Minha Assinatura".');
-        }
+        if ($sub) {
+            $expirada = $sub->ends_at && now()->gte($sub->ends_at);
 
-        $user = Auth::user();
+            if (!$expirada && ($sub->valid() || $sub->onGracePeriod())) {
+                return redirect()->route('assinaturas.minha')
+                    ->with('info', 'Você já possui uma assinatura. Gerencie por "Minha Assinatura".');
+            }
+        }
 
         $validPrices = [
             'price_1RVxueC1nNYXXNDRXZRHr2N3', // mensal
@@ -43,29 +46,31 @@ class AssinaturaController extends Controller
             'price_1RVxvdC1nNYXXNDR2URxfXFz', // anual
         ];
 
-        if (!in_array($request->price_id, $validPrices)) {
+        if (!in_array($request->price_id, $validPrices, true)) {
             abort(403, 'Plano inválido.');
         }
 
         return $user->newSubscription('default', $request->price_id)
             ->checkout([
                 'success_url' => route('assinaturas.sucesso'),
-                'cancel_url' => route('assinaturas.cancelado'),
+                'cancel_url'  => route('assinaturas.cancelado'),
             ]);
     }
 
     public function minha()
     {
         $user = Auth::user();
+
+        // pode ser null (usuário nunca assinou; trial ou pós-trial)
         $assinatura = $user->subscription('default');
-
-        if (!$assinatura) {
-            return redirect()->route('assinaturas.index')->with('error', 'Você ainda não possui uma assinatura ativa.');
-        }
-
         $faturas = $user->invoices();
 
-        return view('assinatura.minha', compact('assinatura', 'faturas'));
+        // flag pro blade decidir o que mostrar
+        $temHistoricoAssinatura = $user->subscriptions()
+            ->where('type', 'default')
+            ->exists();
+
+        return view('assinatura.minha', compact('assinatura', 'faturas', 'temHistoricoAssinatura'));
     }
 
     public function cancelar()
@@ -78,17 +83,19 @@ class AssinaturaController extends Controller
                 ->with('error', 'Você não possui assinatura.');
         }
 
-        if ($sub->canceled()) {
+        // ✅ Evita cancelar duas vezes (grace period ou já cancelada)
+        if ($sub->onGracePeriod() || $sub->canceled()) {
             return redirect()->route('assinaturas.minha')
-                ->with('info', 'Sua assinatura já está cancelada.');
+                ->with('info', 'Sua assinatura já está cancelada (ou programada para encerrar).');
         }
 
         // Cancela ao fim do período (padrão)
         $sub->cancel();
 
-        // ✅ puxa do Stripe e grava a data do fim do período (pra não depender de webhook)
+        // ✅ Puxa do Stripe e grava a data do fim do período (pra não depender de webhook)
         try {
             $stripeSub = $sub->asStripeSubscription();
+
             if (($stripeSub->cancel_at_period_end ?? false) && !empty($stripeSub->current_period_end)) {
                 $sub->ends_at = \Carbon\Carbon::createFromTimestamp($stripeSub->current_period_end);
                 $sub->save();
@@ -96,7 +103,7 @@ class AssinaturaController extends Controller
         } catch (\Throwable $e) {
             \Log::warning('Falha ao sincronizar ends_at após cancelamento', [
                 'user_id' => $user->id,
-                'err' => $e->getMessage(),
+                'err'     => $e->getMessage(),
             ]);
         }
 
@@ -110,11 +117,21 @@ class AssinaturaController extends Controller
         $assinatura = $user->subscription('default');
 
         if ($assinatura && $assinatura->onGracePeriod()) {
+
+            // ✅ Se já expirou, não adianta "retomar"
+            if ($assinatura->ends_at && now()->gte($assinatura->ends_at)) {
+                return redirect()->route('assinaturas.minha')
+                    ->with('error', 'Sua assinatura já expirou. Assine novamente para voltar a ter acesso.');
+            }
+
             $assinatura->resume();
-            return redirect()->route('assinaturas.minha')->with('success', 'Sua assinatura foi reativada com sucesso.');
+
+            return redirect()->route('assinaturas.minha')
+                ->with('success', 'Sua assinatura foi reativada com sucesso.');
         }
 
-        return redirect()->route('assinaturas.minha')->with('error', 'Não foi possível reativar a assinatura.');
+        return redirect()->route('assinaturas.minha')
+            ->with('error', 'Não foi possível reativar a assinatura.');
     }
 
     public function portal()
@@ -127,7 +144,7 @@ class AssinaturaController extends Controller
             \Log::error('Stripe Billing Portal error: ' . $e->getMessage());
 
             return response()->json([
-                'erro' => true,
+                'erro'     => true,
                 'mensagem' => $e->getMessage()
             ], 500);
         }
