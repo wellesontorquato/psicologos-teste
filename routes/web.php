@@ -99,15 +99,8 @@ Route::get('/robots.txt', function () {
 */
 Route::get('/', function () {
     $news = \App\Models\News::latest()->take(3)->get();
-
-    return response()
-        ->view('index', compact('news'))
-        // ✅ não cachear a HOME (browser + proxies)
-        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-        ->header('Pragma', 'no-cache')
-        ->header('Expires', '0');
+    return view('index', compact('news'));
 })->name('home');
-
 
 Route::view('/funcionalidades', 'pages.funcionalidades')->name('funcionalidades');
 Route::view('/planos', 'pages.planos')->name('planos');
@@ -127,6 +120,24 @@ Route::view('/politica-de-cookies', 'pages.cookies')->name('cookies');
 
 Route::get('/cdn/{path}', [\App\Http\Controllers\FileProxyController::class, 'servePublic'])
     ->where('path', '.*');
+
+Route::get('/api/home-news', function () {
+    $news = \App\Models\News::latest()->take(3)->get()->map(function ($n) {
+        return [
+            'title' => $n->title,
+            'slug' => $n->slug,
+            'excerpt' => $n->excerpt,
+            'image_url' => $n->image_url,
+            'image_webp_url' => $n->image_webp_url,
+        ];
+    });
+
+    return response()->json($news)
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
+})->name('home.news');
+
     
 /*
 |--------------------------------------------------------------------------
