@@ -32,22 +32,22 @@ class CheckSubscription
             return $next($request);
         }
 
-        // Flag: usuário já teve alguma assinatura alguma vez?
+        // ✅ Usuário já teve alguma assinatura alguma vez?
         $temHistoricoAssinatura = $user->subscriptions()
             ->where('type', 'default')
             ->exists();
 
-        // Pega a assinatura local mais recente do tipo default (pode estar cancelada/expirada)
+        // Pega a assinatura local mais recente do tipo default
         $sub = $user->subscriptions()
             ->where('type', 'default')
             ->latest('id')
             ->first();
 
         // Tenta buscar assinatura no Stripe e sincronizar "o mínimo necessário"
-        $stripeSub = null;
-
         if ($user->stripe_id) {
             try {
+                $stripeSub = null;
+
                 if ($sub && $sub->stripe_id) {
                     // Melhor: consulta a assinatura que já temos salva
                     $stripeSub = $sub->asStripeSubscription();
@@ -72,9 +72,10 @@ class CheckSubscription
 
                     $cancelAtPeriodEnd = (bool) ($stripeSub->cancel_at_period_end ?? false);
 
-                    // ✅ Se está cancelando ao fim do período, gravamos ends_at = current_period_end
-                    // ✅ Se NÃO está cancelando ao fim do período, ends_at = null (recorrente)
-                    // ✅ Se já está cancelada/encerrada e temos periodEnd, mantém ends_at = periodEnd
+                    // ends_at:
+                    // - se cancel_at_period_end => ends_at = current_period_end
+                    // - se recorrente => ends_at = null
+                    // - se status final e tem period_end => ends_at = period_end
                     $endsAt = null;
 
                     if ($periodEnd) {
@@ -100,8 +101,10 @@ class CheckSubscription
                         ]
                     );
 
-                    // Atualiza o flag pós-sync (caso ele nunca tenha tido assinatura local antes)
-                    $temHistoricoAssinatura = $temHistoricoAssinatura || true;
+                    // ✅ Recalcula o histórico após o sync, sem "forçar true"
+                    $temHistoricoAssinatura = $user->subscriptions()
+                        ->where('type', 'default')
+                        ->exists();
                 }
             } catch (\Throwable $e) {
                 \Log::warning('Stripe sync falhou no middleware', [
@@ -125,7 +128,7 @@ class CheckSubscription
         }
 
         // ✅ Sem acesso:
-        // - Se já teve assinatura alguma vez: manda pra "Minha Assinatura" (mostrar cancelada/expirada + faturas)
+        // - Se já teve assinatura alguma vez: manda pra Minha Assinatura
         // - Se nunca teve: manda pra página de planos (/assinaturas)
         if ($temHistoricoAssinatura) {
             return redirect()
