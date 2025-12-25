@@ -51,20 +51,22 @@
             @foreach($news as $article)
                 <a href="{{ route('blog.show', $article->slug) }}" class="blog-card">
                     @if ($article->image)
-                        <picture>
-                            {{-- WebP otimizado (se existir e não for igual ao fallback) --}}
-                            @if($article->image_webp_url && $article->image_webp_url !== $article->image_url)
-                                <source srcset="{{ $article->image_webp_url }}" type="image/webp">
-                            @endif
+                        <div class="blog-thumb-wrapper">
+                            <picture>
+                                {{-- WebP otimizado (se existir e não for igual ao fallback) --}}
+                                @if($article->image_webp_url && $article->image_webp_url !== $article->image_url)
+                                    <source srcset="{{ $article->image_webp_url }}" type="image/webp">
+                                @endif
 
-                            {{-- Fallback JPG/PNG --}}
-                            <img src="{{ $article->image_url }}"
-                                 alt="{{ $article->title }}"
-                                 loading="lazy"
-                                 width="160" height="100"
-                                 class="blog-thumbnail">
-                        </picture>
+                                {{-- Fallback JPG/PNG --}}
+                                <img src="{{ $article->image_url }}"
+                                     alt="{{ $article->title }}"
+                                     loading="lazy"
+                                     class="blog-thumbnail">
+                            </picture>
+                        </div>
                     @endif
+
                     <div class="blog-content">
                         {{-- Categoria --}}
                         @if ($article->category)
@@ -72,9 +74,11 @@
                         @endif
 
                         <h2 class="blog-title">{{ $article->title }}</h2>
+
                         <p class="blog-excerpt">
                             {!! $article->excerpt !!}
                         </p>
+
                         <span class="blog-read-more">Ler mais →</span>
                     </div>
                 </a>
@@ -112,12 +116,22 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .blog-thumbnail {
+    /* ✅ Wrapper fixa tamanho e garante padrão */
+    .blog-thumb-wrapper {
         width: 160px;
         height: 100px;
-        object-fit: cover;
-        border-radius: 8px;
         flex-shrink: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f3f3f3;
+    }
+
+    /* ✅ Imagem preenche o wrapper, sem variar altura */
+    .blog-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
 
     .blog-content {
@@ -157,19 +171,27 @@
         margin-top: 4px;
     }
 
-    /* Responsividade */
+    /* ✅ Responsividade: mobile-first com altura padronizada */
     @media (max-width: 640px) {
         .blog-card {
             flex-direction: column;
         }
 
-        .blog-thumbnail {
-            width: 100% !important;
-            height: auto !important;
+        .blog-thumb-wrapper {
+            width: 100%;
+            height: 180px; /* padrão visual no mobile */
         }
 
         .blog-content {
-            margin-top: 10px;
+            margin-top: 12px;
+        }
+    }
+
+    /* ✅ Opcional: melhora visual no desktop grande */
+    @media (min-width: 1024px) {
+        .blog-thumb-wrapper {
+            width: 200px;
+            height: 120px;
         }
     }
 </style>
