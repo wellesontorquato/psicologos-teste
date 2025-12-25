@@ -165,16 +165,25 @@
     /* ===== HERO (mobile-first) ===== */
     .hero { margin-bottom: 18px; }
 
+    /* ✅ FIX DO “RESPIRO” NO MOBILE:
+       em vez de margin (que pode ficar parecendo assimétrico dependendo do layout),
+       usamos padding no wrapper e deixamos a hero ocupar 100% desse espaço. */
+    .hero {
+        padding: 0 20px; /* mesmo respiro de ambos lados */
+    }
+
     .hero-media {
         position: relative;
         width: 100%;
         overflow: hidden;
         background: #f3f3f3;
         border-radius: 14px;
-        margin: 0 20px;       /* alinha com o container no mobile */
 
-        /* ✅ FIX: evita cortar título/subtítulo no mobile */
+        /* ✅ altura adaptativa no mobile */
         height: clamp(300px, 52vh, 420px);
+
+        /* ✅ remove margin lateral anterior (evita “colar” em um lado) */
+        margin: 0;
     }
 
     /* imagem inicia com blur + invisível */
@@ -227,7 +236,6 @@
         display: flex;
         align-items: flex-end;
 
-        /* ✅ FIX: menos padding no mobile = mais área útil */
         padding: 14px;
         background: linear-gradient(to top, rgba(0,0,0,.68), rgba(0,0,0,.22), rgba(0,0,0,0));
     }
@@ -250,7 +258,6 @@
         margin: 0 0 8px;
     }
 
-    /* ✅ FIX: limita linhas no mobile (evita “cortar”) */
     .hero-title {
         font-size: clamp(1.25rem, 4.8vw, 2.2rem);
         font-weight: 900;
@@ -293,13 +300,16 @@
 
     /* ===== Desktop: Full-bleed NYTimes ===== */
     @media (min-width: 992px) {
+        /* no desktop não queremos padding lateral, é full-bleed */
+        .hero {
+            padding: 0;
+        }
+
         .hero-media {
             width: 100vw;
             margin-left: calc(50% - 50vw);
             margin-right: calc(50% - 50vw);
             border-radius: 0;
-
-            /* Desktop continua com altura “hero” */
             height: min(62vh, 520px);
         }
 
@@ -316,7 +326,6 @@
             padding-top: 6px;
         }
 
-        /* no desktop pode deixar um pouco mais de texto */
         .hero-title { -webkit-line-clamp: 4; }
         .hero-subtitle { -webkit-line-clamp: 4; }
         .hero-meta { -webkit-line-clamp: 2; }
