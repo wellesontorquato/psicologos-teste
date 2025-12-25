@@ -23,51 +23,83 @@
             $features = [
                 [
                     'title' => 'Agenda Visual',
-                    'desc'  => 'Drag & drop, notificações e visualização por semana ou dia.',
+                    'desc'  => 'Drag & drop, semana/dia e notificações.',
                     'details_title' => 'Agenda Visual + Google Agenda + Google Meet',
-                    'details' => 'Sincronização com o Google Agenda (com acesso às agendas já existentes) e envio automático de e-mails ao paciente com o link da sala do Google Meet ao criar a sessão.'
+                    'details_html' => '
+                        <p>Organize sua agenda com <strong>drag &amp; drop</strong>, visualização por <strong>dia</strong> e <strong>semana</strong>, e fluxo rápido para criar, editar e remarcar sessões.</p>
+                        <p>Com a <strong>sincronização com o Google Agenda</strong>, você visualiza as agendas já existentes e mantém tudo alinhado, evitando conflitos de horários.</p>
+                        <p>Ao criar um atendimento, o sistema pode <strong>enviar automaticamente um e-mail</strong> ao paciente com o <strong>link da sala do Google Meet</strong>, facilitando teleatendimentos.</p>
+                    '
                 ],
                 [
                     'title' => 'Evoluções',
-                    'desc'  => 'Linha do tempo com registros detalhados de cada sessão.',
-                    'details_title' => null,
-                    'details' => null
+                    'desc'  => 'Prontuário com histórico completo.',
+                    'details_title' => 'Evoluções e Registro Clínico',
+                    'details_html' => '
+                        <p>Registre evoluções em uma <strong>linha do tempo</strong> por paciente, com histórico de sessões sempre acessível.</p>
+                        <p>Mantenha consistência clínica com informações estruturadas: progresso, intervenções, observações e metas terapêuticas.</p>
+                        <p>Mais segurança, organização e agilidade no atendimento, sem depender de anotações soltas.</p>
+                    '
                 ],
                 [
                     'title' => 'Financeiro',
-                    'desc'  => 'Controle de pagamentos e notificações de sessões anteriores não pagas.',
-                    'details_title' => 'Financeiro com Multimoedas',
-                    'details' => 'Suporte a multimoedas para organizar atendimentos e recebimentos em diferentes moedas.'
+                    'desc'  => 'Pagamentos, pendências e controle.',
+                    'details_title' => 'Financeiro + Multimoedas',
+                    'details_html' => '
+                        <p>Controle recebimentos por paciente e por período, com visão clara de <strong>pagos</strong>, <strong>pendentes</strong> e <strong>atrasados</strong>.</p>
+                        <p>Automatize notificações de sessões não pagas e mantenha sua rotina financeira mais simples.</p>
+                        <p>Com <strong>multimoedas</strong>, registre atendimentos e recebimentos em moedas diferentes — ideal para pacientes de outros países.</p>
+                    '
                 ],
                 [
                     'title' => 'Arquivos',
-                    'desc'  => 'Documentos organizados por tipo: exames, contratos e relatórios.',
-                    'details_title' => null,
-                    'details' => null
+                    'desc'  => 'Documentos e anexos organizados.',
+                    'details_title' => 'Arquivos e Documentos',
+                    'details_html' => '
+                        <p>Guarde exames, relatórios, contratos, termos e anexos clínicos por paciente.</p>
+                        <p>Organização por tipo e acesso rápido, reduzindo risco de perda e retrabalho.</p>
+                        <p>Mais agilidade para encontrar documentos durante o atendimento.</p>
+                    '
                 ],
                 [
                     'title' => 'Confirmação por WhatsApp',
-                    'desc'  => 'Envio automático de lembretes e confirmações de sessão.',
-                    'details_title' => null,
-                    'details' => null
+                    'desc'  => 'Lembretes e confirmações automáticas.',
+                    'details_title' => 'WhatsApp Automático',
+                    'details_html' => '
+                        <p>Envie confirmações e lembretes automáticos, reduzindo faltas e atrasos.</p>
+                        <p>Padronize a comunicação com o paciente, mantendo profissionalismo e consistência.</p>
+                        <p>Mais previsibilidade na agenda e menos esforço manual no dia a dia.</p>
+                    '
                 ],
                 [
                     'title' => 'Painel de Indicadores',
-                    'desc'  => 'Gráficos com estatísticas por período e evolução da clínica.',
-                    'details_title' => null,
-                    'details' => null
+                    'desc'  => 'Métricas e visão por período.',
+                    'details_title' => 'Indicadores e Estatísticas',
+                    'details_html' => '
+                        <p>Visualize métricas com gráficos por período, entendendo a evolução da clínica.</p>
+                        <p>Acompanhe tendências, volume de sessões e padrões de agenda para tomar decisões melhores.</p>
+                        <p>Transforme dados em clareza: enxergue o que está funcionando e onde otimizar.</p>
+                    '
                 ],
                 [
                     'title' => 'Banco de dados robusto',
-                    'desc'  => 'Seus arquivos e dados sempre bem guardados e protegidos.',
-                    'details_title' => null,
-                    'details' => null
+                    'desc'  => 'Segurança e estabilidade.',
+                    'details_title' => 'Segurança e Confiabilidade',
+                    'details_html' => '
+                        <p>Estrutura pensada para manter seus dados protegidos e sua operação estável.</p>
+                        <p>Centralize registros e arquivos em um ambiente confiável, reduzindo riscos de perda.</p>
+                        <p>Ideal para migrar de planilhas e anotações para um fluxo mais profissional.</p>
+                    '
                 ],
                 [
                     'title' => 'Exportações em PDF e Excel',
-                    'desc'  => 'Relatórios completos com filtros por data, status e pagamento.',
-                    'details_title' => null,
-                    'details' => null
+                    'desc'  => 'Relatórios com filtros e exportação.',
+                    'details_title' => 'Relatórios e Exportações',
+                    'details_html' => '
+                        <p>Gere relatórios completos com filtros por data, status e situação de pagamento.</p>
+                        <p>Exporte em <strong>PDF</strong> para arquivo e em <strong>Excel</strong> para análises e fechamento financeiro.</p>
+                        <p>Ganhe tempo no fechamento mensal e no acompanhamento de resultados.</p>
+                    '
                 ],
             ];
         @endphp
@@ -75,21 +107,18 @@
         @foreach($features as $f)
             <div class="feature-card-page">
                 <h4 class="feature-title-page">{{ $f['title'] }}</h4>
-
                 <p class="feature-desc-page">{{ $f['desc'] }}</p>
 
-                @if(!empty($f['details']))
-                    <button
-                        type="button"
-                        class="feature-more-btn-page"
-                        data-bs-toggle="modal"
-                        data-bs-target="#featureModalPage"
-                        data-feature-title="{{ $f['details_title'] ?? $f['title'] }}"
-                        data-feature-body="{{ $f['details'] }}"
-                    >
-                        Ver detalhes
-                    </button>
-                @endif
+                <button
+                    type="button"
+                    class="feature-more-btn-page"
+                    data-bs-toggle="modal"
+                    data-bs-target="#featureModalPage"
+                    data-feature-title="{{ $f['details_title'] ?? $f['title'] }}"
+                    data-feature-body-html="{{ e($f['details_html']) }}"
+                >
+                    Ver detalhes
+                </button>
             </div>
         @endforeach
     </div>
@@ -99,14 +128,14 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
                 <div class="modal-header" style="background: linear-gradient(to right, #00aaff, #00c4ff);">
-                    <h5 class="modal-title" id="featureModalPageLabel" style="color: #fff; font-weight: 800; margin: 0;">
+                    <h5 class="modal-title" id="featureModalPageLabel" style="color: #fff; font-weight: 900; margin: 0;">
                         Detalhes
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
 
                 <div class="modal-body" style="padding: 22px;">
-                    <p id="featureModalPageBody" style="margin: 0; color: #333; line-height: 1.6;"></p>
+                    <div id="featureModalPageBody" style="color: #333; line-height: 1.7;"></div>
                 </div>
 
                 <div class="modal-footer" style="border-top: 1px solid #eee;">
@@ -152,7 +181,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        min-height: 190px;
+        min-height: 210px;
         transition: 0.25s ease;
     }
 
@@ -164,7 +193,7 @@
     .feature-title-page {
         color: #00aaff;
         margin: 0;
-        font-weight: 800;
+        font-weight: 900;
         font-size: 1.1rem;
     }
 
@@ -186,7 +215,7 @@
         border: 1px solid rgba(0,170,255,0.35);
         background: rgba(0,170,255,0.08);
         color: #008ecc;
-        font-weight: 800;
+        font-weight: 900;
         border-radius: 999px;
         padding: 8px 14px;
         cursor: pointer;
@@ -198,6 +227,9 @@
         border-color: rgba(0,170,255,0.55);
         transform: translateY(-1px);
     }
+
+    #featureModalPageBody p { margin: 0 0 10px; }
+    #featureModalPageBody p:last-child { margin-bottom: 0; }
 </style>
 
 <script>
@@ -208,13 +240,20 @@
         modalEl.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const title = button?.getAttribute('data-feature-title') || 'Detalhes';
-            const body  = button?.getAttribute('data-feature-body') || '';
+
+            const escapedHtml = button?.getAttribute('data-feature-body-html') || '';
+            const bodyHtml = escapedHtml
+                .replaceAll('&lt;', '<')
+                .replaceAll('&gt;', '>')
+                .replaceAll('&amp;', '&')
+                .replaceAll('&quot;', '"')
+                .replaceAll('&#039;', "'");
 
             const titleEl = modalEl.querySelector('#featureModalPageLabel');
             const bodyEl  = modalEl.querySelector('#featureModalPageBody');
 
             if (titleEl) titleEl.textContent = title;
-            if (bodyEl) bodyEl.textContent = body;
+            if (bodyEl) bodyEl.innerHTML = bodyHtml;
         });
     });
 </script>
