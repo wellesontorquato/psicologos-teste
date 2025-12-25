@@ -22,70 +22,100 @@
         @php
             $features = [
                 [
-                    'icon' => 'calendar-check',
                     'title' => 'Agenda Visual',
                     'desc'  => 'Drag & drop, notificações e visualização por semana ou dia.',
+                    'details_title' => 'Agenda Visual + Google Agenda + Google Meet',
                     'details' => 'Sincronização com o Google Agenda (com acesso às agendas já existentes) e envio automático de e-mails ao paciente com o link da sala do Google Meet ao criar a sessão.'
                 ],
                 [
-                    'icon' => 'file-lines',
                     'title' => 'Evoluções',
                     'desc'  => 'Linha do tempo com registros detalhados de cada sessão.',
+                    'details_title' => null,
                     'details' => null
                 ],
                 [
-                    'icon' => 'coins',
                     'title' => 'Financeiro',
                     'desc'  => 'Controle de pagamentos e notificações de sessões anteriores não pagas.',
+                    'details_title' => 'Financeiro com Multimoedas',
                     'details' => 'Suporte a multimoedas para organizar atendimentos e recebimentos em diferentes moedas.'
                 ],
                 [
-                    'icon' => 'cloud-upload-alt',
                     'title' => 'Arquivos',
                     'desc'  => 'Documentos organizados por tipo: exames, contratos e relatórios.',
+                    'details_title' => null,
                     'details' => null
                 ],
                 [
-                    'icon' => 'whatsapp',
                     'title' => 'Confirmação por WhatsApp',
                     'desc'  => 'Envio automático de lembretes e confirmações de sessão.',
+                    'details_title' => null,
                     'details' => null
                 ],
                 [
-                    'icon' => 'chart-line',
                     'title' => 'Painel de Indicadores',
                     'desc'  => 'Gráficos com estatísticas por período e evolução da clínica.',
+                    'details_title' => null,
                     'details' => null
                 ],
                 [
-                    'icon' => 'user-shield',
                     'title' => 'Banco de dados robusto',
                     'desc'  => 'Seus arquivos e dados sempre bem guardados e protegidos.',
+                    'details_title' => null,
                     'details' => null
                 ],
                 [
-                    'icon' => 'file-export',
                     'title' => 'Exportações em PDF e Excel',
                     'desc'  => 'Relatórios completos com filtros por data, status e pagamento.',
+                    'details_title' => null,
                     'details' => null
                 ],
             ];
         @endphp
 
         @foreach($features as $f)
-            <div class="feature-card">
-                <h4 class="feature-title">{{ $f['title'] }}</h4>
+            <div class="feature-card-page">
+                <h4 class="feature-title-page">{{ $f['title'] }}</h4>
 
-                <p class="feature-desc">{{ $f['desc'] }}</p>
+                <p class="feature-desc-page">{{ $f['desc'] }}</p>
 
                 @if(!empty($f['details']))
-                    <details class="feature-details">
-                        <summary>Ver detalhes</summary>
-                        <p>{{ $f['details'] }}</p>
-                    </details>
+                    <button
+                        type="button"
+                        class="feature-more-btn-page"
+                        data-bs-toggle="modal"
+                        data-bs-target="#featureModalPage"
+                        data-feature-title="{{ $f['details_title'] ?? $f['title'] }}"
+                        data-feature-body="{{ $f['details'] }}"
+                    >
+                        Ver detalhes
+                    </button>
                 @endif
             </div>
         @endforeach
+    </div>
+
+    {{-- Modal Único --}}
+    <div class="modal fade" id="featureModalPage" tabindex="-1" aria-labelledby="featureModalPageLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(to right, #00aaff, #00c4ff);">
+                    <h5 class="modal-title" id="featureModalPageLabel" style="color: #fff; font-weight: 800; margin: 0;">
+                        Detalhes
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body" style="padding: 22px;">
+                    <p id="featureModalPageBody" style="margin: 0; color: #333; line-height: 1.6;"></p>
+                </div>
+
+                <div class="modal-footer" style="border-top: 1px solid #eee;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -111,9 +141,8 @@
     (82) 99112-8022
 </a>
 
-{{-- Estilos locais (mantém cards uniformes sem quebrar layout) --}}
 <style>
-    .feature-card {
+    .feature-card-page {
         background: #f8f9fa;
         border-radius: 12px;
         padding: 25px;
@@ -123,61 +152,71 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        min-height: 190px; /* mantém padrão visual */
+        min-height: 190px;
+        transition: 0.25s ease;
     }
 
-    .feature-title {
+    .feature-card-page:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .feature-title-page {
         color: #00aaff;
         margin: 0;
-        font-weight: 700;
+        font-weight: 800;
         font-size: 1.1rem;
     }
 
-    .feature-desc {
+    .feature-desc-page {
         color: #555;
         margin: 0;
         line-height: 1.45;
 
         display: -webkit-box;
-        -webkit-line-clamp: 3; /* evita “estourar” o card */
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
 
-    .feature-details {
-        margin-top: auto; /* joga o "Ver detalhes" pra base do card */
-    }
+    .feature-more-btn-page {
+        margin-top: auto;
+        align-self: flex-start;
 
-    .feature-details summary {
-        cursor: pointer;
+        border: 1px solid rgba(0,170,255,0.35);
+        background: rgba(0,170,255,0.08);
         color: #008ecc;
-        font-weight: 600;
-        list-style: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        user-select: none;
+        font-weight: 800;
+        border-radius: 999px;
+        padding: 8px 14px;
+        cursor: pointer;
+        transition: 0.2s ease;
     }
 
-    .feature-details summary::-webkit-details-marker {
-        display: none;
-    }
-
-    .feature-details summary::after {
-        content: "▾";
-        font-size: 0.9rem;
+    .feature-more-btn-page:hover {
+        background: rgba(0,170,255,0.14);
+        border-color: rgba(0,170,255,0.55);
         transform: translateY(-1px);
     }
-
-    .feature-details[open] summary::after {
-        content: "▴";
-    }
-
-    .feature-details p {
-        margin: 10px 0 0;
-        color: #555;
-        line-height: 1.5;
-    }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('featureModalPage');
+        if (!modalEl) return;
+
+        modalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const title = button?.getAttribute('data-feature-title') || 'Detalhes';
+            const body  = button?.getAttribute('data-feature-body') || '';
+
+            const titleEl = modalEl.querySelector('#featureModalPageLabel');
+            const bodyEl  = modalEl.querySelector('#featureModalPageBody');
+
+            if (titleEl) titleEl.textContent = title;
+            if (bodyEl) bodyEl.textContent = body;
+        });
+    });
+</script>
 
 @endsection
