@@ -170,9 +170,11 @@
         width: 100%;
         overflow: hidden;
         background: #f3f3f3;
-        aspect-ratio: 16 / 9; /* evita capa “alta demais” no mobile */
         border-radius: 14px;
         margin: 0 20px;       /* alinha com o container no mobile */
+
+        /* ✅ FIX: evita cortar título/subtítulo no mobile */
+        height: clamp(300px, 52vh, 420px);
     }
 
     /* imagem inicia com blur + invisível */
@@ -224,8 +226,10 @@
         z-index: 2;
         display: flex;
         align-items: flex-end;
-        padding: 18px;
-        background: linear-gradient(to top, rgba(0,0,0,.64), rgba(0,0,0,.18), rgba(0,0,0,0));
+
+        /* ✅ FIX: menos padding no mobile = mais área útil */
+        padding: 14px;
+        background: linear-gradient(to top, rgba(0,0,0,.68), rgba(0,0,0,.22), rgba(0,0,0,0));
     }
 
     .hero-inner {
@@ -238,7 +242,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -246,31 +250,43 @@
         margin: 0 0 8px;
     }
 
+    /* ✅ FIX: limita linhas no mobile (evita “cortar”) */
     .hero-title {
-        font-size: clamp(1.5rem, 4.2vw, 2.4rem);
+        font-size: clamp(1.25rem, 4.8vw, 2.2rem);
         font-weight: 900;
         color: #fff;
         margin: 0 0 8px;
         line-height: 1.12;
         text-shadow: 0 10px 28px rgba(0,0,0,.35);
+
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .hero-subtitle {
-        font-size: clamp(1rem, 2.3vw, 1.2rem);
+        font-size: clamp(0.98rem, 2.8vw, 1.15rem);
         color: rgba(255,255,255,.92);
         margin: 0 0 10px;
         line-height: 1.35;
         max-width: 62ch;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .hero-meta {
         color: rgba(255,255,255,.9);
-        font-size: 0.92rem;
+        font-size: 0.90rem;
         margin: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .hero-dot { opacity: .85; }
@@ -282,12 +298,14 @@
             margin-left: calc(50% - 50vw);
             margin-right: calc(50% - 50vw);
             border-radius: 0;
-            aspect-ratio: auto;
+
+            /* Desktop continua com altura “hero” */
             height: min(62vh, 520px);
         }
 
         .hero-overlay {
             padding: 34px 20px;
+            background: linear-gradient(to top, rgba(0,0,0,.62), rgba(0,0,0,.18), rgba(0,0,0,0));
         }
 
         .hero-inner {
@@ -297,6 +315,11 @@
         .article-container {
             padding-top: 6px;
         }
+
+        /* no desktop pode deixar um pouco mais de texto */
+        .hero-title { -webkit-line-clamp: 4; }
+        .hero-subtitle { -webkit-line-clamp: 4; }
+        .hero-meta { -webkit-line-clamp: 2; }
     }
 
     /* ===== Fallback header sem imagem ===== */
