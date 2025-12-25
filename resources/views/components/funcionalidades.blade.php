@@ -14,22 +14,65 @@
         ">
             @php
                 $features = [
-                    ['icon' => 'calendar-check', 'title' => 'Agenda Visual', 'desc' => 'Drag & drop, notificações, e visualização por semana ou dia.'],
-                    ['icon' => 'file-lines', 'title' => 'Evoluções', 'desc' => 'Linha do tempo com registros detalhados de cada sessão.'],
-                    ['icon' => 'coins', 'title' => 'Financeiro', 'desc' => 'Controle de pagamentos, envio de notificações de sessões anteriores não pagas.'],
-                    ['icon' => 'cloud-upload-alt', 'title' => 'Arquivos', 'desc' => 'Documentos organizados por tipo: exames, contratos, relatórios.'],
-                    ['icon' => 'whatsapp', 'title' => 'Confirmação por WhatsApp', 'desc' => 'Envio automático de lembretes e confirmações de sessão.'],
-                    ['icon' => 'chart-line', 'title' => 'Painel de Indicadores', 'desc' => 'Gráficos com estatísticas por período e evolução da clínica.'],
-                    ['icon' => 'user-shield', 'title' => 'Banco de dados robusto', 'desc' => 'Não se preocupe, conosco seus arquivos estarão sempre bem guardados.'],
-                    ['icon' => 'file-export', 'title' => 'Exportações em PDF e Excel', 'desc' => 'Relatórios completos com filtros por data, status e pagamento.'],
+                    [
+                        'icon' => 'calendar-check',
+                        'title' => 'Agenda Visual',
+                        'desc'  => 'Agenda com drag & drop, visualização por dia ou semana, sincronização com o Google Agenda (visualizando agendas já existentes) e envio automático de e-mails ao paciente com o link da sala do Google Meet ao criar o atendimento.'
+                    ],
+                    [
+                        'icon' => 'file-lines',
+                        'title' => 'Evoluções',
+                        'desc'  => 'Linha do tempo completa com registros clínicos organizados e histórico detalhado de cada sessão.'
+                    ],
+                    [
+                        'icon' => 'coins',
+                        'title' => 'Financeiro',
+                        'desc'  => 'Controle de pagamentos, notificações de sessões não pagas e suporte a multimoedas para atendimentos e recebimentos em diferentes moedas.'
+                    ],
+                    [
+                        'icon' => 'cloud-upload-alt',
+                        'title' => 'Arquivos',
+                        'desc'  => 'Armazene e organize documentos por tipo, como exames, contratos, relatórios e anexos clínicos.'
+                    ],
+                    [
+                        'icon' => 'whatsapp',
+                        'title' => 'Confirmação por WhatsApp',
+                        'desc'  => 'Envio automático de lembretes e confirmações de sessão diretamente para o WhatsApp do paciente.'
+                    ],
+                    [
+                        'icon' => 'chart-line',
+                        'title' => 'Painel de Indicadores',
+                        'desc'  => 'Visualize gráficos e estatísticas por período, acompanhando a evolução da sua clínica.'
+                    ],
+                    [
+                        'icon' => 'user-shield',
+                        'title' => 'Banco de dados robusto',
+                        'desc'  => 'Seus dados protegidos com segurança, estabilidade e backups automáticos.'
+                    ],
+                    [
+                        'icon' => 'file-export',
+                        'title' => 'Exportações em PDF e Excel',
+                        'desc'  => 'Gere relatórios completos com filtros por data, status de sessão e situação de pagamento.'
+                    ],
                 ];
             @endphp
 
             @foreach ($features as $f)
-                <div style="background: #f8f9fa; border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 3px 8px rgba(0,0,0,0.05); transition: 0.3s ease;">
+                <div style="
+                    background: #f8f9fa;
+                    border-radius: 16px;
+                    padding: 25px;
+                    text-align: center;
+                    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+                    transition: 0.3s ease;
+                ">
                     <i class="fa-solid fa-{{ $f['icon'] }}" style="font-size: 1.8rem; color: #00aaff; margin-bottom: 15px;"></i>
-                    <h4 style="font-size: 1.1rem; margin-bottom: 10px;">{{ $f['title'] }}</h4>
-                    <p style="font-size: 0.95rem; color: #555;">{{ $f['desc'] }}</p>
+                    <h4 style="font-size: 1.1rem; margin-bottom: 10px;">
+                        {{ $f['title'] }}
+                    </h4>
+                    <p style="font-size: 0.95rem; color: #555;">
+                        {{ $f['desc'] }}
+                    </p>
                 </div>
             @endforeach
         </div>
