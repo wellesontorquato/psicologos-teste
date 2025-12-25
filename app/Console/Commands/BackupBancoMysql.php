@@ -31,7 +31,7 @@ class BackupBancoMysql extends Command
         $pass = $cfg['password'] ?? env('DB_PASSWORD');
 
         // 🧠 caminho absoluto evita problema de PATH no cron
-        $mysqldump = '/usr/bin/mysqldump';
+        $mysqldump = env('MYSQLDUMP_PATH', 'mysqldump');
 
         $cmd = [
             $mysqldump,
