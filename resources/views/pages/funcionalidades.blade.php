@@ -16,97 +16,140 @@
     </div>
 </section>
 
-{{-- Conteúdo em cards, fora do gradiente --}}
+{{-- Conteúdo em cards --}}
 <section style="max-width: 1100px; margin: 50px auto; padding: 0 20px;">
-    <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 30px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 30px;">
         @php
             $features = [
                 [
                     'title' => 'Agenda Visual',
                     'desc'  => 'Drag & drop, semana/dia e notificações.',
+                    'is_new'=> true,
                     'details_title' => 'Agenda Visual + Google Agenda + Google Meet',
                     'details_html' => '
                         <p>Organize sua agenda com <strong>drag &amp; drop</strong>, visualização por <strong>dia</strong> e <strong>semana</strong>, e fluxo rápido para criar, editar e remarcar sessões.</p>
                         <p>Com a <strong>sincronização com o Google Agenda</strong>, você visualiza as agendas já existentes e mantém tudo alinhado, evitando conflitos de horários.</p>
-                        <p>Ao criar um atendimento, o sistema pode <strong>enviar automaticamente um e-mail</strong> ao paciente com o <strong>link da sala do Google Meet</strong>, facilitando teleatendimentos.</p>
+                        <p>Ao criar um atendimento, o sistema pode <strong>enviar automaticamente um e-mail</strong> ao paciente com o <strong>link da sala do Google Meet</strong>.</p>
+                        <ul>
+                            <li>Evita conflitos de agenda</li>
+                            <li>Teleconsulta com link pronto</li>
+                            <li>Fluxo rápido de remarcação</li>
+                        </ul>
                     '
                 ],
                 [
                     'title' => 'Evoluções',
                     'desc'  => 'Prontuário com histórico completo.',
+                    'is_new'=> false,
                     'details_title' => 'Evoluções e Registro Clínico',
                     'details_html' => '
                         <p>Registre evoluções em uma <strong>linha do tempo</strong> por paciente, com histórico de sessões sempre acessível.</p>
-                        <p>Mantenha consistência clínica com informações estruturadas: progresso, intervenções, observações e metas terapêuticas.</p>
-                        <p>Mais segurança, organização e agilidade no atendimento, sem depender de anotações soltas.</p>
+                        <p>Padronize anotações clínicas com mais segurança e organização.</p>
+                        <ul>
+                            <li>Histórico completo</li>
+                            <li>Mais consistência no prontuário</li>
+                            <li>Menos anotações dispersas</li>
+                        </ul>
                     '
                 ],
                 [
                     'title' => 'Financeiro',
                     'desc'  => 'Pagamentos, pendências e controle.',
+                    'is_new'=> true,
                     'details_title' => 'Financeiro + Multimoedas',
                     'details_html' => '
-                        <p>Controle recebimentos por paciente e por período, com visão clara de <strong>pagos</strong>, <strong>pendentes</strong> e <strong>atrasados</strong>.</p>
-                        <p>Automatize notificações de sessões não pagas e mantenha sua rotina financeira mais simples.</p>
-                        <p>Com <strong>multimoedas</strong>, registre atendimentos e recebimentos em moedas diferentes — ideal para pacientes de outros países.</p>
+                        <p>Controle recebimentos por paciente e por período, com visão clara de <strong>pagos</strong>, <strong>pendentes</strong> e <strong>atrasos</strong>.</p>
+                        <p>Envie notificações de sessões não pagas e acompanhe seu fluxo financeiro.</p>
+                        <p><strong>Multimoedas</strong>: registre atendimentos e recebimentos em moedas diferentes — ideal para pacientes de fora do Brasil.</p>
+                        <ul>
+                            <li>Organização por período</li>
+                            <li>Notificações de pendências</li>
+                            <li>Recebimentos em moedas diferentes</li>
+                        </ul>
                     '
                 ],
                 [
                     'title' => 'Arquivos',
                     'desc'  => 'Documentos e anexos organizados.',
+                    'is_new'=> false,
                     'details_title' => 'Arquivos e Documentos',
                     'details_html' => '
-                        <p>Guarde exames, relatórios, contratos, termos e anexos clínicos por paciente.</p>
-                        <p>Organização por tipo e acesso rápido, reduzindo risco de perda e retrabalho.</p>
-                        <p>Mais agilidade para encontrar documentos durante o atendimento.</p>
+                        <p>Centralize exames, relatórios, contratos, termos e anexos clínicos por paciente.</p>
+                        <ul>
+                            <li>Organização por tipo</li>
+                            <li>Acesso rápido</li>
+                            <li>Menos retrabalho</li>
+                        </ul>
                     '
                 ],
                 [
                     'title' => 'Confirmação por WhatsApp',
                     'desc'  => 'Lembretes e confirmações automáticas.',
+                    'is_new'=> false,
                     'details_title' => 'WhatsApp Automático',
                     'details_html' => '
-                        <p>Envie confirmações e lembretes automáticos, reduzindo faltas e atrasos.</p>
-                        <p>Padronize a comunicação com o paciente, mantendo profissionalismo e consistência.</p>
-                        <p>Mais previsibilidade na agenda e menos esforço manual no dia a dia.</p>
+                        <p>Envie confirmações e lembretes automáticos, reduzindo faltas e melhorando previsibilidade.</p>
+                        <ul>
+                            <li>Menos faltas</li>
+                            <li>Mensagens padronizadas</li>
+                            <li>Mais tempo livre</li>
+                        </ul>
                     '
                 ],
                 [
                     'title' => 'Painel de Indicadores',
                     'desc'  => 'Métricas e visão por período.',
+                    'is_new'=> false,
                     'details_title' => 'Indicadores e Estatísticas',
                     'details_html' => '
                         <p>Visualize métricas com gráficos por período, entendendo a evolução da clínica.</p>
-                        <p>Acompanhe tendências, volume de sessões e padrões de agenda para tomar decisões melhores.</p>
-                        <p>Transforme dados em clareza: enxergue o que está funcionando e onde otimizar.</p>
+                        <ul>
+                            <li>Decisões baseadas em dados</li>
+                            <li>Visão clara por período</li>
+                            <li>Melhoria contínua</li>
+                        </ul>
                     '
                 ],
                 [
                     'title' => 'Banco de dados robusto',
                     'desc'  => 'Segurança e estabilidade.',
+                    'is_new'=> false,
                     'details_title' => 'Segurança e Confiabilidade',
                     'details_html' => '
-                        <p>Estrutura pensada para manter seus dados protegidos e sua operação estável.</p>
-                        <p>Centralize registros e arquivos em um ambiente confiável, reduzindo riscos de perda.</p>
-                        <p>Ideal para migrar de planilhas e anotações para um fluxo mais profissional.</p>
+                        <p>Centralize tudo em um ambiente confiável, com foco em estabilidade e organização.</p>
+                        <ul>
+                            <li>Confiabilidade</li>
+                            <li>Organização</li>
+                            <li>Segurança</li>
+                        </ul>
                     '
                 ],
                 [
                     'title' => 'Exportações em PDF e Excel',
                     'desc'  => 'Relatórios com filtros e exportação.',
+                    'is_new'=> false,
                     'details_title' => 'Relatórios e Exportações',
                     'details_html' => '
                         <p>Gere relatórios completos com filtros por data, status e situação de pagamento.</p>
-                        <p>Exporte em <strong>PDF</strong> para arquivo e em <strong>Excel</strong> para análises e fechamento financeiro.</p>
-                        <p>Ganhe tempo no fechamento mensal e no acompanhamento de resultados.</p>
+                        <ul>
+                            <li>PDF para arquivar</li>
+                            <li>Excel para analisar</li>
+                            <li>Fechamento mensal rápido</li>
+                        </ul>
                     '
                 ],
             ];
         @endphp
 
-        @foreach($features as $f)
+        @foreach($features as $index => $f)
             <div class="feature-card-page">
-                <h4 class="feature-title-page">{{ $f['title'] }}</h4>
+                <div class="feature-page-top">
+                    <h4 class="feature-title-page">{{ $f['title'] }}</h4>
+                    @if(!empty($f['is_new']))
+                        <span class="feature-badge">NOVO</span>
+                    @endif
+                </div>
+
                 <p class="feature-desc-page">{{ $f['desc'] }}</p>
 
                 <button
@@ -114,6 +157,7 @@
                     class="feature-more-btn-page"
                     data-bs-toggle="modal"
                     data-bs-target="#featureModalPage"
+                    data-feature-index="{{ $index }}"
                     data-feature-title="{{ $f['details_title'] ?? $f['title'] }}"
                     data-feature-body-html="{{ e($f['details_html']) }}"
                 >
@@ -125,10 +169,14 @@
 
     {{-- Modal Único --}}
     <div class="modal fade modal-soft" id="featureModalPage" tabindex="-1" aria-labelledby="featureModalPageLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content modal-soft-content">
                 <div class="modal-header modal-soft-header">
-                    <h5 class="modal-title" id="featureModalPageLabel">Detalhes</h5>
+                    <div class="modal-head-left">
+                        <h5 class="modal-title" id="featureModalPageLabel">Detalhes</h5>
+                        <p class="modal-subtitle">Navegue entre funcionalidades sem sair da página.</p>
+                    </div>
+
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
 
@@ -137,13 +185,32 @@
                 </div>
 
                 <div class="modal-footer modal-soft-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">
+                    <div class="modal-nav">
+                        <button type="button" class="btn btn-outline-light modal-nav-btn" id="featurePrevBtnPage">
+                            ← Anterior
+                        </button>
+                        <button type="button" class="btn btn-outline-light modal-nav-btn" id="featureNextBtnPage">
+                            Próximo →
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 900;">
                         Fechar
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Dataset --}}
+    <script type="application/json" id="featureDatasetPage">
+        {!! json_encode(array_map(function($f) {
+            return [
+                'title' => $f['details_title'] ?? $f['title'],
+                'body'  => $f['details_html'],
+            ];
+        }, $features), JSON_UNESCAPED_UNICODE) !!}
+    </script>
 </section>
 
 {{-- BOTÃO WHATSAPP FLOTANTE --}}
@@ -179,13 +246,19 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        min-height: 210px;
-        transition: 0.25s ease;
+        min-height: 220px;
+        transition: 0.28s ease;
     }
-
     .feature-card-page:hover {
         transform: translateY(-1px);
-        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+        box-shadow: 0 14px 34px rgba(0,0,0,0.06);
+    }
+
+    .feature-page-top{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 10px;
     }
 
     .feature-title-page {
@@ -193,6 +266,18 @@
         margin: 0;
         font-weight: 900;
         font-size: 1.1rem;
+    }
+
+    .feature-badge{
+        font-size: .72rem;
+        font-weight: 900;
+        letter-spacing: .5px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        color: #003a52;
+        background: rgba(0,170,255,0.18);
+        border: 1px solid rgba(0,170,255,0.28);
+        white-space: nowrap;
     }
 
     .feature-desc-page {
@@ -217,63 +302,136 @@
         border-radius: 999px;
         padding: 8px 14px;
         cursor: pointer;
-        transition: 0.2s ease;
+        transition: 0.22s ease;
     }
-
     .feature-more-btn-page:hover {
         background: rgba(0,170,255,0.14);
         border-color: rgba(0,170,255,0.55);
         transform: translateY(-1px);
     }
 
-    /* ===== Modal suave (animação premium) ===== */
-    .modal-soft .modal-dialog {
-        transform: translateY(10px) scale(0.98);
-        transition: transform .28s ease, opacity .28s ease;
-        opacity: 0;
+    /* ===== Modal: SUPER suave (entrada/saída) ===== */
+    .modal-soft { --soft-ease: cubic-bezier(.2,.9,.2,1); }
+
+    .modal-backdrop.show{
+        opacity: .62;
+        transition: opacity .38s var(--soft-ease);
     }
-    .modal-soft.show .modal-dialog {
+
+    @supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+        .modal-soft.show {
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+    }
+
+    .modal-soft .modal-dialog{
+        transform: translateY(20px) scale(.96);
+        opacity: 0;
+        filter: blur(2px);
+        transition:
+            transform .42s var(--soft-ease),
+            opacity .42s var(--soft-ease),
+            filter .42s var(--soft-ease);
+    }
+    .modal-soft.show .modal-dialog{
         transform: translateY(0) scale(1);
         opacity: 1;
+        filter: blur(0);
     }
 
-    .modal-backdrop.show {
-        opacity: .55;
-        transition: opacity .25s ease;
-    }
-
-    .modal-soft-content {
-        border-radius: 16px;
+    .modal-soft-content{
+        border-radius: 18px;
         overflow: hidden;
         border: 0;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        box-shadow: 0 28px 90px rgba(0,0,0,0.32);
     }
-    .modal-soft-header {
+
+    .modal-soft-header{
         background: linear-gradient(to right, #00aaff, #00c4ff);
         border: 0;
         padding: 16px 18px;
-    }
-    .modal-soft-header .modal-title {
-        color: #fff;
-        font-weight: 900;
-        margin: 0;
-    }
-    .modal-soft-body {
-        color: #333;
-        line-height: 1.75;
-    }
-    .modal-soft-body p { margin: 0 0 10px; }
-    .modal-soft-body p:last-child { margin-bottom: 0; }
-    .modal-soft-footer {
-        border-top: 1px solid #eee;
-        padding: 14px 18px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .modal-soft .modal-dialog,
-        .modal-backdrop.show {
-            transition: none !important;
+    .modal-head-left{ display:flex; flex-direction:column; gap:4px; }
+    .modal-soft-header .modal-title{
+        color:#fff;
+        font-weight: 900;
+        margin: 0;
+        line-height: 1.15;
+    }
+    .modal-subtitle{
+        margin: 0;
+        color: rgba(255,255,255,.9);
+        font-size: .92rem;
+        line-height: 1.3;
+        max-width: 70ch;
+    }
+
+    /* Scroll interno suave */
+    .modal-dialog-scrollable .modal-body{
+        max-height: calc(100vh - 210px);
+        overflow: auto;
+        scroll-behavior: smooth;
+        padding: 18px;
+    }
+
+    .modal-soft-body{
+        color: #222;
+        line-height: 1.75;
+        font-size: 1rem;
+    }
+    .modal-soft-body p{ margin: 0 0 10px; }
+    .modal-soft-body ul{ margin: 10px 0 0; padding-left: 20px; }
+    .modal-soft-body li{ margin: 6px 0; }
+
+    .modal-soft-footer{
+        border-top: 1px solid rgba(255,255,255,.15);
+        background: #0b1620;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .modal-nav{
+        display:flex;
+        gap:10px;
+        flex-wrap: wrap;
+    }
+    .modal-nav-btn{
+        border-radius: 12px;
+        font-weight: 900;
+        padding: 8px 14px;
+    }
+
+    @media (max-width: 576px){
+        .modal-soft-footer{
+            flex-direction: column;
+            align-items: stretch;
         }
+        .modal-nav{
+            width: 100%;
+            justify-content: space-between;
+        }
+        .modal-nav-btn{
+            flex: 1;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+        .modal-soft .modal-dialog,
+        .modal-backdrop.show,
+        .modal-dialog-scrollable .modal-body{
+            transition: none !important;
+            scroll-behavior: auto !important;
+        }
+        .modal-soft .modal-dialog{ filter: none !important; }
     }
 </style>
 
@@ -282,20 +440,53 @@
         const modalEl = document.getElementById('featureModalPage');
         if (!modalEl) return;
 
-        modalEl.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const title = button?.getAttribute('data-feature-title') || 'Detalhes';
+        const dataEl = document.getElementById('featureDatasetPage');
+        const features = dataEl ? JSON.parse(dataEl.textContent) : [];
 
-            const escapedHtml = button?.getAttribute('data-feature-body-html') || '';
-            const bodyHtml = escapedHtml
+        const titleEl = modalEl.querySelector('#featureModalPageLabel');
+        const bodyEl  = modalEl.querySelector('#featureModalPageBody');
+        const prevBtn = modalEl.querySelector('#featurePrevBtnPage');
+        const nextBtn = modalEl.querySelector('#featureNextBtnPage');
+
+        let currentIndex = 0;
+
+        function decodeHtml(escapedHtml){
+            return (escapedHtml || '')
                 .replaceAll('&lt;', '<')
                 .replaceAll('&gt;', '>')
                 .replaceAll('&amp;', '&')
                 .replaceAll('&quot;', '"')
                 .replaceAll('&#039;', "'");
+        }
 
-            modalEl.querySelector('#featureModalPageLabel').textContent = title;
-            modalEl.querySelector('#featureModalPageBody').innerHTML = bodyHtml;
+        function render(index){
+            if (!features.length) return;
+
+            currentIndex = (index + features.length) % features.length;
+
+            titleEl.textContent = features[currentIndex].title || 'Detalhes';
+            bodyEl.innerHTML = decodeHtml(features[currentIndex].body || '');
+
+            const modalBody = modalEl.querySelector('.modal-body');
+            if (modalBody) modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const disabled = features.length <= 1;
+            prevBtn.disabled = disabled;
+            nextBtn.disabled = disabled;
+        }
+
+        modalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const idx = parseInt(button?.getAttribute('data-feature-index') || '0', 10);
+            render(Number.isFinite(idx) ? idx : 0);
+        });
+
+        prevBtn.addEventListener('click', function(){ render(currentIndex - 1); });
+        nextBtn.addEventListener('click', function(){ render(currentIndex + 1); });
+
+        modalEl.addEventListener('keydown', function(e){
+            if (e.key === 'ArrowLeft')  { e.preventDefault(); render(currentIndex - 1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); render(currentIndex + 1); }
         });
     });
 </script>
