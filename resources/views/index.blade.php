@@ -794,7 +794,19 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const mediaQuery = window.matchMedia('(max-width: 768px)');
-    let images = getCurrentImages();
+
+    // ✅ listas resolvidas (URL completa) para usar no modal conforme contexto
+    const mobileImagesResolved = mobileImages.map(img => ({
+        webp: `{{ asset('images/') }}/${img.webp}`,
+        fallback: `{{ asset('images/') }}/${img.fallback}`
+    }));
+
+    const desktopImagesResolved = desktopImages.map(img => ({
+        webp: `{{ asset('images/') }}/${img.webp}`,
+        fallback: `{{ asset('images/') }}/${img.fallback}`
+    }));
+
+    let images = getCurrentImages(); // carrossel usa a lista “do breakpoint”
     let currentIndex = 0;
     let carouselInterval;
 
@@ -813,11 +825,13 @@ document.addEventListener('DOMContentLoaded', () => {
     pictureEl.setAttribute('aria-label', 'Abrir galeria de imagens do PsiGestor');
 
     function getCurrentImages() {
-        const raw = mediaQuery.matches ? mobileImages : desktopImages;
-        return raw.map(img => ({
-            webp: `{{ asset('images/') }}/${img.webp}`,
-            fallback: `{{ asset('images/') }}/${img.fallback}`
-        }));
+        return mediaQuery.matches ? mobileImagesResolved : desktopImagesResolved;
+    }
+
+    // ✅ modal abre “mobile no mobile” e “desktop no desktop”
+    function bestModalSrc(idx) {
+        const list = mediaQuery.matches ? mobileImagesResolved : desktopImagesResolved;
+        return list[idx]?.fallback || '';
     }
 
     function showImage(index) {
@@ -898,7 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalEl = document.getElementById('heroGalleryModal');
     let modalInstance = null;
 
-    // estado do pan/zoom (agora pan funciona mesmo em 100% e sem cortar por travas)
+    // estado do pan/zoom (pan funciona mesmo em 100% e com folga)
     let stageEl, imgEl, prevBtn, nextBtn, counterEl, thumbsEl;
     let zoomInBtn, zoomOutBtn, zoomResetBtn;
 
@@ -906,7 +920,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const minScale = 1;
     const maxScale = 4;
 
-    // ✅ pan sempre disponível (mesmo em 1x)
     let tx = 0;
     let ty = 0;
 
@@ -933,17 +946,14 @@ document.addEventListener('DOMContentLoaded', () => {
         imgEl.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`;
     }
 
-    // ✅ agora o limite de pan considera a diferença entre stage e imagem “contain”
+    // ✅ pan com “slack” em 1x e limites maiores com zoom
     function limitPan(){
         if (!stageRect) return;
 
         const stageW = stageRect.width;
         const stageH = stageRect.height;
 
-        // como a imagem está width/height 100% com object-fit: contain,
-        // em 1x ela sempre cabe, então damos uma folga (overscroll) pequena,
-        // e em zoom maior, o limite cresce naturalmente.
-        const baseSlack = Math.min(60, stageW * 0.08); // “pode mexer” mesmo em 100%
+        const baseSlack = Math.min(90, stageW * 0.12); // folga maior para não “cortar”
         const maxX = ((stageW * (scale - 1)) / 2) + baseSlack;
         const maxY = ((stageH * (scale - 1)) / 2) + baseSlack;
 
@@ -1068,21 +1078,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ✅ thumbs agora seguem “mobile no mobile / desktop no desktop”
     function buildThumbs(){
         if (!thumbsEl) return;
         thumbsEl.innerHTML = '';
-        images.forEach((img, i) => {
+
+        const list = mediaQuery.matches ? mobileImagesResolved : desktopImagesResolved;
+
+        list.forEach((img, i) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'hero-thumb';
             btn.setAttribute('aria-label', `Abrir imagem ${i+1}`);
+
             const im = document.createElement('img');
             im.src = img.fallback;
             im.alt = `Miniatura ${i+1}`;
+
             btn.appendChild(im);
             btn.addEventListener('click', () => setGalleryIndex(i));
             thumbsEl.appendChild(btn);
         });
+
         syncThumbs();
     }
 
@@ -1091,13 +1108,13 @@ document.addEventListener('DOMContentLoaded', () => {
         getGalleryEls();
 
         if (imgEl) {
-            imgEl.src = images[currentIndex].fallback;
+            imgEl.src = bestModalSrc(currentIndex);
             imgEl.alt = `Mockup PsiGestor ${currentIndex + 1}`;
         }
         if (counterEl) counterEl.textContent = `${currentIndex + 1} / ${images.length}`;
 
         syncThumbs();
-        resetZoom(); // reseta, mas pan volta a funcionar em 100%
+        resetZoom();
     }
 
     function goPrev(){ setGalleryIndex(currentIndex - 1); }
@@ -1153,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
         }, { passive: false });
 
-        // mouse pan (✅ sempre)
+        // mouse pan (sempre)
         stageEl.addEventListener('mousedown', (e) => {
             isPanning = true;
             stageRect = stageEl.getBoundingClientRect();
@@ -1236,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             touchMode = null;
         }, { passive: false });
 
-        // double click/tap: alterna zoom (mantém)
+        // double click/tap: alterna zoom
         let lastTap = 0;
         stageEl.addEventListener('click', (e) => {
             const now = Date.now();
@@ -1283,12 +1300,18 @@ document.addEventListener('DOMContentLoaded', () => {
     showImage(0);
     startCarousel();
 
-    // Atualiza imagens ao mudar breakpoint
+    // ✅ breakpoint: atualiza carrossel + (se modal aberto) atualiza thumbs e imagem do modal
     mediaQuery.addEventListener('change', () => {
         images = getCurrentImages();
+
         currentIndex = 0;
         setupDots();
         showImage(0);
+
+        if (modalEl && modalEl.classList.contains('show')) {
+            buildThumbs();
+            setGalleryIndex(currentIndex);
+        }
     });
 
     // Efeito tilt 3D
@@ -1318,5 +1341,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endpush
+
 
 
