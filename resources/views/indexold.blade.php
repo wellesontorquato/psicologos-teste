@@ -3,38 +3,26 @@
 @section('content')
 
 {{-- HERO SECTION --}}
-<section class="hero hero-newyear" id="inicio">
-    {{-- Camada de confetes (sazonal) --}}
-    <div class="hero-confetti" aria-hidden="true"></div>
-
+<section class="hero" id="inicio">
     <div class="hero-container">
-
+        
         {{-- COLUNA DE TEXTO --}}
         <div class="hero-text" data-aos="fade-right">
-            <span class="newyear-badge">Especial de Ano Novo</span>
-
             <h1>A sua prática clínica, <br><strong>organizada e humanizada.</strong></h1>
-
             <p class="subtitle">
                 PsiGestor é a plataforma completa para psicólogos, psicanalistas e psiquiatras.
                 Concentre-se no que realmente importa: o cuidado com seus pacientes.
             </p>
 
             <div class="hero-cta-group">
-                <a href="{{ route('register') }}" class="btn-hero-main btn-hero-newyear">
+                <a href="{{ route('register') }}" class="btn-hero-main">
                     Comece seu teste grátis
                 </a>
-
-                <div class="trial-box trial-box-newyear">
-                    <strong>10 dias grátis</strong>
-                    <strong><small>Sem cartão de crédito</small></strong>
-                    <strong><small>Acesso imediato</small></strong>
+                <div class="trial-box">
+                    <strong>🎁 10 dias grátis</strong>
+                    <strong><small>✅ Sem cartão de crédito</small></strong>
+                    <strong><small>✅ Acesso imediato</small></strong>
                 </div>
-            </div>
-
-            <div class="newyear-note">
-                <span class="spark"></span>
-                <span>Comece o ano com a rotina clínica em dia — sem complicação.</span>
             </div>
         </div>
 
@@ -47,21 +35,6 @@
                 </div>
                 <div class="carousel-dots" id="carouselDots">
                     {{-- Dots serão gerados pelo JavaScript --}}
-                </div>
-            </div>
-
-            <div class="newyear-mini">
-                <div class="mini-card">
-                    <i class="bi bi-calendar2-check"></i>
-                    <span>Agenda e lembretes</span>
-                </div>
-                <div class="mini-card">
-                    <i class="bi bi-shield-check"></i>
-                    <span>Prontuário seguro</span>
-                </div>
-                <div class="mini-card">
-                    <i class="bi bi-graph-up"></i>
-                    <span>Financeiro organizado</span>
                 </div>
             </div>
         </div>
@@ -78,7 +51,7 @@
 {{-- BOTÃO WHATSAPP FLUTUANTE --}}
 <a href="https://wa.me/5582991128022?text=Olá,%20tenho%20interesse%20no%20PsiGestor!"
    aria-label="Abrir conversa no WhatsApp com PsiGestor"
-   target="_blank"
+   target="_blank" 
    class="whatsapp-fab">
    <i class="bi bi-whatsapp"></i>
    <span>Fale Conosco</span>
@@ -89,206 +62,43 @@
 
 @push('styles')
 <style>
-/* =========================
-   HERO BASE (seu layout)
-========================= */
+/* HERO SECTION */
 .hero {
+    background: linear-gradient(135deg, #00aaff 0%, #0077ff 100%);
     color: white;
     padding: 60px 20px;
     min-height: 90vh;
+    /* Prefixo para garantir compatibilidade do Flexbox */
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
+    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-align-items: center;
     -ms-flex-align: center;
     align-items: center;
     overflow: hidden;
 }
 
-/* =========================
-   HERO: ANO NOVO (sazonal)
-========================= */
-.hero-newyear {
-    position: relative;
-    background:
-        radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,0.14), transparent 55%),
-        radial-gradient(900px 500px at 80% 0%, rgba(255,215,0,0.18), transparent 55%),
-        radial-gradient(900px 500px at 70% 80%, rgba(0,255,255,0.10), transparent 60%),
-        linear-gradient(135deg, #061a3a 0%, #003a8c 45%, #0077ff 100%);
-}
-
-.hero-newyear::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.10), transparent 18%),
-        radial-gradient(circle at 35% 10%, rgba(255,255,255,0.08), transparent 16%),
-        radial-gradient(circle at 80% 30%, rgba(255,255,255,0.10), transparent 18%),
-        radial-gradient(circle at 60% 70%, rgba(255,255,255,0.08), transparent 18%);
-    opacity: .9;
-    pointer-events: none;
-}
-
-.hero-newyear::after {
-    content: "";
-    position: absolute;
-    inset: -80px -80px -80px -80px;
-    background:
-        radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.32), transparent 22%),
-        radial-gradient(circle at 75% 25%, rgba(0, 255, 255, 0.25), transparent 22%),
-        radial-gradient(circle at 60% 75%, rgba(255, 105, 180, 0.18), transparent 26%),
-        radial-gradient(circle at 35% 80%, rgba(173, 255, 47, 0.14), transparent 26%);
-    filter: blur(22px);
-    opacity: .55;
-    pointer-events: none;
-}
-
-/* Confetes */
-.hero-confetti {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.confetti {
-    position: absolute;
-    top: -12px;
-    width: 10px;
-    height: 16px;
-    border-radius: 3px;
-    opacity: 0.9;
-    animation: confettiFall linear forwards;
-    will-change: transform, opacity;
-}
-
-@keyframes confettiFall {
-    0%   { transform: translateY(-20px) rotate(0deg); opacity: 0; }
-    10%  { opacity: 0.9; }
-    100% { transform: translateY(110vh) rotate(520deg); opacity: 0; }
-}
-
-/* Badge */
-.newyear-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    padding: 7px 12px;
-    margin-bottom: 14px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.14);
-    border: 1px solid rgba(255,255,255,0.22);
-    color: rgba(255,255,255,0.92);
-}
-
-.newyear-note {
-    margin-top: 18px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 14px;
-    background: rgba(0,0,0,0.14);
-    border: 1px solid rgba(255,255,255,0.18);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    color: rgba(255,255,255,0.92);
-    font-size: 0.95rem;
-}
-
-.newyear-note .spark {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: rgba(255,215,0,0.95);
-    box-shadow: 0 0 0 6px rgba(255,215,0,0.15);
-}
-
-/* CTA com brilho */
-.btn-hero-newyear {
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-hero-newyear::after {
-    content: "";
-    position: absolute;
-    top: -40%;
-    left: -30%;
-    width: 60%;
-    height: 180%;
-    transform: rotate(18deg);
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
-    opacity: 0;
-    transition: opacity .25s ease;
-}
-
-.btn-hero-newyear:hover::after {
-    opacity: 1;
-    animation: shineMove 900ms ease forwards;
-}
-
-@keyframes shineMove {
-    from { transform: translateX(0) rotate(18deg); }
-    to   { transform: translateX(220%) rotate(18deg); }
-}
-
-/* Mini-cards abaixo do carrossel */
-.newyear-mini {
-    margin-top: 18px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    width: 100%;
-}
-
-.mini-card {
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.10);
-    border: 1px solid rgba(255,255,255,0.18);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    color: rgba(255,255,255,0.92);
-    font-size: 0.92rem;
-}
-
-.mini-card i {
-    font-size: 1.1rem;
-    opacity: .95;
-}
-
-/* =========================
-   SEU LAYOUT (mantido)
-========================= */
+/* LAYOUT ATUALIZADO PARA DESKTOP */
 .hero-container {
     max-width: 1200px;
     margin: auto;
+    /* Prefixo para garantir compatibilidade do Flexbox */
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
+    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-align-items: center;
     -ms-flex-align: center;
     align-items: center;
     -webkit-justify-content: space-between;
     -ms-flex-pack: justify;
     justify-content: space-between;
-    gap: 40px;
-    position: relative;
-    z-index: 2; /* fica acima das camadas do fundo */
+    gap: 40px; /* A maioria dos navegadores modernos já suporta `gap` */
 }
 
 .hero-text {
+    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-flex: 1 1 55%;
     -ms-flex: 1 1 55%;
     flex: 1 1 55%;
@@ -296,10 +106,12 @@
 }
 
 .hero-image-wrapper {
+    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-flex: 1 1 45%;
     -ms-flex: 1 1 45%;
     flex: 1 1 45%;
     max-width: 500px;
+    /* Prefixo para garantir compatibilidade do Flexbox */
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
@@ -311,6 +123,7 @@
     align-items: center;
 }
 
+/* NOVO TÍTULO DO CARROSSEL */
 .carousel-title {
     font-size: 1.1rem;
     font-weight: 500;
@@ -320,7 +133,9 @@
 }
 
 .hero-text h1 {
+    /* Fallback para navegadores que não suportam clamp() */
     font-size: 2.8rem;
+    /* Valor moderno com clamp() */
     font-size: clamp(2rem, 5vw, 3.2rem);
     font-weight: 700;
     line-height: 1.2;
@@ -333,7 +148,9 @@
 }
 
 .hero-text .subtitle {
+    /* Fallback para navegadores que não suportam clamp() */
     font-size: 1.1rem;
+    /* Valor moderno com clamp() */
     font-size: clamp(1rem, 2.5vw, 1.15rem);
     margin-bottom: 30px;
     line-height: 1.6;
@@ -376,6 +193,7 @@
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
+    /* Prefixo para o efeito de vidro no Safari */
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     color: #ffffff;
@@ -389,17 +207,12 @@
     gap: 5px;
 }
 
-.trial-box-newyear {
-    background: rgba(255,255,255,0.14);
-    border: 1px solid rgba(255,255,255,0.22);
-}
-
 #carouselPicture {
     position: relative;
     width: 100%;
-    padding-top: 56.25%;
+    padding-top: 56.25%; 
     border-radius: 20px;
-    overflow: hidden;
+    overflow: hidden; 
     background: rgba(0,0,0,0.2);
 }
 
@@ -486,7 +299,7 @@
     max-width: 80%;
 }
 
-/* MOBILE */
+/* LAYOUT ATUALIZADO PARA MOBILE */
 @media (max-width: 992px) {
     .hero-container {
         -webkit-flex-direction: column;
@@ -502,13 +315,11 @@
     .hero-image-wrapper {
         margin-top: 40px;
     }
-    .newyear-mini {
-        grid-template-columns: 1fr;
-    }
 }
-
 @media (max-width: 768px) {
-    .whatsapp-fab span { display: none; }
+    .whatsapp-fab span {
+        display: none;
+    }
     .whatsapp-fab {
         width: 55px;
         height: 55px;
@@ -518,15 +329,8 @@
         justify-content: center;
     }
 }
-
-/* Acessibilidade: reduz movimento */
-@media (prefers-reduced-motion: reduce) {
-    .confetti { display: none; }
-    .btn-hero-newyear::after { display: none; }
-}
 </style>
 @endpush
-
 
 @push('scripts')
 <script>
@@ -632,10 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Inicializa tudo
     setupDots();
     showImage(0);
     startCarousel();
 
+    // Atualiza imagens e dots ao redimensionar para outro breakpoint
     mediaQuery.addEventListener('change', () => {
         images = getCurrentImages();
         currentIndex = 0;
@@ -643,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showImage(0);
     });
 
+    // Efeito tilt 3D
     const tiltElement = document.getElementById('carouselTilt');
     if (tiltElement) {
         tiltElement.addEventListener('mousemove', (e) => {
@@ -659,41 +466,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Facebook Pixel (opcional)
     const cta = document.querySelector('.btn-hero-main');
     if (cta) {
         cta.addEventListener('click', () => {
             if (typeof fbq === 'function') fbq('track', 'Lead');
         });
-    }
-
-    /* =========================
-       CONFETTI (sazonal)
-    ========================= */
-    const wrap = document.querySelector('.hero-newyear .hero-confetti');
-    if (wrap) {
-        const colors = [
-            'rgba(255,215,0,0.95)',
-            'rgba(0,255,255,0.85)',
-            'rgba(255,105,180,0.75)',
-            'rgba(173,255,47,0.70)',
-            'rgba(255,255,255,0.70)'
-        ];
-        const qty = window.innerWidth < 768 ? 26 : 42;
-
-        for (let i = 0; i < qty; i++) {
-            const c = document.createElement('span');
-            c.className = 'confetti';
-            c.style.left = (Math.random() * 100) + '%';
-            c.style.background = colors[Math.floor(Math.random() * colors.length)];
-            c.style.animationDuration = (3.8 + Math.random() * 2.8).toFixed(2) + 's';
-            c.style.animationDelay = (Math.random() * 1.6).toFixed(2) + 's';
-            c.style.width = (6 + Math.random() * 10).toFixed(0) + 'px';
-            c.style.height = (10 + Math.random() * 16).toFixed(0) + 'px';
-            wrap.appendChild(c);
-
-            const totalMs = (parseFloat(c.style.animationDuration) + parseFloat(c.style.animationDelay)) * 1000;
-            setTimeout(() => c.remove(), totalMs + 200);
-        }
     }
 });
 </script>
