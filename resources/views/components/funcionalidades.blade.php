@@ -437,6 +437,44 @@
             scroll-behavior: auto !important;
         }
     }
+
+    /* ===============================
+   MOBILE: Features como carrossel
+   =============================== */
+    @media (max-width: 768px) {
+
+        .features-grid {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            padding-left: 8px;
+            padding-right: 8px;
+
+            /* swipe suave */
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+
+            /* evita scroll vertical acidental */
+            overscroll-behavior-x: contain;
+        }
+
+        .features-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        .feature-card {
+            flex: 0 0 82%;
+            scroll-snap-align: start;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            min-height: 260px;
+        }
+
+        .feature-card:active {
+            transform: scale(0.98);
+        }
+    }
 </style>
 
 <script>
