@@ -48,3 +48,4 @@ class WhatsAppNotifier
         }
     }
 }
+//FIM DO CÓDIGO//
