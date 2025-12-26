@@ -14,7 +14,7 @@
                 Concentre-se no que realmente importa: o cuidado com seus pacientes.
             </p>
 
-            {{-- ✅ NOVO: Chips (pill buttons) --}}
+            {{-- Chips --}}
             <div class="hero-chips" aria-label="Destaques do PsiGestor">
                 <div class="hero-chip">
                     <i class="bi bi-calendar-check"></i>
@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            {{-- ✅ NOVO: Barra de destaque --}}
+            {{-- Barra destaque --}}
             <div class="hero-highlight" role="note" aria-label="Mensagem sazonal de ano novo">
                 <span class="hero-highlight-dot" aria-hidden="true"></span>
                 <span>Comece o ano com a rotina clínica em dia — sem complicação.</span>
@@ -53,12 +53,56 @@
         {{-- COLUNA DA IMAGEM/CARROSSEL --}}
         <div class="hero-image-wrapper" data-aos="fade-left" data-aos-delay="200">
             <h3 class="carousel-title">Veja como é a interface do PsiGestor</h3>
+
+            {{-- dica de clique --}}
+            <div class="carousel-hint">
+                <i class="bi bi-arrows-fullscreen"></i>
+                <span>Clique para ampliar</span>
+            </div>
+
             <div class="carousel-tilt" id="carouselTilt">
-                <div id="carouselPicture">
+                <div id="carouselPicture" class="carousel-clickable" role="button" aria-label="Abrir galeria de imagens" tabindex="0">
                     {{-- O conteúdo será preenchido pelo JavaScript --}}
                 </div>
                 <div class="carousel-dots" id="carouselDots">
                     {{-- Dots serão gerados pelo JavaScript --}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ✅ Modal Galeria (Bootstrap) --}}
+    <div class="modal fade" id="heroGalleryModal" tabindex="-1" aria-labelledby="heroGalleryTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content hero-gallery-modal">
+                <div class="modal-header hero-gallery-header">
+                    <div class="d-flex flex-column">
+                        <h5 class="modal-title" id="heroGalleryTitle" style="margin:0; font-weight:900;">Galeria PsiGestor</h5>
+                        <small class="hero-gallery-subtitle">Use ← → para navegar</small>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body hero-gallery-body">
+                    <button type="button" class="hero-gallery-nav hero-gallery-prev" id="heroGalleryPrev" aria-label="Imagem anterior">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+
+                    <figure class="hero-gallery-figure">
+                        <img id="heroGalleryImg" src="" alt="Imagem ampliada do PsiGestor" loading="lazy">
+                    </figure>
+
+                    <button type="button" class="hero-gallery-nav hero-gallery-next" id="heroGalleryNext" aria-label="Próxima imagem">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="modal-footer hero-gallery-footer">
+                    <span id="heroGalleryCounter" class="hero-gallery-counter">1 / 3</span>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 900;">
+                        Fechar
+                    </button>
                 </div>
             </div>
         </div>
@@ -92,37 +136,32 @@
     color: white;
     padding: 60px 20px;
     min-height: 90vh;
-    /* Prefixo para garantir compatibilidade do Flexbox */
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-align-items: center;
     -ms-flex-align: center;
     align-items: center;
     overflow: hidden;
 }
 
-/* LAYOUT ATUALIZADO PARA DESKTOP */
+/* LAYOUT DESKTOP */
 .hero-container {
     max-width: 1200px;
     margin: auto;
-    /* Prefixo para garantir compatibilidade do Flexbox */
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-align-items: center;
     -ms-flex-align: center;
     align-items: center;
     -webkit-justify-content: space-between;
     -ms-flex-pack: justify;
     justify-content: space-between;
-    gap: 40px; /* A maioria dos navegadores modernos já suporta `gap` */
+    gap: 40px;
 }
 
 .hero-text {
-    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-flex: 1 1 55%;
     -ms-flex: 1 1 55%;
     flex: 1 1 55%;
@@ -130,12 +169,10 @@
 }
 
 .hero-image-wrapper {
-    /* Prefixo para garantir compatibilidade do Flexbox */
     -webkit-flex: 1 1 45%;
     -ms-flex: 1 1 45%;
     flex: 1 1 45%;
     max-width: 500px;
-    /* Prefixo para garantir compatibilidade do Flexbox */
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
@@ -147,19 +184,33 @@
     align-items: center;
 }
 
-/* NOVO TÍTULO DO CARROSSEL */
+/* TÍTULO */
 .carousel-title {
     font-size: 1.1rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.95);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
+/* dica */
+.carousel-hint{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .9rem;
+    color: rgba(255,255,255,.88);
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+    padding: 8px 12px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
 .hero-text h1 {
-    /* Fallback para navegadores que não suportam clamp() */
     font-size: 2.8rem;
-    /* Valor moderno com clamp() */
     font-size: clamp(2rem, 5vw, 3.2rem);
     font-weight: 700;
     line-height: 1.2;
@@ -172,16 +223,14 @@
 }
 
 .hero-text .subtitle {
-    /* Fallback para navegadores que não suportam clamp() */
     font-size: 1.1rem;
-    /* Valor moderno com clamp() */
     font-size: clamp(1rem, 2.5vw, 1.15rem);
-    margin-bottom: 18px; /* era 30px */
+    margin-bottom: 18px;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* ✅ NOVO: Chips */
+/* Chips */
 .hero-chips {
     display: -webkit-flex;
     display: -ms-flexbox;
@@ -217,12 +266,9 @@
     line-height: 1.1;
 }
 
-.hero-chip i {
-    font-size: 1.1rem;
-    opacity: 0.95;
-}
+.hero-chip i { font-size: 1.1rem; opacity: 0.95; }
 
-/* ✅ NOVO: Barra destaque */
+/* Barra destaque */
 .hero-highlight {
     display: -webkit-flex;
     display: -ms-flexbox;
@@ -254,14 +300,12 @@
     width: 10px;
     height: 10px;
     border-radius: 999px;
-    background: rgba(255,215,0,0.95); /* douradinho */
+    background: rgba(255,215,0,0.95);
     box-shadow: 0 0 0 4px rgba(255,215,0,0.18);
     flex: 0 0 auto;
 }
 
-.hero-highlight span:last-child {
-    font-weight: 600;
-}
+.hero-highlight span:last-child { font-weight: 600; }
 
 /* CTA */
 .hero-cta-group {
@@ -300,7 +344,6 @@
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
-    /* Prefixo para o efeito de vidro no Safari */
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     color: #ffffff;
@@ -317,10 +360,20 @@
 #carouselPicture {
     position: relative;
     width: 100%;
-    padding-top: 56.25%; 
+    padding-top: 56.25%;
     border-radius: 20px;
-    overflow: hidden; 
+    overflow: hidden;
     background: rgba(0,0,0,0.2);
+}
+
+/* torna clicável para abrir galeria */
+.carousel-clickable{
+    cursor: pointer;
+    outline: none;
+}
+.carousel-clickable:focus{
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.25);
+    border-radius: 20px;
 }
 
 .carousel-tilt {
@@ -335,6 +388,8 @@
 
 .carousel-tilt img {
     width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
     border-radius: 20px;
     transition: opacity 0.6s ease-in-out;
@@ -365,6 +420,7 @@
     transform: scale(1.2);
 }
 
+/* WhatsApp */
 .whatsapp-fab {
     position: fixed;
     bottom: 25px;
@@ -387,11 +443,7 @@
     transition: all 0.3s ease;
     font-size: 1rem;
 }
-
-.whatsapp-fab i {
-    font-size: 1.5rem;
-}
-
+.whatsapp-fab i { font-size: 1.5rem; }
 .whatsapp-fab:hover {
     background: #1ebd5a;
     transform: translateY(-5px) scale(1.05);
@@ -406,36 +458,259 @@
     max-width: 80%;
 }
 
-/* LAYOUT ATUALIZADO PARA MOBILE */
+/* ✅ MODAL GALERIA (zoom + thumbs + swipe) */
+.hero-gallery-modal{
+    border-radius: 18px;
+    overflow: hidden;
+    border: 0;
+    background: #0b1620;
+    box-shadow: 0 28px 90px rgba(0,0,0,0.35);
+}
+
+.hero-gallery-header{
+    background: linear-gradient(90deg, rgba(6,18,37,1), rgba(0,119,255,1));
+    border: 0;
+    color: #fff;
+    padding: 14px 16px;
+}
+
+.hero-gallery-subtitle{
+    margin-top: 4px;
+    color: rgba(255,255,255,.85);
+    font-size: .9rem;
+}
+
+.hero-gallery-body{
+    position: relative;
+    padding: 12px 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Toolbar */
+.hero-gallery-toolbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hero-gallery-counter{
+    color: rgba(255,255,255,0.85);
+    font-weight: 900;
+}
+
+.hero-gallery-actions{
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.hero-gallery-btn{
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.95);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform .18s ease, background .18s ease;
+}
+.hero-gallery-btn:hover{
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-1px);
+}
+
+/* Stage (zoom/pan) */
+.hero-gallery-stage{
+    position: relative;
+    width: 100%;
+    height: min(78vh, 720px);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    overflow: hidden;
+    touch-action: none;
+}
+
+.hero-gallery-stage img{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    will-change: transform;
+    user-select: none;
+    -webkit-user-drag: none;
+    max-width: none;
+    max-height: none;
+}
+
+/* Prev/Next flutuantes */
+.hero-gallery-nav{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.95);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform .18s ease, background .18s ease, opacity .18s ease;
+    z-index: 3;
+}
+.hero-gallery-nav:hover{
+    transform: translateY(-50%) scale(1.06);
+    background: rgba(255,255,255,0.12);
+}
+.hero-gallery-prev{ left: 10px; }
+.hero-gallery-next{ right: 10px; }
+.hero-gallery-nav:disabled{
+    opacity: .45;
+    cursor: default;
+}
+
+/* Thumbs */
+.hero-gallery-thumbs{
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+}
+
+.hero-thumb{
+    flex: 0 0 auto;
+    width: 92px;
+    height: 56px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    cursor: pointer;
+    opacity: .78;
+    transition: transform .18s ease, opacity .18s ease, border-color .18s ease;
+}
+.hero-thumb img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hero-thumb:hover{
+    opacity: 1;
+    transform: translateY(-1px);
+}
+.hero-thumb.is-active{
+    opacity: 1;
+    border-color: rgba(0,170,255,0.65);
+    box-shadow: 0 10px 22px rgba(0,170,255,0.18);
+}
+
+/* Footer */
+.hero-gallery-footer{
+    border-top: 1px solid rgba(255,255,255,0.10);
+    background: #0b1620;
+    padding: 12px 16px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ====== MOBILE-FIRST: melhora geral ====== */
 @media (max-width: 992px) {
     .hero-container {
         -webkit-flex-direction: column;
         -ms-flex-direction: column;
         flex-direction: column;
         text-align: center;
+        gap: 28px;
     }
+
     .hero-cta-group {
         -webkit-justify-content: center;
         -ms-flex-pack: center;
         justify-content: center;
     }
-    .hero-image-wrapper {
-        margin-top: 40px;
-    }
 
-    /* Centraliza chips e highlight no mobile/tablet */
+    .hero-image-wrapper { margin-top: 10px; }
+
     .hero-chips {
         -webkit-justify-content: center;
         -ms-flex-pack: center;
         justify-content: center;
     }
+
     .hero-highlight {
         margin-left: auto;
         margin-right: auto;
     }
 }
 
+/* ✅ Mobile melhor: chips em grid + CTA full */
 @media (max-width: 768px) {
+    .hero { padding: 46px 16px; min-height: auto; }
+
+    .hero-text h1 { margin-bottom: 14px; }
+    .hero-text .subtitle { margin-bottom: 14px; }
+
+    .hero-chips{
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .hero-chip{
+        width: 100%;
+        justify-content: center;
+        padding: 11px 12px;
+        border-radius: 12px;
+        font-size: 0.92rem;
+        text-align: center;
+    }
+
+    .hero-chip i{ font-size: 1.05rem; }
+
+    .hero-highlight{
+        max-width: 100%;
+        padding: 12px 12px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+        text-align: left;
+    }
+
+    .hero-cta-group{
+        width: 100%;
+        gap: 12px;
+    }
+
+    .btn-hero-main{
+        width: 100%;
+        padding: 14px 18px;
+        text-align: center;
+    }
+
+    .trial-box{
+        width: 100%;
+        align-items: center;
+    }
+
+    .carousel-hint{
+        font-size: .85rem;
+        padding: 7px 10px;
+    }
+
     .whatsapp-fab span { display: none; }
     .whatsapp-fab {
         width: 55px;
@@ -446,15 +721,22 @@
         justify-content: center;
     }
 
-    /* Chips ficam 100% mais “encaixados” */
-    .hero-chip {
-        padding: 11px 14px;
-        border-radius: 12px;
-        font-size: 0.95rem;
+    /* Modal mais compacto */
+    .hero-gallery-stage{
+        height: min(70vh, 560px);
     }
+    .hero-thumb{ width: 84px; height: 52px; }
+    .hero-gallery-nav{ width: 40px; height: 40px; }
+    .hero-gallery-btn{ padding: 7px 10px; }
+}
+
+/* Telas bem pequenas: chips 1 coluna */
+@media (max-width: 420px) {
+    .hero-chips{ grid-template-columns: 1fr; }
 }
 </style>
 @endpush
+
 
 @push('scripts')
 <script>
@@ -484,6 +766,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // deixa o carrossel focável/clicável (pra abrir modal)
+    pictureEl.classList.add('carousel-clickable');
+    pictureEl.setAttribute('tabindex', '0');
+    pictureEl.setAttribute('role', 'button');
+    pictureEl.setAttribute('aria-label', 'Abrir galeria de imagens do PsiGestor');
+
     function getCurrentImages() {
         const raw = mediaQuery.matches ? mobileImages : desktopImages;
         return raw.map(img => ({
@@ -497,16 +785,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const oldPicture = pictureEl.querySelector('picture');
         currentIndex = index;
+
         const newPicture = document.createElement('picture');
         newPicture.dataset.index = index;
         newPicture.style.position = 'absolute';
         newPicture.style.top = '0';
         newPicture.style.left = '0';
+        newPicture.style.width = '100%';
+        newPicture.style.height = '100%';
 
         const source = document.createElement('source');
         const img = document.createElement('img');
+
         source.srcset = images[index].webp;
         source.type = 'image/webp';
+
         img.src = images[index].fallback;
         img.alt = `Mockup PsiGestor ${index + 1}`;
         img.style.opacity = '0';
@@ -519,7 +812,8 @@ document.addEventListener('DOMContentLoaded', () => {
         img.onload = () => {
             requestAnimationFrame(() => img.style.opacity = '1');
             if (oldPicture) {
-                oldPicture.querySelector('img').style.opacity = '0';
+                const oldImg = oldPicture.querySelector('img');
+                if (oldImg) oldImg.style.opacity = '0';
                 setTimeout(() => oldPicture.remove(), 600);
             }
         };
@@ -560,12 +854,388 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Inicializa tudo
+    // ====== Galeria (Modal) - requer HTML do modal no blade ======
+    const modalEl = document.getElementById('heroGalleryModal');
+
+    let modalInstance = null;
+
+    // estado do zoom/pan
+    let stageEl, imgEl, prevBtn, nextBtn, counterEl, thumbsEl;
+    let zoomInBtn, zoomOutBtn, zoomResetBtn;
+
+    let scale = 1;
+    let minScale = 1;
+    let maxScale = 4;
+    let tx = 0;
+    let ty = 0;
+
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let stageRect = null;
+
+    // touch pinch
+    let touchMode = null; // 'pan' | 'pinch'
+    let pinchStartDist = 0;
+    let pinchStartScale = 1;
+    let pinchMid = { x: 0, y: 0 };
+
+    // swipe
+    let swipeStartX = 0;
+    let swipeStartY = 0;
+    let swipeActive = false;
+
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+    function applyTransform(){
+        if (!imgEl) return;
+        imgEl.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`;
+    }
+
+    function limitPan(){
+        if (!stageRect) return;
+        const maxX = (stageRect.width  * (scale - 1)) / 2;
+        const maxY = (stageRect.height * (scale - 1)) / 2;
+        tx = clamp(tx, -maxX, maxX);
+        ty = clamp(ty, -maxY, maxY);
+    }
+
+    function updateResetLabel(){
+        if (!zoomResetBtn) return;
+        zoomResetBtn.textContent = `${Math.round(scale * 100)}%`;
+    }
+
+    function resetZoom(){
+        scale = 1;
+        tx = 0;
+        ty = 0;
+        applyTransform();
+        updateResetLabel();
+    }
+
+    function setScale(nextScale, anchorX = null, anchorY = null){
+        const prevScale = scale;
+        scale = clamp(nextScale, minScale, maxScale);
+
+        if (anchorX != null && anchorY != null && stageRect) {
+            const ax = anchorX - stageRect.left - stageRect.width / 2;
+            const ay = anchorY - stageRect.top  - stageRect.height / 2;
+            const ratio = scale / prevScale;
+
+            tx = (tx + ax) * ratio - ax;
+            ty = (ty + ay) * ratio - ay;
+        }
+
+        limitPan();
+        applyTransform();
+        updateResetLabel();
+    }
+
+    function dist(t1, t2){
+        const dx = t2.clientX - t1.clientX;
+        const dy = t2.clientY - t1.clientY;
+        return Math.hypot(dx, dy);
+    }
+
+    function midpoint(t1, t2){
+        return { x: (t1.clientX + t2.clientX)/2, y: (t1.clientY + t2.clientY)/2 };
+    }
+
+    function ensureGalleryMarkup(){
+        if (!modalEl) return;
+
+        const body = modalEl.querySelector('.modal-body');
+        const footer = modalEl.querySelector('.modal-footer');
+        const title = modalEl.querySelector('#heroGalleryTitle');
+
+        if (!body || body.querySelector('.hero-gallery-stage')) return;
+
+        body.classList.add('hero-gallery-body');
+        body.innerHTML = `
+            <div class="hero-gallery-toolbar">
+                <span id="heroGalleryCounter" class="hero-gallery-counter">1 / ${images.length}</span>
+                <div class="hero-gallery-actions">
+                    <button type="button" class="hero-gallery-btn" id="heroZoomOut" aria-label="Diminuir zoom">−</button>
+                    <button type="button" class="hero-gallery-btn" id="heroZoomReset" aria-label="Resetar zoom">100%</button>
+                    <button type="button" class="hero-gallery-btn" id="heroZoomIn" aria-label="Aumentar zoom">+</button>
+                </div>
+            </div>
+
+            <div class="hero-gallery-stage" id="heroGalleryStage" aria-label="Área de zoom e navegação">
+                <button type="button" class="hero-gallery-nav hero-gallery-prev" id="heroGalleryPrev" aria-label="Imagem anterior">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <img id="heroGalleryImg" src="" alt="Imagem ampliada do PsiGestor" loading="lazy"/>
+
+                <button type="button" class="hero-gallery-nav hero-gallery-next" id="heroGalleryNext" aria-label="Próxima imagem">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="hero-gallery-thumbs" id="heroGalleryThumbs" aria-label="Miniaturas"></div>
+        `;
+
+        if (footer) footer.classList.add('hero-gallery-footer');
+
+        if (title) {
+            const small = modalEl.querySelector('.hero-gallery-subtitle');
+            if (!small) {
+                const wrap = title.parentElement;
+                if (wrap) {
+                    const s = document.createElement('div');
+                    s.className = 'hero-gallery-subtitle';
+                    s.textContent = 'Pinch para zoom • Arraste para mover • Swipe para trocar';
+                    wrap.appendChild(s);
+                }
+            }
+        }
+    }
+
+    function getGalleryEls(){
+        stageEl = modalEl.querySelector('#heroGalleryStage');
+        imgEl   = modalEl.querySelector('#heroGalleryImg');
+        prevBtn = modalEl.querySelector('#heroGalleryPrev');
+        nextBtn = modalEl.querySelector('#heroGalleryNext');
+        counterEl = modalEl.querySelector('#heroGalleryCounter');
+        thumbsEl  = modalEl.querySelector('#heroGalleryThumbs');
+
+        zoomInBtn = modalEl.querySelector('#heroZoomIn');
+        zoomOutBtn = modalEl.querySelector('#heroZoomOut');
+        zoomResetBtn = modalEl.querySelector('#heroZoomReset');
+
+        stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
+    }
+
+    function syncThumbs(){
+        if (!thumbsEl) return;
+        const children = Array.from(thumbsEl.children);
+        children.forEach((el, i) => el.classList.toggle('is-active', i === currentIndex));
+        const active = children[currentIndex];
+        if (active && active.scrollIntoView) {
+            active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+    }
+
+    function buildThumbs(){
+        if (!thumbsEl) return;
+        thumbsEl.innerHTML = '';
+        images.forEach((img, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'hero-thumb';
+            btn.setAttribute('aria-label', `Abrir imagem ${i+1}`);
+            const im = document.createElement('img');
+            im.src = img.fallback;
+            im.alt = `Miniatura ${i+1}`;
+            btn.appendChild(im);
+            btn.addEventListener('click', () => setGalleryIndex(i));
+            thumbsEl.appendChild(btn);
+        });
+        syncThumbs();
+    }
+
+    function setGalleryIndex(idx){
+        currentIndex = (idx + images.length) % images.length;
+        getGalleryEls();
+
+        if (imgEl) {
+            // aqui uso fallback para garantir compatibilidade no modal
+            imgEl.src = images[currentIndex].fallback;
+            imgEl.alt = `Mockup PsiGestor ${currentIndex + 1}`;
+        }
+        if (counterEl) counterEl.textContent = `${currentIndex + 1} / ${images.length}`;
+
+        syncThumbs();
+        resetZoom();
+    }
+
+    function goPrev(){ setGalleryIndex(currentIndex - 1); }
+    function goNext(){ setGalleryIndex(currentIndex + 1); }
+
+    function openGallery(idx){
+        if (!modalEl) return;
+        ensureGalleryMarkup();
+        if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl, { keyboard: true });
+        setGalleryIndex(idx);
+        modalInstance.show();
+    }
+
+    // clique no carrossel abre
+    pictureEl.addEventListener('click', () => openGallery(currentIndex));
+    pictureEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openGallery(currentIndex);
+        }
+    });
+
+    function bindGalleryEvents(){
+        if (!modalEl) return;
+        getGalleryEls();
+        if (!stageEl || !imgEl) return;
+
+        buildThumbs();
+
+        // nav
+        prevBtn && prevBtn.addEventListener('click', goPrev);
+        nextBtn && nextBtn.addEventListener('click', goNext);
+
+        // zoom buttons
+        zoomInBtn && zoomInBtn.addEventListener('click', () => {
+            stageRect = stageEl.getBoundingClientRect();
+            setScale(scale * 1.2, stageRect.left + stageRect.width/2, stageRect.top + stageRect.height/2);
+        });
+
+        zoomOutBtn && zoomOutBtn.addEventListener('click', () => {
+            stageRect = stageEl.getBoundingClientRect();
+            setScale(scale * 0.85, stageRect.left + stageRect.width/2, stageRect.top + stageRect.height/2);
+        });
+
+        zoomResetBtn && zoomResetBtn.addEventListener('click', resetZoom);
+
+        // wheel zoom desktop
+        stageEl.addEventListener('wheel', (e) => {
+            stageRect = stageEl.getBoundingClientRect();
+            const delta = -e.deltaY;
+            const factor = delta > 0 ? 1.12 : 0.90;
+            setScale(scale * factor, e.clientX, e.clientY);
+            e.preventDefault();
+        }, { passive: false });
+
+        // mouse pan
+        stageEl.addEventListener('mousedown', (e) => {
+            isPanning = true;
+            stageRect = stageEl.getBoundingClientRect();
+            panStartX = e.clientX - tx;
+            panStartY = e.clientY - ty;
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            tx = e.clientX - panStartX;
+            ty = e.clientY - panStartY;
+            limitPan();
+            applyTransform();
+        });
+
+        window.addEventListener('mouseup', () => { isPanning = false; });
+
+        // touch
+        stageEl.addEventListener('touchstart', (e) => {
+            stageRect = stageEl.getBoundingClientRect();
+            const touches = e.touches;
+
+            swipeActive = true;
+            swipeStartX = touches[0].clientX;
+            swipeStartY = touches[0].clientY;
+
+            if (touches.length === 1) {
+                touchMode = 'pan';
+                panStartX = touches[0].clientX - tx;
+                panStartY = touches[0].clientY - ty;
+            } else if (touches.length === 2) {
+                touchMode = 'pinch';
+                pinchStartDist = dist(touches[0], touches[1]);
+                pinchStartScale = scale;
+                pinchMid = midpoint(touches[0], touches[1]);
+            }
+
+            e.preventDefault();
+        }, { passive: false });
+
+        stageEl.addEventListener('touchmove', (e) => {
+            stageRect = stageEl.getBoundingClientRect();
+            const touches = e.touches;
+
+            if (touches.length === 1 && touchMode === 'pan') {
+                const x = touches[0].clientX;
+                const y = touches[0].clientY;
+
+                if (scale > 1.02) {
+                    tx = x - panStartX;
+                    ty = y - panStartY;
+                    limitPan();
+                    applyTransform();
+                }
+            } else if (touches.length === 2 && touchMode === 'pinch') {
+                const d = dist(touches[0], touches[1]);
+                const ratio = d / pinchStartDist;
+                const next = pinchStartScale * ratio;
+                setScale(next, pinchMid.x, pinchMid.y);
+            }
+
+            e.preventDefault();
+        }, { passive: false });
+
+        stageEl.addEventListener('touchend', (e) => {
+            // swipe só se não estiver ampliado
+            if (swipeActive && scale <= 1.02) {
+                const endTouch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+                if (endTouch) {
+                    const dx = endTouch.clientX - swipeStartX;
+                    const dy = endTouch.clientY - swipeStartY;
+
+                    if (Math.abs(dx) > 55 && Math.abs(dy) < 45) {
+                        if (dx < 0) goNext();
+                        else goPrev();
+                    }
+                }
+            }
+
+            swipeActive = false;
+            touchMode = null;
+        }, { passive: false });
+
+        // double tap/click: alterna zoom
+        let lastTap = 0;
+        stageEl.addEventListener('click', (e) => {
+            const now = Date.now();
+            if (now - lastTap < 280) {
+                if (scale <= 1.05) setScale(2.0, e.clientX, e.clientY);
+                else resetZoom();
+            }
+            lastTap = now;
+        });
+
+        // teclado no modal
+        modalEl.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft')  { e.preventDefault(); goPrev(); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+        });
+
+        window.addEventListener('resize', () => {
+            if (!stageEl) return;
+            stageRect = stageEl.getBoundingClientRect();
+            limitPan();
+            applyTransform();
+        });
+    }
+
+    // pausa/retoma carrossel ao abrir/fechar modal
+    if (modalEl) {
+        modalEl.addEventListener('show.bs.modal', () => stopCarousel());
+        modalEl.addEventListener('shown.bs.modal', () => {
+            // bind só uma vez
+            if (!modalEl.dataset.bound) {
+                bindGalleryEvents();
+                modalEl.dataset.bound = '1';
+            }
+            setGalleryIndex(currentIndex);
+        });
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            startCarousel();
+            resetZoom();
+        });
+    }
+
+    // ====== Inicializa tudo ======
     setupDots();
     showImage(0);
     startCarousel();
 
-    // Atualiza imagens e dots ao redimensionar para outro breakpoint
+    // Atualiza imagens ao mudar breakpoint
     mediaQuery.addEventListener('change', () => {
         images = getCurrentImages();
         currentIndex = 0;
@@ -600,3 +1270,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endpush
+
