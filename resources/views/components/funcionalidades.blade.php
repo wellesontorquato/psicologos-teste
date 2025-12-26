@@ -314,38 +314,40 @@
         transform: translateY(-1px);
     }
 
-    /* ===== Modal: SUPER suave (entrada/saída) ===== */
-    .modal-soft { --soft-ease: cubic-bezier(.2,.9,.2,1); }
-
-    /* backdrop mais bonito + blur (quando suportado) */
-    .modal-backdrop.show{
-        opacity: .62;
-        transition: opacity .38s var(--soft-ease);
+    /* ===== Modal UX suave (override Bootstrap) ===== */
+    .modal.fade .modal-dialog {
+        transform: translateY(30px) scale(0.96);
+        opacity: 0;
+        transition:
+            transform 0.35s cubic-bezier(.4,0,.2,1),
+            opacity 0.35s ease;
     }
-    @supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
-        .modal-soft.show {
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
+
+    .modal.show .modal-dialog {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    .modal-backdrop {
+        background-color: rgba(0,0,0,.55);
+    }
+
+    .modal-backdrop.fade {
+        opacity: 0;
+    }
+
+    .modal-backdrop.show {
+        opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .modal.fade .modal-dialog {
+            transition: none;
+            transform: none;
         }
     }
 
-    /* dialog animado (mais perceptível e macio) */
-    .modal-soft .modal-dialog{
-        transform: translateY(20px) scale(.96);
-        opacity: 0;
-        filter: blur(2px);
-        transition:
-            transform .42s var(--soft-ease),
-            opacity .42s var(--soft-ease),
-            filter .42s var(--soft-ease);
-    }
-    .modal-soft.show .modal-dialog{
-        transform: translateY(0) scale(1);
-        opacity: 1;
-        filter: blur(0);
-    }
-
-    /* Content */
+    /* ===== Tema do modal ===== */
     .modal-soft-content{
         border-radius: 18px;
         overflow: hidden;
@@ -416,7 +418,6 @@
         padding: 8px 14px;
     }
 
-    /* mobile: botões ok */
     @media (max-width: 576px){
         .modal-soft-footer{
             flex-direction: column;
@@ -431,15 +432,10 @@
         }
     }
 
-    /* Acessibilidade */
     @media (prefers-reduced-motion: reduce){
-        .modal-soft .modal-dialog,
-        .modal-backdrop.show,
         .modal-dialog-scrollable .modal-body{
-            transition: none !important;
             scroll-behavior: auto !important;
         }
-        .modal-soft .modal-dialog{ filter: none !important; }
     }
 </style>
 
@@ -448,7 +444,6 @@
         const modalEl = document.getElementById('featureModal');
         if (!modalEl) return;
 
-        // dataset
         const dataEl = document.getElementById('featureDataset');
         const features = dataEl ? JSON.parse(dataEl.textContent) : [];
 
@@ -476,11 +471,9 @@
             titleEl.textContent = features[currentIndex].title || 'Detalhes';
             bodyEl.innerHTML = decodeHtml(features[currentIndex].body || '');
 
-            // scroll interno pro topo suave
             const modalBody = modalEl.querySelector('.modal-body');
             if (modalBody) modalBody.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // UX: desabilita se tiver só 1 item
             const disabled = features.length <= 1;
             prevBtn.disabled = disabled;
             nextBtn.disabled = disabled;
@@ -495,7 +488,6 @@
         prevBtn.addEventListener('click', function(){ render(currentIndex - 1); });
         nextBtn.addEventListener('click', function(){ render(currentIndex + 1); });
 
-        // teclado: seta esquerda/direita
         modalEl.addEventListener('keydown', function(e){
             if (e.key === 'ArrowLeft')  { e.preventDefault(); render(currentIndex - 1); }
             if (e.key === 'ArrowRight') { e.preventDefault(); render(currentIndex + 1); }

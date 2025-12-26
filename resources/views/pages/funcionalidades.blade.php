@@ -310,36 +310,40 @@
         transform: translateY(-1px);
     }
 
-    /* ===== Modal: SUPER suave (entrada/saída) ===== */
-    .modal-soft { --soft-ease: cubic-bezier(.2,.9,.2,1); }
-
-    .modal-backdrop.show{
-        opacity: .62;
-        transition: opacity .38s var(--soft-ease);
+    /* ===== Modal UX suave (override Bootstrap) ===== */
+    .modal.fade .modal-dialog {
+        transform: translateY(30px) scale(0.96);
+        opacity: 0;
+        transition:
+            transform 0.35s cubic-bezier(.4,0,.2,1),
+            opacity 0.35s ease;
     }
 
-    @supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
-        .modal-soft.show {
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
+    .modal.show .modal-dialog {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    .modal-backdrop {
+        background-color: rgba(0,0,0,.55);
+    }
+
+    .modal-backdrop.fade {
+        opacity: 0;
+    }
+
+    .modal-backdrop.show {
+        opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .modal.fade .modal-dialog {
+            transition: none;
+            transform: none;
         }
     }
 
-    .modal-soft .modal-dialog{
-        transform: translateY(20px) scale(.96);
-        opacity: 0;
-        filter: blur(2px);
-        transition:
-            transform .42s var(--soft-ease),
-            opacity .42s var(--soft-ease),
-            filter .42s var(--soft-ease);
-    }
-    .modal-soft.show .modal-dialog{
-        transform: translateY(0) scale(1);
-        opacity: 1;
-        filter: blur(0);
-    }
-
+    /* ===== Seu tema do modal (mantido) ===== */
     .modal-soft-content{
         border-radius: 18px;
         overflow: hidden;
@@ -372,7 +376,6 @@
         max-width: 70ch;
     }
 
-    /* Scroll interno suave */
     .modal-dialog-scrollable .modal-body{
         max-height: calc(100vh - 210px);
         overflow: auto;
@@ -425,13 +428,9 @@
     }
 
     @media (prefers-reduced-motion: reduce){
-        .modal-soft .modal-dialog,
-        .modal-backdrop.show,
         .modal-dialog-scrollable .modal-body{
-            transition: none !important;
             scroll-behavior: auto !important;
         }
-        .modal-soft .modal-dialog{ filter: none !important; }
     }
 </style>
 
