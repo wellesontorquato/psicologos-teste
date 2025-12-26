@@ -7,15 +7,17 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Str;
+use App\Services\WhatsAppNotifier;
 
 class BackupBancoMysql extends Command
 {
     protected $signature = 'backup:mysql';
-    protected $description = 'Gera backup do banco MySQL, envia ao S3 e mantém apenas os 2 últimos';
+    protected $description = 'Gera backup do banco MySQL, envia ao S3 e mantém os últimos 30';
 
-    public function handle()
+    public function handle(): int
     {
         $data = now();
+
         $nomeArquivo = 'backup-' . $data->format('Y-m-d_His') . '.sql';
         $caminhoS3 = "backups/mysql/{$data->format('Y')}/{$data->format('m')}/{$nomeArquivo}";
         $prefixoPasta = "backups/mysql/{$data->format('Y')}/{$data->format('m')}/";
@@ -30,7 +32,7 @@ class BackupBancoMysql extends Command
         $user = $cfg['username'] ?? env('DB_USERNAME');
         $pass = $cfg['password'] ?? env('DB_PASSWORD');
 
-        // 🧠 caminho absoluto evita problema de PATH no cron
+        // 🧠 evita problema de PATH no cron (Railway/Windows/etc)
         $mysqldump = env('MYSQLDUMP_PATH', 'mysqldump');
 
         $cmd = [
@@ -38,22 +40,26 @@ class BackupBancoMysql extends Command
             '--single-transaction',
             '--quick',
             '--skip-lock-tables',
-            '--ssl=0',
+            '--ssl=0', // compatível com client antigo no Railway
             '-h', $host,
-            '-P', (string)$port,
+            '-P', $port,
             '-u', $user,
             "-p{$pass}",
-            $db
+            $db,
         ];
 
-        $this->info("⏳ Gerando backup do banco...");
-        Log::info('[BackupMysql] Iniciando dump', [
+        $context = [
+            'app'  => config('app.name'),
+            'env'  => config('app.env'),
             'host' => $host,
             'port' => $port,
             'db'   => $db,
             'user' => $user,
             'dest' => $caminhoS3,
-        ]);
+        ];
+
+        $this->info("⏳ Gerando backup do banco...");
+        Log::info('[BackupMysql] Iniciando dump', $context);
 
         try {
             $process = new Process($cmd);
@@ -61,9 +67,18 @@ class BackupBancoMysql extends Command
             $process->run();
 
             if (!$process->isSuccessful()) {
-                $err = $process->getErrorOutput() ?: 'Sem stderr';
+                $err = trim($process->getErrorOutput() ?: 'Sem stderr');
+
                 $this->error('❌ Erro ao gerar backup: ' . $err);
-                Log::error('[BackupMysql] Falha no mysqldump', ['stderr' => $err]);
+                Log::error('[BackupMysql] Falha no mysqldump', $context + ['stderr' => $err]);
+
+                $this->notifyWhatsApp(
+                    "Backup MySQL FALHOU (mysqldump)\n".
+                    "Data: {$data->format('d/m/Y H:i:s')}\n".
+                    "Destino: {$caminhoS3}\n".
+                    "Erro: {$err}"
+                );
+
                 return Command::FAILURE;
             }
 
@@ -71,43 +86,86 @@ class BackupBancoMysql extends Command
 
             if (trim($conteudoSQL) === '') {
                 $this->error('❌ Dump vazio (sem conteúdo).');
-                Log::error('[BackupMysql] Dump vazio');
+                Log::error('[BackupMysql] Dump vazio', $context);
+
+                $this->notifyWhatsApp(
+                    "Backup MySQL FALHOU (dump vazio)\n".
+                    "Data: {$data->format('d/m/Y H:i:s')}\n".
+                    "Destino: {$caminhoS3}"
+                );
+
                 return Command::FAILURE;
             }
 
-            // ✅ envia ao S3 (Contabo S3)
-            Storage::disk('s3')->put($caminhoS3, $conteudoSQL);
-            $this->info("✅ Backup salvo em: $caminhoS3");
-            Log::info('[BackupMysql] Upload concluído', ['dest' => $caminhoS3, 'bytes' => strlen($conteudoSQL)]);
+            // 🔐 Hash do dump (integridade)
+            $hash = hash('sha256', $conteudoSQL);
 
-            // 🔁 Mantém apenas os 30 backups mais recentes
+            // ✅ envia ao S3
+            Storage::disk('s3')->put($caminhoS3, $conteudoSQL);
+            Storage::disk('s3')->put($caminhoS3 . '.sha256', $hash);
+
+            $bytes = strlen($conteudoSQL);
+            $this->info("✅ Backup salvo em: $caminhoS3");
+            $this->info("🔐 SHA256: $hash");
+
+            Log::info('[BackupMysql] Upload concluído', $context + [
+                'bytes' => $bytes,
+                'sha256' => $hash,
+            ]);
+
+            // 🔁 Mantém apenas os 30 backups mais recentes (neste mês)
+            $limite = 30;
+
             $arquivos = Storage::disk('s3')->files($prefixoPasta);
 
             $arquivosSql = collect($arquivos)
                 ->filter(fn ($f) => Str::endsWith($f, '.sql'))
-                ->sort() // ordena por nome (timestamp no nome)
+                ->sort() // ordena pelo nome (timestamp no nome)
                 ->values();
-
-            $limite = 30;
 
             if ($arquivosSql->count() > $limite) {
                 $aRemover = $arquivosSql->slice(0, $arquivosSql->count() - $limite);
 
                 foreach ($aRemover as $arquivo) {
                     Storage::disk('s3')->delete($arquivo);
-
-                    // remove também o hash, se existir
-                    Storage::disk('s3')->delete($arquivo . '.sha256');
-
+                    Storage::disk('s3')->delete($arquivo . '.sha256'); // se existir
                     $this->info("🗑️ Backup antigo removido: $arquivo");
                 }
+
+                Log::info('[BackupMysql] Retenção aplicada', $context + [
+                    'limit' => $limite,
+                    'removed' => $aRemover->count(),
+                ]);
             }
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            $this->error('❌ Exceção no backup: ' . $e->getMessage());
-            Log::error('[BackupMysql] Exceção', ['error' => $e->getMessage()]);
+            $msg = $e->getMessage();
+
+            $this->error('❌ Exceção no backup: ' . $msg);
+            Log::error('[BackupMysql] Exceção', $context + ['error' => $msg]);
+
+            $this->notifyWhatsApp(
+                "Backup MySQL FALHOU (exceção)\n".
+                "Data: {$data->format('d/m/Y H:i:s')}\n".
+                "Destino: {$caminhoS3}\n".
+                "Erro: {$msg}"
+            );
+
             return Command::FAILURE;
+        }
+    }
+
+    private function notifyWhatsApp(string $message): void
+    {
+        // Para evitar quebrar o backup caso o WhatsApp falhe,
+        // a notificação nunca deve lançar exceção.
+        try {
+            app(WhatsAppNotifier::class)->send($message);
+        } catch (\Throwable $e) {
+            Log::warning('[BackupMysql] Falha ao notificar WhatsApp', [
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

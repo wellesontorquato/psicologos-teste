@@ -61,4 +61,4 @@ cron.schedule('30 7 * * *', () => runWithLock('checar-sessoes-nao-pagas', 'checa
 cron.schedule('0 7 * * *', () => runWithLock('checar-aniversariantes', 'checar:aniversariantes'));
 cron.schedule('10 4 * * *', () => runWithLock('limpar-auditoria-antiga', 'auditoria:limpar-antigos'));
 cron.schedule('0 */6 * * *', () => {runWithLock('backup-mysql-diario', 'backup:mysql');});
-
+cron.schedule('5 20 * * *', () =>runWithLock('backup-summary', 'backup:summary'));
