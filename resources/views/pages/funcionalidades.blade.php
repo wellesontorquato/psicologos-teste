@@ -124,21 +124,19 @@
     </div>
 
     {{-- Modal Único --}}
-    <div class="modal fade" id="featureModalPage" tabindex="-1" aria-labelledby="featureModalPageLabel" aria-hidden="true">
+    <div class="modal fade modal-soft" id="featureModalPage" tabindex="-1" aria-labelledby="featureModalPageLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
-                <div class="modal-header" style="background: linear-gradient(to right, #00aaff, #00c4ff);">
-                    <h5 class="modal-title" id="featureModalPageLabel" style="color: #fff; font-weight: 900; margin: 0;">
-                        Detalhes
-                    </h5>
+            <div class="modal-content modal-soft-content">
+                <div class="modal-header modal-soft-header">
+                    <h5 class="modal-title" id="featureModalPageLabel">Detalhes</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
 
-                <div class="modal-body" style="padding: 22px;">
-                    <div id="featureModalPageBody" style="color: #333; line-height: 1.7;"></div>
+                <div class="modal-body">
+                    <div id="featureModalPageBody" class="modal-soft-body"></div>
                 </div>
 
-                <div class="modal-footer" style="border-top: 1px solid #eee;">
+                <div class="modal-footer modal-soft-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">
                         Fechar
                     </button>
@@ -228,8 +226,55 @@
         transform: translateY(-1px);
     }
 
-    #featureModalPageBody p { margin: 0 0 10px; }
-    #featureModalPageBody p:last-child { margin-bottom: 0; }
+    /* ===== Modal suave (animação premium) ===== */
+    .modal-soft .modal-dialog {
+        transform: translateY(10px) scale(0.98);
+        transition: transform .28s ease, opacity .28s ease;
+        opacity: 0;
+    }
+    .modal-soft.show .modal-dialog {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    .modal-backdrop.show {
+        opacity: .55;
+        transition: opacity .25s ease;
+    }
+
+    .modal-soft-content {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 0;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal-soft-header {
+        background: linear-gradient(to right, #00aaff, #00c4ff);
+        border: 0;
+        padding: 16px 18px;
+    }
+    .modal-soft-header .modal-title {
+        color: #fff;
+        font-weight: 900;
+        margin: 0;
+    }
+    .modal-soft-body {
+        color: #333;
+        line-height: 1.75;
+    }
+    .modal-soft-body p { margin: 0 0 10px; }
+    .modal-soft-body p:last-child { margin-bottom: 0; }
+    .modal-soft-footer {
+        border-top: 1px solid #eee;
+        padding: 14px 18px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .modal-soft .modal-dialog,
+        .modal-backdrop.show {
+            transition: none !important;
+        }
+    }
 </style>
 
 <script>
@@ -249,11 +294,8 @@
                 .replaceAll('&quot;', '"')
                 .replaceAll('&#039;', "'");
 
-            const titleEl = modalEl.querySelector('#featureModalPageLabel');
-            const bodyEl  = modalEl.querySelector('#featureModalPageBody');
-
-            if (titleEl) titleEl.textContent = title;
-            if (bodyEl) bodyEl.innerHTML = bodyHtml;
+            modalEl.querySelector('#featureModalPageLabel').textContent = title;
+            modalEl.querySelector('#featureModalPageBody').innerHTML = bodyHtml;
         });
     });
 </script>

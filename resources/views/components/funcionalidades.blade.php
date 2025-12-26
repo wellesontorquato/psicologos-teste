@@ -20,9 +20,9 @@
                         'desc'  => 'Drag & drop, semana/dia e notificações.',
                         'details_title' => 'Agenda Visual + Google Agenda + Google Meet',
                         'details_html' => '
-                            <p>Organize sua agenda com uma visão clara e prática, com <strong>drag &amp; drop</strong>, visualização por <strong>dia</strong> e <strong>semana</strong>, e fluxo rápido para criar, editar e remarcar sessões.</p>
-                            <p>Com a <strong>sincronização com o Google Agenda</strong>, você consegue visualizar as agendas já existentes e manter tudo alinhado em um só lugar, evitando conflitos e esquecimentos.</p>
-                            <p>Ao criar um atendimento, o sistema pode <strong>disparar automaticamente um e-mail</strong> para o paciente com o <strong>link da sala do Google Meet</strong>, facilitando teleatendimentos com experiência profissional e padronizada.</p>
+                            <p>Organize sua agenda com <strong>drag &amp; drop</strong>, visualização por <strong>dia</strong> e <strong>semana</strong>, e fluxo rápido para criar, editar e remarcar sessões.</p>
+                            <p>Com a <strong>sincronização com o Google Agenda</strong>, você consegue visualizar as agendas já existentes e manter tudo alinhado em um só lugar, evitando conflitos.</p>
+                            <p>Ao criar um atendimento, o sistema pode <strong>disparar automaticamente um e-mail</strong> para o paciente com o <strong>link da sala do Google Meet</strong>.</p>
                         '
                     ],
                     [
@@ -31,9 +31,9 @@
                         'desc'  => 'Linha do tempo do prontuário e histórico.',
                         'details_title' => 'Evoluções e Registro Clínico',
                         'details_html' => '
-                            <p>Registre evoluções de forma organizada em uma <strong>linha do tempo</strong> por paciente, com histórico de sessões sempre acessível.</p>
-                            <p>Mantenha informações clínicas estruturadas para acompanhar progresso, objetivos terapêuticos, intervenções e observações relevantes de forma contínua.</p>
-                            <p>Facilita auditoria interna, revisões e consistência no atendimento, mantendo a prática clínica mais segura e padronizada.</p>
+                            <p>Registre evoluções em uma <strong>linha do tempo</strong> por paciente, com histórico de sessões sempre acessível.</p>
+                            <p>Mantenha informações clínicas estruturadas: progresso, intervenções, observações e objetivos terapêuticos.</p>
+                            <p>Mais segurança e organização, reduzindo retrabalho e anotações soltas.</p>
                         '
                     ],
                     [
@@ -43,8 +43,8 @@
                         'details_title' => 'Financeiro + Multimoedas',
                         'details_html' => '
                             <p>Controle recebimentos por paciente e por período, com visão clara de <strong>pagos</strong>, <strong>pendentes</strong> e <strong>atrasos</strong>.</p>
-                            <p>Dispare notificações para sessões anteriores não pagas e mantenha a organização financeira sem depender de planilhas.</p>
-                            <p>Com <strong>multimoedas</strong>, você pode registrar atendimentos e recebimentos em diferentes moedas — ideal para pacientes de outros países ou cobranças em formatos variados.</p>
+                            <p>Envie notificações de sessões anteriores não pagas e acompanhe seu fluxo financeiro com praticidade.</p>
+                            <p>Com <strong>multimoedas</strong>, registre atendimentos e recebimentos em diferentes moedas — ideal para pacientes de outros países.</p>
                         '
                     ],
                     [
@@ -53,9 +53,9 @@
                         'desc'  => 'Documentos e anexos do paciente.',
                         'details_title' => 'Arquivos e Documentos',
                         'details_html' => '
-                            <p>Centralize documentos em um só lugar: exames, relatórios, contratos, termos e anexos clínicos.</p>
-                            <p>Organização por tipo e acesso rápido por paciente, evitando perda de arquivos em pastas soltas.</p>
-                            <p>Mais agilidade para encontrar o que precisa durante o atendimento e manter o histórico bem documentado.</p>
+                            <p>Centralize exames, relatórios, contratos, termos e anexos clínicos por paciente.</p>
+                            <p>Organização por tipo e acesso rápido, evitando perda de arquivos e pastas soltas.</p>
+                            <p>Mais agilidade durante o atendimento e no acompanhamento do histórico.</p>
                         '
                     ],
                     [
@@ -64,9 +64,9 @@
                         'desc'  => 'Lembretes e confirmações automáticas.',
                         'details_title' => 'WhatsApp Automático',
                         'details_html' => '
-                            <p>Envie confirmações e lembretes automáticos de sessão, reduzindo faltas e melhorando a previsibilidade da agenda.</p>
-                            <p>Padronize mensagens e mantenha comunicação profissional sem depender de envio manual a cada atendimento.</p>
-                            <p>O paciente recebe as informações no canal mais usado do dia a dia, com praticidade e clareza.</p>
+                            <p>Envie confirmações e lembretes automáticos, reduzindo faltas e melhorando a previsibilidade da agenda.</p>
+                            <p>Padronize mensagens e mantenha comunicação profissional sem depender de envio manual.</p>
+                            <p>O paciente recebe as informações no canal mais usado do dia a dia.</p>
                         '
                     ],
                     [
@@ -76,8 +76,8 @@
                         'details_title' => 'Indicadores e Estatísticas',
                         'details_html' => '
                             <p>Acompanhe a evolução da sua clínica com gráficos e métricas por período.</p>
-                            <p>Visualize volume de atendimentos, recorrência, tendências e organização do fluxo de pacientes.</p>
-                            <p>Transforme dados em decisões: entenda horários mais cheios, comportamento de faltas e desempenho geral.</p>
+                            <p>Entenda tendências de atendimentos, recorrência e comportamento de agenda.</p>
+                            <p>Transforme dados em decisões: enxergue padrões e oportunidades de melhoria.</p>
                         '
                     ],
                     [
@@ -86,9 +86,9 @@
                         'desc'  => 'Segurança, estabilidade e backups.',
                         'details_title' => 'Segurança e Confiabilidade',
                         'details_html' => '
-                            <p>Estrutura pensada para estabilidade e proteção de dados, com foco em confiança e continuidade operacional.</p>
-                            <p>Seus registros ficam armazenados com cuidado e organização, reduzindo riscos de perda e inconsistências.</p>
-                            <p>Ideal para quem quer abandonar planilhas e anotações soltas, centralizando tudo de forma confiável.</p>
+                            <p>Estrutura pensada para estabilidade e proteção de dados, com foco em continuidade e confiança.</p>
+                            <p>Centralize informações em um ambiente confiável, reduzindo riscos de perda e inconsistências.</p>
+                            <p>Ideal para sair de planilhas e anotações soltas e ganhar padrão de atendimento.</p>
                         '
                     ],
                     [
@@ -97,9 +97,9 @@
                         'desc'  => 'Relatórios com filtros e exportação.',
                         'details_title' => 'Relatórios e Exportações',
                         'details_html' => '
-                            <p>Gere relatórios completos com filtros por data, status de sessão e situação de pagamento.</p>
-                            <p>Exporte em <strong>PDF</strong> para apresentação/arquivo e em <strong>Excel</strong> para análises mais detalhadas.</p>
-                            <p>Economize tempo reunindo informações para fechamento mensal e acompanhamento financeiro.</p>
+                            <p>Gere relatórios com filtros por data, status de sessão e situação de pagamento.</p>
+                            <p>Exporte em <strong>PDF</strong> para arquivar e em <strong>Excel</strong> para análises e fechamento.</p>
+                            <p>Economize tempo no controle mensal e na gestão financeira.</p>
                         '
                     ],
                 ];
@@ -119,7 +119,6 @@
                         data-bs-toggle="modal"
                         data-bs-target="#featureModal"
                         data-feature-title="{{ $f['details_title'] ?? $f['title'] }}"
-                        data-feature-body="{{ strip_tags($f['details_html']) }}"
                         data-feature-body-html="{{ e($f['details_html']) }}"
                     >
                         Ver detalhes
@@ -130,21 +129,19 @@
     </div>
 
     {{-- Modal Único --}}
-    <div class="modal fade" id="featureModal" tabindex="-1" aria-labelledby="featureModalLabel" aria-hidden="true">
+    <div class="modal fade modal-soft" id="featureModal" tabindex="-1" aria-labelledby="featureModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
-                <div class="modal-header" style="background: linear-gradient(to right, #00aaff, #00c4ff);">
-                    <h5 class="modal-title" id="featureModalLabel" style="color: #fff; font-weight: 900; margin: 0;">
-                        Detalhes
-                    </h5>
+            <div class="modal-content modal-soft-content">
+                <div class="modal-header modal-soft-header">
+                    <h5 class="modal-title" id="featureModalLabel">Detalhes</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
 
-                <div class="modal-body" style="padding: 22px;">
-                    <div id="featureModalBody" style="color: #333; line-height: 1.7;"></div>
+                <div class="modal-body">
+                    <div id="featureModalBody" class="modal-soft-body"></div>
                 </div>
 
-                <div class="modal-footer" style="border-top: 1px solid #eee;">
+                <div class="modal-footer modal-soft-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">
                         Fechar
                     </button>
@@ -155,6 +152,7 @@
 </section>
 
 <style>
+    /* Cards */
     .feature-card {
         background: #f8f9fa;
         border-radius: 16px;
@@ -168,25 +166,21 @@
         gap: 10px;
         min-height: 240px;
     }
-
     .feature-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 24px rgba(0,0,0,0.08);
     }
-
     .feature-icon {
         font-size: 1.8rem;
         color: #00aaff;
         margin-bottom: 5px;
     }
-
     .feature-title {
         font-size: 1.1rem;
         margin: 0;
         font-weight: 900;
         color: #111;
     }
-
     .feature-desc {
         font-size: 0.95rem;
         color: #555;
@@ -198,7 +192,6 @@
         overflow: hidden;
         margin: 0;
     }
-
     .feature-more-btn {
         margin-top: auto;
         align-self: center;
@@ -212,16 +205,63 @@
         cursor: pointer;
         transition: 0.2s ease;
     }
-
     .feature-more-btn:hover {
         background: rgba(0,170,255,0.14);
         border-color: rgba(0,170,255,0.55);
         transform: translateY(-1px);
     }
 
-    /* melhora leitura dentro do modal */
-    #featureModalBody p { margin: 0 0 10px; }
-    #featureModalBody p:last-child { margin-bottom: 0; }
+    /* ===== Modal suave (animação premium) ===== */
+    .modal-soft .modal-dialog {
+        transform: translateY(10px) scale(0.98);
+        transition: transform .28s ease, opacity .28s ease;
+        opacity: 0;
+    }
+    .modal-soft.show .modal-dialog {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    /* Backdrop mais suave */
+    .modal-backdrop.show {
+        opacity: .55;
+        transition: opacity .25s ease;
+    }
+
+    .modal-soft-content {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 0;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal-soft-header {
+        background: linear-gradient(to right, #00aaff, #00c4ff);
+        border: 0;
+        padding: 16px 18px;
+    }
+    .modal-soft-header .modal-title {
+        color: #fff;
+        font-weight: 900;
+        margin: 0;
+    }
+    .modal-soft-body {
+        color: #333;
+        line-height: 1.75;
+    }
+    .modal-soft-body p { margin: 0 0 10px; }
+    .modal-soft-body p:last-child { margin-bottom: 0; }
+    .modal-soft-footer {
+        border-top: 1px solid #eee;
+        padding: 14px 18px;
+    }
+
+    /* Respeita acessibilidade */
+    @media (prefers-reduced-motion: reduce) {
+        .modal-soft .modal-dialog,
+        .modal-backdrop.show {
+            transition: none !important;
+        }
+    }
 </style>
 
 <script>
@@ -233,7 +273,6 @@
             const button = event.relatedTarget;
             const title = button?.getAttribute('data-feature-title') || 'Detalhes';
 
-            // HTML vem "escapado" em data-feature-body-html, então precisamos "desescapar"
             const escapedHtml = button?.getAttribute('data-feature-body-html') || '';
             const bodyHtml = escapedHtml
                 .replaceAll('&lt;', '<')
@@ -242,11 +281,8 @@
                 .replaceAll('&quot;', '"')
                 .replaceAll('&#039;', "'");
 
-            const titleEl = modalEl.querySelector('#featureModalLabel');
-            const bodyEl  = modalEl.querySelector('#featureModalBody');
-
-            if (titleEl) titleEl.textContent = title;
-            if (bodyEl) bodyEl.innerHTML = bodyHtml;
+            modalEl.querySelector('#featureModalLabel').textContent = title;
+            modalEl.querySelector('#featureModalBody').innerHTML = bodyHtml;
         });
     });
 </script>
