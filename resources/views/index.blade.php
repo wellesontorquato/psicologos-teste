@@ -782,9 +782,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const mobileImages = [
-        { webp: 'demo1.webp', fallback: 'demo1.png' },
-        { webp: 'demo2.webp', fallback: 'demo2.png' },
-        { webp: 'demo3.webp', fallback: 'demo3.png' }
+        { webp: 'demo4.webp', fallback: 'demo4.png' },
+        { webp: 'demo5.webp', fallback: 'demo5.png' },
+        { webp: 'demo6.webp', fallback: 'demo6.png' }
     ];
 
     const desktopImages = [
