@@ -38,8 +38,9 @@ class BackupBancoMysql extends Command
             '--single-transaction',
             '--quick',
             '--skip-lock-tables',
+            '--ssl-mode=DISABLED',
             '-h', $host,
-            '-P', $port,
+            '-P', (string)$port,
             '-u', $user,
             "-p{$pass}",
             $db
