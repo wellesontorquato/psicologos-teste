@@ -40,7 +40,6 @@ class BackupBancoMysql extends Command
             '--single-transaction',
             '--quick',
             '--skip-lock-tables',
-            '--ssl=0', // compatível com client antigo no Railway
             '-h', $host,
             '-P', $port,
             '-u', $user,
