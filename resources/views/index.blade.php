@@ -14,6 +14,30 @@
                 Concentre-se no que realmente importa: o cuidado com seus pacientes.
             </p>
 
+            {{-- ✅ NOVO: Chips (pill buttons) --}}
+            <div class="hero-chips" aria-label="Destaques do PsiGestor">
+                <div class="hero-chip">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Agenda e lembretes</span>
+                </div>
+
+                <div class="hero-chip">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Prontuário seguro</span>
+                </div>
+
+                <div class="hero-chip">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Financeiro organizado</span>
+                </div>
+            </div>
+
+            {{-- ✅ NOVO: Barra de destaque --}}
+            <div class="hero-highlight" role="note" aria-label="Mensagem sazonal de ano novo">
+                <span class="hero-highlight-dot" aria-hidden="true"></span>
+                <span>Comece o ano com a rotina clínica em dia — sem complicação.</span>
+            </div>
+
             <div class="hero-cta-group">
                 <a href="{{ route('register') }}" class="btn-hero-main">
                     Comece seu teste grátis
@@ -152,11 +176,94 @@
     font-size: 1.1rem;
     /* Valor moderno com clamp() */
     font-size: clamp(1rem, 2.5vw, 1.15rem);
-    margin-bottom: 30px;
+    margin-bottom: 18px; /* era 30px */
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.9);
 }
 
+/* ✅ NOVO: Chips */
+.hero-chips {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.hero-chip {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px 16px;
+    border-radius: 14px;
+
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.22);
+
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+
+    box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+    color: rgba(255,255,255,0.92);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.hero-chip i {
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+/* ✅ NOVO: Barra destaque */
+.hero-highlight {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 10px;
+
+    width: 100%;
+    max-width: 560px;
+
+    padding: 12px 14px;
+    border-radius: 14px;
+
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.18);
+
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+
+    box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+    color: rgba(255,255,255,0.92);
+
+    margin-bottom: 22px;
+}
+
+.hero-highlight-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255,215,0,0.95); /* douradinho */
+    box-shadow: 0 0 0 4px rgba(255,215,0,0.18);
+    flex: 0 0 auto;
+}
+
+.hero-highlight span:last-child {
+    font-weight: 600;
+}
+
+/* CTA */
 .hero-cta-group {
     display: -webkit-flex;
     display: -ms-flexbox;
@@ -315,11 +422,21 @@
     .hero-image-wrapper {
         margin-top: 40px;
     }
-}
-@media (max-width: 768px) {
-    .whatsapp-fab span {
-        display: none;
+
+    /* Centraliza chips e highlight no mobile/tablet */
+    .hero-chips {
+        -webkit-justify-content: center;
+        -ms-flex-pack: center;
+        justify-content: center;
     }
+    .hero-highlight {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .whatsapp-fab span { display: none; }
     .whatsapp-fab {
         width: 55px;
         height: 55px;
@@ -327,6 +444,13 @@
         -webkit-justify-content: center;
         -ms-flex-pack: center;
         justify-content: center;
+    }
+
+    /* Chips ficam 100% mais “encaixados” */
+    .hero-chip {
+        padding: 11px 14px;
+        border-radius: 12px;
+        font-size: 0.95rem;
     }
 }
 </style>
