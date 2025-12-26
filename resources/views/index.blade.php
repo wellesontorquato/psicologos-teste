@@ -127,7 +127,6 @@
 
 @endsection
 
-
 @push('styles')
 <style>
 /* HERO SECTION */
@@ -458,34 +457,59 @@
     max-width: 80%;
 }
 
-/* ✅ MODAL GALERIA (zoom + thumbs + swipe) */
+/* =========================
+   ✅ MODAL GALERIA (paleta do site + desafogo + pan em 100%)
+   ========================= */
+
+/* vars de paleta (puxa pro azul do hero, mas bem mais claro) */
+:root{
+    --pg-primary: #0077ff;
+    --pg-primary-2: #00aaff;
+    --pg-ink: #0f172a;
+    --pg-muted: #64748b;
+    --pg-surface: #ffffff;
+    --pg-border: rgba(15, 23, 42, 0.10);
+    --pg-shadow: 0 28px 90px rgba(2, 6, 23, 0.28);
+}
+
 .hero-gallery-modal{
     border-radius: 18px;
     overflow: hidden;
     border: 0;
-    background: #0b1620;
-    box-shadow: 0 28px 90px rgba(0,0,0,0.35);
+    background: var(--pg-surface);
+    box-shadow: var(--pg-shadow);
 }
 
+/* header mais “cara de site”: branco + faixa gradiente sutil */
 .hero-gallery-header{
-    background: linear-gradient(90deg, rgba(6,18,37,1), rgba(0,119,255,1));
     border: 0;
-    color: #fff;
+    color: var(--pg-ink);
     padding: 14px 16px;
+    background:
+        radial-gradient(1000px 220px at 20% 0%, rgba(0,170,255,0.20), transparent 55%),
+        radial-gradient(900px 240px at 85% 0%, rgba(0,119,255,0.18), transparent 55%),
+        #fff;
+    border-bottom: 1px solid var(--pg-border);
 }
+
+.hero-gallery-header .btn-close{
+    filter: none;
+    opacity: .8;
+}
+.hero-gallery-header .btn-close:hover{ opacity: 1; }
 
 .hero-gallery-subtitle{
     margin-top: 4px;
-    color: rgba(255,255,255,.85);
+    color: var(--pg-muted);
     font-size: .9rem;
 }
 
 .hero-gallery-body{
     position: relative;
-    padding: 12px 12px 8px;
+    padding: 14px 14px 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 /* Toolbar */
@@ -498,10 +522,11 @@
 }
 
 .hero-gallery-counter{
-    color: rgba(255,255,255,0.85);
+    color: var(--pg-ink);
     font-weight: 900;
 }
 
+/* ações com “pill” igual ao resto do site */
 .hero-gallery-actions{
     display: inline-flex;
     gap: 8px;
@@ -509,17 +534,18 @@
 }
 
 .hero-gallery-btn{
-    border: 1px solid rgba(255,255,255,0.18);
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,119,255,0.18);
+    background: rgba(0,119,255,0.06);
+    color: #0454c8;
     border-radius: 999px;
     padding: 8px 12px;
     font-weight: 900;
     cursor: pointer;
-    transition: transform .18s ease, background .18s ease;
+    transition: transform .16s ease, background .16s ease, border-color .16s ease;
 }
 .hero-gallery-btn:hover{
-    background: rgba(255,255,255,0.12);
+    background: rgba(0,119,255,0.10);
+    border-color: rgba(0,119,255,0.28);
     transform: translateY(-1px);
 }
 
@@ -527,14 +553,21 @@
 .hero-gallery-stage{
     position: relative;
     width: 100%;
-    height: min(78vh, 720px);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.12);
+    height: min(74vh, 720px);
+    border-radius: 16px;
+    background:
+        linear-gradient(180deg, rgba(0,119,255,0.05), rgba(0,170,255,0.02)),
+        #fff;
+    border: 1px solid var(--pg-border);
     overflow: hidden;
+    /* importante: permite pan mesmo em 100% (sem “capturar” scroll do browser) */
     touch-action: none;
 }
 
+/* ✅ imagem agora pode ser “arrastável” mesmo em 100%:
+   - ao invés de travar no centro, a gente deixa ela com width/height 100% e object-fit: contain
+   - e o pan é aplicado via translate/scale no JS
+*/
 .hero-gallery-stage img{
     position: absolute;
     top: 50%;
@@ -546,9 +579,13 @@
     -webkit-user-drag: none;
     max-width: none;
     max-height: none;
+    /* garante que em 100% ela “encaixa” melhor e diminui corte */
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
-/* Prev/Next flutuantes */
+/* Prev/Next flutuantes (mais leves) */
 .hero-gallery-nav{
     position: absolute;
     top: 50%;
@@ -556,19 +593,21 @@
     width: 44px;
     height: 44px;
     border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.18);
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,119,255,0.18);
+    background: rgba(255,255,255,0.75);
+    color: #0454c8;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform .18s ease, background .18s ease, opacity .18s ease;
+    transition: transform .16s ease, background .16s ease, opacity .16s ease;
     z-index: 3;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
 }
 .hero-gallery-nav:hover{
     transform: translateY(-50%) scale(1.06);
-    background: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.92);
 }
 .hero-gallery-prev{ left: 10px; }
 .hero-gallery-next{ right: 10px; }
@@ -577,26 +616,27 @@
     cursor: default;
 }
 
-/* Thumbs */
+/* ✅ Desafogo embaixo: thumbs “respiram” e não encostam no footer */
 .hero-gallery-thumbs{
     display: flex;
     gap: 10px;
     overflow-x: auto;
-    padding-bottom: 6px;
+    padding: 6px 2px 14px; /* mais “respiro” embaixo */
     scrollbar-width: thin;
 }
 
+/* Thumbs */
 .hero-thumb{
     flex: 0 0 auto;
-    width: 92px;
-    height: 56px;
-    border-radius: 10px;
+    width: 96px;
+    height: 58px;
+    border-radius: 12px;
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(0, 119, 255, 0.14);
+    background: rgba(0, 119, 255, 0.04);
     cursor: pointer;
-    opacity: .78;
-    transition: transform .18s ease, opacity .18s ease, border-color .18s ease;
+    opacity: .84;
+    transition: transform .16s ease, opacity .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 .hero-thumb img{
     width: 100%;
@@ -610,15 +650,15 @@
 }
 .hero-thumb.is-active{
     opacity: 1;
-    border-color: rgba(0,170,255,0.65);
-    box-shadow: 0 10px 22px rgba(0,170,255,0.18);
+    border-color: rgba(0,119,255,0.45);
+    box-shadow: 0 10px 22px rgba(0,119,255,0.14);
 }
 
-/* Footer */
+/* Footer (mais claro) */
 .hero-gallery-footer{
-    border-top: 1px solid rgba(255,255,255,0.10);
-    background: #0b1620;
-    padding: 12px 16px;
+    border-top: 1px solid var(--pg-border);
+    background: #fff;
+    padding: 12px 16px 14px; /* ✅ “desafogo” extra */
     display:flex;
     justify-content: space-between;
     align-items:center;
@@ -721,13 +761,13 @@
         justify-content: center;
     }
 
-    /* Modal mais compacto */
-    .hero-gallery-stage{
-        height: min(70vh, 560px);
-    }
-    .hero-thumb{ width: 84px; height: 52px; }
+    /* Modal mais compacto + mais “respiro” embaixo */
+    .hero-gallery-body{ padding: 12px 12px 12px; gap: 10px; }
+    .hero-gallery-stage{ height: min(66vh, 520px); border-radius: 14px; }
+    .hero-thumb{ width: 86px; height: 54px; border-radius: 12px; }
     .hero-gallery-nav{ width: 40px; height: 40px; }
     .hero-gallery-btn{ padding: 7px 10px; }
+    .hero-gallery-footer{ padding-bottom: 16px; }
 }
 
 /* Telas bem pequenas: chips 1 coluna */
@@ -856,16 +896,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ====== Galeria (Modal) - requer HTML do modal no blade ======
     const modalEl = document.getElementById('heroGalleryModal');
-
     let modalInstance = null;
 
-    // estado do zoom/pan
+    // estado do pan/zoom (agora pan funciona mesmo em 100% e sem cortar por travas)
     let stageEl, imgEl, prevBtn, nextBtn, counterEl, thumbsEl;
     let zoomInBtn, zoomOutBtn, zoomResetBtn;
 
     let scale = 1;
-    let minScale = 1;
-    let maxScale = 4;
+    const minScale = 1;
+    const maxScale = 4;
+
+    // ✅ pan sempre disponível (mesmo em 1x)
     let tx = 0;
     let ty = 0;
 
@@ -892,10 +933,20 @@ document.addEventListener('DOMContentLoaded', () => {
         imgEl.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`;
     }
 
+    // ✅ agora o limite de pan considera a diferença entre stage e imagem “contain”
     function limitPan(){
         if (!stageRect) return;
-        const maxX = (stageRect.width  * (scale - 1)) / 2;
-        const maxY = (stageRect.height * (scale - 1)) / 2;
+
+        const stageW = stageRect.width;
+        const stageH = stageRect.height;
+
+        // como a imagem está width/height 100% com object-fit: contain,
+        // em 1x ela sempre cabe, então damos uma folga (overscroll) pequena,
+        // e em zoom maior, o limite cresce naturalmente.
+        const baseSlack = Math.min(60, stageW * 0.08); // “pode mexer” mesmo em 100%
+        const maxX = ((stageW * (scale - 1)) / 2) + baseSlack;
+        const maxY = ((stageH * (scale - 1)) / 2) + baseSlack;
+
         tx = clamp(tx, -maxX, maxX);
         ty = clamp(ty, -maxY, maxY);
     }
@@ -1040,14 +1091,13 @@ document.addEventListener('DOMContentLoaded', () => {
         getGalleryEls();
 
         if (imgEl) {
-            // aqui uso fallback para garantir compatibilidade no modal
             imgEl.src = images[currentIndex].fallback;
             imgEl.alt = `Mockup PsiGestor ${currentIndex + 1}`;
         }
         if (counterEl) counterEl.textContent = `${currentIndex + 1} / ${images.length}`;
 
         syncThumbs();
-        resetZoom();
+        resetZoom(); // reseta, mas pan volta a funcionar em 100%
     }
 
     function goPrev(){ setGalleryIndex(currentIndex - 1); }
@@ -1103,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
         }, { passive: false });
 
-        // mouse pan
+        // mouse pan (✅ sempre)
         stageEl.addEventListener('mousedown', (e) => {
             isPanning = true;
             stageRect = stageEl.getBoundingClientRect();
@@ -1153,12 +1203,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const x = touches[0].clientX;
                 const y = touches[0].clientY;
 
-                if (scale > 1.02) {
-                    tx = x - panStartX;
-                    ty = y - panStartY;
-                    limitPan();
-                    applyTransform();
-                }
+                tx = x - panStartX;
+                ty = y - panStartY;
+                limitPan();
+                applyTransform();
             } else if (touches.length === 2 && touchMode === 'pinch') {
                 const d = dist(touches[0], touches[1]);
                 const ratio = d / pinchStartDist;
@@ -1170,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: false });
 
         stageEl.addEventListener('touchend', (e) => {
-            // swipe só se não estiver ampliado
+            // swipe só quando estiver em 100% (ou quase)
             if (swipeActive && scale <= 1.02) {
                 const endTouch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
                 if (endTouch) {
@@ -1188,11 +1236,12 @@ document.addEventListener('DOMContentLoaded', () => {
             touchMode = null;
         }, { passive: false });
 
-        // double tap/click: alterna zoom
+        // double click/tap: alterna zoom (mantém)
         let lastTap = 0;
         stageEl.addEventListener('click', (e) => {
             const now = Date.now();
             if (now - lastTap < 280) {
+                stageRect = stageEl.getBoundingClientRect();
                 if (scale <= 1.05) setScale(2.0, e.clientX, e.clientY);
                 else resetZoom();
             }
@@ -1217,7 +1266,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modalEl) {
         modalEl.addEventListener('show.bs.modal', () => stopCarousel());
         modalEl.addEventListener('shown.bs.modal', () => {
-            // bind só uma vez
             if (!modalEl.dataset.bound) {
                 bindGalleryEvents();
                 modalEl.dataset.bound = '1';
@@ -1270,4 +1318,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endpush
+
 
