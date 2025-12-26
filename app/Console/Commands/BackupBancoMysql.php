@@ -80,19 +80,26 @@ class BackupBancoMysql extends Command
             $this->info("✅ Backup salvo em: $caminhoS3");
             Log::info('[BackupMysql] Upload concluído', ['dest' => $caminhoS3, 'bytes' => strlen($conteudoSQL)]);
 
-            // mantém apenas 2
+            // 🔁 Mantém apenas os 30 backups mais recentes
             $arquivos = Storage::disk('s3')->files($prefixoPasta);
+
             $arquivosSql = collect($arquivos)
-                ->filter(fn($f) => Str::endsWith($f, '.sql'))
-                ->sort()
+                ->filter(fn ($f) => Str::endsWith($f, '.sql'))
+                ->sort() // ordena por nome (timestamp no nome)
                 ->values();
 
-            if ($arquivosSql->count() > 2) {
-                $aRemover = $arquivosSql->slice(0, $arquivosSql->count() - 2);
+            $limite = 30;
+
+            if ($arquivosSql->count() > $limite) {
+                $aRemover = $arquivosSql->slice(0, $arquivosSql->count() - $limite);
+
                 foreach ($aRemover as $arquivo) {
                     Storage::disk('s3')->delete($arquivo);
+
+                    // remove também o hash, se existir
+                    Storage::disk('s3')->delete($arquivo . '.sha256');
+
                     $this->info("🗑️ Backup antigo removido: $arquivo");
-                    Log::info('[BackupMysql] Backup antigo removido', ['file' => $arquivo]);
                 }
             }
 

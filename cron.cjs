@@ -56,8 +56,9 @@ function runWithLock(commandName, artisanCommand) {
   });
 }
 
-cron.schedule('0 8 * * *', () => runWithLock('lembretes-enviar', 'lembretes:enviar'));
+cron.schedule('0 */4 * * *', () => {runWithLock('lembretes-enviar', 'lembretes:enviar');});
 cron.schedule('30 7 * * *', () => runWithLock('checar-sessoes-nao-pagas', 'checar:sessoes-nao-pagas'));
 cron.schedule('0 7 * * *', () => runWithLock('checar-aniversariantes', 'checar:aniversariantes'));
 cron.schedule('10 4 * * *', () => runWithLock('limpar-auditoria-antiga', 'auditoria:limpar-antigos'));
-cron.schedule('0 3 * * *', () => runWithLock('backup-mysql-diario', 'backup:mysql'));
+cron.schedule('0 */6 * * *', () => {runWithLock('backup-mysql-diario', 'backup:mysql');});
+
