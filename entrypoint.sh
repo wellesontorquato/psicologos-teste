@@ -1,19 +1,32 @@
 #!/bin/sh
+set -e
 
-echo "✅ Ajustando permissões antes de iniciar supervisord..."
+echo "✅ Entrypoint iniciado..."
 
-# Garante permissões corretas para pastas internas do Laravel
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Descobre o diretório do projeto (Railway geralmente é /app)
+APP_DIR="${APP_DIR:-$(pwd)}"
 
-# 🚀 EXECUTANDO MIGRATIONS 🚀
-# O flag --force é essencial em produção para evitar a confirmação interativa.
-echo "🔄 Aplicando migrations do Laravel (php artisan migrate --force)..."
-php artisan migrate --force
+# Se existir /var/www/html e tiver Laravel lá, usa ele (compat)
+if [ -d "/var/www/html" ] && [ -f "/var/www/html/artisan" ]; then
+  APP_DIR="/var/www/html"
+fi
 
-# Apenas exibe logs úteis para debug
-echo "ℹ️ Verificando conteúdo de /var/www/html/storage:"
-ls -l /var/www/html/storage || echo "⚠️ Nenhum arquivo encontrado em storage."
+echo "📁 APP_DIR = $APP_DIR"
+cd "$APP_DIR"
 
-# Inicia supervisord normalmente (nginx + php-fpm + outros serviços)
+echo "✅ Ajustando permissões..."
+if [ -d "$APP_DIR/storage" ] && [ -d "$APP_DIR/bootstrap/cache" ]; then
+  chown -R www-data:www-data "$APP_DIR/storage" "$APP_DIR/bootstrap/cache" || true
+  chmod -R 775 "$APP_DIR/storage" "$APP_DIR/bootstrap/cache" || true
+else
+  echo "⚠️ storage ou bootstrap/cache não encontrados em $APP_DIR"
+fi
+
+echo "🔄 Aplicando migrations (php artisan migrate --force)..."
+php artisan migrate --force || echo "⚠️ Migrate falhou (continuando mesmo assim)."
+
+echo "ℹ️ Verificando storage:"
+ls -la "$APP_DIR/storage" || echo "⚠️ Nenhum arquivo encontrado em storage."
+
+echo "🚀 Iniciando supervisord..."
 exec /usr/bin/supervisord -c /etc/supervisord.conf
