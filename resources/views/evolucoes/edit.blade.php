@@ -156,8 +156,63 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewIA = document.getElementById('previewIA');
     const textoClinico = document.getElementById('textoClinico');
 
+    let typingInterval = null;
+    let isTyping = false;
+
+    function stopTyping() {
+        if (typingInterval) {
+            clearInterval(typingInterval);
+            typingInterval = null;
+        }
+        isTyping = false;
+    }
+
+    function autoResizeTextarea(el) {
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+
+    function typeTextInTextarea(element, text, speed = 14) {
+        return new Promise((resolve) => {
+            stopTyping();
+            isTyping = true;
+            element.value = '';
+            element.focus();
+
+            let index = 0;
+            const total = text.length;
+
+            typingInterval = setInterval(() => {
+                let chunkSize = 1;
+
+                const currentChar = text[index] || '';
+                if (currentChar === ' ' || currentChar === '\n' || /[,.!?;:]/.test(currentChar)) {
+                    chunkSize = 1;
+                } else {
+                    chunkSize = 2;
+                }
+
+                element.value += text.slice(index, index + chunkSize);
+                index += chunkSize;
+
+                element.scrollTop = element.scrollHeight;
+                autoResizeTextarea(element);
+
+                if (index >= total) {
+                    stopTyping();
+                    resolve();
+                }
+            }, speed);
+        });
+    }
+
     async function gerarEvolucaoComIA() {
         const topicos = (topicosIA?.value || '').trim();
+
+        if (isTyping) {
+            return;
+        }
 
         if (!topicos) {
             if (window.Swal) {
@@ -178,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingIA.style.display = 'inline';
         previewIAWrapper.style.display = 'none';
         previewIA.value = '';
+        autoResizeTextarea(previewIA);
 
         try {
             const response = await fetch("{{ route('evolucoes.gerarIA') }}", {
@@ -203,8 +259,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('A IA não retornou uma evolução válida.');
             }
 
-            previewIA.value = data.evolucao.trim();
             previewIAWrapper.style.display = 'block';
+            previewIA.readOnly = true;
+
+            await typeTextInTextarea(previewIA, data.evolucao.trim(), 12);
+
+            previewIA.readOnly = false;
             copiarParaTexto.style.display = 'inline-block';
 
             if (window.Swal) {
@@ -217,6 +277,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error(error);
+            stopTyping();
+            previewIA.readOnly = false;
 
             if (window.Swal) {
                 Swal.fire({
@@ -242,6 +304,10 @@ document.addEventListener('DOMContentLoaded', function() {
         copiarParaTexto.addEventListener('click', function () {
             const textoGerado = (previewIA?.value || '').trim();
 
+            if (isTyping) {
+                return;
+            }
+
             if (!textoGerado) {
                 if (window.Swal) {
                     Swal.fire({
@@ -258,6 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             textoClinico.value = textoGerado;
             textoClinico.focus();
+            autoResizeTextarea(textoClinico);
 
             if (window.Swal) {
                 Swal.fire({
@@ -271,6 +338,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    autoResizeTextarea(previewIA);
+    autoResizeTextarea(textoClinico);
+
+    previewIA.addEventListener('input', function () {
+        autoResizeTextarea(previewIA);
+    });
+
+    textoClinico.addEventListener('input', function () {
+        autoResizeTextarea(textoClinico);
+    });
 
     const pacienteSelect = document.getElementById('pacienteSelect');
     const sessaoSelect   = document.getElementById('sessaoSelect');
