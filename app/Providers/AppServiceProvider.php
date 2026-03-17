@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Força HTTPS em produção
         if (env('APP_ENV') === 'production') {
-            URL::forceScheme('http');
+            URL::forceScheme('https');
         }
 
         // Usa Bootstrap na paginação
