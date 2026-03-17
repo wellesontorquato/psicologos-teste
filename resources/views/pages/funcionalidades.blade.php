@@ -38,18 +38,24 @@
                     '
                 ],
                 [
-                    'title' => 'Evoluções',
-                    'desc'  => 'Prontuário com histórico completo.',
-                    'is_new'=> false,
-                    'details_title' => 'Evoluções e Registro Clínico',
+                    'title' => 'Evoluções com IA',
+                    'desc'  => 'Registre evoluções em segundos com inteligência artificial.',
+                    'is_new'=> true,
+                    'details_title' => 'Evoluções Inteligentes com IA',
                     'details_html' => '
-                        <p>Registre evoluções em uma <strong>linha do tempo</strong> por paciente, com histórico de sessões sempre acessível.</p>
-                        <p>Padronize anotações clínicas com mais segurança e organização.</p>
+                        <p>Transforme tópicos da sessão em <strong>evoluções clínicas completas automaticamente</strong> com o apoio da inteligência artificial.</p>
+                        
+                        <p>Basta inserir os pontos principais do atendimento e o PsiGestor organiza, estrutura e gera um texto profissional em segundos.</p>
+                        
                         <ul>
-                            <li>Histórico completo</li>
-                            <li>Mais consistência no prontuário</li>
-                            <li>Menos anotações dispersas</li>
+                            <li>Geração automática de evoluções a partir de tópicos</li>
+                            <li>Padronização do prontuário com linguagem técnica</li>
+                            <li>Mais agilidade no pós-atendimento</li>
+                            <li>Redução de tempo com escrita clínica</li>
+                            <li>Foco total no paciente, não na digitação</li>
                         </ul>
+
+                        <p><strong>Menos tempo escrevendo. Mais tempo atendendo.</strong></p>
                     '
                 ],
                 [

@@ -35,18 +35,25 @@
                     [
                         'id'    => 'evolucoes',
                         'icon'  => 'file-lines',
-                        'title' => 'Evoluções',
-                        'desc'  => 'Linha do tempo do prontuário e histórico.',
-                        'is_new'=> false,
-                        'details_title' => 'Evoluções e Registro Clínico',
+                        'title' => 'Evoluções com IA',
+                        'desc'  => 'Crie evoluções completas em segundos a partir de tópicos.',
+                        'is_new'=> true,
+                        'details_title' => 'Evoluções Inteligentes com IA',
                         'details_html' => '
-                            <p>Registre evoluções em uma <strong>linha do tempo</strong> por paciente, com histórico de sessões sempre acessível.</p>
-                            <p>Mantenha informações clínicas estruturadas: progresso, intervenções, observações e objetivos terapêuticos.</p>
+                            <p>Escreva evoluções clínicas de forma <strong>rápida, padronizada e profissional</strong> com o apoio da inteligência artificial.</p>
+
+                            <p>Digite apenas os tópicos principais da sessão e o PsiGestor transforma automaticamente em uma evolução estruturada, pronta para o prontuário.</p>
+
                             <ul>
-                                <li>Histórico organizado</li>
-                                <li>Mais consistência nos registros</li>
-                                <li>Menos retrabalho e anotações soltas</li>
+                                <li>Geração automática de evoluções a partir de tópicos</li>
+                                <li>Texto com linguagem clínica organizada e consistente</li>
+                                <li>Economia de tempo no pós-atendimento</li>
+                                <li>Menos esforço com escrita e mais foco no paciente</li>
+                                <li>Histórico completo em linha do tempo</li>
                             </ul>
+
+                            <p><strong>Até 80% menos tempo escrevendo evoluções.</strong><br>
+                            Mais produtividade, mais qualidade e mais foco no que realmente importa.</p>
                         '
                     ],
                     [
