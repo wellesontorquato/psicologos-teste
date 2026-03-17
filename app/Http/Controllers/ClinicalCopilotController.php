@@ -29,6 +29,13 @@ class ClinicalCopilotController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
+            if (app()->environment('local')) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'trace' => config('app.debug') ? $e->getTraceAsString() : null,
+                ], 500);
+            }
+
             return response()->json([
                 'message' => 'Não foi possível gerar a evolução com IA no momento.',
             ], 500);

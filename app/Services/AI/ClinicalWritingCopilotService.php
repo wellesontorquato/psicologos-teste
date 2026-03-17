@@ -15,45 +15,62 @@ class ClinicalWritingCopilotService
             return '';
         }
 
+        $model = config('services.gemini.model', 'gemini-2.5-flash');
+        $apiKey = config('services.gemini.key');
+
+        if (!$apiKey) {
+            throw new \RuntimeException('GEMINI_API_KEY não configurada.');
+        }
+
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
+
         $payload = [
-            'model' => config('services.openai.model', 'gpt-4o-mini'),
-            'messages' => [
+            'contents' => [
                 [
-                    'role' => 'system',
-                    'content' => $this->getSystemPrompt(),
-                ],
-                [
-                    'role' => 'user',
-                    'content' => $this->buildUserPrompt($topicos),
+                    'parts' => [
+                        [
+                            'text' => $this->buildPrompt($topicos),
+                        ],
+                    ],
                 ],
             ],
-            'temperature' => 0.3,
-            'max_tokens' => 700,
+            'generationConfig' => [
+                'temperature' => 0.3,
+                'maxOutputTokens' => 700,
+            ],
         ];
 
         $response = Http::timeout(60)
             ->acceptJson()
-            ->withToken(config('services.openai.key'))
-            ->post('https://api.openai.com/v1/chat/completions', $payload);
+            ->post($url . '?key=' . $apiKey, $payload);
 
         if (!$response->successful()) {
             throw new \RuntimeException(
-                'Falha na comunicação com a OpenAI. Status: ' . $response->status()
+                'Falha na comunicação com Gemini. Status: ' . $response->status() . '. Resposta: ' . $response->body()
             );
         }
 
-        $content = data_get($response->json(), 'choices.0.message.content');
+        $json = $response->json();
+
+        $content = data_get($json, 'candidates.0.content.parts.0.text');
 
         if (!is_string($content) || trim($content) === '') {
-            throw new \RuntimeException('A OpenAI não retornou conteúdo válido.');
+            $finishReason = data_get($json, 'candidates.0.finishReason');
+            $blockReason = data_get($json, 'promptFeedback.blockReason');
+
+            throw new \RuntimeException(
+                'O Gemini não retornou conteúdo válido.'
+                . ($finishReason ? ' finishReason: ' . $finishReason . '.' : '')
+                . ($blockReason ? ' blockReason: ' . $blockReason . '.' : '')
+            );
         }
 
         return $this->sanitizeOutput($content);
     }
 
-    private function getSystemPrompt(): string
+    private function buildPrompt(string $topicos): string
     {
-        return <<<PROMPT
+        $systemPrompt = <<<PROMPT
 Você é um assistente de escrita clínica para psicólogos.
 
 Sua função é transformar tópicos curtos e anotações objetivas da sessão em um texto único de evolução de prontuário, em português do Brasil, com linguagem profissional, clara, ética e objetiva.
@@ -70,18 +87,9 @@ REGRAS OBRIGATÓRIAS:
 - Mantenha tom clínico, mas natural e legível.
 - Se houver intervenções ou encaminhamentos nos tópicos, incorpore-os ao texto.
 - Se os tópicos forem breves, ainda assim gere uma evolução enxuta e coerente, sem inventar informações.
-
-OBJETIVO DO TEXTO:
-- Registrar o que foi trazido na sessão
-- Apontar aspectos emocionais/comportamentais mencionados ou observados nos tópicos
-- Descrever intervenções realizadas, se houver
-- Registrar combinados/encaminhamentos, se houver
 PROMPT;
-    }
 
-    private function buildUserPrompt(string $topicos): string
-    {
-        return <<<PROMPT
+        $userPrompt = <<<PROMPT
 Com base exclusivamente nos tópicos abaixo, escreva uma evolução de prontuário psicológico em texto corrido.
 
 TÓPICOS DA SESSÃO:
@@ -93,17 +101,17 @@ INSTRUÇÕES:
 - Não invente conteúdo ausente.
 - Use linguagem profissional e objetiva.
 PROMPT;
+
+        return $systemPrompt . "\n\n" . $userPrompt;
     }
 
     private function sanitizeOutput(string $content): string
     {
         $content = trim($content);
 
-        // Remove cercas de markdown, caso venham
         $content = preg_replace('/^```[a-zA-Z0-9]*\s*/', '', $content);
         $content = preg_replace('/\s*```$/', '', $content);
 
-        // Remove rótulos iniciais comuns
         $prefixes = [
             'Evolução:',
             'Evolucao:',

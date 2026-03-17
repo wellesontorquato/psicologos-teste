@@ -51,9 +51,8 @@ return [
         'measurement_id' => env('GA_MEASUREMENT_ID'),
     ],
 
-    'openai' => [
-        'key'   => env('OPENAI_API_KEY'),
-        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+    'gemini' => [
+        'key'   => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
     ],
-
 ];
