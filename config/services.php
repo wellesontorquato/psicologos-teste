@@ -34,7 +34,7 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-    
+
     'wppconnect' => [
         'base_url' => env('WPPCONNECT_URL', 'http://127.0.0.1:3000'),
         'session'  => env('WPPCONNECT_SESSION', 'psigestor'),
@@ -42,10 +42,18 @@ return [
     ],
 
     'google' => [
-    'client_id'     => env('GOOGLE_CLIENT_ID'),
-    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    'redirect'      => env('GOOGLE_REDIRECT_URI'),
-],
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT_URI'),
+    ],
 
-    'ga' => ['measurement_id' => env('GA_MEASUREMENT_ID')],
+    'ga' => [
+        'measurement_id' => env('GA_MEASUREMENT_ID'),
+    ],
+
+    'openai' => [
+        'key'   => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+    ],
+
 ];

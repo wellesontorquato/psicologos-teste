@@ -102,10 +102,46 @@
             </div>
         @endif
 
+        {{-- Copiloto de IA --}}
+        <div class="mb-3">
+            <label for="topicosIA" class="form-label fw-semibold">Tópicos da Sessão (opcional)</label>
+            <textarea
+                id="topicosIA"
+                class="form-control shadow-sm"
+                rows="4"
+                placeholder="Ex.: ansiedade no trabalho, insônia há 3 dias, discussão com a mãe, acolhimento emocional, identificação de gatilhos, combinado registro de pensamentos...">{{ old('topicos_ia') }}</textarea>
+            <div class="form-text">
+                Escreva tópicos curtos da sessão e clique em <strong>Gerar evolução com IA</strong>.
+            </div>
+        </div>
+
+        <div class="mb-3 d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center">
+            <button type="button" id="gerarIA" class="btn btn-outline-primary">
+                <i class="bi bi-stars me-1"></i> Gerar evolução com IA
+            </button>
+
+            <button type="button" id="copiarParaTexto" class="btn btn-outline-secondary" style="display: none;">
+                <i class="bi bi-arrow-down-square me-1"></i> Usar texto gerado
+            </button>
+
+            <span id="loadingIA" class="text-muted small" style="display: none;">
+                Gerando evolução...
+            </span>
+        </div>
+
+        {{-- Preview IA --}}
+        <div class="mb-3" id="previewIAWrapper" style="display: none;">
+            <label for="previewIA" class="form-label fw-semibold">Sugestão gerada pela IA</label>
+            <textarea id="previewIA" class="form-control shadow-sm" rows="6"></textarea>
+            <div class="form-text">
+                Você pode editar o texto acima antes de enviá-lo para a anotação clínica.
+            </div>
+        </div>
+
         {{-- Texto da Evolução --}}
         <div class="mb-3">
             <label class="form-label fw-semibold">Anotação Clínica</label>
-            <textarea name="texto" class="form-control shadow-sm" rows="5" required>{{ old('texto') }}</textarea>
+            <textarea id="textoClinico" name="texto" class="form-control shadow-sm" rows="6" required>{{ old('texto') }}</textarea>
         </div>
 
         {{-- Botões --}}
@@ -118,67 +154,188 @@
 @endsection
 
 @section('scripts')
-@if(!isset($sessao) || !$sessao)
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const pacienteSelect = document.getElementById('pacienteSelect');
-  const sessaoSelect   = document.getElementById('sessaoSelect');
-  const selectedOld    = String(@json(old('sessao_id', '')) || '');
+    const topicosIA = document.getElementById('topicosIA');
+    const gerarIA = document.getElementById('gerarIA');
+    const copiarParaTexto = document.getElementById('copiarParaTexto');
+    const loadingIA = document.getElementById('loadingIA');
+    const previewIAWrapper = document.getElementById('previewIAWrapper');
+    const previewIA = document.getElementById('previewIA');
+    const textoClinico = document.getElementById('textoClinico');
 
-  if (!pacienteSelect || !sessaoSelect) return;
+    async function gerarEvolucaoComIA() {
+        const topicos = (topicosIA?.value || '').trim();
 
-  function preencherSessoes(pacienteId) {
-    sessaoSelect.innerHTML = '<option value="">Carregando sessões...</option>';
-    sessaoSelect.disabled = true;
+        if (!topicos) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tópicos não informados',
+                    text: 'Digite alguns tópicos da sessão para gerar a evolução com IA.',
+                    confirmButtonColor: '#00aaff'
+                });
+            } else {
+                alert('Digite alguns tópicos da sessão para gerar a evolução com IA.');
+            }
+            return;
+        }
 
-    if (!pacienteId) {
-      sessaoSelect.innerHTML = '<option value="">-- Selecione o paciente primeiro --</option>';
-      sessaoSelect.disabled = false;
-      return;
+        gerarIA.disabled = true;
+        copiarParaTexto.style.display = 'none';
+        loadingIA.style.display = 'inline';
+        previewIAWrapper.style.display = 'none';
+        previewIA.value = '';
+
+        try {
+            const response = await fetch("{{ route('evolucoes.gerarIA') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    topicos: topicos
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.message || 'Não foi possível gerar a evolução.');
+            }
+
+            if (!data.evolucao || typeof data.evolucao !== 'string') {
+                throw new Error('A IA não retornou uma evolução válida.');
+            }
+
+            previewIA.value = data.evolucao.trim();
+            previewIAWrapper.style.display = 'block';
+            copiarParaTexto.style.display = 'inline-block';
+
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Evolução gerada',
+                    text: 'Revise o texto e clique em "Usar texto gerado" para enviar à anotação clínica.',
+                    confirmButtonColor: '#00aaff'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao gerar evolução',
+                    text: error.message || 'Ocorreu um erro ao comunicar com a IA.',
+                    confirmButtonColor: '#00aaff'
+                });
+            } else {
+                alert(error.message || 'Ocorreu um erro ao comunicar com a IA.');
+            }
+        } finally {
+            gerarIA.disabled = false;
+            loadingIA.style.display = 'none';
+        }
     }
 
-    fetch(`/pacientes/${encodeURIComponent(pacienteId)}/sessoes`, {
-      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept':'application/json' }
-    })
-    .then(async (res) => {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then((lista) => {
-      sessaoSelect.innerHTML = '<option value="">-- Sem vínculo --</option>';
+    if (gerarIA) {
+        gerarIA.addEventListener('click', gerarEvolucaoComIA);
+    }
 
-      if (!Array.isArray(lista) || lista.length === 0) {
-        sessaoSelect.insertAdjacentHTML('beforeend', '<option value="">Nenhuma sessão encontrada</option>');
-        return;
-      }
+    if (copiarParaTexto) {
+        copiarParaTexto.addEventListener('click', function () {
+            const textoGerado = (previewIA?.value || '').trim();
 
-      lista.forEach((s) => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        // O endpoint retorna "label" (ex.: "15/08/2025 09:00 (50min)")
-        opt.textContent = s.label || s.data_hora || 'Sem data / remarcar';
-        if (String(s.id) === selectedOld) opt.selected = true;
-        sessaoSelect.appendChild(opt);
-      });
-    })
-    .catch(() => {
-      sessaoSelect.innerHTML = '<option value="">Erro ao carregar sessões</option>';
-    })
-    .finally(() => {
-      sessaoSelect.disabled = false;
+            if (!textoGerado) {
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Nada para copiar',
+                        text: 'Gere ou edite um texto antes de usar esta opção.',
+                        confirmButtonColor: '#00aaff'
+                    });
+                } else {
+                    alert('Gere ou edite um texto antes de usar esta opção.');
+                }
+                return;
+            }
+
+            textoClinico.value = textoGerado;
+            textoClinico.focus();
+
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Texto aplicado',
+                    text: 'A sugestão da IA foi enviada para a anotação clínica.',
+                    confirmButtonColor: '#00aaff',
+                    timer: 1800,
+                    showConfirmButton: false
+                });
+            }
+        });
+    }
+
+    @if(!isset($sessao) || !$sessao)
+    const pacienteSelect = document.getElementById('pacienteSelect');
+    const sessaoSelect   = document.getElementById('sessaoSelect');
+    const selectedOld    = String(@json(old('sessao_id', '')) || '');
+
+    if (!pacienteSelect || !sessaoSelect) return;
+
+    function preencherSessoes(pacienteId) {
+        sessaoSelect.innerHTML = '<option value="">Carregando sessões...</option>';
+        sessaoSelect.disabled = true;
+
+        if (!pacienteId) {
+            sessaoSelect.innerHTML = '<option value="">-- Selecione o paciente primeiro --</option>';
+            sessaoSelect.disabled = false;
+            return;
+        }
+
+        fetch(`/pacientes/${encodeURIComponent(pacienteId)}/sessoes`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept':'application/json' }
+        })
+        .then(async (res) => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then((lista) => {
+            sessaoSelect.innerHTML = '<option value="">-- Sem vínculo --</option>';
+
+            if (!Array.isArray(lista) || lista.length === 0) {
+                sessaoSelect.insertAdjacentHTML('beforeend', '<option value="">Nenhuma sessão encontrada</option>');
+                return;
+            }
+
+            lista.forEach((s) => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.label || s.data_hora || 'Sem data / remarcar';
+                if (String(s.id) === selectedOld) opt.selected = true;
+                sessaoSelect.appendChild(opt);
+            });
+        })
+        .catch(() => {
+            sessaoSelect.innerHTML = '<option value="">Erro ao carregar sessões</option>';
+        })
+        .finally(() => {
+            sessaoSelect.disabled = false;
+        });
+    }
+
+    pacienteSelect.addEventListener('change', function () {
+        preencherSessoes(this.value);
     });
-  }
 
-  // Carrega quando o usuário troca o paciente
-  pacienteSelect.addEventListener('change', function () {
-    preencherSessoes(this.value);
-  });
-
-  // Dispara carregamento automático se já houver paciente selecionado (ex.: vindo da agenda)
-  if (pacienteSelect.value) {
-    preencherSessoes(pacienteSelect.value);
-  }
+    if (pacienteSelect.value) {
+        preencherSessoes(pacienteSelect.value);
+    }
+    @endif
 });
 </script>
-@endif
 @endsection

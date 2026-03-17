@@ -31,7 +31,8 @@ use App\Http\Controllers\{
     AssinaturaController,
     BlogController,
     LandingPageController,
-    FileProxyController
+    FileProxyController,
+    ClinicalCopilotController
 };
 use App\Models\News;
 use App\Jobs\SyncUserCalendar;
@@ -184,12 +185,15 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     // JSON de sessões
     Route::post('/sessoes-json',        [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
     Route::put('/sessoes-json/{id}',    [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
-    Route::get('/sessoes-json/{id}/edit',[SessaoController::class, 'editJson'])->name('sessoes.editJson'); // <- corrigido
+    Route::get('/sessoes-json/{id}/edit',[SessaoController::class, 'editJson'])->name('sessoes.editJson');
     Route::get('/sessoes-json/{id}',    [SessaoController::class, 'showJson'])->name('sessoes.showJson');
     Route::delete('/sessoes-json/{id}', [SessaoController::class, 'destroyJson'])->name('sessoes.destroyJson');
 
     Route::resource('pacientes', PacienteController::class);
     Route::resource('evolucoes', EvolucaoController::class)->parameters(['evolucoes' => 'evolucao']);
+    
+    Route::post('/evolucoes/gerar-ia', [ClinicalCopilotController::class, 'gerar'])
+    ->name('evolucoes.gerarIA');
 
     Route::get('/dashboard/pdf',   [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
     Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
