@@ -326,6 +326,73 @@ class PacienteController extends Controller
         };
     }
 
+    public function indicadores(Paciente $paciente)
+    {
+        $this->authorize('view', $paciente);
+
+        $evolucoes = $paciente->evolucoes()
+            ->with('indicador')
+            ->whereHas('indicador')
+            ->orderBy('data')
+            ->get();
+
+        $labels = [];
+        $intensidades = [];
+        $alertasPorData = [];
+        $estadosFrequencia = [];
+
+        foreach ($evolucoes as $evolucao) {
+            $data = Carbon::parse($evolucao->data)->format('d/m/Y');
+            $indicador = $evolucao->indicador;
+
+            $labels[] = $data;
+            $intensidades[] = $indicador->intensidade;
+            $alertasPorData[] = $indicador->alerta ?? 0;
+
+            if (!empty($indicador->estado_emocional)) {
+                $estado = $indicador->estado_emocional;
+                $estadosFrequencia[$estado] = ($estadosFrequencia[$estado] ?? 0) + 1;
+            }
+        }
+
+        $ultimoIndicador = optional($evolucoes->last())->indicador;
+
+        $mediaIntensidade = count(array_filter($intensidades, fn($v) => !is_null($v))) > 0
+            ? round(collect($intensidades)->filter(fn($v) => !is_null($v))->avg(), 1)
+            : null;
+
+        $totalAlertas = collect($alertasPorData)->filter(fn($v) => (int)$v > 0)->count();
+
+        return response()->json([
+            'paciente' => [
+                'id' => $paciente->id,
+                'nome' => $paciente->nome,
+            ],
+            'resumo' => [
+                'ultimo_estado_emocional' => $ultimoIndicador->estado_emocional ?? null,
+                'media_intensidade' => $mediaIntensidade,
+                'total_alertas' => $totalAlertas,
+                'total_evolucoes_com_indicador' => $evolucoes->count(),
+            ],
+            'graficos' => [
+                'linha_intensidade' => [
+                    'labels' => $labels,
+                    'data' => $intensidades,
+                ],
+                'barras_alerta' => [
+                    'labels' => $labels,
+                    'data' => $alertasPorData,
+                ],
+                'frequencia_estados' => [
+                    'labels' => array_map(function ($estado) {
+                        return ucfirst(str_replace('_', ' ', $estado));
+                    }, array_keys($estadosFrequencia)),
+                    'data' => array_values($estadosFrequencia),
+                ],
+            ],
+        ]);
+    }
+
     //API FLUTTER
 
         public function showJson($id)

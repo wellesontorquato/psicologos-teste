@@ -200,6 +200,7 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 
     Route::get('/pacientes/{paciente}/historico',      [PacienteController::class, 'historico'])->name('pacientes.historico');
     Route::get('/pacientes/{paciente}/historico/pdf',  [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');
+    Route::get('/pacientes/{paciente}/indicadores', [PacienteController::class, 'indicadores'])->name('pacientes.indicadores');
     Route::get('/pacientes/{id}/sessoes',              [EvolucaoController::class, 'getSessoes'])->name('pacientes.sessoes');
 
     Route::get('/agenda',         [AgendaController::class, 'index'])->name('agenda');

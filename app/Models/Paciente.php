@@ -39,7 +39,7 @@ class Paciente extends Model
 
     public function evolucoes()
     {
-        return $this->hasMany(Evolucao::class);
+        return $this->hasMany(Evolucao::class, 'paciente_id');
     }
 
     public function user()
