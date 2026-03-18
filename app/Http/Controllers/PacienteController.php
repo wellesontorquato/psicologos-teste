@@ -539,8 +539,9 @@ class PacienteController extends Controller
             ],
             'graficos' => [
                 'linha_intensidade' => [
-                    'labels' => $labels,
+                    'labels' => $labels,    
                     'data' => $intensidades,
+                    'estados' => $estadosPorData,
                 ],
                 'barras_alerta' => [
                     'labels' => $labels,

@@ -103,9 +103,9 @@
             <div class="modal-header indicadores-modal-header">
                 <div class="me-3">
                     <h5 class="modal-title fw-bold mb-1" id="indicadoresModalLabel">Indicadores Clínicos</h5>
-                    <small class="text-muted">Análise visual e evolução emocional de {{ $paciente->nome }}</small>
+                    <small class="indicadores-subtitle">Análise visual e evolução emocional de {{ $paciente->nome }}</small>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                <button type="button" class="btn-close btn-close-white btn-close-premium" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
 
             <div class="modal-body indicadores-modal-body">
@@ -116,12 +116,14 @@
 
                 <div id="indicadoresConteudo" style="display: none;">
                     {{-- Resumo automático --}}
-                    <div class="alert alert-light border rounded-4 shadow-sm mb-4 resumo-box">
-                        <div class="d-flex align-items-start gap-2">
-                            <i class="bi bi-clipboard2-pulse text-primary fs-5 mt-1"></i>
+                    <div class="premium-summary-box mb-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="premium-summary-icon">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                            </div>
                             <div>
-                                <div class="fw-semibold mb-1">Resumo clínico visual</div>
-                                <div class="text-muted small" id="resumoAutomatico">—</div>
+                                <div class="premium-summary-title">Resumo clínico visual</div>
+                                <div class="premium-summary-text" id="resumoAutomatico">—</div>
                             </div>
                         </div>
                     </div>
@@ -129,7 +131,7 @@
                     {{-- Cards principais --}}
                     <div class="row g-3 mb-4">
                         <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm h-100 indicador-card">
+                            <div class="card border-0 shadow-sm h-100 indicador-card premium-card">
                                 <div class="card-body">
                                     <div class="indicador-label">Estado atual</div>
                                     <div class="indicador-valor" id="cardUltimoEstado">—</div>
@@ -139,7 +141,7 @@
                         </div>
 
                         <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm h-100 indicador-card">
+                            <div class="card border-0 shadow-sm h-100 indicador-card premium-card">
                                 <div class="card-body">
                                     <div class="indicador-label">Tendência recente</div>
                                     <div class="indicador-valor" id="cardTendencia">—</div>
@@ -149,7 +151,7 @@
                         </div>
 
                         <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm h-100 indicador-card">
+                            <div class="card border-0 shadow-sm h-100 indicador-card premium-card">
                                 <div class="card-body">
                                     <div class="indicador-label">Média de intensidade</div>
                                     <div class="indicador-valor" id="cardMediaIntensidade">—</div>
@@ -159,7 +161,7 @@
                         </div>
 
                         <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm h-100 indicador-card">
+                            <div class="card border-0 shadow-sm h-100 indicador-card premium-card">
                                 <div class="card-body">
                                     <div class="indicador-label">Pico registrado</div>
                                     <div class="indicador-valor" id="cardPico">—</div>
@@ -170,14 +172,14 @@
                     </div>
 
                     {{-- Gráfico principal --}}
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4 premium-panel">
                         <div class="card-body">
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
                                 <div>
                                     <h6 class="fw-bold mb-1">Intensidade emocional ao longo do tempo</h6>
-                                    <small class="text-muted">Acompanhe a evolução da intensidade registrada nas evoluções clínicas.</small>
+                                    <small class="text-muted">Passe o mouse sobre os pontos para ver intensidade e estado emocional registrado.</small>
                                 </div>
-                                <div class="badge bg-light text-dark border align-self-start align-self-md-center" id="badgeTotalRegistros">
+                                <div class="premium-badge" id="badgeTotalRegistros">
                                     0 registros
                                 </div>
                             </div>
@@ -190,7 +192,7 @@
                     {{-- Gráficos secundários --}}
                     <div class="row g-3 mb-4">
                         <div class="col-12 col-lg-6">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 shadow-sm h-100 premium-panel">
                                 <div class="card-body">
                                     <h6 class="fw-bold mb-1">Frequência dos estados emocionais</h6>
                                     <small class="text-muted d-block mb-3">Distribuição dos estados mais recorrentes no período.</small>
@@ -202,7 +204,7 @@
                         </div>
 
                         <div class="col-12 col-lg-6">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 shadow-sm h-100 premium-panel">
                                 <div class="card-body">
                                     <h6 class="fw-bold mb-1">Alertas por evolução</h6>
                                     <small class="text-muted d-block mb-3">Visualize a incidência de atenção clínica ao longo do histórico.</small>
@@ -217,7 +219,7 @@
                     {{-- Distribuição + tabela --}}
                     <div class="row g-3">
                         <div class="col-12 col-xl-5">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 shadow-sm h-100 premium-panel">
                                 <div class="card-body">
                                     <h6 class="fw-bold mb-1">Distribuição da intensidade</h6>
                                     <small class="text-muted d-block mb-3">Faixas agrupadas para leitura rápida do nível emocional predominante.</small>
@@ -229,7 +231,7 @@
                         </div>
 
                         <div class="col-12 col-xl-7">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 shadow-sm h-100 premium-panel">
                                 <div class="card-body">
                                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
                                         <div>
@@ -294,80 +296,148 @@
 }
 
 .indicadores-modal-dialog {
-    max-width: 1320px;
+    max-width: 1380px;
 }
 
 .indicadores-modal-content {
-    border-radius: 1.2rem;
+    border-radius: 1.5rem;
     overflow: hidden;
+    backdrop-filter: blur(12px);
+    background: #fff;
 }
 
 .indicadores-modal-header {
-    padding: 1rem 1rem;
-    border-bottom: 1px solid rgba(0,0,0,.06);
-    background: linear-gradient(180deg, rgba(13,110,253,.04) 0%, rgba(13,110,253,0) 100%);
+    padding: 1.15rem 1.15rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    background:
+        radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 28%),
+        linear-gradient(135deg, #0d6efd 0%, #2563eb 45%, #4f46e5 100%);
+    color: #fff;
+}
+
+.indicadores-subtitle {
+    color: rgba(255,255,255,.82);
+}
+
+.btn-close-premium {
+    opacity: .9;
 }
 
 .indicadores-modal-body {
     padding: 1rem;
+    background:
+        linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
 }
 
-.resumo-box {
-    background: linear-gradient(180deg, rgba(248,249,250,1) 0%, rgba(255,255,255,1) 100%);
+.premium-summary-box {
+    border-radius: 1.25rem;
+    padding: 1rem 1rem;
+    background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%);
+    border: 1px solid rgba(15,23,42,.06);
+    box-shadow: 0 8px 24px rgba(15,23,42,.04);
+}
+
+.premium-summary-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(79,70,229,.16));
+    color: #2563eb;
+    font-size: 1.1rem;
+}
+
+.premium-summary-title {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: .2rem;
+}
+
+.premium-summary-text {
+    font-size: .92rem;
+    color: #64748b;
+    line-height: 1.55;
+}
+
+.premium-card,
+.premium-panel {
+    border-radius: 1.15rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 10px 28px rgba(15,23,42,.05);
+    border: 1px solid rgba(15,23,42,.04);
 }
 
 .indicador-card {
-    border-radius: 1rem;
-    transition: transform .18s ease, box-shadow .18s ease;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
 }
 
 .indicador-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(15,23,42,.08);
+    border-color: rgba(37,99,235,.12);
 }
 
 .indicador-label {
     font-size: .82rem;
-    color: #6c757d;
-    margin-bottom: .35rem;
+    color: #64748b;
+    margin-bottom: .42rem;
 }
 
 .indicador-valor {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #212529;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
     line-height: 1.2;
-    margin-bottom: .35rem;
+    margin-bottom: .4rem;
     word-break: break-word;
 }
 
 .indicador-meta {
     font-size: .82rem;
-    color: #6c757d;
+    color: #64748b;
+}
+
+.premium-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem .85rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #334155;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(15,23,42,.08);
+    box-shadow: 0 4px 14px rgba(15,23,42,.04);
 }
 
 .chart-wrap {
     position: relative;
     width: 100%;
-    min-height: 260px;
+    min-height: 270px;
 }
 
 .chart-wrap-lg {
-    min-height: 340px;
+    min-height: 370px;
 }
 
 .chart-wrap-doughnut {
-    min-height: 300px;
+    min-height: 320px;
 }
 
 .indicadores-table thead th {
     font-size: .82rem;
-    color: #6c757d;
-    font-weight: 600;
+    color: #64748b;
+    font-weight: 700;
     border-bottom-width: 1px;
+    white-space: nowrap;
 }
 
 .indicadores-table tbody td {
-    font-size: .92rem;
+    font-size: .93rem;
     vertical-align: middle;
 }
 
@@ -375,71 +445,71 @@
     display: inline-flex;
     align-items: center;
     gap: .35rem;
-    padding: .45rem .7rem;
+    padding: .45rem .72rem;
     border-radius: 999px;
     font-size: .78rem;
-    font-weight: 600;
+    font-weight: 700;
     border: 1px solid transparent;
     white-space: nowrap;
 }
 
 .badge-soft.estado {
-    background: rgba(13,110,253,.08);
-    color: #0d6efd;
-    border-color: rgba(13,110,253,.14);
+    background: rgba(37,99,235,.08);
+    color: #2563eb;
+    border-color: rgba(37,99,235,.14);
 }
 
 .badge-soft.intensidade {
-    background: rgba(25,135,84,.08);
-    color: #198754;
-    border-color: rgba(25,135,84,.14);
+    background: rgba(16,185,129,.08);
+    color: #059669;
+    border-color: rgba(16,185,129,.14);
 }
 
 .badge-soft.alerta-neutro {
-    background: rgba(108,117,125,.1);
-    color: #6c757d;
-    border-color: rgba(108,117,125,.14);
+    background: rgba(100,116,139,.1);
+    color: #64748b;
+    border-color: rgba(100,116,139,.14);
 }
 
 .badge-soft.alerta-atencao {
-    background: rgba(255,193,7,.16);
-    color: #997404;
-    border-color: rgba(255,193,7,.2);
+    background: rgba(245,158,11,.16);
+    color: #b45309;
+    border-color: rgba(245,158,11,.22);
 }
 
 .badge-soft.alerta-critico {
-    background: rgba(220,53,69,.1);
-    color: #dc3545;
-    border-color: rgba(220,53,69,.15);
+    background: rgba(239,68,68,.1);
+    color: #dc2626;
+    border-color: rgba(239,68,68,.16);
 }
 
 @media (max-width: 991.98px) {
     .indicadores-modal-dialog {
-        max-width: 96vw;
+        max-width: 97vw;
     }
 
     .chart-wrap-lg {
-        min-height: 300px;
+        min-height: 320px;
     }
 }
 
 @media (max-width: 767.98px) {
     .indicadores-modal-header {
-        padding: .9rem 1rem;
+        padding: 1rem;
     }
 
     .indicadores-modal-body {
-        padding: .85rem;
+        padding: .9rem;
     }
 
     .indicador-valor {
-        font-size: 1.15rem;
+        font-size: 1.18rem;
     }
 
     .chart-wrap,
     .chart-wrap-lg,
     .chart-wrap-doughnut {
-        min-height: 240px;
+        min-height: 250px;
     }
 
     .table-responsive {
@@ -456,11 +526,15 @@
     .chart-wrap,
     .chart-wrap-lg,
     .chart-wrap-doughnut {
-        min-height: 220px;
+        min-height: 230px;
     }
 
     .indicadores-modal-content {
         border-radius: 0;
+    }
+
+    .premium-summary-box {
+        padding: .9rem;
     }
 }
 </style>
@@ -596,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }).join('');
     }
 
-    function criarGraficoIntensidade(labels, dados, picoValor) {
+    function criarGraficoIntensidade(labels, dados, estados) {
         const ctx = document.getElementById('graficoIntensidade');
 
         graficoIntensidade = new Chart(ctx, {
@@ -604,13 +678,15 @@ document.addEventListener('DOMContentLoaded', function () {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Intensidade',
+                    label: 'Intensidade emocional',
                     data: dados,
-                    borderWidth: 2,
-                    tension: 0.35,
+                    borderWidth: 3,
+                    tension: 0.4,
                     fill: true,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderWidth: 2
                 }]
             },
             options: {
@@ -622,12 +698,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 plugins: {
                     legend: {
-                        display: true
+                        display: false
                     },
                     tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false,
                         callbacks: {
+                            title: function(context) {
+                                return `📅 ${context[0].label}`;
+                            },
                             label: function(context) {
-                                return ` Intensidade: ${context.parsed.y}/5`;
+                                const index = context.dataIndex;
+                                const intensidade = context.parsed.y;
+                                const estado = Array.isArray(estados) ? estados[index] : null;
+                                const estadoFormatado = estado
+                                    ? estado.replaceAll('_', ' ').replace(/\b\w/g, function (l) { return l.toUpperCase(); })
+                                    : 'Não informado';
+
+                                return [
+                                    `💡 Intensidade: ${intensidade}/5`,
+                                    `🧠 Estado emocional: ${estadoFormatado}`
+                                ];
                             }
                         }
                     }
@@ -639,6 +734,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         max: 5,
                         ticks: {
                             stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(15,23,42,0.06)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
                 }
@@ -657,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     label: 'Quantidade',
                     data: dados,
                     borderWidth: 1,
-                    borderRadius: 10
+                    borderRadius: 12
                 }]
             },
             options: {
@@ -673,6 +776,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         beginAtZero: true,
                         ticks: {
                             precision: 0
+                        },
+                        grid: {
+                            color: 'rgba(15,23,42,0.06)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
                 }
@@ -691,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     label: 'Nível de alerta',
                     data: dados,
                     borderWidth: 1,
-                    borderRadius: 10
+                    borderRadius: 12
                 }]
             },
             options: {
@@ -724,6 +835,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                 if (value === 2) return 'Crítico';
                                 return value;
                             }
+                        },
+                        grid: {
+                            color: 'rgba(15,23,42,0.06)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
                 }
@@ -779,6 +898,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const labelsIntensidade = data?.graficos?.linha_intensidade?.labels || [];
             const dadosIntensidade = data?.graficos?.linha_intensidade?.data || [];
+            const estadosIntensidade = data?.graficos?.linha_intensidade?.estados || [];
             const labelsEstados = data?.graficos?.frequencia_estados?.labels || [];
             const dadosEstados = data?.graficos?.frequencia_estados?.data || [];
             const labelsAlertas = data?.graficos?.barras_alerta?.labels || [];
@@ -808,7 +928,7 @@ document.addEventListener('DOMContentLoaded', function () {
             badgeTotalRegistros.textContent = `${resumo?.total_evolucoes_com_indicador ?? 0} registros`;
 
             preencherTabelaHistorico(data?.historico_recente || []);
-            criarGraficoIntensidade(labelsIntensidade, dadosIntensidade, resumo?.pico_intensidade ?? null);
+            criarGraficoIntensidade(labelsIntensidade, dadosIntensidade, estadosIntensidade);
             criarGraficoEstados(labelsEstados, dadosEstados);
             criarGraficoAlertas(labelsAlertas, dadosAlertas);
             criarGraficoDistribuicao(labelsDistribuicao, dadosDistribuicao);
