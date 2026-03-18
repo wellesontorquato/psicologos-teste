@@ -338,6 +338,7 @@ class PacienteController extends Controller
 
         $labels = [];
         $intensidades = [];
+        $estadosPorData = [];
         $alertasPorData = [];
         $estadosFrequencia = [];
         $historicoDetalhado = [];
@@ -357,6 +358,7 @@ class PacienteController extends Controller
 
             $labels[] = $dataFormatada;
             $intensidades[] = $intensidade;
+            $estadosPorData[] = $estado;
             $alertasPorData[] = $alerta;
 
             if (!empty($estado)) {
@@ -539,7 +541,7 @@ class PacienteController extends Controller
             ],
             'graficos' => [
                 'linha_intensidade' => [
-                    'labels' => $labels,    
+                    'labels' => $labels,
                     'data' => $intensidades,
                     'estados' => $estadosPorData,
                 ],
