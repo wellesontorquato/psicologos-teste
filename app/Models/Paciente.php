@@ -51,4 +51,9 @@ class Paciente extends Model
     {
         return $this->hasMany(Arquivo::class);
     }
+
+    public function evolucaoIndicadores()
+    {
+        return $this->hasMany(EvolucaoIndicador::class);
+    }
 }

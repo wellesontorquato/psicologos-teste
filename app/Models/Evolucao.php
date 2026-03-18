@@ -45,4 +45,9 @@ class Evolucao extends Model
     {
         return $this->belongsTo(Sessao::class, 'sessao_id');
     }
+
+    public function indicador()
+    {
+        return $this->hasOne(EvolucaoIndicador::class, 'evolucao_id');
+    }
 }

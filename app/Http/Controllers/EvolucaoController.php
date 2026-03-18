@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Evolucao;
+use App\Models\EvolucaoIndicador;
 use App\Models\Paciente;
 use App\Models\Sessao;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class EvolucaoController extends Controller
     // 🌐 WEB: Listagem com filtros
     public function index(Request $request)
     {
-        $query = Evolucao::with(['paciente', 'sessao'])
+        $query = Evolucao::with(['paciente', 'sessao', 'indicador'])
             ->whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()));
 
         // 🔍 Filtro por nome do paciente
@@ -75,7 +76,6 @@ class EvolucaoController extends Controller
 
             $pacienteSelecionado = $sessao->paciente_id;
 
-            // seguro para null ou string
             if (!empty($sessao->data_hora)) {
                 $dt = $sessao->data_hora instanceof \Carbon\Carbon
                     ? $sessao->data_hora
@@ -89,23 +89,46 @@ class EvolucaoController extends Controller
         return view('evolucoes.create', compact('pacientes', 'pacienteSelecionado', 'dataSelecionada', 'sessao'));
     }
 
-
-
     // 🌐 WEB: Armazenar evolução
     public function store(Request $request)
     {
         $request->validate([
-            'paciente_id' => 'required|exists:pacientes,id',
-            'data' => 'required|date',
-            'texto' => 'required|string',
-            'sessao_id' => 'nullable|exists:sessoes,id',
+            'paciente_id'            => 'required|exists:pacientes,id',
+            'data'                   => 'required|date',
+            'texto'                  => 'required|string',
+            'sessao_id'              => 'nullable|exists:sessoes,id',
+            'estado_emocional'       => 'nullable|string|max:50',
+            'intensidade'            => 'nullable|integer|between:1,5',
+            'alerta'                 => 'nullable|integer|in:0,1,2',
+            'indicador_observacoes'  => 'nullable|string',
         ]);
 
         $paciente = Paciente::where('id', $request->paciente_id)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        $evolucao = Evolucao::create($request->only(['paciente_id', 'data', 'texto', 'sessao_id']));
+        $evolucao = Evolucao::create($request->only([
+            'paciente_id',
+            'data',
+            'texto',
+            'sessao_id'
+        ]));
+
+        if (
+            $request->filled('estado_emocional') ||
+            $request->filled('intensidade') ||
+            $request->filled('alerta') ||
+            $request->filled('indicador_observacoes')
+        ) {
+            $evolucao->indicador()->create([
+                'paciente_id'      => $request->paciente_id,
+                'sessao_id'        => $request->sessao_id,
+                'estado_emocional' => $request->estado_emocional,
+                'intensidade'      => $request->intensidade,
+                'alerta'           => $request->alerta,
+                'observacoes'      => $request->indicador_observacoes,
+            ]);
+        }
 
         AuditHelper::log('created_evolucao', 'Adicionou evolução ao paciente ' . $paciente->nome);
 
@@ -115,22 +138,18 @@ class EvolucaoController extends Controller
     // 🌐 WEB: Formulário de edição
     public function edit(Evolucao $evolucao)
     {
-        // Evita novo findOrFail: já vem por model binding
-        $evolucao->load(['paciente', 'sessao']);
+        $evolucao->load(['paciente', 'sessao', 'indicador']);
 
-        // Multitenancy / autorização básica
         if (!$evolucao->paciente || $evolucao->paciente->user_id !== auth()->id()) {
             abort(403, 'Acesso negado.');
         }
 
-        // Lista de pacientes do usuário (para o select)
         $pacientes = Paciente::where('user_id', auth()->id())
             ->orderBy('nome', 'asc')
             ->get();
 
-        // TODAS as sessões do paciente (inclui as sem data), null por último
-        $sessoesPaciente = \App\Models\Sessao::where('paciente_id', $evolucao->paciente_id)
-            ->whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id())) // reforça o escopo do usuário
+        $sessoesPaciente = Sessao::where('paciente_id', $evolucao->paciente_id)
+            ->whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
             ->orderByRaw("CASE WHEN data_hora IS NULL THEN 1 ELSE 0 END, data_hora DESC")
             ->get(['id', 'data_hora', 'duracao']);
 
@@ -140,24 +159,54 @@ class EvolucaoController extends Controller
     // 🌐 WEB: Atualizar evolução
     public function update(Request $request, Evolucao $evolucao)
     {
-        $evolucao = Evolucao::with('paciente')->findOrFail($evolucao->id);
+        $evolucao->load(['paciente', 'indicador']);
 
         if (!$evolucao->paciente || $evolucao->paciente->user_id !== auth()->id()) {
             abort(403, 'Acesso negado.');
         }
 
         $request->validate([
-            'paciente_id' => 'required|exists:pacientes,id',
-            'data' => 'required|date',
-            'texto' => 'required|string',
-            'sessao_id' => 'nullable|exists:sessoes,id',
+            'paciente_id'            => 'required|exists:pacientes,id',
+            'data'                   => 'required|date',
+            'texto'                  => 'required|string',
+            'sessao_id'              => 'nullable|exists:sessoes,id',
+            'estado_emocional'       => 'nullable|string|max:50',
+            'intensidade'            => 'nullable|integer|between:1,5',
+            'alerta'                 => 'nullable|integer|in:0,1,2',
+            'indicador_observacoes'  => 'nullable|string',
         ]);
 
         $paciente = Paciente::where('id', $request->paciente_id)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        $evolucao->update($request->only(['paciente_id', 'data', 'texto', 'sessao_id']));
+        $evolucao->update($request->only([
+            'paciente_id',
+            'data',
+            'texto',
+            'sessao_id'
+        ]));
+
+        if (
+            $request->filled('estado_emocional') ||
+            $request->filled('intensidade') ||
+            $request->filled('alerta') ||
+            $request->filled('indicador_observacoes')
+        ) {
+            $evolucao->indicador()->updateOrCreate(
+                ['evolucao_id' => $evolucao->id],
+                [
+                    'paciente_id'      => $request->paciente_id,
+                    'sessao_id'        => $request->sessao_id,
+                    'estado_emocional' => $request->estado_emocional,
+                    'intensidade'      => $request->intensidade,
+                    'alerta'           => $request->alerta,
+                    'observacoes'      => $request->indicador_observacoes,
+                ]
+            );
+        } else {
+            $evolucao->indicador()?->delete();
+        }
 
         AuditHelper::log('updated_evolucao', 'Editou evolução do paciente ' . $paciente->nome);
 
@@ -167,7 +216,7 @@ class EvolucaoController extends Controller
     // 🌐 WEB: Deletar evolução
     public function destroy(Evolucao $evolucao)
     {
-        $evolucao = Evolucao::with('paciente')->findOrFail($evolucao->id);
+        $evolucao->load('paciente');
 
         if (!$evolucao->paciente || $evolucao->paciente->user_id !== auth()->id()) {
             abort(403, 'Acesso negado.');
@@ -203,11 +252,9 @@ class EvolucaoController extends Controller
 
             return [
                 'id'        => (int)$s->id,
-                // label pronto para o <option>
                 'label'     => $dt
                     ? $dt->format('d/m/Y H:i') . ' (' . (int)($s->duracao ?? 0) . 'min)'
                     : 'Sem data / remarcar',
-                // útil se precisar do valor original
                 'data_hora' => $dt ? $dt->format('Y-m-d H:i') : null,
                 'duracao'   => (int)($s->duracao ?? 0),
             ];
@@ -216,11 +263,11 @@ class EvolucaoController extends Controller
         return response()->json($payload);
     }
 
-    
     // 🌐 WEB: Imprimir evolução
-    public function imprimir(\App\Models\Evolucao $evolucao)
+    public function imprimir(Evolucao $evolucao)
     {
-        // segurança básica: evolução precisa pertencer ao usuário logado
+        $evolucao->load(['paciente', 'sessao', 'indicador']);
+
         if (!$evolucao->paciente || $evolucao->paciente->user_id !== auth()->id()) {
             abort(403, 'Acesso não autorizado.');
         }
@@ -234,7 +281,7 @@ class EvolucaoController extends Controller
     // 📲 API: Listar evoluções (Flutter)
     public function indexJson(Request $request)
     {
-        $evolucoes = Evolucao::with(['paciente', 'sessao'])
+        $evolucoes = Evolucao::with(['paciente', 'sessao', 'indicador'])
             ->whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
             ->orderBy('data', 'desc')
             ->get()
@@ -255,59 +302,129 @@ class EvolucaoController extends Controller
                 }
 
                 return [
-                    'id'       => $e->id,
-                    'data'     => \Carbon\Carbon::parse($e->data)->format('Y-m-d'),
-                    'texto'    => $e->texto,
-                    'paciente' => [
+                    'id'        => $e->id,
+                    'data'      => \Carbon\Carbon::parse($e->data)->format('Y-m-d'),
+                    'texto'     => $e->texto,
+                    'paciente'  => [
                         'id'   => $e->paciente->id,
                         'nome' => $e->paciente->nome,
                     ],
-                    'sessao'   => $sessao,
+                    'sessao'    => $sessao,
+                    'indicador' => $e->indicador ? [
+                        'estado_emocional' => $e->indicador->estado_emocional,
+                        'intensidade'      => $e->indicador->intensidade,
+                        'alerta'           => $e->indicador->alerta,
+                        'observacoes'      => $e->indicador->observacoes,
+                    ] : null,
                 ];
             });
 
         return response()->json($evolucoes);
     }
 
-
     // 📲 API: Criar evolução (Flutter)
     public function storeJson(Request $request)
     {
         $request->validate([
-            'paciente_id' => 'required|exists:pacientes,id',
-            'data' => 'required|date',
-            'texto' => 'required|string',
-            'sessao_id' => 'nullable|exists:sessoes,id',
+            'paciente_id'            => 'required|exists:pacientes,id',
+            'data'                   => 'required|date',
+            'texto'                  => 'required|string',
+            'sessao_id'              => 'nullable|exists:sessoes,id',
+            'estado_emocional'       => 'nullable|string|max:50',
+            'intensidade'            => 'nullable|integer|between:1,5',
+            'alerta'                 => 'nullable|integer|in:0,1,2',
+            'indicador_observacoes'  => 'nullable|string',
         ]);
 
         $paciente = Paciente::where('id', $request->paciente_id)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        $evolucao = Evolucao::create($request->only(['paciente_id', 'data', 'texto', 'sessao_id']));
+        $evolucao = Evolucao::create($request->only([
+            'paciente_id',
+            'data',
+            'texto',
+            'sessao_id'
+        ]));
 
-        return response()->json(['message' => 'Evolução registrada com sucesso', 'evolucao' => $evolucao]);
+        if (
+            $request->filled('estado_emocional') ||
+            $request->filled('intensidade') ||
+            $request->filled('alerta') ||
+            $request->filled('indicador_observacoes')
+        ) {
+            $evolucao->indicador()->create([
+                'paciente_id'      => $request->paciente_id,
+                'sessao_id'        => $request->sessao_id,
+                'estado_emocional' => $request->estado_emocional,
+                'intensidade'      => $request->intensidade,
+                'alerta'           => $request->alerta,
+                'observacoes'      => $request->indicador_observacoes,
+            ]);
+        }
+
+        return response()->json([
+            'message'  => 'Evolução registrada com sucesso',
+            'evolucao' => $evolucao->load(['paciente', 'sessao', 'indicador']),
+        ]);
     }
 
     // 📲 API: Atualizar evolução (Flutter)
     public function updateJson(Request $request, $id)
     {
-        $evolucao = Evolucao::with('paciente')->findOrFail($id);
+        $evolucao = Evolucao::with(['paciente', 'indicador'])->findOrFail($id);
 
         if (!$evolucao->paciente || $evolucao->paciente->user_id !== auth()->id()) {
             abort(403, 'Acesso negado.');
         }
 
         $request->validate([
-            'paciente_id' => 'required|exists:pacientes,id',
-            'data' => 'required|date',
-            'texto' => 'required|string',
-            'sessao_id' => 'nullable|exists:sessoes,id',
+            'paciente_id'            => 'required|exists:pacientes,id',
+            'data'                   => 'required|date',
+            'texto'                  => 'required|string',
+            'sessao_id'              => 'nullable|exists:sessoes,id',
+            'estado_emocional'       => 'nullable|string|max:50',
+            'intensidade'            => 'nullable|integer|between:1,5',
+            'alerta'                 => 'nullable|integer|in:0,1,2',
+            'indicador_observacoes'  => 'nullable|string',
         ]);
 
-        $evolucao->update($request->only(['paciente_id', 'data', 'texto', 'sessao_id']));
+        $paciente = Paciente::where('id', $request->paciente_id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
-        return response()->json(['message' => 'Evolução atualizada com sucesso', 'evolucao' => $evolucao]);
+        $evolucao->update($request->only([
+            'paciente_id',
+            'data',
+            'texto',
+            'sessao_id'
+        ]));
+
+        if (
+            $request->filled('estado_emocional') ||
+            $request->filled('intensidade') ||
+            $request->filled('alerta') ||
+            $request->filled('indicador_observacoes')
+        ) {
+            $evolucao->indicador()->updateOrCreate(
+                ['evolucao_id' => $evolucao->id],
+                [
+                    'paciente_id'      => $request->paciente_id,
+                    'sessao_id'        => $request->sessao_id,
+                    'estado_emocional' => $request->estado_emocional,
+                    'intensidade'      => $request->intensidade,
+                    'alerta'           => $request->alerta,
+                    'observacoes'      => $request->indicador_observacoes,
+                ]
+            );
+        } else {
+            $evolucao->indicador()?->delete();
+        }
+
+        return response()->json([
+            'message'  => 'Evolução atualizada com sucesso',
+            'evolucao' => $evolucao->load(['paciente', 'sessao', 'indicador']),
+        ]);
     }
 
     // 📲 API: Deletar evolução (Flutter)

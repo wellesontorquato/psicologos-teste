@@ -98,6 +98,8 @@
             </div>
         @endif
 
+        <hr class="my-4">
+
         {{-- Copiloto de IA --}}
         <div class="mb-3">
             <label for="topicosIA" class="form-label fw-semibold">Tópicos da Sessão (opcional)</label>
@@ -135,13 +137,74 @@
         </div>
 
         {{-- Texto da Evolução --}}
-        <div class="mb-3">
+        <div class="mb-4">
             <label class="form-label fw-semibold">Anotação Clínica</label>
             <textarea id="textoClinico" name="texto" class="form-control shadow-sm" rows="6" required>{{ old('texto') }}</textarea>
         </div>
 
+        <hr class="my-4">
+
+        {{-- Indicadores da Sessão --}}
+        <div class="mb-2">
+            <h5 class="mb-1">Indicadores da Sessão</h5>
+            <p class="text-muted small mb-3">
+                Registre marcadores clínicos desta evolução para acompanhar oscilações emocionais, intensidade e pontos de atenção.
+            </p>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="estado_emocional" class="form-label fw-semibold">Estado emocional</label>
+                <select name="estado_emocional" id="estado_emocional" class="form-select shadow-sm">
+                    <option value="">Selecione</option>
+                    <option value="estavel" {{ old('estado_emocional') == 'estavel' ? 'selected' : '' }}>Estável</option>
+                    <option value="oscilante" {{ old('estado_emocional') == 'oscilante' ? 'selected' : '' }}>Oscilante</option>
+                    <option value="ansioso" {{ old('estado_emocional') == 'ansioso' ? 'selected' : '' }}>Ansioso</option>
+                    <option value="deprimido" {{ old('estado_emocional') == 'deprimido' ? 'selected' : '' }}>Deprimido</option>
+                    <option value="irritavel" {{ old('estado_emocional') == 'irritavel' ? 'selected' : '' }}>Irritável</option>
+                    <option value="apatico" {{ old('estado_emocional') == 'apatico' ? 'selected' : '' }}>Apático</option>
+                    <option value="sobrecarregado" {{ old('estado_emocional') == 'sobrecarregado' ? 'selected' : '' }}>Sobrecarregado</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="intensidade" class="form-label fw-semibold">Intensidade emocional</label>
+                <select name="intensidade" id="intensidade" class="form-select shadow-sm">
+                    <option value="">Selecione</option>
+                    <option value="1" {{ old('intensidade') == '1' ? 'selected' : '' }}>1 - Muito leve</option>
+                    <option value="2" {{ old('intensidade') == '2' ? 'selected' : '' }}>2 - Leve</option>
+                    <option value="3" {{ old('intensidade') == '3' ? 'selected' : '' }}>3 - Moderada</option>
+                    <option value="4" {{ old('intensidade') == '4' ? 'selected' : '' }}>4 - Alta</option>
+                    <option value="5" {{ old('intensidade') == '5' ? 'selected' : '' }}>5 - Muito alta</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="alerta" class="form-label fw-semibold">Alerta clínico</label>
+                <select name="alerta" id="alerta" class="form-select shadow-sm">
+                    <option value="">Selecione</option>
+                    <option value="0" {{ old('alerta') === '0' ? 'selected' : '' }}>Sem alerta</option>
+                    <option value="1" {{ old('alerta') === '1' ? 'selected' : '' }}>Atenção</option>
+                    <option value="2" {{ old('alerta') === '2' ? 'selected' : '' }}>Ponto crítico</option>
+                </select>
+            </div>
+
+            <div class="col-12">
+                <label for="indicador_observacoes" class="form-label fw-semibold">Observações dos indicadores</label>
+                <textarea
+                    name="indicador_observacoes"
+                    id="indicador_observacoes"
+                    rows="3"
+                    class="form-control shadow-sm"
+                    placeholder="Ex.: paciente apresentou maior oscilação emocional nesta sessão, com relato de sobrecarga e aumento de ansiedade.">{{ old('indicador_observacoes') }}</textarea>
+                <div class="form-text">
+                    Campo opcional para complementar os marcadores clínicos desta evolução.
+                </div>
+            </div>
+        </div>
+
         {{-- Botões --}}
-        <div class="d-flex flex-column flex-md-row gap-2">
+        <div class="d-flex flex-column flex-md-row gap-2 mt-4">
             <button class="btn btn-success w-100 w-md-auto">Salvar</button>
             <a href="{{ route('evolucoes.index') }}" class="btn btn-secondary w-100 w-md-auto">Cancelar</a>
         </div>
@@ -159,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const previewIAWrapper = document.getElementById('previewIAWrapper');
     const previewIA = document.getElementById('previewIA');
     const textoClinico = document.getElementById('textoClinico');
+    const indicadorObservacoes = document.getElementById('indicador_observacoes');
 
     let typingInterval = null;
     let isTyping = false;
@@ -349,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     autoResizeTextarea(previewIA);
     autoResizeTextarea(textoClinico);
+    autoResizeTextarea(indicadorObservacoes);
 
     previewIA.addEventListener('input', function () {
         autoResizeTextarea(previewIA);
@@ -357,6 +422,12 @@ document.addEventListener('DOMContentLoaded', function () {
     textoClinico.addEventListener('input', function () {
         autoResizeTextarea(textoClinico);
     });
+
+    if (indicadorObservacoes) {
+        indicadorObservacoes.addEventListener('input', function () {
+            autoResizeTextarea(indicadorObservacoes);
+        });
+    }
 
     @if(!isset($sessao) || !$sessao)
     const pacienteSelect = document.getElementById('pacienteSelect');
