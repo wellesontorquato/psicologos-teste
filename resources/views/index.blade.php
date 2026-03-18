@@ -32,11 +32,11 @@
                 </div>
             </div>
 
-            {{-- Barra destaque --}}
+            <!-- {{-- Barra destaque --}}
             <div class="hero-highlight" role="note" aria-label="Mensagem sazonal de ano novo">
                 <span class="hero-highlight-dot" aria-hidden="true"></span>
                 <span>Comece o ano com a rotina clínica em dia — sem complicação.</span>
-            </div>
+            </div> -->
 
             <div class="hero-cta-group">
                 <a href="{{ route('register') }}" class="btn-hero-main">
