@@ -340,28 +340,175 @@ class PacienteController extends Controller
         $intensidades = [];
         $alertasPorData = [];
         $estadosFrequencia = [];
+        $historicoDetalhado = [];
+
+        $intensidadesValidas = [];
+        $alertasValidos = [];
+        $estadosSequencia = [];
 
         foreach ($evolucoes as $evolucao) {
-            $data = Carbon::parse($evolucao->data)->format('d/m/Y');
+            $data = Carbon::parse($evolucao->data);
+            $dataFormatada = $data->format('d/m/Y');
             $indicador = $evolucao->indicador;
 
-            $labels[] = $data;
-            $intensidades[] = $indicador->intensidade;
-            $alertasPorData[] = $indicador->alerta ?? 0;
+            $estado = $indicador->estado_emocional;
+            $intensidade = $indicador->intensidade;
+            $alerta = is_null($indicador->alerta) ? 0 : (int) $indicador->alerta;
 
-            if (!empty($indicador->estado_emocional)) {
-                $estado = $indicador->estado_emocional;
+            $labels[] = $dataFormatada;
+            $intensidades[] = $intensidade;
+            $alertasPorData[] = $alerta;
+
+            if (!empty($estado)) {
                 $estadosFrequencia[$estado] = ($estadosFrequencia[$estado] ?? 0) + 1;
+                $estadosSequencia[] = $estado;
+            }
+
+            if (!is_null($intensidade)) {
+                $intensidadesValidas[] = [
+                    'valor' => (int) $intensidade,
+                    'data' => $dataFormatada,
+                ];
+            }
+
+            $alertasValidos[] = $alerta;
+
+            $historicoDetalhado[] = [
+                'data' => $dataFormatada,
+                'estado_emocional' => $estado,
+                'estado_emocional_label' => $estado ? ucfirst(str_replace('_', ' ', $estado)) : null,
+                'intensidade' => $intensidade,
+                'intensidade_label' => match ((int) $intensidade) {
+                    1 => 'Muito leve',
+                    2 => 'Leve',
+                    3 => 'Moderada',
+                    4 => 'Alta',
+                    5 => 'Muito alta',
+                    default => 'Não informado',
+                },
+                'alerta' => $alerta,
+                'alerta_label' => match ($alerta) {
+                    0 => 'Sem alerta',
+                    1 => 'Atenção',
+                    2 => 'Ponto crítico',
+                    default => 'Não informado',
+                },
+            ];
+        }
+
+        $totalEvolucoes = $evolucoes->count();
+        $ultimoIndicador = optional($evolucoes->last())->indicador;
+
+        $mediaIntensidade = count($intensidadesValidas) > 0
+            ? round(collect($intensidadesValidas)->pluck('valor')->avg(), 1)
+            : null;
+
+        $totalAlertas = collect($alertasValidos)->filter(fn($v) => (int) $v > 0)->count();
+
+        $percentualAlertas = $totalEvolucoes > 0
+            ? round(($totalAlertas / $totalEvolucoes) * 100, 1)
+            : 0;
+
+        $estadoPredominante = null;
+        $estadoPredominanteQtd = 0;
+
+        if (!empty($estadosFrequencia)) {
+            arsort($estadosFrequencia);
+            $estadoPredominante = array_key_first($estadosFrequencia);
+            $estadoPredominanteQtd = $estadosFrequencia[$estadoPredominante] ?? 0;
+        }
+
+        $picoIntensidade = null;
+        if (!empty($intensidadesValidas)) {
+            $picoIntensidade = collect($intensidadesValidas)
+                ->sortByDesc('valor')
+                ->first();
+        }
+
+        $ultimas5 = collect($intensidadesValidas)->take(-5)->values();
+        $ultimas3 = $ultimas5->take(-3)->pluck('valor');
+        $anteriores2 = $ultimas5->take(max($ultimas5->count() - 3, 0))->pluck('valor');
+
+        $tendencia = 'estavel';
+        $variacaoRecente = null;
+
+        if ($ultimas3->count() > 0 && $anteriores2->count() > 0) {
+            $mediaUltimas = $ultimas3->avg();
+            $mediaAnteriores = $anteriores2->avg();
+            $variacaoRecente = round($mediaUltimas - $mediaAnteriores, 1);
+
+            if ($variacaoRecente >= 0.5) {
+                $tendencia = 'piora';
+            } elseif ($variacaoRecente <= -0.5) {
+                $tendencia = 'melhora';
+            } else {
+                $tendencia = 'estavel';
             }
         }
 
-        $ultimoIndicador = optional($evolucoes->last())->indicador;
+        $mudancasEstado = 0;
+        for ($i = 1; $i < count($estadosSequencia); $i++) {
+            if ($estadosSequencia[$i] !== $estadosSequencia[$i - 1]) {
+                $mudancasEstado++;
+            }
+        }
 
-        $mediaIntensidade = count(array_filter($intensidades, fn($v) => !is_null($v))) > 0
-            ? round(collect($intensidades)->filter(fn($v) => !is_null($v))->avg(), 1)
-            : null;
+        $indiceOscilacao = count($estadosSequencia) > 1
+            ? round(($mudancasEstado / (count($estadosSequencia) - 1)) * 100, 1)
+            : 0;
 
-        $totalAlertas = collect($alertasPorData)->filter(fn($v) => (int)$v > 0)->count();
+        $faixasIntensidade = [
+            'Leve (1-2)' => 0,
+            'Moderada (3)' => 0,
+            'Alta (4-5)' => 0,
+        ];
+
+        foreach (collect($intensidadesValidas)->pluck('valor') as $valor) {
+            if (in_array($valor, [1, 2])) {
+                $faixasIntensidade['Leve (1-2)']++;
+            } elseif ($valor == 3) {
+                $faixasIntensidade['Moderada (3)']++;
+            } elseif (in_array($valor, [4, 5])) {
+                $faixasIntensidade['Alta (4-5)']++;
+            }
+        }
+
+        $alertaRecente = collect($historicoDetalhado)
+            ->take(-5)
+            ->filter(fn($item) => (int) $item['alerta'] > 0)
+            ->count();
+
+        $resumoTexto = [];
+
+        if ($estadoPredominante) {
+            $resumoTexto[] = 'Predomínio de estado emocional ' . ucfirst(str_replace('_', ' ', $estadoPredominante));
+        }
+
+        if (!is_null($mediaIntensidade)) {
+            if ($mediaIntensidade <= 2) {
+                $resumoTexto[] = 'intensidade média em faixa leve';
+            } elseif ($mediaIntensidade == 3) {
+                $resumoTexto[] = 'intensidade média moderada';
+            } else {
+                $resumoTexto[] = 'intensidade média elevada';
+            }
+        }
+
+        if ($totalAlertas > 0) {
+            $resumoTexto[] = $totalAlertas . ' registro(s) com alerta clínico';
+        } else {
+            $resumoTexto[] = 'sem alertas clínicos registrados';
+        }
+
+        if ($indiceOscilacao >= 60) {
+            $resumoTexto[] = 'com alta oscilação emocional recente';
+        } elseif ($indiceOscilacao >= 30) {
+            $resumoTexto[] = 'com oscilação emocional moderada';
+        } else {
+            $resumoTexto[] = 'com relativa estabilidade de estado emocional';
+        }
+
+        $resumoAutomatico = implode(', ', $resumoTexto) . '.';
 
         return response()->json([
             'paciente' => [
@@ -370,9 +517,25 @@ class PacienteController extends Controller
             ],
             'resumo' => [
                 'ultimo_estado_emocional' => $ultimoIndicador->estado_emocional ?? null,
+                'ultimo_estado_emocional_label' => !empty($ultimoIndicador?->estado_emocional)
+                    ? ucfirst(str_replace('_', ' ', $ultimoIndicador->estado_emocional))
+                    : null,
                 'media_intensidade' => $mediaIntensidade,
                 'total_alertas' => $totalAlertas,
-                'total_evolucoes_com_indicador' => $evolucoes->count(),
+                'percentual_alertas' => $percentualAlertas,
+                'total_evolucoes_com_indicador' => $totalEvolucoes,
+                'estado_predominante' => $estadoPredominante,
+                'estado_predominante_label' => $estadoPredominante
+                    ? ucfirst(str_replace('_', ' ', $estadoPredominante))
+                    : null,
+                'estado_predominante_qtd' => $estadoPredominanteQtd,
+                'tendencia_recente' => $tendencia,
+                'variacao_recente' => $variacaoRecente,
+                'pico_intensidade' => $picoIntensidade['valor'] ?? null,
+                'pico_intensidade_data' => $picoIntensidade['data'] ?? null,
+                'indice_oscilacao' => $indiceOscilacao,
+                'alertas_ultimas_5' => $alertaRecente,
+                'resumo_automatico' => $resumoAutomatico,
             ],
             'graficos' => [
                 'linha_intensidade' => [
@@ -389,7 +552,12 @@ class PacienteController extends Controller
                     }, array_keys($estadosFrequencia)),
                     'data' => array_values($estadosFrequencia),
                 ],
+                'distribuicao_intensidade' => [
+                    'labels' => array_keys($faixasIntensidade),
+                    'data' => array_values($faixasIntensidade),
+                ],
             ],
+            'historico_recente' => collect($historicoDetalhado)->take(-5)->values(),
         ]);
     }
 
