@@ -286,12 +286,12 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 */
 
 
-//Route::get('/ver-log-whatsapp', function () {
-// $logFile = storage_path('logs/whatsapp.log');
-// $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
-// return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
-// })->middleware('auth');
-// };
+Route::get('/ver-log-whatsapp', function () {
+ $logFile = storage_path('logs/whatsapp.log');
+ $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
+ return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
+ })->middleware('auth');
+ };
 
 // Route::get('/force-clear', function () {
 //     Artisan::call('config:clear');
