@@ -63,6 +63,20 @@ class WhatsappWebhookService
         }
 
         $numeroLimpo = $this->extrairTelefoneDoPayload($data, $from);
+
+        Log::channel('whatsapp')->info('[WPP SERVICE] Diagnóstico de número', [
+            'request_id' => $requestId,
+            'event' => $evento,
+            'from' => $from,
+            'sender_id' => data_get($data, 'sender.id'),
+            'chatId' => data_get($data, 'chatId'),
+            'participant' => data_get($data, 'participant'),
+            'author' => data_get($data, 'author'),
+            'shortName' => data_get($data, 'shortName'),
+            'numero_limpo_extraido' => $numeroLimpo,
+            'body' => $body,
+        ]);
+
         if (!$numeroLimpo) {
             Log::channel('whatsapp')->warning('[WPP SERVICE] Não foi possível extrair telefone do payload', [
                 'request_id' => $requestId,
@@ -85,9 +99,21 @@ class WhatsappWebhookService
             'numero_limpo' => $numeroLimpo,
             'destino_resposta' => $destinoResposta,
             'body' => $body,
+            'mensagem_limpa' => $mensagemLimpa,
         ]);
 
         $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
+
+        Log::channel('whatsapp')->info('[WPP SERVICE] Diagnóstico de paciente', [
+            'request_id' => $requestId,
+            'numero_limpo' => $numeroLimpo,
+            'paciente_encontrado' => (bool) $paciente,
+            'paciente_id' => $paciente?->id,
+            'paciente_user_id' => $paciente?->user_id,
+            'paciente_nome' => $paciente?->nome,
+            'telefone_banco' => $paciente?->telefone,
+        ]);
+
         if (!$paciente) {
             Log::channel('whatsapp')->warning('[WPP SERVICE] Paciente não encontrado', [
                 'request_id' => $requestId,
@@ -109,6 +135,7 @@ class WhatsappWebhookService
                 'request_id' => $requestId,
                 'paciente_id' => $paciente->id,
                 'mensagem' => $body,
+                'mensagem_limpa' => $mensagemLimpa,
             ]);
 
             $this->responderNoWhatsappSePossivel(
@@ -120,6 +147,17 @@ class WhatsappWebhookService
         }
 
         $sessao = $this->encontrarSessaoValidaParaConfirmacao($paciente);
+
+        Log::channel('whatsapp')->info('[WPP SERVICE] Diagnóstico de sessão', [
+            'request_id' => $requestId,
+            'paciente_id' => $paciente->id,
+            'sessao_encontrada' => (bool) $sessao,
+            'sessao_id' => $sessao?->id,
+            'status_confirmacao' => $sessao?->status_confirmacao,
+            'lembrete_enviado' => $sessao?->lembrete_enviado,
+            'data_hora' => $sessao?->data_hora,
+        ]);
+
         if (!$sessao) {
             Log::channel('whatsapp')->warning('[WPP SERVICE] Nenhuma sessão pendente elegível encontrada', [
                 'request_id' => $requestId,
@@ -206,8 +244,6 @@ class WhatsappWebhookService
             data_get($data, 'id.remote'),
             data_get($data, 'key.remoteJid'),
             data_get($data, 'message.from'),
-            data_get($data, 'participant'),
-            data_get($data, 'author'),
         ];
 
         foreach ($candidatos as $valor) {
@@ -277,17 +313,19 @@ class WhatsappWebhookService
 
     private function encontrarPacientePorTelefone(string $numeroLimpo): ?Paciente
     {
-        return Paciente::where(function ($query) use ($numeroLimpo) {
-            $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroLimpo]);
+        return Paciente::withoutGlobalScopes()
+            ->where(function ($query) use ($numeroLimpo) {
+                $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroLimpo]);
 
-            if (strlen($numeroLimpo) === 10) {
-                $ddd = substr($numeroLimpo, 0, 2);
-                $resto = substr($numeroLimpo, 2);
-                $numeroComNove = $ddd . '9' . $resto;
+                if (strlen($numeroLimpo) === 10) {
+                    $ddd = substr($numeroLimpo, 0, 2);
+                    $resto = substr($numeroLimpo, 2);
+                    $numeroComNove = $ddd . '9' . $resto;
 
-                $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroComNove]);
-            }
-        })->first();
+                    $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroComNove]);
+                }
+            })
+            ->first();
     }
 
     private function mapearRespostaParaStatus(string $bodyLimpo): ?string
@@ -338,28 +376,13 @@ class WhatsappWebhookService
 
     private function extrairTelefoneDoPayload(array $data, ?string $from): ?string
     {
-        if ($from && str_contains($from, '@c.us')) {
-            return $this->normalizarNumero($from);
-        }
-
-        $short = (string) (data_get($data, 'shortName') ?? '');
-        $digits = preg_replace('/\D/', '', $short);
-
-        if ($digits && strlen($digits) >= 10) {
-            if (str_starts_with($digits, '55')) {
-                $digits = substr($digits, 2);
-            }
-            return $digits;
-        }
-
         $candidatos = [
+            $from,
             data_get($data, 'sender.id'),
-            data_get($data, 'sender.pushname'),
-            data_get($data, 'sender.shortName'),
-            data_get($data, 'id.participant'),
-            data_get($data, 'participant'),
-            data_get($data, 'author'),
             data_get($data, 'chatId'),
+            data_get($data, 'id.remote'),
+            data_get($data, 'key.remoteJid'),
+            data_get($data, 'message.from'),
         ];
 
         foreach ($candidatos as $cand) {
@@ -367,26 +390,10 @@ class WhatsappWebhookService
                 continue;
             }
 
-            if (str_contains($cand, '@c.us')) {
+            $cand = trim($cand);
+
+            if (str_ends_with(strtolower($cand), '@c.us')) {
                 return $this->normalizarNumero($cand);
-            }
-
-            $d = preg_replace('/\D/', '', $cand);
-            if (strlen($d) >= 10) {
-                if (str_starts_with($d, '55')) {
-                    $d = substr($d, 2);
-                }
-                return $d;
-            }
-        }
-
-        if ($from) {
-            $digits = preg_replace('/\D/', '', $from);
-            if (strlen($digits) >= 10) {
-                if (str_starts_with($digits, '55')) {
-                    $digits = substr($digits, 2);
-                }
-                return $digits;
             }
         }
 
@@ -398,9 +405,7 @@ class WhatsappWebhookService
         $candidatos = [
             data_get($data, 'from'),
             data_get($data, 'sender.id'),
-            data_get($data, 'author'),
             data_get($data, 'chatId'),
-            data_get($data, 'participant'),
             data_get($data, 'id.remote'),
             data_get($data, 'key.remoteJid'),
             data_get($data, 'message.from'),
@@ -518,6 +523,7 @@ class WhatsappWebhookService
             ]);
 
             $response = Http::withToken($token)
+                ->timeout(30)
                 ->acceptJson()
                 ->asJson()
                 ->post($endpoint, [
