@@ -63,6 +63,7 @@ class WhatsappWebhookService
         }
 
         $numeroLimpo = $this->extrairTelefoneDoPayload($data, $from);
+        $destinoResposta = $this->extrairDestinoValidoParaResposta($data);
 
         Log::channel('whatsapp')->info('[WPP SERVICE] Diagnóstico de número', [
             'request_id' => $requestId,
@@ -74,16 +75,26 @@ class WhatsappWebhookService
             'author' => data_get($data, 'author'),
             'shortName' => data_get($data, 'shortName'),
             'numero_limpo_extraido' => $numeroLimpo,
+            'destino_resposta_extraido' => $destinoResposta,
             'body' => $body,
         ]);
 
-        if (!$numeroLimpo && $from && str_ends_with(strtolower($from), '@lid')) {
-            $numeroLimpo = $this->resolverTelefonePorLid($from, $requestId);
+        if ((!$numeroLimpo || !$destinoResposta) && $from && str_ends_with(strtolower($from), '@lid')) {
+            $resolucao = $this->resolverContatoPorLid($from, $requestId);
 
-            Log::channel('whatsapp')->info('[WPP SERVICE] Número após resolver LID', [
+            if (!$numeroLimpo) {
+                $numeroLimpo = $resolucao['numero_limpo'] ?? null;
+            }
+
+            if (!$destinoResposta) {
+                $destinoResposta = $resolucao['destino_resposta'] ?? null;
+            }
+
+            Log::channel('whatsapp')->info('[WPP SERVICE] Dados após resolver LID', [
                 'request_id' => $requestId,
                 'from' => $from,
                 'numero_limpo_final' => $numeroLimpo,
+                'destino_resposta_final' => $destinoResposta,
             ]);
         }
 
@@ -99,7 +110,6 @@ class WhatsappWebhookService
             return;
         }
 
-        $destinoResposta = $this->extrairDestinoValidoParaResposta($data);
         $mensagemLimpa = strtoupper(Str::ascii(trim((string) $body)));
 
         Log::channel('whatsapp')->info('[WPP SERVICE] Payload normalizado', [
@@ -418,7 +428,7 @@ class WhatsappWebhookService
         return null;
     }
 
-    private function resolverTelefonePorLid(string $lid, ?string $requestId = null): ?string
+    private function resolverContatoPorLid(string $lid, ?string $requestId = null): array
     {
         $baseUrl = rtrim((string) config('services.wppconnect.base_url'), '/');
         $session = (string) config('services.wppconnect.session', 'psigestor');
@@ -429,7 +439,11 @@ class WhatsappWebhookService
                 'request_id' => $requestId,
                 'lid' => $lid,
             ]);
-            return null;
+
+            return [
+                'numero_limpo' => null,
+                'destino_resposta' => null,
+            ];
         }
 
         try {
@@ -448,10 +462,28 @@ class WhatsappWebhookService
             ]);
 
             if ($response->failed()) {
-                return null;
+                return [
+                    'numero_limpo' => null,
+                    'destino_resposta' => null,
+                ];
             }
 
             $data = $response->json();
+
+            $destinoResposta = data_get($data, 'phoneNumber._serialized');
+
+            if (!is_string($destinoResposta) || trim($destinoResposta) === '') {
+                $phoneId = data_get($data, 'phoneNumber.id');
+
+                if (is_string($phoneId) && trim($phoneId) !== '') {
+                    $digits = preg_replace('/\D/', '', $phoneId);
+                    if ($digits !== '') {
+                        $destinoResposta = $digits . '@c.us';
+                    }
+                }
+            }
+
+            $numeroLimpo = null;
 
             $possiveis = [
                 data_get($data, 'phoneNumber._serialized'),
@@ -479,18 +511,26 @@ class WhatsappWebhookService
                 }
 
                 if (strlen($digits) >= 10) {
-                    return $digits;
+                    $numeroLimpo = $digits;
+                    break;
                 }
             }
 
-            return null;
+            return [
+                'numero_limpo' => $numeroLimpo,
+                'destino_resposta' => $destinoResposta,
+            ];
         } catch (Throwable $e) {
             Log::channel('whatsapp')->error('[WPP SERVICE] Erro ao resolver LID', [
                 'request_id' => $requestId,
                 'lid' => $lid,
                 'erro' => $e->getMessage(),
             ]);
-            return null;
+
+            return [
+                'numero_limpo' => null,
+                'destino_resposta' => null,
+            ];
         }
     }
 
