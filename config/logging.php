@@ -93,8 +93,10 @@ return [
 
         // ✅ Canal de log personalizado para WhatsApp
         'whatsapp' => [
-            'driver' => 'errorlog',
-            'level'  => 'debug',
+            'driver' => 'daily',
+            'path' => storage_path('logs/whatsapp.log'),
+            'level' => 'debug',
+            'days' => 14,
             'replace_placeholders' => true,
         ],
 
