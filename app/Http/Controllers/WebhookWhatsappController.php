@@ -443,11 +443,11 @@ class WebhookWhatsappController extends Controller
             'event' => 'onmessage',
             'data'  => [
                 'from'   => '5538988335201@c.us',
-                'body'   => '1',
+                'body'   => '2',
                 'fromMe' => false,
                 'type'   => 'chat',
                 'id'     => [
-                    '_serialized' => 'CATCHAU12',
+                    '_serialized' => 'CATCHAU123',
                 ],
             ],
         ];
