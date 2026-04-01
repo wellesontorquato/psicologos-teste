@@ -447,7 +447,7 @@ class WebhookWhatsappController extends Controller
                 'fromMe' => false,
                 'type'   => 'chat',
                 'id'     => [
-                    '_serialized' => 'CATCHAU123456',
+                    '_serialized' => 'CATCHAU1234567',
                 ],
             ],
         ];
