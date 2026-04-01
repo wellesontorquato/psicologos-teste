@@ -271,6 +271,13 @@ Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])
 
 require __DIR__.'/auth.php';
 
+Route::get('/ver-log-whatsapp', function () {
+    $hoje = now()->format('Y-m-d');
+    $logFile = storage_path("logs/whatsapp-{$hoje}.log");
+    $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
+    return "<pre style='background:#111;color:#0f0;padding:20px;white-space:pre-wrap;'>".e($logContent)."</pre>";
+})->middleware('auth');
+
 /*
 |--------------------------------------------------------------------------
 | Landing Pages - deve ficar por último
@@ -284,14 +291,6 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 | Auth padrão do Laravel
 |--------------------------------------------------------------------------
 */
-
-
-Route::get('/ver-log-whatsapp', function () {
- $logFile = storage_path('logs/whatsapp.log');
- $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
- return "<pre style='background:#111;color:#0f0;padding:20px;'>".e($logContent)."</pre>";
- })->middleware('auth');
- // };
 
 // Route::get('/force-clear', function () {
 //     Artisan::call('config:clear');
