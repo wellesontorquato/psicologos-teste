@@ -77,6 +77,16 @@ class WhatsappWebhookService
             'body' => $body,
         ]);
 
+        if (!$numeroLimpo && $from && str_ends_with(strtolower($from), '@lid')) {
+            $numeroLimpo = $this->resolverTelefonePorLid($from, $requestId);
+
+            Log::channel('whatsapp')->info('[WPP SERVICE] Número após resolver LID', [
+                'request_id' => $requestId,
+                'from' => $from,
+                'numero_limpo_final' => $numeroLimpo,
+            ]);
+        }
+
         if (!$numeroLimpo) {
             Log::channel('whatsapp')->warning('[WPP SERVICE] Não foi possível extrair telefone do payload', [
                 'request_id' => $requestId,
@@ -324,6 +334,14 @@ class WhatsappWebhookService
 
                     $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroComNove]);
                 }
+
+                if (strlen($numeroLimpo) === 11) {
+                    $ddd = substr($numeroLimpo, 0, 2);
+                    $resto = substr($numeroLimpo, 3);
+                    $numeroSemNove = $ddd . $resto;
+
+                    $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroSemNove]);
+                }
             })
             ->first();
     }
@@ -398,6 +416,82 @@ class WhatsappWebhookService
         }
 
         return null;
+    }
+
+    private function resolverTelefonePorLid(string $lid, ?string $requestId = null): ?string
+    {
+        $baseUrl = rtrim((string) config('services.wppconnect.base_url'), '/');
+        $session = (string) config('services.wppconnect.session', 'psigestor');
+        $token   = (string) config('services.wppconnect.token');
+
+        if (!$baseUrl || !$token) {
+            Log::channel('whatsapp')->warning('[WPP SERVICE] Não foi possível resolver LID: base_url/token ausentes', [
+                'request_id' => $requestId,
+                'lid' => $lid,
+            ]);
+            return null;
+        }
+
+        try {
+            $url = "{$baseUrl}/api/{$session}/contact/pn-lid/" . urlencode($lid);
+
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get($url);
+
+            Log::channel('whatsapp')->info('[WPP SERVICE] Resposta da resolução PN-LID', [
+                'request_id' => $requestId,
+                'lid' => $lid,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+
+            if ($response->failed()) {
+                return null;
+            }
+
+            $data = $response->json();
+
+            $possiveis = [
+                data_get($data, 'phoneNumber._serialized'),
+                data_get($data, 'phoneNumber.id'),
+                data_get($data, 'phoneNumber'),
+                data_get($data, 'pn'),
+                data_get($data, 'phone'),
+                data_get($data, 'wid'),
+                data_get($data, 'user'),
+            ];
+
+            foreach ($possiveis as $valor) {
+                if (!is_string($valor) || trim($valor) === '') {
+                    continue;
+                }
+
+                $digits = preg_replace('/\D/', '', $valor);
+
+                if ($digits === '') {
+                    continue;
+                }
+
+                if (str_starts_with($digits, '55')) {
+                    $digits = substr($digits, 2);
+                }
+
+                if (strlen($digits) >= 10) {
+                    return $digits;
+                }
+            }
+
+            return null;
+        } catch (Throwable $e) {
+            Log::channel('whatsapp')->error('[WPP SERVICE] Erro ao resolver LID', [
+                'request_id' => $requestId,
+                'lid' => $lid,
+                'erro' => $e->getMessage(),
+            ]);
+            return null;
+        }
     }
 
     private function extrairDestinoValidoParaResposta(array $data): ?string
