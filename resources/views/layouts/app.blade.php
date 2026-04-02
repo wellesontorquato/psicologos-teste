@@ -22,157 +22,214 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        [x-cloak] { display: none !important; }
-        body {
-            background-color: #f8f9fa;
+    [x-cloak] { display: none !important; }
+
+    :root {
+        --psi-bg: #f3f7fc;
+        --psi-surface: rgba(255,255,255,0.88);
+        --psi-surface-solid: #ffffff;
+        --psi-border: rgba(226, 232, 240, 0.9);
+        --psi-text: #0f172a;
+        --psi-muted: #64748b;
+        --psi-primary: #2563eb;
+        --psi-primary-2: #3b82f6;
+        --psi-sidebar-top: #0f74ff;
+        --psi-sidebar-bottom: #0a57d0;
+        --psi-shadow: 0 18px 45px rgba(15, 23, 42, 0.09);
+    }
+
+    body {
+        background:
+            radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 22%),
+            linear-gradient(180deg, #f8fbff 0%, var(--psi-bg) 100%);
+        color: var(--psi-text);
+    }
+
+    .sidebar {
+        width: 255px;
+        height: 100vh;
+        background: linear-gradient(180deg, var(--psi-sidebar-top) 0%, var(--psi-sidebar-bottom) 100%);
+        color: white;
+        position: fixed;
+        padding: 18px 14px;
+        transition: width 0.3s ease, transform 0.3s ease;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        box-shadow: 20px 0 45px rgba(15, 23, 42, 0.16);
+        border-top-right-radius: 26px;
+        border-bottom-right-radius: 26px;
+        z-index: 1050;
+    }
+
+    .sidebar a {
+        color: rgba(255,255,255,0.96);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        text-decoration: none;
+        border-radius: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: .22s ease;
+    }
+
+    .sidebar a:hover,
+    .sidebar .active {
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateX(2px);
+    }
+
+    .sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.28);
+        border-radius: 4px;
+    }
+
+    .main-content {
+        margin-left: 275px;
+        padding: 24px 24px 30px;
+        transition: margin-left 0.3s ease;
+    }
+
+    .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.22);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 1040;
+        transition: opacity 0.3s ease;
+        opacity: 0;
+    }
+
+    .overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .topbar {
+        position: sticky;
+        top: 12px;
+        z-index: 1100;
+        background: rgba(255,255,255,0.82);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 18px 24px;
+        border: 1px solid rgba(255,255,255,0.72);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 24px;
+        box-shadow: var(--psi-shadow);
+        margin-bottom: 20px;
+    }
+
+    .topbar h2 {
+        font-weight: 800;
+        color: var(--psi-text);
+    }
+
+    .swal2-title-custom {
+        text-align: center !important;
+    }
+
+    .swal2-html-custom ul {
+        text-align: center !important;
+        list-style-position: inside !important;
+        padding-left: 0 !important;
+    }
+
+    .swal2-html-custom li {
+        margin-bottom: 5px;
+    }
+
+    .lida {
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+
+    .trial-badge {
+        margin-right: 10px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        background-color: #fff7db;
+        color: #8a6d1d;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+        border: 1px solid #f5e6a8;
+    }
+
+    .modal {
+        z-index: 1200 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1190 !important;
+    }
+
+    .sidebar-profile-photo {
+        box-shadow: 0 10px 24px rgba(0,0,0,0.2) !important;
+    }
+
+    .btn-novo-paciente,
+    .btn-nova-sessao,
+    .btn-voltar-sessoes,
+    .btn-nova-evolucao {
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .btn-novo-paciente,
+        .btn-nova-sessao,
+        .btn-voltar-sessoes,
+        .btn-nova-evolucao {
+            width: auto;
+            display: inline-block;
         }
+    }
+
+    @media (max-width: 992px) {
         .sidebar {
-            width: 240px;
-            height: 100vh;
-            background: #00aaff;
-            color: white;
             position: fixed;
-            padding: 20px 15px;
-            transition: width 0.3s ease;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-        .sidebar a {
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .sidebar a:hover,
-        .sidebar .active {
-            background-color: rgba(255, 255, 255, 0.2);
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1050;
+            transform: translateX(-270px);
+            border-radius: 0 24px 24px 0;
         }
 
-        .sidebar::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
+        .sidebar.active {
+            transform: translateX(0);
         }
 
         .main-content {
-            margin-left: 260px;
-            padding: 30px;
-            transition: margin-left 0.3s ease;
+            margin-left: 0 !important;
+            padding: 16px 14px 24px;
         }
 
-        /* Overlay para escurecer fundo */
-        .overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.35); /* leve escurecimento */
-            backdrop-filter: blur(6px);   /* aplica o blur */
-            -webkit-backdrop-filter: blur(6px); /* suporte Safari */
-            z-index: 1040;
-            transition: opacity 0.3s ease;
-            opacity: 0;
-        }
-
-        .overlay.active {
-            display: block;
-            opacity: 1;
+        .menu-toggle {
+            display: inline-block;
         }
 
         .topbar {
-            position: relative;
-            z-index: 1100; /* garante que o botão hamburguer fica acima do overlay */
+            top: 8px;
+            padding: 14px 16px;
+            border-radius: 18px;
         }
-
-        .topbar {
-            background: white;
-            padding: 15px 30px;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .swal2-title-custom {
-            text-align: center !important;
-        }
-        .swal2-html-custom ul {
-            text-align: center !important;
-            list-style-position: inside !important;
-            padding-left: 0 !important;
-        }
-        .swal2-html-custom li {
-            margin-bottom: 5px;
-        }
-
-        .lida {
-            opacity: 0.6;
-            transition: opacity 0.3s ease;
-        }
-
-        .trial-badge {
-            margin-right: 10px;
-            padding: 4px 10px;
-            font-size: 0.8rem;
-            background-color: #fff3cd;
-            color: #856404;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 500;
-        }
-
-        .modal {
-            z-index: 1200 !important; /* maior que a topbar */
-        }
-
-        .modal-backdrop {
-            z-index: 1190 !important; /* um pouco abaixo do modal */
-        }
-
-        @media (max-width: 992px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0; /* fixo no canto esquerdo */
-                height: 100vh;
-                z-index: 1050;
-                transform: translateX(-260px); /* começa fora da tela */
-                transition: transform 0.3s ease;
-            }
-            .sidebar.active {
-                transform: translateX(0); /* desliza para dentro */
-            }
-            .main-content {
-                margin-left: 0 !important;
-                padding: 20px 15px;
-            }
-            .menu-toggle {
-                display: inline-block;
-            }
-        }
-
-        .btn-novo-paciente, .btn-nova-sessao, .btn-voltar-sessoes, .btn-nova-evolucao {
-            width: 100%; /* mobile first */
-        }
-
-        @media (min-width: 768px) {
-            .btn-novo-paciente, .btn-nova-sessao, .btn-voltar-sessoes, .btn-nova-evolucao {
-                width: auto;
-                display: inline-block;
-            }
-        }           
-    </style>
+    }
+</style>
     <!-- Facebook Meta Pixel -->
     <script>
     !function(f,b,e,v,n,t,s)
