@@ -26,17 +26,16 @@
 
         $totalRecebidoPeriodo = $totalConvertido ?? $totalMesAtual ?? 0;
 
-        $pendenciasSemConfirmacao = 0; // ajuste depois se tiver essa métrica real
-        $sessoesSemEvolucao = $pendenciasEvolucao->count() ?? 0;
-        $pacientesInadimplentes = $pendenciasFinanceiras->pluck('paciente_id')->unique()->count() ?? 0;
-        $sessoesSemPagamento = $pendenciasFinanceiras->count() ?? 0;
+        $pendenciasSemConfirmacao = $pacientesSemConfirmacao ?? 0;
+        $sessoesSemEvolucao = $sessoesSemEvolucao ?? ($pendenciasEvolucao->count() ?? 0);
+        $pacientesInadimplentes = $pacientesInadimplentes ?? ($pendenciasFinanceiras->pluck('paciente_id')->unique()->count() ?? 0);
+        $sessoesSemPagamento = $sessoesSemPagamento ?? ($pendenciasFinanceiras->count() ?? 0);
 
-        $receberNoPeriodo = $pendenciasFinanceiras->sum(function ($item) {
+        $receberNoPeriodo = $receberNoPeriodo ?? $pendenciasFinanceiras->sum(function ($item) {
             return $item->valor_convertido ?? $item->valor ?? 0;
         });
 
-        $insightFaltas = 0; // ajuste depois se tiver métrica real
-        $insightCrescimento = null; // ajuste depois se tiver comparação percentual real
+        $insightCrescimento = $crescimentoFaturamento ?? null;
     @endphp
 
     @if (session('status') === 'email-just-verified')
@@ -220,7 +219,7 @@
     </section>
 
     {{-- CONTEÚDO PRINCIPAL --}}
-    <section class="row g-3 mb-4">
+    <section class="row g-3 mb-4 align-items-start">
         <div class="col-12 col-xl-6">
             <div class="psi-panel psi-agenda-panel h-100">
                 <div class="psi-panel-header">
@@ -230,9 +229,9 @@
                     </div>
                 </div>
 
-                @if(isset($proximasSessoes) && $proximasSessoes->count())
+                @if(isset($agendaHoje) && $agendaHoje->count())
                     <div class="psi-agenda-list">
-                        @foreach($proximasSessoes->take(5) as $sessao)
+                        @foreach($agendaHoje->take(5) as $sessao)
                             <div class="psi-agenda-item">
                                 <div class="psi-agenda-time">
                                     {{ \Carbon\Carbon::parse($sessao->data_hora)->format('H:i') }}
@@ -260,74 +259,44 @@
                 @else
                     <div class="psi-empty-state">
                         <i class="bi bi-calendar-x"></i>
-                        <p>Nenhuma sessão agendada para exibir no momento.</p>
+                        <p>Nenhuma sessão agendada para hoje.</p>
                     </div>
                 @endif
             </div>
         </div>
 
         <div class="col-12 col-xl-3">
-            <div class="psi-panel h-100">
-                <div class="psi-panel-header">
-                    <div>
-                        <h3>Financeiro</h3>
-                        <span>resumo do período</span>
-                    </div>
-                </div>
-
-                <div class="psi-finance-list">
-                    <div class="psi-finance-item">
-                        <span>Recebido</span>
-                        <strong>{{ $simbolo }} {{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
-                    </div>
-
-                    <div class="psi-finance-item">
-                        <span>A receber</span>
-                        <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
-                    </div>
-
-                    <div class="psi-finance-item">
-                        <span>Inadimplente</span>
-                        <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
-                    </div>
-                </div>
-
-                <div class="psi-chart-mini mt-4">
-                    <h4>Evolução do faturamento</h4>
-                    <canvas id="graficoValores" height="140"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-xl-3">
-            <div class="d-flex flex-column gap-3 h-100">
-                <div class="psi-panel">
-                    <div class="psi-panel-header">
+            <div class="d-flex flex-column gap-3">
+                <div class="psi-panel psi-finance-panel">
+                    <div class="psi-panel-header mb-3">
                         <div>
-                            <h3>Atenção</h3>
-                            <span>o que precisa de ação</span>
+                            <h3>Financeiro</h3>
+                            <span>resumo do período</span>
                         </div>
                     </div>
 
-                    <div class="psi-alert-list">
-                        <div class="psi-alert-item">
-                            <i class="bi bi-x-circle-fill text-danger"></i>
-                            <span>{{ $sessoesSemEvolucao }} sessões não evoluídas</span>
-                        </div>
-                        <div class="psi-alert-item">
-                            <i class="bi bi-exclamation-diamond-fill text-warning"></i>
-                            <span>{{ $pacientesInadimplentes }} pacientes inadimplentes</span>
-                        </div>
-                        <div class="psi-alert-item">
-                            <i class="bi bi-cash-coin text-warning"></i>
-                            <span>{{ $sessoesSemPagamento }} sessão(ões) sem pagamento</span>
+                    <div class="psi-finance-list">
+                        <div class="psi-finance-item">
+                            <span>Recebido</span>
+                            <strong>{{ $simbolo }} {{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
                         </div>
 
-                        @if($pendenciasTotal > 0)
-                            <button class="btn btn-outline-danger btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalPendencias">
-                                Ver pendências
-                            </button>
-                        @endif
+                        <div class="psi-finance-item">
+                            <span>A receber</span>
+                            <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
+                        </div>
+
+                        <div class="psi-finance-item">
+                            <span>Inadimplente</span>
+                            <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="psi-chart-mini">
+                        <h4>Evolução do faturamento</h4>
+                        <div class="psi-finance-chart-wrap">
+                            <canvas id="graficoValores"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -361,6 +330,40 @@
                             <span>{{ $pacientesInadimplentes }} paciente(s) exigem acompanhamento financeiro.</span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-3">
+            <div class="psi-panel">
+                <div class="psi-panel-header">
+                    <div>
+                        <h3>Atenção</h3>
+                        <span>o que precisa de ação</span>
+                    </div>
+                </div>
+
+                <div class="psi-alert-list">
+                    <div class="psi-alert-item">
+                        <i class="bi bi-x-circle-fill text-danger"></i>
+                        <span>{{ $sessoesSemEvolucao }} sessões não evoluídas</span>
+                    </div>
+
+                    <div class="psi-alert-item">
+                        <i class="bi bi-exclamation-diamond-fill text-warning"></i>
+                        <span>{{ $pacientesInadimplentes }} pacientes inadimplentes</span>
+                    </div>
+
+                    <div class="psi-alert-item">
+                        <i class="bi bi-cash-coin text-warning"></i>
+                        <span>{{ $sessoesSemPagamento }} sessão(ões) sem pagamento</span>
+                    </div>
+
+                    @if($pendenciasTotal > 0)
+                        <button class="btn btn-outline-danger btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalPendencias">
+                            Ver pendências
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -721,18 +724,23 @@
         font-weight: 700;
     }
 
+    .psi-finance-panel {
+        padding-bottom: 18px;
+    }
+
     .psi-finance-list {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        margin-bottom: 18px;
     }
 
     .psi-finance-item {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 14px 16px;
+        gap: 14px;
+        padding: 16px 18px;
         border-radius: 16px;
         background: #f8fbff;
         border: 1px solid #e8eef8;
@@ -740,19 +748,46 @@
 
     .psi-finance-item span {
         color: #64748b;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 1rem;
     }
 
     .psi-finance-item strong {
         color: #0f172a;
         font-size: 1.05rem;
+        font-weight: 800;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .psi-chart-mini {
+        margin-top: 6px;
     }
 
     .psi-chart-mini h4 {
-        font-size: 1rem;
+        font-size: 0.98rem;
         font-weight: 800;
         margin-bottom: 12px;
         color: #0f172a;
+    }
+
+    .psi-finance-chart-wrap {
+        height: 180px;
+        min-height: 180px;
+        max-height: 180px;
+        background: #fff;
+        border-radius: 18px;
+        padding: 12px;
+        border: 1px solid #e8eef8;
+        overflow: hidden;
+    }
+
+    .psi-finance-chart-wrap canvas {
+        width: 100% !important;
+        height: 100% !important;
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
     }
 
     .psi-alert-list,
@@ -831,6 +866,12 @@
         .psi-quick-actions {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+
+        .psi-finance-chart-wrap {
+            height: 220px;
+            min-height: 220px;
+            max-height: 220px;
+        }
     }
 
     @media (max-width: 991.98px) {
@@ -878,6 +919,15 @@
 
         .psi-export-actions {
             flex-direction: column;
+        }
+
+        .psi-finance-item {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+        }
+
+        .psi-finance-item strong {
+            text-align: left;
         }
     }
 </style>
