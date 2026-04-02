@@ -52,7 +52,6 @@
         </div>
     @endif
 
-    {{-- HERO --}}
     <section class="psi-hero mb-4">
         <div class="psi-hero-left">
             <span class="psi-hero-kicker">Painel principal</span>
@@ -67,7 +66,6 @@
         </div>
     </section>
 
-    {{-- KPIS --}}
     <section class="row g-3 mb-4">
         <div class="col-12 col-md-6 col-xl-3">
             <div class="psi-stat-card">
@@ -122,10 +120,9 @@
         </div>
     </section>
 
-    {{-- AÇÕES RÁPIDAS + FILTRO --}}
     <section class="row g-3 mb-4">
         <div class="col-12 col-xl-8">
-            <div class="psi-panel">
+            <div class="psi-panel psi-actions-panel">
                 <div class="psi-panel-header">
                     <h3>Ações rápidas</h3>
                     <span>atalhos do dia</span>
@@ -151,6 +148,44 @@
                         <i class="bi bi-calendar3"></i>
                         <span>Ver Agenda</span>
                     </a>
+                </div>
+
+                <div class="psi-inline-insights">
+                    <div class="psi-inline-insight-card">
+                        <div class="psi-inline-insight-icon text-success">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <div class="psi-inline-insight-text">
+                            <span class="psi-inline-insight-label">Faturamento</span>
+                            <strong>
+                                @if(!is_null($insightCrescimento))
+                                    Mudou {{ $insightCrescimento }}% no período
+                                @else
+                                    Atualizado pelo período selecionado
+                                @endif
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="psi-inline-insight-card">
+                        <div class="psi-inline-insight-icon text-primary">
+                            <i class="bi bi-clipboard-pulse"></i>
+                        </div>
+                        <div class="psi-inline-insight-text">
+                            <span class="psi-inline-insight-label">Evoluções</span>
+                            <strong>{{ $sessoesSemEvolucao }} aguardando evolução clínica</strong>
+                        </div>
+                    </div>
+
+                    <div class="psi-inline-insight-card">
+                        <div class="psi-inline-insight-icon text-warning">
+                            <i class="bi bi-person-exclamation"></i>
+                        </div>
+                        <div class="psi-inline-insight-text">
+                            <span class="psi-inline-insight-label">Financeiro</span>
+                            <strong>{{ $pacientesInadimplentes }} paciente(s) exigem acompanhamento</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -218,7 +253,6 @@
         </div>
     </section>
 
-    {{-- CONTEÚDO PRINCIPAL --}}
     <section class="row g-3 mb-4 align-items-start">
         <div class="col-12 col-xl-6">
             <div class="psi-panel psi-agenda-panel h-100">
@@ -266,69 +300,35 @@
         </div>
 
         <div class="col-12 col-xl-3">
-            <div class="d-flex flex-column gap-3">
-                <div class="psi-panel psi-finance-panel">
-                    <div class="psi-panel-header mb-3">
-                        <div>
-                            <h3>Financeiro</h3>
-                            <span>resumo do período</span>
-                        </div>
-                    </div>
-
-                    <div class="psi-finance-list">
-                        <div class="psi-finance-item">
-                            <span>Recebido</span>
-                            <strong>{{ $simbolo }} {{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
-                        </div>
-
-                        <div class="psi-finance-item">
-                            <span>A receber</span>
-                            <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
-                        </div>
-
-                        <div class="psi-finance-item">
-                            <span>Inadimplente</span>
-                            <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
-                        </div>
-                    </div>
-
-                    <div class="psi-chart-mini">
-                        <h4>Evolução do faturamento</h4>
-                        <div class="psi-finance-chart-wrap">
-                            <canvas id="graficoValores"></canvas>
-                        </div>
+            <div class="psi-panel psi-finance-panel">
+                <div class="psi-panel-header mb-3">
+                    <div>
+                        <h3>Financeiro</h3>
+                        <span>resumo do período</span>
                     </div>
                 </div>
 
-                <div class="psi-panel">
-                    <div class="psi-panel-header">
-                        <div>
-                            <h3>Insights</h3>
-                            <span>leitura rápida do sistema</span>
-                        </div>
+                <div class="psi-finance-list">
+                    <div class="psi-finance-item">
+                        <span>Recebido</span>
+                        <strong>{{ $simbolo }} {{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
                     </div>
 
-                    <div class="psi-insights-list">
-                        <div class="psi-insight-item">
-                            <i class="bi bi-graph-up-arrow text-success"></i>
-                            <span>
-                                @if(!is_null($insightCrescimento))
-                                    Seu faturamento mudou <strong>{{ $insightCrescimento }}%</strong> no período.
-                                @else
-                                    Seu painel financeiro foi atualizado com base no período selecionado.
-                                @endif
-                            </span>
-                        </div>
+                    <div class="psi-finance-item">
+                        <span>A receber</span>
+                        <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
+                    </div>
 
-                        <div class="psi-insight-item">
-                            <i class="bi bi-clipboard-pulse text-primary"></i>
-                            <span>Você possui <strong>{{ $sessoesSemEvolucao }}</strong> sessão(ões) aguardando evolução clínica.</span>
-                        </div>
+                    <div class="psi-finance-item">
+                        <span>Inadimplente</span>
+                        <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
+                    </div>
+                </div>
 
-                        <div class="psi-insight-item">
-                            <i class="bi bi-person-exclamation text-warning"></i>
-                            <span>{{ $pacientesInadimplentes }} paciente(s) exigem acompanhamento financeiro.</span>
-                        </div>
+                <div class="psi-chart-mini">
+                    <h4>Evolução do faturamento</h4>
+                    <div class="psi-finance-chart-wrap">
+                        <canvas id="graficoValores"></canvas>
                     </div>
                 </div>
             </div>
@@ -369,7 +369,6 @@
         </div>
     </section>
 
-    {{-- GRÁFICOS --}}
     <section class="row g-3 mb-4">
         <div class="col-12 col-xl-6">
             <div class="psi-panel">
@@ -416,7 +415,6 @@
         </div>
     </section>
 
-    {{-- MODAL PENDÊNCIAS --}}
     <div class="modal fade" id="modalPendencias" tabindex="-1" aria-labelledby="modalPendenciasLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content shadow">
@@ -610,10 +608,15 @@
         font-size: .9rem;
     }
 
+    .psi-actions-panel {
+        overflow: hidden;
+    }
+
     .psi-quick-actions {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 14px;
+        margin-bottom: 16px;
     }
 
     .psi-action-btn {
@@ -661,6 +664,53 @@
         background: #f8fafc;
         color: #475569;
         border-color: #e2e8f0;
+    }
+
+    .psi-inline-insights {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 4px;
+    }
+
+    .psi-inline-insight-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: #f8fbff;
+        border: 1px solid #e8eef8;
+        min-height: 96px;
+    }
+
+    .psi-inline-insight-icon {
+        flex-shrink: 0;
+        font-size: 1.15rem;
+        line-height: 1;
+        margin-top: 2px;
+    }
+
+    .psi-inline-insight-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .psi-inline-insight-label {
+        font-size: .82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #94a3b8;
+    }
+
+    .psi-inline-insight-text strong {
+        font-size: 1rem;
+        line-height: 1.45;
+        color: #334155;
+        font-weight: 700;
     }
 
     .psi-filter-form .form-control,
@@ -791,7 +841,6 @@
     }
 
     .psi-alert-list,
-    .psi-insights-list,
     .psi-file-list {
         display: flex;
         flex-direction: column;
@@ -799,7 +848,6 @@
     }
 
     .psi-alert-item,
-    .psi-insight-item,
     .psi-file-item {
         display: flex;
         align-items: center;
@@ -811,8 +859,7 @@
         color: #334155;
     }
 
-    .psi-alert-item span,
-    .psi-insight-item span {
+    .psi-alert-item span {
         font-weight: 500;
     }
 
@@ -862,6 +909,12 @@
         padding: 10px;
     }
 
+    @media (max-width: 1399.98px) {
+        .psi-inline-insights {
+            grid-template-columns: 1fr;
+        }
+    }
+
     @media (max-width: 1199.98px) {
         .psi-quick-actions {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -882,6 +935,10 @@
 
         .psi-hero h1 {
             font-size: 2rem;
+        }
+
+        .psi-inline-insights {
+            grid-template-columns: 1fr;
         }
     }
 
