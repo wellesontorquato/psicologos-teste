@@ -253,9 +253,9 @@
         </div>
     </section>
 
-    <section class="row g-3 mb-4 align-items-start">
-        <div class="col-12 col-xl-6">
-            <div class="psi-panel psi-agenda-panel h-100">
+    <section class="psi-main-grid mb-4">
+        <div class="psi-grid-card psi-grid-agenda">
+            <div class="psi-panel psi-agenda-panel">
                 <div class="psi-panel-header">
                     <div>
                         <h3>Agenda do dia</h3>
@@ -291,7 +291,7 @@
                         </a>
                     </div>
                 @else
-                    <div class="psi-empty-state">
+                    <div class="psi-empty-state psi-empty-state-compact">
                         <i class="bi bi-calendar-x"></i>
                         <p>Nenhuma sessão agendada para hoje.</p>
                     </div>
@@ -299,7 +299,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-xl-3">
+        <div class="psi-grid-card psi-grid-finance">
             <div class="psi-panel psi-finance-panel">
                 <div class="psi-panel-header mb-3">
                     <div>
@@ -334,7 +334,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-xl-3">
+        <div class="psi-grid-card psi-grid-alerts">
             <div class="psi-panel">
                 <div class="psi-panel-header">
                     <div>
@@ -367,10 +367,8 @@
                 </div>
             </div>
         </div>
-    </section>
 
-    <section class="row g-3 mb-4">
-        <div class="col-12 col-xl-6">
+        <div class="psi-grid-card psi-grid-chart">
             <div class="psi-panel">
                 <div class="psi-panel-header">
                     <div>
@@ -384,7 +382,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-xl-6">
+        <div class="psi-grid-card psi-grid-files">
             <div class="psi-panel">
                 <div class="psi-panel-header">
                     <div>
@@ -406,7 +404,7 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="psi-empty-state">
+                    <div class="psi-empty-state psi-empty-state-compact">
                         <i class="bi bi-folder2-open"></i>
                         <p>Nenhum arquivo recente encontrado.</p>
                     </div>
@@ -734,6 +732,42 @@
         font-weight: 700;
     }
 
+    .psi-main-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(320px, .95fr) minmax(320px, .95fr);
+        gap: 16px;
+        align-items: start;
+    }
+
+    .psi-grid-card {
+        min-width: 0;
+    }
+
+    .psi-grid-agenda {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .psi-grid-finance {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .psi-grid-alerts {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .psi-grid-chart {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .psi-grid-files {
+        grid-column: 2 / 4;
+        grid-row: 2;
+    }
+
     .psi-agenda-list {
         display: flex;
         flex-direction: column;
@@ -881,7 +915,8 @@
     }
 
     .psi-chart-box {
-        min-height: 280px;
+        min-height: 250px;
+        height: 250px;
     }
 
     .psi-empty-state {
@@ -891,6 +926,14 @@
         border: 1px dashed #d7e3f1;
         text-align: center;
         color: #94a3b8;
+    }
+
+    .psi-empty-state-compact {
+        min-height: 108px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
 
     .psi-empty-state i {
@@ -913,6 +956,10 @@
         .psi-inline-insights {
             grid-template-columns: 1fr;
         }
+
+        .psi-main-grid {
+            grid-template-columns: 1.4fr .9fr .9fr;
+        }
     }
 
     @media (max-width: 1199.98px) {
@@ -924,6 +971,35 @@
             height: 220px;
             min-height: 220px;
             max-height: 220px;
+        }
+
+        .psi-main-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .psi-grid-agenda {
+            grid-column: 1 / 3;
+            grid-row: auto;
+        }
+
+        .psi-grid-finance {
+            grid-column: 1;
+            grid-row: auto;
+        }
+
+        .psi-grid-alerts {
+            grid-column: 2;
+            grid-row: auto;
+        }
+
+        .psi-grid-chart {
+            grid-column: 1;
+            grid-row: auto;
+        }
+
+        .psi-grid-files {
+            grid-column: 2;
+            grid-row: auto;
         }
     }
 
@@ -939,6 +1015,19 @@
 
         .psi-inline-insights {
             grid-template-columns: 1fr;
+        }
+
+        .psi-main-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .psi-grid-agenda,
+        .psi-grid-finance,
+        .psi-grid-alerts,
+        .psi-grid-chart,
+        .psi-grid-files {
+            grid-column: auto;
+            grid-row: auto;
         }
     }
 
@@ -985,6 +1074,11 @@
 
         .psi-finance-item strong {
             text-align: left;
+        }
+
+        .psi-chart-box {
+            min-height: 220px;
+            height: 220px;
         }
     }
 </style>
