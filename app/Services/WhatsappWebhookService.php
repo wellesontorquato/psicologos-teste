@@ -301,32 +301,29 @@ class WhatsappWebhookService
 
     private function encontrarSessaoValidaParaConfirmacao(Paciente $paciente): ?Sessao
     {
-        $hoje       = Carbon::today(config('app.timezone'));
-        $dataLimite = $hoje->copy()->addDays(5);
+        $tz = config('app.timezone');
 
-        $sessoes = Sessao::withoutGlobalScopes()
+        $inicioHoje = Carbon::today($tz)->startOfDay();
+        $fimLimite  = Carbon::today($tz)->addDays(5)->endOfDay();
+
+        $sessao = Sessao::withoutGlobalScopes()
             ->where('paciente_id', $paciente->id)
             ->whereRaw('UPPER(status_confirmacao) = ?', ['PENDENTE'])
-            ->orderBy('data_hora', 'asc')
-            ->get();
+            ->where('lembrete_enviado', 1)
+            ->whereNotNull('data_hora')
+            ->whereBetween('data_hora', [$inicioHoje, $fimLimite])
+            ->orderBy('data_hora', 'desc')
+            ->first();
 
-        foreach ($sessoes as $sessao) {
-            if ((int) $sessao->lembrete_enviado !== 1) {
-                continue;
-            }
-
-            if (empty($sessao->data_hora)) {
-                continue;
-            }
-
-            $dataSessao = Carbon::parse($sessao->data_hora)->startOfDay();
-
-            if (!$dataSessao->betweenIncluded($hoje, $dataLimite)) {
-                continue;
-            }
-
+        if ($sessao) {
             return $sessao;
         }
+
+        Log::channel('whatsapp')->warning('[WPP SERVICE] Nenhuma sessão elegível dentro da janela encontrada', [
+            'paciente_id' => $paciente->id,
+            'janela_inicio' => $inicioHoje->toDateTimeString(),
+            'janela_fim' => $fimLimite->toDateTimeString(),
+        ]);
 
         return null;
     }
