@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.whatsapp.simular.enviar') }}">
+    <form method="POST" action="{{ route('whatsapp.simular.enviar') }}">
         @csrf
 
         <div style="margin-bottom:12px;">
