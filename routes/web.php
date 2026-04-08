@@ -74,7 +74,6 @@ Route::get('/sitemap.xml', function () {
         url('/politica-de-cookies'),
     ];
 
-    // Adiciona posts do blog
     $posts = News::all();
     foreach ($posts as $post) {
         $urls[] = route('blog.show', $post->slug);
@@ -112,11 +111,8 @@ Route::post('/contato/enviar', [App\Http\Controllers\ContatoController::class, '
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
-// Política de Privacidade
 Route::view('/politica-de-privacidade', 'pages.politica-de-privacidade')->name('politica-de-privacidade');
-// Termos de Uso
 Route::view('/termos-de-uso', 'pages.termos-de-uso')->name('termos-de-uso');
-// Política de Cookies
 Route::view('/politica-de-cookies', 'pages.cookies')->name('cookies');
 
 Route::get('/cdn/{path}', [\App\Http\Controllers\FileProxyController::class, 'servePublic'])
@@ -138,7 +134,7 @@ Route::get('/api/home-news', function () {
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0');
 })->name('home.news');
-    
+
 /*
 |--------------------------------------------------------------------------
 | Área de Assinaturas
@@ -166,11 +162,7 @@ Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->gr
     Route::post('/photo', [ProfileController::class, 'updatePhoto'])->name('update.photo');
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
     Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
-
-    // ✅ Atualização de slug
     Route::patch('/slug', [ProfileController::class, 'updateSlug'])->name('update.slug');
-
-    // ✅ Página Pública
     Route::patch('/landing', [ProfileController::class, 'updateLanding'])->name('update.landing');
 });
 
@@ -182,72 +174,106 @@ Route::middleware(['auth', 'verified'])->prefix('profile')->name('profile.')->gr
 Route::middleware(['auth', 'verified', CheckSubscription::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // JSON de sessões
-    Route::post('/sessoes-json',        [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
-    Route::put('/sessoes-json/{id}',    [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
-    Route::get('/sessoes-json/{id}/edit',[SessaoController::class, 'editJson'])->name('sessoes.editJson');
-    Route::get('/sessoes-json/{id}',    [SessaoController::class, 'showJson'])->name('sessoes.showJson');
+    Route::post('/sessoes-json', [SessaoController::class, 'storeJson'])->name('sessoes.store.json');
+    Route::put('/sessoes-json/{id}', [SessaoController::class, 'updateJson'])->name('sessoes.update.json');
+    Route::get('/sessoes-json/{id}/edit', [SessaoController::class, 'editJson'])->name('sessoes.editJson');
+    Route::get('/sessoes-json/{id}', [SessaoController::class, 'showJson'])->name('sessoes.showJson');
     Route::delete('/sessoes-json/{id}', [SessaoController::class, 'destroyJson'])->name('sessoes.destroyJson');
 
     Route::resource('pacientes', PacienteController::class);
     Route::resource('evolucoes', EvolucaoController::class)->parameters(['evolucoes' => 'evolucao']);
-    
-    Route::post('/evolucoes/gerar-ia', [ClinicalCopilotController::class, 'gerar'])
-    ->name('evolucoes.gerarIA');
 
-    Route::get('/dashboard/pdf',   [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
+    Route::post('/evolucoes/gerar-ia', [ClinicalCopilotController::class, 'gerar'])
+        ->name('evolucoes.gerarIA');
+
+    Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
     Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
 
-    Route::get('/pacientes/{paciente}/historico',      [PacienteController::class, 'historico'])->name('pacientes.historico');
-    Route::get('/pacientes/{paciente}/historico/pdf',  [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');
+    Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');
+    Route::get('/pacientes/{paciente}/historico/pdf', [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');
     Route::get('/pacientes/{paciente}/indicadores', [PacienteController::class, 'indicadores'])->name('pacientes.indicadores');
-    Route::get('/pacientes/{id}/sessoes',              [EvolucaoController::class, 'getSessoes'])->name('pacientes.sessoes');
+    Route::get('/pacientes/{id}/sessoes', [EvolucaoController::class, 'getSessoes'])->name('pacientes.sessoes');
 
-    Route::get('/agenda',         [AgendaController::class, 'index'])->name('agenda');
-    Route::get('/api/sessoes',    [AgendaController::class, 'eventos'])->name('agenda.eventos');
+    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
+    Route::get('/api/sessoes', [AgendaController::class, 'eventos'])->name('agenda.eventos');
 
     Route::prefix('pacientes/{paciente}/arquivos')->group(function () {
-        Route::get('/',  [ArquivoController::class, 'index'])->name('arquivos.index');
+        Route::get('/', [ArquivoController::class, 'index'])->name('arquivos.index');
         Route::post('/', [ArquivoController::class, 'store'])->name('arquivos.store');
     });
-    Route::delete('/arquivos/{arquivo}',           [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
-    Route::put('/arquivos/{arquivo}/renomear',     [ArquivoController::class, 'renomear'])->name('arquivos.rename');
-    Route::get('/evolucoes/{evolucao}/imprimir', [\App\Http\Controllers\EvolucaoController::class, 'imprimir'])
-    ->name('evolucoes.print');
 
-    // Área admin
+    Route::delete('/arquivos/{arquivo}', [ArquivoController::class, 'destroy'])->name('arquivos.destroy');
+    Route::put('/arquivos/{arquivo}/renomear', [ArquivoController::class, 'renomear'])->name('arquivos.rename');
+
+    Route::get('/evolucoes/{evolucao}/imprimir', [\App\Http\Controllers\EvolucaoController::class, 'imprimir'])
+        ->name('evolucoes.print');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Área admin
+    |--------------------------------------------------------------------------
+    */
     Route::middleware([EnsureUserIsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/auditoria',                 [AuditController::class, 'index'])->name('auditoria.index');
-        Route::get('/auditoria/exportar-pdf',    [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
-        Route::get('/auditoria/exportar-excel',  [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
-        Route::get('/usuarios',                  [UserController::class, 'index'])->name('usuarios.index');
+        Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index');
+        Route::get('/auditoria/exportar-pdf', [AuditController::class, 'exportarPdf'])->name('auditoria.exportar.pdf');
+        Route::get('/auditoria/exportar-excel', [AuditController::class, 'exportarExcel'])->name('auditoria.exportar.excel');
+
+        Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
         Route::patch('/usuarios/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('usuarios.toggleAdmin');
+
         Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Simulador admin do webhook WhatsApp
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/whatsapp/simular', [WebhookWhatsappController::class, 'formSimulacaoAdmin'])
+            ->name('whatsapp.simular.form');
+
+        Route::post('/whatsapp/simular', [WebhookWhatsappController::class, 'simularMensagemAdmin'])
+            ->name('whatsapp.simular.enviar');
     });
 
-    // Sessões (HTML)
-    Route::get('/sessoes/export',                   [SessaoController::class, 'export'])->name('sessoes.export');
-    Route::post('/sessoes/gerar-recorrencias',      [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
+    /*
+    |--------------------------------------------------------------------------
+    | Sessões (HTML)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/sessoes/export', [SessaoController::class, 'export'])->name('sessoes.export');
+    Route::post('/sessoes/gerar-recorrencias', [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
     Route::resource('sessoes', SessaoController::class)->except(['show']);
-    Route::get('/sessoes/importar',                 [SessaoController::class, 'importarView'])->name('sessoes.importar.view');
-    Route::post('/sessoes/importar',                [SessaoController::class, 'importar'])->name('sessoes.importar');
-    Route::get('/sessoes/modelo',                   [SessaoController::class, 'baixarModeloImportacao'])->name('sessoes.modelo');
-    Route::post('/sessoes/sync/futuras',            [SessaoController::class, 'syncFuturas'])->name('sessoes.sync.futuras');
-    Route::post('/sessoes/sync/todas',              [SessaoController::class, 'syncTodas'])->name('sessoes.sync.todas');
+    Route::get('/sessoes/importar', [SessaoController::class, 'importarView'])->name('sessoes.importar.view');
+    Route::post('/sessoes/importar', [SessaoController::class, 'importar'])->name('sessoes.importar');
+    Route::get('/sessoes/modelo', [SessaoController::class, 'baixarModeloImportacao'])->name('sessoes.modelo');
+    Route::post('/sessoes/sync/futuras', [SessaoController::class, 'syncFuturas'])->name('sessoes.sync.futuras');
+    Route::post('/sessoes/sync/todas', [SessaoController::class, 'syncTodas'])->name('sessoes.sync.todas');
 
-    // Notificações
-    Route::get('/notificacoes',                 [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
-    Route::get('/notificacoes/{id}/acao',       [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
-    Route::post('/notificacoes/ler-todas',      [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
+    /*
+    |--------------------------------------------------------------------------
+    | Notificações
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/notificacoes', [NotificacaoController::class, 'dropdown'])->name('notificacoes.dropdown');
+    Route::get('/notificacoes/{id}/acao', [NotificacaoController::class, 'acao'])->name('notificacoes.acao');
+    Route::post('/notificacoes/ler-todas', [NotificacaoController::class, 'marcarTodasComoLidas'])->name('notificacoes.ler.todas');
 
-    // API auxiliar
+    /*
+    |--------------------------------------------------------------------------
+    | API auxiliar
+    |--------------------------------------------------------------------------
+    */
     Route::get('/api/aniversariantes-hoje', [PacienteController::class, 'aniversariantesHoje'])->name('api.aniversariantes');
 });
 
-// Integração Google + jobs de sync por usuário (mantidos, não conflitam com /sessoes/sync/*)
+/*
+|--------------------------------------------------------------------------
+| Integração Google + jobs de sync por usuário
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
-    Route::get('/integracoes/google/connect',     [\App\Http\Controllers\GoogleAuthController::class, 'redirect'])->name('google.connect');
-    Route::get('/oauth/google/callback',          [\App\Http\Controllers\GoogleAuthController::class, 'callback'])->name('google.callback');
+    Route::get('/integracoes/google/connect', [\App\Http\Controllers\GoogleAuthController::class, 'redirect'])->name('google.connect');
+    Route::get('/oauth/google/callback', [\App\Http\Controllers\GoogleAuthController::class, 'callback'])->name('google.callback');
     Route::post('/integracoes/google/disconnect', [\App\Http\Controllers\GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
 });
 
@@ -268,14 +294,13 @@ Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])
 | Auth
 |--------------------------------------------------------------------------
 */
-
 require __DIR__.'/auth.php';
 
 Route::get('/ver-log-whatsapp', function () {
     $hoje = now()->format('Y-m-d');
     $logFile = storage_path("logs/whatsapp-{$hoje}.log");
     $logContent = file_exists($logFile) ? file_get_contents($logFile) : 'Nenhum log encontrado.';
-    return "<pre style='background:#111;color:#0f0;padding:20px;white-space:pre-wrap;'>".e($logContent)."</pre>";
+    return "<pre style='background:#111;color:#0f0;padding:20px;white-space:pre-wrap;'>" . e($logContent) . "</pre>";
 })->middleware('auth');
 
 /*
@@ -286,6 +311,7 @@ Route::get('/ver-log-whatsapp', function () {
 Route::get('/{slug}', [LandingPageController::class, 'show'])
     ->name('landing.show')
     ->where('slug', '[A-Za-z0-9\-]+');
+
 /*
 |--------------------------------------------------------------------------
 | Auth padrão do Laravel
@@ -301,13 +327,11 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 //     return 'Caches TOTALMENTE limpos 🚀!';
 // });
 
-// // Crie rapidamente um comando em routes/web.php só para forçar isso:
-//     Route::get('/fix-perms', function() {
-//         exec('chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache');
-//         return 'Permissões corrigidas!';
-//     });    
+// Route::get('/fix-perms', function() {
+//     exec('chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache');
+//     return 'Permissões corrigidas!';
+// });
 
-//     // routes/web.php (temporário)
 // Route::get('/check-logs', function() {
 //     $logFile = storage_path('logs/laravel.log');
 //     $owner = posix_getpwuid(fileowner($logFile));
@@ -370,83 +394,79 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 //     $path = base_path();
 //     $files = [];
 
-//    $iterator = new RecursiveIteratorIterator(
-//          new RecursiveCallbackFilterIterator(
+//     $iterator = new RecursiveIteratorIterator(
+//         new RecursiveCallbackFilterIterator(
 //             new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
 //             function ($current, $key, $iterator) {
-//                // 🔒 Ignorar vendor, node_modules, data/lost+found e tudo que começa com ponto
 //                 $pathname = $current->getPathname();
 //                 if (
-//                   strpos($pathname, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
-//                      strpos($pathname, DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
+//                     strpos($pathname, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
+//                     strpos($pathname, DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR) !== false ||
 //                     strpos($pathname, DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'lost+found') !== false ||
-//                     strpos($current->getFilename(), '.') === 0 // ignora arquivos ocultos e .git etc
+//                     strpos($current->getFilename(), '.') === 0
 //                 ) {
 //                     return false;
 //                 }
 
-//                // Se não conseguir ler o diretório, ignora tambémmm
-//                  if ($current->isDir() && !is_readable($pathname)) {
-//                      return false;
-//                  }
+//                 if ($current->isDir() && !is_readable($pathname)) {
+//                     return false;
+//                 }
 
-//                  return true;
-//              }
-//          ),
-//          RecursiveIteratorIterator::SELF_FIRST
-//      );
+//                 return true;
+//             }
+//         ),
+//         RecursiveIteratorIterator::SELF_FIRST
+//     );
 
-//      foreach ($iterator as $file) {
-//          if ($file->isFile()) {
-//              try {
-//                  $fullPath = $file->getPathname();
-//                  $relativePath = str_replace($path, '', $fullPath);
+//     foreach ($iterator as $file) {
+//         if ($file->isFile()) {
+//             try {
+//                 $fullPath = $file->getPathname();
+//                 $relativePath = str_replace($path, '', $fullPath);
 
 //                 $files[] = [
 //                     'path' => $relativePath,
-//                      'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
-//                      'size' => $file->getSize(),
-//                  ];
-//              } catch (Exception $e) {
-//                  // Se não conseguir acessar, ignora silenciosamente
-//                  continue;
-//              }
-//          }
-//      }
+//                     'last_modified' => date('Y-m-d H:i:s', filemtime($fullPath)),
+//                     'size' => $file->getSize(),
+//                 ];
+//             } catch (Exception $e) {
+//                 continue;
+//             }
+//         }
+//     }
 
-//      return view('filesystem', ['files' => $files]);
-//  })->name('filesystem.index');
+//     return view('filesystem', ['files' => $files]);
+// })->name('filesystem.index');
 
+// Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
+//     $file = $request->query('file');
+//     if (!$file) {
+//         abort(404, 'Arquivo não especificado.');
+//     }
 
-//  Route::get('/_filesystem/view', function (\Illuminate\Http\Request $request) {
-//      $file = $request->query('file');
-//      if (!$file) {
-//          abort(404, 'Arquivo não especificado.');
-//      }
+//     $fullPath = base_path($file);
 
-//      $fullPath = base_path($file);
+//     if (!file_exists($fullPath)) {
+//         abort(404, 'Arquivo não encontrado.');
+//     }
 
-//      if (!file_exists($fullPath)) {
-//          abort(404, 'Arquivo não encontrado.');
-//      }
+//     return Response::file($fullPath);
+// })->name('filesystem.view');
 
-//      return Response::file($fullPath);
-//  })->name('filesystem.view');
+// Route::get('/_filesystem/download', function (\Illuminate\Http\Request $request) {
+//     $file = $request->query('file');
+//     if (!$file) {
+//         abort(404, 'Arquivo não especificado.');
+//     }
 
-//  Route::get('/_filesystem/download', function (\Illuminate\Http\Request $request) {
-//      $file = $request->query('file');
-//      if (!$file) {
-//          abort(404, 'Arquivo não especificado.');
-//      }
+//     $fullPath = base_path($file);
 
-//      $fullPath = base_path($file);
+//     if (!file_exists($fullPath)) {
+//         abort(404, 'Arquivo não encontrado.');
+//     }
 
-//      if (!file_exists($fullPath)) {
-//          abort(404, 'Arquivo não encontrado.');
-//      }
-
-//      return Response::download($fullPath);
-//  })->name('filesystem.download');
+//     return Response::download($fullPath);
+// })->name('filesystem.download');
 
 // Route::get('/run-migrate', function (\Illuminate\Http\Request $request) {
 //     if ($request->query('token') !== env('MIGRATE_TOKEN')) {
@@ -455,4 +475,3 @@ Route::get('/{slug}', [LandingPageController::class, 'show'])
 //     Artisan::call('migrate', ['--force' => true]);
 //     return Response::make('Migração executada com sucesso!', 200);
 // });
-
