@@ -156,6 +156,122 @@ class WebhookWhatsappController extends Controller
         }
     }
 
+    public function testeManual(Request $request)
+    {
+        $dados = [
+            'event' => 'onmessage',
+            'data'  => [
+                'from'   => '5538999814308@c.us',
+                'body'   => '1',
+                'fromMe' => false,
+                'type'   => 'chat',
+                'id'     => [
+                    '_serialized' => 'CATCHAU12345678901234',
+                ],
+            ],
+        ];
+
+        return $this->processarPayloadInterno($dados);
+    }
+
+    public function formSimulacaoAdmin()
+    {
+        return view('admin.whatsapp.simular');
+    }
+
+    public function simularMensagemAdmin(Request $request)
+    {
+        $validated = $request->validate([
+            'telefone'   => ['required', 'string', 'max:30'],
+            'resposta'   => ['required', 'string', 'max:5000'],
+            'event'      => ['nullable', 'string', 'max:50'],
+            'type'       => ['nullable', 'string', 'max:50'],
+            'message_id' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $telefoneWhatsapp = $this->normalizarTelefoneParaWhatsappId($validated['telefone']);
+        $messageId = !empty($validated['message_id'])
+            ? $validated['message_id']
+            : 'ADMIN-SIMULACAO-' . Str::upper(Str::random(24));
+
+        $dados = [
+            'event' => strtolower(trim($validated['event'] ?? 'onmessage')),
+            'data'  => [
+                'from'   => $telefoneWhatsapp,
+                'body'   => trim($validated['resposta']),
+                'fromMe' => false,
+                'type'   => strtolower(trim($validated['type'] ?? 'chat')),
+                'id'     => [
+                    '_serialized' => $messageId,
+                ],
+                'sender' => [
+                    'id' => $telefoneWhatsapp,
+                ],
+                'chatId' => $telefoneWhatsapp,
+                'simulated_by_admin' => true,
+                'simulated_at'       => now()->toDateTimeString(),
+                'simulated_user_id'  => optional(auth()->user())->id,
+            ],
+        ];
+
+        Log::channel('whatsapp')->info('[Webhook] Simulação manual via painel admin', [
+            'admin_user_id' => optional(auth()->user())->id,
+            'telefone'      => $validated['telefone'],
+            'telefone_wa'   => $telefoneWhatsapp,
+            'resposta'      => $validated['resposta'],
+            'event'         => $dados['event'],
+            'message_id'    => $messageId,
+        ]);
+
+        $response = $this->processarPayloadInterno($dados);
+
+        if ($request->expectsJson()) {
+            return $response;
+        }
+
+        $content = $response->getData(true);
+
+        return back()->with('success', 'Simulação enviada com sucesso.')->with('resultado_webhook', $content);
+    }
+
+    private function processarPayloadInterno(array $dados)
+    {
+        $symfonyRequest = SymfonyRequest::create(
+            '/api/webhook/whatsapp',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode($dados)
+        );
+
+        $laravelRequest = Request::createFromBase($symfonyRequest);
+
+        if (auth()->check()) {
+            $laravelRequest->setUserResolver(function () {
+                return auth()->user();
+            });
+        }
+
+        return $this->receberMensagem($laravelRequest);
+    }
+
+    private function normalizarTelefoneParaWhatsappId(string $telefone): string
+    {
+        $numero = preg_replace('/\D+/', '', $telefone ?? '');
+
+        if (!$numero) {
+            return '';
+        }
+
+        if (!str_starts_with($numero, '55') && strlen($numero) <= 11) {
+            $numero = '55' . $numero;
+        }
+
+        return $numero . '@c.us';
+    }
+
     private function extrairPayload(Request $request): array
     {
         $dados = $request->json()->all();
@@ -280,35 +396,6 @@ class WebhookWhatsappController extends Controller
         return str_ends_with($from, '@g.us')
             || str_contains($from, 'status@broadcast')
             || str_contains($from, 'broadcast');
-    }
-
-    public function testeManual(Request $request)
-    {
-        $dados = [
-            'event' => 'onmessage',
-            'data'  => [
-                'from'   => '5538999814308@c.us',
-                'body'   => '1',
-                'fromMe' => false,
-                'type'   => 'chat',
-                'id'     => [
-                    '_serialized' => 'CATCHAU12345678901234',
-                ],
-            ],
-        ];
-
-        $symfonyRequest = SymfonyRequest::create(
-            '/api/webhook/whatsapp',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode($dados)
-        );
-
-        $laravelRequest = Request::createFromBase($symfonyRequest);
-        return $this->receberMensagem($laravelRequest);
     }
 
     public function handle(Request $request)
