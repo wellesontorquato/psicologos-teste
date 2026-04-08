@@ -42,7 +42,7 @@ Route::get('/webhook/whatsapp/health', function (Request $request) {
 
 // Endpoint temporário: prova se o WPPConnect está batendo na API
 Route::match(['GET', 'POST'], '/webhook/whatsapp-alive', function (Request $request) {
-    Log::info('[WPP ALIVE] endpoint atingido', [
+    Log::channel('whatsapp')->info('[WPP ALIVE] endpoint atingido', [
         'method' => $request->method(),
         'time' => now()->toIso8601String(),
         'ip' => $request->ip(),
@@ -62,7 +62,7 @@ Route::match(['GET', 'POST'], '/webhook/whatsapp-alive', function (Request $requ
 
 // Endpoint temporário: captura payload bruto real do WPPConnect
 Route::match(['GET', 'POST'], '/webhook/whatsapp-debug', function (Request $request) {
-    Log::info('[WPP RAW DEBUG] bateu no endpoint', [
+    Log::channel('whatsapp')->info('[WPP RAW DEBUG] bateu no endpoint', [
         'method' => $request->method(),
         'time' => now()->toIso8601String(),
         'ip' => $request->ip(),
@@ -115,22 +115,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // 📊 Dashboard
     Route::get('/dashboard', function (Request $request) {
         $controller = new DashboardController();
         return response()->json($controller->obterDadosDashboard($request));
     });
 
-    // 👥 Pacientes
     Route::get('/pacientes', [PacienteController::class, 'indexJson']);
-
-    // 📅 Sessões
     Route::get('/sessoes', [SessaoController::class, 'index']);
-
-    // 📝 Evoluções
     Route::get('/evolucoes', [EvolucaoController::class, 'index']);
 
-    // 📅 Sessões JSON
     Route::get('/sessoes-json', [SessaoController::class, 'indexJson']);
     Route::post('/sessoes-json', [SessaoController::class, 'storeJson']);
     Route::post('/sessoes-json/recorrencias', [SessaoController::class, 'gerarRecorrenciasJson']);
@@ -138,13 +131,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/sessoes-json/{id}', [SessaoController::class, 'destroyJson']);
     Route::get('/sessoes-json/{id}', [SessaoController::class, 'show']);
 
-    // 📝 Evoluções JSON
     Route::get('/evolucoes-json', [EvolucaoController::class, 'indexJson']);
     Route::post('/evolucoes-json', [EvolucaoController::class, 'storeJson']);
     Route::put('/evolucoes-json/{id}', [EvolucaoController::class, 'updateJson']);
     Route::delete('/evolucoes-json/{id}', [EvolucaoController::class, 'destroyJson']);
 
-    // 👥 Pacientes JSON
     Route::get('/pacientes-json', [PacienteController::class, 'indexJson']);
     Route::post('/pacientes-json', [PacienteController::class, 'storeJson']);
     Route::put('/pacientes-json/{id}', [PacienteController::class, 'updateJson']);
