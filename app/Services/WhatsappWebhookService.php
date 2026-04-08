@@ -62,10 +62,10 @@ class WhatsappWebhookService
             return;
         }
 
-        $numeroLimpo = $this->extrairTelefoneDoPayload($data, $from);
+        $numeroResolvido = $this->extrairTelefoneDoPayload($data, $from);
         $destinoResposta = $this->extrairDestinoValidoParaResposta($data);
 
-        Log::channel('whatsapp')->info('[WPP SERVICE] Diagnóstico de número', [
+        Log::channel('whatsapp')->info('[WPP SERVICE] Diagnóstico inicial', [
             'request_id' => $requestId,
             'event' => $evento,
             'from' => $from,
@@ -74,16 +74,16 @@ class WhatsappWebhookService
             'participant' => data_get($data, 'participant'),
             'author' => data_get($data, 'author'),
             'shortName' => data_get($data, 'shortName'),
-            'numero_limpo_extraido' => $numeroLimpo,
+            'numero_resolvido_extraido' => $numeroResolvido,
             'destino_resposta_extraido' => $destinoResposta,
             'body' => $body,
         ]);
 
-        if ((!$numeroLimpo || !$destinoResposta) && $from && str_ends_with(strtolower($from), '@lid')) {
+        if ((!$numeroResolvido || !$destinoResposta) && $from && str_ends_with(strtolower($from), '@lid')) {
             $resolucao = $this->resolverContatoPorLid($from, $requestId);
 
-            if (!$numeroLimpo) {
-                $numeroLimpo = $resolucao['numero_limpo'] ?? null;
+            if (!$numeroResolvido) {
+                $numeroResolvido = $resolucao['numero_resolvido'] ?? null;
             }
 
             if (!$destinoResposta) {
@@ -93,13 +93,13 @@ class WhatsappWebhookService
             Log::channel('whatsapp')->info('[WPP SERVICE] Dados após resolver LID', [
                 'request_id' => $requestId,
                 'from' => $from,
-                'numero_limpo_final' => $numeroLimpo,
+                'numero_resolvido_final' => $numeroResolvido,
                 'destino_resposta_final' => $destinoResposta,
             ]);
         }
 
-        if (!$numeroLimpo) {
-            Log::channel('whatsapp')->warning('[WPP SERVICE] Não foi possível extrair telefone do payload', [
+        if (!$numeroResolvido) {
+            Log::channel('whatsapp')->warning('[WPP SERVICE] Não foi possível extrair/resolver telefone do payload', [
                 'request_id' => $requestId,
                 'event' => $evento,
                 'from' => $from,
@@ -116,17 +116,17 @@ class WhatsappWebhookService
             'request_id' => $requestId,
             'event' => $evento,
             'from' => $from,
-            'numero_limpo' => $numeroLimpo,
+            'numero_resolvido' => $numeroResolvido,
             'destino_resposta' => $destinoResposta,
             'body' => $body,
             'mensagem_limpa' => $mensagemLimpa,
         ]);
 
-        $paciente = $this->encontrarPacientePorTelefone($numeroLimpo);
+        $paciente = $this->encontrarPacientePorTelefone($numeroResolvido);
 
         Log::channel('whatsapp')->info('[WPP SERVICE] Diagnóstico de paciente', [
             'request_id' => $requestId,
-            'numero_limpo' => $numeroLimpo,
+            'numero_resolvido' => $numeroResolvido,
             'paciente_encontrado' => (bool) $paciente,
             'paciente_id' => $paciente?->id,
             'paciente_user_id' => $paciente?->user_id,
@@ -137,7 +137,7 @@ class WhatsappWebhookService
         if (!$paciente) {
             Log::channel('whatsapp')->warning('[WPP SERVICE] Paciente não encontrado', [
                 'request_id' => $requestId,
-                'numero_limpo' => $numeroLimpo,
+                'numero_resolvido' => $numeroResolvido,
                 'from' => $from,
             ]);
 
@@ -249,10 +249,7 @@ class WhatsappWebhookService
     {
         $type = strtolower((string) data_get($data, 'type', 'chat'));
 
-        return in_array($type, [
-            'chat',
-            'text',
-        ], true) || $type === '';
+        return in_array($type, ['chat', 'text'], true) || $type === '';
     }
 
     private function extrairFrom(array $data): ?string
@@ -328,29 +325,80 @@ class WhatsappWebhookService
         return null;
     }
 
-    private function encontrarPacientePorTelefone(string $numeroLimpo): ?Paciente
+    private function encontrarPacientePorTelefone(string $numeroResolvido): ?Paciente
     {
+        $candidatos = $this->gerarCandidatosTelefone($numeroResolvido);
+
         return Paciente::withoutGlobalScopes()
-            ->where(function ($query) use ($numeroLimpo) {
-                $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroLimpo]);
-
-                if (strlen($numeroLimpo) === 10) {
-                    $ddd = substr($numeroLimpo, 0, 2);
-                    $resto = substr($numeroLimpo, 2);
-                    $numeroComNove = $ddd . '9' . $resto;
-
-                    $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroComNove]);
-                }
-
-                if (strlen($numeroLimpo) === 11) {
-                    $ddd = substr($numeroLimpo, 0, 2);
-                    $resto = substr($numeroLimpo, 3);
-                    $numeroSemNove = $ddd . $resto;
-
-                    $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$numeroSemNove]);
+            ->where(function ($query) use ($candidatos) {
+                foreach ($candidatos as $i => $telefone) {
+                    if ($i === 0) {
+                        $query->whereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$telefone]);
+                    } else {
+                        $query->orWhereRaw('REGEXP_REPLACE(telefone, "[^0-9]", "") = ?', [$telefone]);
+                    }
                 }
             })
             ->first();
+    }
+
+    private function gerarCandidatosTelefone(string $numero): array
+    {
+        $numero = preg_replace('/\D/', '', $numero);
+        $candidatos = [];
+
+        if ($numero === '') {
+            return [];
+        }
+
+        $add = function (string $valor) use (&$candidatos) {
+            $valor = preg_replace('/\D/', '', $valor);
+            if ($valor !== '' && !in_array($valor, $candidatos, true)) {
+                $candidatos[] = $valor;
+            }
+        };
+
+        $add($numero);
+
+        // Versões sem/ com 55
+        if (str_starts_with($numero, '55') && strlen($numero) > 2) {
+            $sem55 = substr($numero, 2);
+            $add($sem55);
+
+            // Brasil: com e sem o 9 após DDD
+            if (strlen($sem55) === 10) {
+                $ddd = substr($sem55, 0, 2);
+                $resto = substr($sem55, 2);
+                $add($ddd . '9' . $resto);
+                $add('55' . $ddd . '9' . $resto);
+            }
+
+            if (strlen($sem55) === 11 && substr($sem55, 2, 1) === '9') {
+                $ddd = substr($sem55, 0, 2);
+                $resto = substr($sem55, 3);
+                $add($ddd . $resto);
+                $add('55' . $ddd . $resto);
+            }
+        } else {
+            // Sem país explícito, tenta BR e formato original
+            $add('55' . $numero);
+
+            if (strlen($numero) === 10) {
+                $ddd = substr($numero, 0, 2);
+                $resto = substr($numero, 2);
+                $add($ddd . '9' . $resto);
+                $add('55' . $ddd . '9' . $resto);
+            }
+
+            if (strlen($numero) === 11 && substr($numero, 2, 1) === '9') {
+                $ddd = substr($numero, 0, 2);
+                $resto = substr($numero, 3);
+                $add($ddd . $resto);
+                $add('55' . $ddd . $resto);
+            }
+        }
+
+        return $candidatos;
     }
 
     private function mapearRespostaParaStatus(string $bodyLimpo): ?string
@@ -438,7 +486,7 @@ class WhatsappWebhookService
             ]);
 
             return [
-                'numero_limpo' => null,
+                'numero_resolvido' => null,
                 'destino_resposta' => null,
             ];
         }
@@ -460,7 +508,7 @@ class WhatsappWebhookService
 
             if ($response->failed()) {
                 return [
-                    'numero_limpo' => null,
+                    'numero_resolvido' => null,
                     'destino_resposta' => null,
                 ];
             }
@@ -480,7 +528,7 @@ class WhatsappWebhookService
                 }
             }
 
-            $numeroLimpo = null;
+            $numeroResolvido = null;
 
             $possiveis = [
                 data_get($data, 'phoneNumber._serialized'),
@@ -503,18 +551,12 @@ class WhatsappWebhookService
                     continue;
                 }
 
-                if (str_starts_with($digits, '55')) {
-                    $digits = substr($digits, 2);
-                }
-
-                if (strlen($digits) >= 10) {
-                    $numeroLimpo = $digits;
-                    break;
-                }
+                $numeroResolvido = $digits;
+                break;
             }
 
             return [
-                'numero_limpo' => $numeroLimpo,
+                'numero_resolvido' => $numeroResolvido,
                 'destino_resposta' => $destinoResposta,
             ];
         } catch (Throwable $e) {
@@ -525,7 +567,7 @@ class WhatsappWebhookService
             ]);
 
             return [
-                'numero_limpo' => null,
+                'numero_resolvido' => null,
                 'destino_resposta' => null,
             ];
         }
@@ -559,13 +601,7 @@ class WhatsappWebhookService
 
     private function normalizarNumero(string $numero): string
     {
-        $num = preg_replace('/\D/', '', $numero);
-
-        if (str_starts_with($num, '55')) {
-            $num = substr($num, 2);
-        }
-
-        return $num;
+        return preg_replace('/\D/', '', $numero);
     }
 
     private function normalizarDestinoParaEnvio(string $destino): ?string
@@ -582,29 +618,11 @@ class WhatsappWebhookService
 
         if (str_ends_with(strtolower($destino), '@c.us')) {
             $numero = preg_replace('/\D/', '', str_ireplace('@c.us', '', $destino));
-
-            if ($numero === '') {
-                return null;
-            }
-
-            if (!str_starts_with($numero, '55')) {
-                $numero = '55' . $numero;
-            }
-
-            return $numero;
+            return $numero !== '' ? $numero : null;
         }
 
         $numero = preg_replace('/\D/', '', $destino);
-
-        if ($numero === '') {
-            return null;
-        }
-
-        if (!str_starts_with($numero, '55')) {
-            $numero = '55' . $numero;
-        }
-
-        return $numero;
+        return $numero !== '' ? $numero : null;
     }
 
     private function responderNoWhatsappSePossivel(?string $destinoResposta, string $mensagem, ?string $requestId = null): void
@@ -622,9 +640,9 @@ class WhatsappWebhookService
 
     private function responderNoWhatsapp(string $numero, string $mensagem, ?string $requestId = null): void
     {
-        $numeroComPrefixo = $this->normalizarDestinoParaEnvio($numero);
+        $numeroDestino = $this->normalizarDestinoParaEnvio($numero);
 
-        if (!$numeroComPrefixo) {
+        if (!$numeroDestino) {
             Log::channel('whatsapp')->warning('[WPP SERVICE] Número inválido para envio', [
                 'request_id' => $requestId,
                 'numero_original' => $numero,
@@ -649,7 +667,7 @@ class WhatsappWebhookService
             Log::channel('whatsapp')->info('[WPP SERVICE] Enviando resposta via WPPConnect', [
                 'request_id' => $requestId,
                 'numero_original' => $numero,
-                'numero_envio' => $numeroComPrefixo,
+                'numero_envio' => $numeroDestino,
                 'endpoint' => $endpoint,
             ]);
 
@@ -658,7 +676,7 @@ class WhatsappWebhookService
                 ->acceptJson()
                 ->asJson()
                 ->post($endpoint, [
-                    'phone' => $numeroComPrefixo,
+                    'phone' => $numeroDestino,
                     'isGroup' => false,
                     'isNewsletter' => false,
                     'isLid' => false,
@@ -671,14 +689,14 @@ class WhatsappWebhookService
                     'status' => $response->status(),
                     'body' => $response->body(),
                     'numero_original' => $numero,
-                    'numero_envio' => $numeroComPrefixo,
+                    'numero_envio' => $numeroDestino,
                 ]);
                 return;
             }
 
             Log::channel('whatsapp')->info('[WPP SERVICE] Mensagem enviada com sucesso', [
                 'request_id' => $requestId,
-                'numero_envio' => $numeroComPrefixo,
+                'numero_envio' => $numeroDestino,
                 'response' => $response->json(),
             ]);
         } catch (Throwable $e) {
