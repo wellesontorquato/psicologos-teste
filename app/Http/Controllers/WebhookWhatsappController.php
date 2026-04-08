@@ -176,7 +176,7 @@ class WebhookWhatsappController extends Controller
 
     public function formSimulacaoAdmin()
     {
-        return view('admin.whatsapp.simular');
+        return view('whatsapp.simular');
     }
 
     public function simularMensagemAdmin(Request $request)
