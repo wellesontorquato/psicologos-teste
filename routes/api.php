@@ -15,7 +15,6 @@ use App\Http\Controllers\Api\FeriadosController;
 use App\Http\Controllers\WppconnectDiagnosticoController;
 use App\Http\Controllers\LembreteController;
 
-
 // 🔍 Health check
 Route::get('/ping', function () {
     return response()->json(['message' => 'API funcionando']);
@@ -23,9 +22,65 @@ Route::get('/ping', function () {
 
 Route::get('/feriados', [FeriadosController::class, 'index']);
 
+// =========================
+// WEBHOOK WHATSAPP
+// =========================
+
 Route::post('/webhook/whatsapp', [WebhookWhatsappController::class, 'receberMensagem'])
     ->name('webhook.whatsapp');
+
 Route::get('/webhook/whatsapp/test-manual', [WebhookWhatsappController::class, 'testeManual']);
+
+Route::get('/webhook/whatsapp/health', function (Request $request) {
+    return response()->json([
+        'ok' => true,
+        'webhook' => 'whatsapp',
+        'time' => now()->toIso8601String(),
+        'request_id' => $request->attributes->get('request_id'),
+    ]);
+});
+
+// Endpoint temporário: prova se o WPPConnect está batendo na API
+Route::match(['GET', 'POST'], '/webhook/whatsapp-alive', function (Request $request) {
+    Log::info('[WPP ALIVE] endpoint atingido', [
+        'method' => $request->method(),
+        'time' => now()->toIso8601String(),
+        'ip' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'headers' => $request->headers->all(),
+        'raw' => $request->getContent(),
+        'json' => $request->json()->all(),
+        'all' => $request->all(),
+    ]);
+
+    return response()->json([
+        'ok' => true,
+        'message' => 'alive recebido',
+        'time' => now()->toIso8601String(),
+    ], 200);
+})->name('webhook.whatsapp.alive');
+
+// Endpoint temporário: captura payload bruto real do WPPConnect
+Route::match(['GET', 'POST'], '/webhook/whatsapp-debug', function (Request $request) {
+    Log::info('[WPP RAW DEBUG] bateu no endpoint', [
+        'method' => $request->method(),
+        'time' => now()->toIso8601String(),
+        'ip' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'headers' => $request->headers->all(),
+        'raw' => $request->getContent(),
+        'json' => $request->json()->all(),
+        'all' => $request->all(),
+        'query' => $request->query(),
+    ]);
+
+    return response()->json([
+        'ok' => true,
+        'message' => 'debug recebido',
+        'time' => now()->toIso8601String(),
+    ], 200);
+})->name('webhook.whatsapp.debug');
+
 Route::get('/diagnostico-wpp', [WppconnectDiagnosticoController::class, 'executar']);
 Route::get('/lembretes/testar', [LembreteController::class, 'enviarLembretesManualmente']);
 
@@ -38,28 +93,22 @@ Route::get('/health', function (Request $request) {
     ]);
 });
 
-Route::get('/webhook/whatsapp/health', function (Request $request) {
-    return response()->json([
-        'ok' => true,
-        'webhook' => 'whatsapp',
-        'time' => now()->toIso8601String(),
-        'request_id' => $request->attributes->get('request_id'),
-    ]);
-});
-
-
 Route::get('/executar-schedule-seguro/{token}', function ($token) {
     if ($token !== env('TOKEN_CRON_SEGURA')) {
         abort(403, 'Acesso negado');
     }
+
     Log::info('[Scheduler] Chamou o schedule:run via webhook');
-    return response()->json(['message' => 'Schedule e lembretes executados com sucesso']);
+
+    return response()->json([
+        'message' => 'Schedule e lembretes executados com sucesso'
+    ]);
 });
 
 // 🔐 ROTAS DE AUTENTICAÇÃO COM SANCTUM
 Route::post('/login', [AuthController::class, 'login']);
 
-// 🔓 ROTA DE BLOG PÚBLICA (ACESSO LIVRE PARA CARROSSEL NA HOMEPAGE)
+// 🔓 ROTA DE BLOG PÚBLICA
 Route::get('/blog-json', [BlogController::class, 'apiIndex']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -81,12 +130,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // 📝 Evoluções
     Route::get('/evolucoes', [EvolucaoController::class, 'index']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | 🔄 CRUD JSON (Flutter)
-    |--------------------------------------------------------------------------
-    */
-
     // 📅 Sessões JSON
     Route::get('/sessoes-json', [SessaoController::class, 'indexJson']);
     Route::post('/sessoes-json', [SessaoController::class, 'storeJson']);
@@ -107,5 +150,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/pacientes-json/{id}', [PacienteController::class, 'updateJson']);
     Route::delete('/pacientes-json/{id}', [PacienteController::class, 'destroyJson']);
     Route::get('/pacientes-json/{id}', [PacienteController::class, 'showJson']);
-
 });
