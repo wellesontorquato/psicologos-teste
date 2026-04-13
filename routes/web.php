@@ -242,7 +242,15 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
     */
     Route::get('/sessoes/export', [SessaoController::class, 'export'])->name('sessoes.export');
     Route::post('/sessoes/gerar-recorrencias', [SessaoController::class, 'gerarRecorrencias'])->name('sessoes.gerarRecorrencias');
+
+    Route::get('/sessoes/{id}/whatsapp', [SessaoController::class, 'whatsappLink'])
+        ->name('sessoes.whatsapp');
+
+    Route::post('/sessoes/{id}/status-confirmacao', [SessaoController::class, 'atualizarStatusConfirmacao'])
+        ->name('sessoes.atualizar-status-confirmacao');
+
     Route::resource('sessoes', SessaoController::class)->except(['show']);
+
     Route::get('/sessoes/importar', [SessaoController::class, 'importarView'])->name('sessoes.importar.view');
     Route::post('/sessoes/importar', [SessaoController::class, 'importar'])->name('sessoes.importar');
     Route::get('/sessoes/modelo', [SessaoController::class, 'baixarModeloImportacao'])->name('sessoes.modelo');
