@@ -4,23 +4,31 @@
 
 @section('content')
 <div class="container py-3 sessoes-page">
-    <div class="sessoes-hero card border-0 shadow-sm mb-4">
-        <div class="card-body p-4 p-lg-4">
+
+    {{-- Topo --}}
+    <div class="card border-0 shadow-sm mb-4 sessoes-topbar">
+        <div class="card-body p-3 p-lg-4">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
                 <div>
-                    <span class="sessoes-kicker">Gestão clínica</span>
-                    <h1 class="sessoes-title mb-2">Sessões</h1>
+                    <div class="sessoes-kicker">Agenda clínica</div>
+                    <h1 class="sessoes-title mb-1">Sessões</h1>
                     <p class="sessoes-subtitle mb-0">
-                        Organize atendimentos, acompanhe confirmações e envie lembretes com mais agilidade.
+                        Visualize atendimentos, acompanhe confirmações e envie lembretes com mais facilidade.
                     </p>
                 </div>
 
-                <div class="d-flex flex-column flex-sm-row gap-2">
-                    <a href="{{ route('sessoes.importar.view') }}" class="btn btn-outline-primary shadow-sm">
-                        <i class="bi bi-upload me-1"></i> Importar
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'pdf'])) }}"
+                       class="btn btn-outline-danger shadow-sm no-spinner-on-download">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> PDF
                     </a>
 
-                    <a href="{{ route('sessoes.create') }}" class="btn btn-primary shadow-sm btn-nova-sessao">
+                    <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'excel'])) }}"
+                       class="btn btn-outline-success shadow-sm no-spinner-on-download">
+                        <i class="bi bi-file-earmark-excel me-1"></i> Excel
+                    </a>
+
+                    <a href="{{ route('sessoes.create') }}" class="btn btn-primary shadow-sm">
                         <i class="bi bi-plus-lg me-1"></i> Nova Sessão
                     </a>
                 </div>
@@ -28,47 +36,53 @@
         </div>
     </div>
 
-    {{-- Resumo rápido --}}
+    {{-- Resumo --}}
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-6">
-            <div class="card resumo-card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="resumo-top">
-                        <span class="resumo-icon bg-primary-subtle text-primary">
-                            <i class="bi bi-calendar-check"></i>
-                        </span>
-                        <span class="resumo-label">Sessões marcadas</span>
+            <div class="card border-0 shadow-sm resumo-card h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="resumo-icon bg-primary-subtle text-primary">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div>
+                            <div class="resumo-label">Sessões marcadas</div>
+                            <div class="resumo-value">{{ $sessoesMarcadas->total() }}</div>
+                        </div>
                     </div>
-                    <div class="resumo-value">{{ $sessoesMarcadas->total() }}</div>
-                    <div class="resumo-help">Próximos atendimentos e sessões pendentes.</div>
                 </div>
             </div>
         </div>
 
         <div class="col-12 col-md-6">
-            <div class="card resumo-card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="resumo-top">
-                        <span class="resumo-icon bg-success-subtle text-success">
+            <div class="card border-0 shadow-sm resumo-card h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="resumo-icon bg-success-subtle text-success">
                             <i class="bi bi-check2-circle"></i>
-                        </span>
-                        <span class="resumo-label">Sessões realizadas</span>
+                        </div>
+                        <div>
+                            <div class="resumo-label">Sessões realizadas</div>
+                            <div class="resumo-value">{{ $sessoesRealizadas->total() }}</div>
+                        </div>
                     </div>
-                    <div class="resumo-value">{{ $sessoesRealizadas->total() }}</div>
-                    <div class="resumo-help">Histórico dos atendimentos já ocorridos.</div>
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Filtros --}}
-    <div class="card border-0 shadow-sm mb-4 filtros-card">
+    <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3 p-lg-4">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <div>
-                    <h2 class="filtros-title mb-1">Filtros</h2>
-                    <p class="filtros-subtitle mb-0">Refine a visualização das suas sessões.</p>
+                    <h2 class="section-title mb-1">Filtros</h2>
+                    <p class="section-subtitle mb-0">Encontre sessões com mais rapidez.</p>
                 </div>
+
+                <a href="{{ route('sessoes.importar.view') }}" class="btn btn-outline-primary btn-sm shadow-sm">
+                    <i class="bi bi-upload me-1"></i> Importar em massa
+                </a>
             </div>
 
             <form method="GET" class="row g-3 align-items-end">
@@ -132,11 +146,8 @@
                 </div>
             </form>
 
-            {{-- Badges de filtros ativos --}}
             @if(request()->filled('foi_pago') || request()->filled('status') || request()->filled('periodo') || request()->filled('busca'))
-                <div class="filtros-ativos mt-3">
-                    <span class="small text-muted fw-semibold me-2">Filtros ativos:</span>
-
+                <div class="mt-3 d-flex flex-wrap gap-2">
                     @if(request()->filled('foi_pago'))
                         <span class="badge rounded-pill text-bg-info">Pago: {{ request('foi_pago') }}</span>
                     @endif
@@ -166,44 +177,17 @@
         </div>
     </div>
 
-    {{-- Exportações --}}
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-            <div>
-                <h3 class="acoes-title mb-1">Exportação e utilitários</h3>
-                <p class="acoes-subtitle mb-0">Baixe relatórios ou faça importação em massa.</p>
-            </div>
-
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'pdf'])) }}"
-                   class="btn btn-danger shadow-sm no-spinner-on-download">
-                    <i class="bi bi-file-earmark-pdf me-1"></i> PDF
-                </a>
-
-                <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'excel'])) }}"
-                   class="btn btn-success shadow-sm no-spinner-on-download">
-                    <i class="bi bi-file-earmark-excel me-1"></i> Excel
-                </a>
-
-                <a href="{{ route('sessoes.importar.view') }}"
-                   class="btn btn-outline-primary shadow-sm">
-                    <i class="bi bi-upload me-1"></i> Importar sessões em massa
-                </a>
-            </div>
-        </div>
-    </div>
-
     {{-- Abas --}}
-    <div class="sessoes-tabs-wrapper mb-4">
+    <div class="tabs-wrap mb-4">
         <ul class="nav nav-pills sessoes-tabs" id="abasSessoes">
             <li class="nav-item">
                 <a class="nav-link active" data-bs-toggle="tab" href="#futuras">
-                    <i class="bi bi-calendar-event me-1"></i> Sessões Marcadas
+                    <i class="bi bi-calendar-event me-1"></i> Marcadas
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#realizadas">
-                    <i class="bi bi-check2-square me-1"></i> Sessões Realizadas
+                    <i class="bi bi-check2-square me-1"></i> Realizadas
                 </a>
             </li>
         </ul>
@@ -238,7 +222,7 @@
                     <div class="modal-header border-0 pb-0">
                         <div>
                             <h5 class="modal-title" id="modalRecorrenciaLabel">Criar sessões recorrentes</h5>
-                            <p class="text-muted small mb-0">Repita a sessão selecionada pelas próximas semanas.</p>
+                            <p class="text-muted small mb-0">Repita a sessão pelas próximas semanas.</p>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
@@ -408,15 +392,17 @@
 
 <style>
     .sessoes-page {
-        --sessoes-border: #e9ecef;
-        --sessoes-muted: #6c757d;
-        --sessoes-bg-soft: #f8f9fa;
+        --soft-border: #e9ecef;
+        --soft-text: #6c757d;
     }
 
-    .sessoes-hero {
-        background:
-            radial-gradient(circle at top right, rgba(13, 110, 253, 0.10), transparent 30%),
-            linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    .sessoes-topbar,
+    .resumo-card {
+        border-radius: 1rem;
+    }
+
+    .sessoes-topbar {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
     }
 
     .sessoes-kicker {
@@ -426,93 +412,59 @@
         text-transform: uppercase;
         letter-spacing: .08em;
         color: #0d6efd;
-        margin-bottom: .5rem;
+        margin-bottom: .35rem;
     }
 
     .sessoes-title {
-        font-size: clamp(1.7rem, 2vw, 2.25rem);
+        font-size: clamp(1.55rem, 2vw, 2rem);
         font-weight: 800;
         color: #212529;
     }
 
-    .sessoes-subtitle {
-        color: var(--sessoes-muted);
-        max-width: 680px;
+    .sessoes-subtitle,
+    .section-subtitle {
+        color: var(--soft-text);
+        font-size: .94rem;
     }
 
-    .resumo-card {
-        border-radius: 1rem;
-    }
-
-    .resumo-top {
-        display: flex;
-        align-items: center;
-        gap: .75rem;
-        margin-bottom: 1rem;
-    }
-
-    .resumo-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: .85rem;
-        font-size: 1.1rem;
-    }
-
-    .resumo-label {
-        font-size: .92rem;
-        font-weight: 700;
-        color: #495057;
-    }
-
-    .resumo-value {
-        font-size: clamp(1.8rem, 2.2vw, 2.3rem);
-        font-weight: 800;
-        line-height: 1;
-        margin-bottom: .4rem;
-        color: #212529;
-    }
-
-    .resumo-help {
-        color: var(--sessoes-muted);
-        font-size: .92rem;
-    }
-
-    .filtros-card,
-    .sessoes-hero,
-    .resumo-card {
-        border-radius: 1rem;
-    }
-
-    .filtros-title,
-    .acoes-title {
+    .section-title {
         font-size: 1rem;
         font-weight: 700;
         color: #212529;
     }
 
-    .filtros-subtitle,
-    .acoes-subtitle {
-        color: var(--sessoes-muted);
-        font-size: .92rem;
-    }
-
-    .filtros-ativos {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .45rem;
+    .resumo-icon {
+        width: 2.65rem;
+        height: 2.65rem;
+        display: inline-flex;
         align-items: center;
+        justify-content: center;
+        border-radius: .85rem;
+        font-size: 1.1rem;
+        flex-shrink: 0;
     }
 
-    .sessoes-tabs-wrapper {
+    .resumo-label {
+        font-size: .9rem;
+        color: #495057;
+        font-weight: 700;
+        margin-bottom: .2rem;
+    }
+
+    .resumo-value {
+        font-size: 1.85rem;
+        line-height: 1;
+        font-weight: 800;
+        color: #212529;
+    }
+
+    .tabs-wrap {
         overflow-x: auto;
-        padding-bottom: .25rem;
+        padding-bottom: .2rem;
     }
 
     .sessoes-tabs {
-        gap: .75rem;
+        gap: .65rem;
         flex-wrap: nowrap;
     }
 
@@ -522,32 +474,30 @@
         background: #fff;
         color: #495057;
         font-weight: 600;
-        padding: .8rem 1.1rem;
-        box-shadow: 0 .125rem .5rem rgba(0,0,0,.04);
+        padding: .75rem 1rem;
         white-space: nowrap;
+        box-shadow: 0 .125rem .5rem rgba(0,0,0,.04);
     }
 
     .sessoes-tabs .nav-link.active {
         background: #0d6efd;
         color: #fff;
-        box-shadow: 0 .4rem 1rem rgba(13,110,253,.22);
+        box-shadow: 0 .35rem .85rem rgba(13,110,253,.22);
     }
 
-    .filtros-card .form-control,
-    .filtros-card .form-select,
-    .modal-content .form-control {
-        border-radius: .75rem;
+    .card,
+    .modal-content {
+        border-radius: 1rem;
     }
 
-    .filtros-card .btn,
-    .sessoes-hero .btn,
-    .modal-content .btn {
+    .form-control,
+    .form-select,
+    .btn {
         border-radius: .75rem;
     }
 
     @media (max-width: 991.98px) {
-        .sessoes-hero .card-body,
-        .filtros-card .card-body {
+        .sessoes-topbar .card-body {
             padding: 1rem !important;
         }
     }
