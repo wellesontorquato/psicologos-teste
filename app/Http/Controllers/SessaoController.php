@@ -31,17 +31,27 @@ class SessaoController extends Controller
         }
 
         if ($request->filled('busca')) {
-            $busca = preg_replace('/\D/', '', $request->busca);
+            $busca = trim($request->busca);
+
             $baseQuery->whereHas('paciente', function ($q) use ($busca) {
+                $cpfBusca = preg_replace('/\D/', '', $busca);
+
                 $q->where('nome', 'like', "%{$busca}%")
-                  ->orWhere('telefone', 'like', "%{$busca}%")
-                  ->orWhere('email', 'like', "%{$busca}%")
-                  ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
+                    ->orWhere('telefone', 'like', "%{$busca}%")
+                    ->orWhere('email', 'like', "%{$busca}%");
+
+                if ($cpfBusca !== '') {
+                    $q->orWhereRaw(
+                        "REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?",
+                        ["%{$cpfBusca}%"]
+                    );
+                }
             });
         }
 
         if ($request->filled('periodo')) {
-            $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
+            $hoje = Carbon::now('America/Sao_Paulo')->startOfDay();
+
             if ($request->periodo === 'hoje') {
                 $baseQuery->whereBetween('data_hora', [$hoje, $hoje->copy()->endOfDay()]);
             } elseif ($request->periodo === 'semana') {
@@ -49,7 +59,7 @@ class SessaoController extends Controller
             } elseif ($request->periodo === 'proxima') {
                 $baseQuery->whereBetween('data_hora', [
                     $hoje->copy()->addWeek()->startOfWeek(),
-                    $hoje->copy()->addWeek()->endOfWeek()
+                    $hoje->copy()->addWeek()->endOfWeek(),
                 ]);
             }
         }
@@ -74,7 +84,7 @@ class SessaoController extends Controller
             ");
         }
 
-        $agora = \Carbon\Carbon::now('America/Sao_Paulo');
+        $agora = Carbon::now('America/Sao_Paulo');
 
         $sessoesMarcadas = (clone $baseQuery)
             ->where(function ($q) use ($agora) {
@@ -103,6 +113,7 @@ class SessaoController extends Controller
         $pacientes = Paciente::where('user_id', auth()->id())
             ->orderBy('nome', 'asc')
             ->get();
+
         return view('sessoes.create', compact('pacientes'));
     }
 
@@ -119,20 +130,20 @@ class SessaoController extends Controller
         $dados['duracao'] = (int) $dados['duracao'];
         $dados['foi_pago'] = $request->has('foi_pago');
         $dados['data_hora_original'] = $dados['data_hora'];
-
-        // moeda: se vier no request usa, senão BRL
         $dados['moeda'] = strtoupper($request->input('moeda', 'BRL'));
 
         $inicio = Carbon::parse($dados['data_hora']);
-        $fim    = $inicio->copy()->addMinutes($dados['duracao']);
+        $fim = $inicio->copy()->addMinutes($dados['duracao']);
 
-        $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+        $conflito = Sessao::whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))
             ->where('data_hora', '<', $fim)
             ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
             ->exists();
 
         if ($conflito) {
-            return redirect()->back()->withInput()->with('error', 'Já existe uma sessão marcada nesse horário.');
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Já existe uma sessão marcada nesse horário.');
         }
 
         $dados['user_id'] = auth()->id();
@@ -140,11 +151,12 @@ class SessaoController extends Controller
 
         AuditHelper::log('created_sessao', 'Criou sessão com o paciente ID ' . $sessao->paciente_id);
 
-        // Google Calendar - criar evento
         $user = $request->user();
+
         if ($user->google_connected) {
             try {
                 $gcal = app(GoogleCalendarService::class);
+
                 $eventId = $gcal->createEvent($user, [
                     'summary'     => "Sessão com {$sessao->paciente->nome}",
                     'description' => $sessao->observacoes ?? null,
@@ -167,7 +179,6 @@ class SessaoController extends Controller
                 ]);
             }
         } else {
-            // não conectado → deixa para os botões de sincronizar
             $sessao->update([
                 'google_sync_status' => 'pending',
                 'google_sync_error'  => null,
@@ -190,14 +201,12 @@ class SessaoController extends Controller
 
         $dados['duracao'] = (int) $dados['duracao'];
         $dados['data_hora_original'] = $dados['data_hora'];
-
-        // moeda com default BRL
         $dados['moeda'] = strtoupper($request->input('moeda', 'BRL'));
 
         $inicio = Carbon::parse($dados['data_hora']);
-        $fim    = $inicio->copy()->addMinutes($dados['duracao']);
+        $fim = $inicio->copy()->addMinutes($dados['duracao']);
 
-        $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+        $conflito = Sessao::whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))
             ->where('data_hora', '<', $fim)
             ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
             ->exists();
@@ -211,11 +220,12 @@ class SessaoController extends Controller
 
         AuditHelper::log('created_sessao_json', 'Criou sessão via JSON para o paciente ID ' . $sessao->paciente_id);
 
-        // Google Calendar - criar evento
         $user = $request->user();
+
         if ($user->google_connected) {
             try {
                 $gcal = app(GoogleCalendarService::class);
+
                 $eventId = $gcal->createEvent($user, [
                     'summary'     => "Sessão com {$sessao->paciente->nome}",
                     'description' => $sessao->observacoes ?? null,
@@ -239,7 +249,11 @@ class SessaoController extends Controller
             }
         }
 
-        return response()->json(['message' => 'Sessão criada com sucesso', 'id' => $sessao->id, 'moeda' => $sessao->moeda,],  201);
+        return response()->json([
+            'message' => 'Sessão criada com sucesso',
+            'id'      => $sessao->id,
+            'moeda'   => $sessao->moeda,
+        ], 201);
     }
 
     public function edit($id)
@@ -255,6 +269,7 @@ class SessaoController extends Controller
         $pacientes = Paciente::where('user_id', auth()->id())
             ->orderBy('nome', 'asc')
             ->get();
+
         return view('sessoes.edit', compact('sessao', 'pacientes'));
     }
 
@@ -296,15 +311,13 @@ class SessaoController extends Controller
             'data_hora'          => 'required|date',
             'duracao'            => 'required|integer|min:1',
             'valor'              => 'nullable|numeric',
-            'status_confirmacao' => 'nullable|string',
+            'status_confirmacao' => 'nullable|in:PENDENTE,CONFIRMADA,CANCELADA,REMARCAR',
             'foi_pago'           => 'boolean',
             'moeda'              => 'nullable|string|size:3',
         ]);
 
         $statusAntigo = $sessao->status_confirmacao;
         $dados['foi_pago'] = $request->boolean('foi_pago');
-
-        // normalizar moeda com default
         $dados['moeda'] = strtoupper($request->input('moeda', $sessao->moeda ?? 'BRL'));
 
         $sessao->update($dados);
@@ -313,18 +326,18 @@ class SessaoController extends Controller
             $sessao->update(['data_hora_original' => $dados['data_hora']]);
         }
 
-        if ($statusAntigo !== 'CONFIRMADO' && $sessao->status_confirmacao === 'CONFIRMADO') {
+        if ($statusAntigo !== 'CONFIRMADA' && $sessao->status_confirmacao === 'CONFIRMADA') {
             event(new \App\Events\SessaoConfirmada($sessao));
         }
 
         AuditHelper::log('updated_sessao', 'Atualizou sessão ID ' . $id);
 
-        // Google Calendar - atualizar (ou criar se não existir)
         $user = $request->user();
+
         if ($user->google_connected) {
             try {
                 $inicio = Carbon::parse($sessao->data_hora);
-                $fim    = $inicio->copy()->addMinutes((int) $sessao->duracao);
+                $fim = $inicio->copy()->addMinutes((int) $sessao->duracao);
 
                 $gcal = app(GoogleCalendarService::class);
 
@@ -343,11 +356,12 @@ class SessaoController extends Controller
                         'end'         => $fim,
                         'attendees'   => $sessao->paciente->email ? [['email' => $sessao->paciente->email]] : [],
                     ]);
+
                     $sessao->google_event_id = $eventId;
                 }
 
                 $sessao->google_sync_status = 'ok';
-                $sessao->google_sync_error  = null;
+                $sessao->google_sync_error = null;
                 $sessao->save();
             } catch (GoogleServiceException $e) {
                 throw $e;
@@ -358,7 +372,6 @@ class SessaoController extends Controller
                 ]);
             }
         } else {
-            // não conectado → deixa para os botões de sincronizar
             $sessao->update([
                 'google_sync_status' => 'pending',
                 'google_sync_error'  => null,
@@ -377,26 +390,25 @@ class SessaoController extends Controller
         }
 
         $dados = $request->validate([
-            'paciente_id' => 'required|exists:pacientes,id',
-            'data_hora'   => 'required|date',
-            'duracao'     => 'required|integer|min:1',
-            'valor'       => 'nullable|numeric',
-            'foi_pago'    => 'boolean',
-            'moeda'       => 'nullable|string|size:3',
+            'paciente_id'        => 'required|exists:pacientes,id',
+            'data_hora'          => 'required|date',
+            'duracao'            => 'required|integer|min:1',
+            'valor'              => 'nullable|numeric',
+            'foi_pago'           => 'boolean',
+            'moeda'              => 'nullable|string|size:3',
+            'status_confirmacao' => 'nullable|in:PENDENTE,CONFIRMADA,CANCELADA,REMARCAR',
         ]);
 
         $dados['duracao'] = (int) $dados['duracao'];
-
-        // default moeda: mantém a antiga se não vier nada
         $dados['moeda'] = strtoupper($request->input('moeda', $sessao->moeda ?? 'BRL'));
 
-        $horarioAlterado = $dados['data_hora'] !== $sessao->data_hora || $dados['duracao'] !== (int)$sessao->duracao;
+        $horarioAlterado = $dados['data_hora'] !== $sessao->data_hora || $dados['duracao'] !== (int) $sessao->duracao;
 
         if ($horarioAlterado) {
             $inicio = Carbon::parse($dados['data_hora']);
-            $fim    = $inicio->copy()->addMinutes($dados['duracao']);
+            $fim = $inicio->copy()->addMinutes($dados['duracao']);
 
-            $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+            $conflito = Sessao::whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))
                 ->where('id', '!=', $id)
                 ->where('data_hora', '<', $fim)
                 ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
@@ -413,19 +425,19 @@ class SessaoController extends Controller
             $sessao->update(['data_hora_original' => $dados['data_hora']]);
         }
 
-        if ($sessao->wasChanged('status_confirmacao') && $sessao->status_confirmacao === 'CONFIRMADO') {
+        if ($sessao->wasChanged('status_confirmacao') && $sessao->status_confirmacao === 'CONFIRMADA') {
             event(new \App\Events\SessaoConfirmada($sessao));
         }
 
         AuditHelper::log('updated_sessao_json', 'Atualizou sessão via JSON ID ' . $id);
 
-        // Google Calendar - atualizar (ou criar)
         $user = $request->user();
+
         if ($user->google_connected) {
             try {
                 $inicio = Carbon::parse($sessao->data_hora);
-                $fim    = $inicio->copy()->addMinutes((int) $sessao->duracao);
-                $gcal   = app(GoogleCalendarService::class);
+                $fim = $inicio->copy()->addMinutes((int) $sessao->duracao);
+                $gcal = app(GoogleCalendarService::class);
 
                 if ($sessao->google_event_id) {
                     $gcal->updateEvent($user, $sessao->google_event_id, [
@@ -442,14 +454,14 @@ class SessaoController extends Controller
                         'end'         => $fim,
                         'attendees'   => $sessao->paciente->email ? [['email' => $sessao->paciente->email]] : [],
                     ]);
+
                     $sessao->google_event_id = $eventId;
                     $sessao->save();
                 }
 
                 $sessao->google_sync_status = 'ok';
-                $sessao->google_sync_error  = null;
+                $sessao->google_sync_error = null;
                 $sessao->save();
-
             } catch (GoogleServiceException $e) {
                 throw $e;
             } catch (\Throwable $e) {
@@ -471,13 +483,12 @@ class SessaoController extends Controller
             abort(403, 'ACESSO NEGADO À SESSÃO.');
         }
 
-        // Google Calendar - deletar evento
         $user = $request->user();
+
         if ($user->google_connected) {
             try {
                 app(GoogleCalendarService::class)->deleteEvent($user, $sessao->google_event_id);
             } catch (\Throwable $e) {
-                // opcional: logar erro
             }
         }
 
@@ -507,19 +518,18 @@ class SessaoController extends Controller
             return response()->json(['message' => 'ACESSO NEGADO À SESSÃO.'], 403);
         }
 
-        // Google Calendar - deletar evento
         $user = auth()->user();
+
         if ($user && $user->google_connected) {
             try {
                 app(GoogleCalendarService::class)->deleteEvent($user, $sessao->google_event_id);
             } catch (\Throwable $e) {
-                // opcional: logar erro
             }
         }
 
         $sessao->delete();
 
-        \App\Helpers\AuditHelper::log('deleted_sessao', 'Excluiu sessão ID ' . $id);
+        AuditHelper::log('deleted_sessao', 'Excluiu sessão ID ' . $id);
 
         return response()->json(['message' => 'Sessão excluída com sucesso.'], 200);
     }
@@ -546,7 +556,8 @@ class SessaoController extends Controller
         }
 
         if ($request->filled('periodo')) {
-            $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
+            $hoje = Carbon::now('America/Sao_Paulo')->startOfDay();
+
             if ($request->periodo === 'hoje') {
                 $query->whereDate('data_hora', $hoje);
             } elseif ($request->periodo === 'semana') {
@@ -554,18 +565,27 @@ class SessaoController extends Controller
             } elseif ($request->periodo === 'proxima') {
                 $query->whereBetween('data_hora', [
                     $hoje->copy()->addWeek()->startOfWeek(),
-                    $hoje->copy()->addWeek()->endOfWeek()
+                    $hoje->copy()->addWeek()->endOfWeek(),
                 ]);
             }
         }
 
         if ($request->filled('busca')) {
-            $busca = preg_replace('/\D/', '', $request->busca);
+            $busca = trim($request->busca);
+
             $query->whereHas('paciente', function ($q) use ($busca) {
+                $cpfBusca = preg_replace('/\D/', '', $busca);
+
                 $q->where('nome', 'like', "%{$busca}%")
-                  ->orWhere('telefone', 'like', "%{$busca}%")
-                  ->orWhere('email', 'like', "%{$busca}%")
-                  ->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%$busca%"]);
+                    ->orWhere('telefone', 'like', "%{$busca}%")
+                    ->orWhere('email', 'like', "%{$busca}%");
+
+                if ($cpfBusca !== '') {
+                    $q->orWhereRaw(
+                        "REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?",
+                        ["%{$cpfBusca}%"]
+                    );
+                }
             });
         }
 
@@ -576,6 +596,7 @@ class SessaoController extends Controller
         }
 
         $pdf = Pdf::loadView('sessoes.export-pdf', compact('sessoes'));
+
         return $pdf->download('sessoes.pdf');
     }
 
@@ -597,7 +618,10 @@ class SessaoController extends Controller
 
     public function baixarModeloImportacao()
     {
-        return Excel::download(new ModeloImportacaoSessoesExport(auth()->id()), 'modelo_importacao_sessoes.xlsx');
+        return Excel::download(
+            new ModeloImportacaoSessoesExport(auth()->id()),
+            'modelo_importacao_sessoes.xlsx'
+        );
     }
 
     public function gerarRecorrencias(Request $request)
@@ -622,9 +646,9 @@ class SessaoController extends Controller
         for ($i = 1; $i <= $semanas; $i++) {
             $novaDataHora = Carbon::parse($sessaoOriginal->data_hora)->addWeeks($i);
             $inicio = $novaDataHora->copy();
-            $fim    = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
+            $fim = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
 
-            $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+            $conflito = Sessao::whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))
                 ->where('data_hora', '<', $fim)
                 ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
                 ->exists();
@@ -637,15 +661,15 @@ class SessaoController extends Controller
                     'data_hora_original' => $novaDataHora,
                     'duracao'            => $sessaoOriginal->duracao,
                     'valor'              => $sessaoOriginal->valor,
-                    'moeda'              => $sessaoOriginal->moeda ?? 'BRL', // <-- NOVO
+                    'moeda'              => $sessaoOriginal->moeda ?? 'BRL',
                     'foi_pago'           => $foiPago,
                     'observacoes'        => 'Recorrência automática da sessão ID #' . $sessaoOriginal->id,
                 ]);
 
-                // Google: criar evento da recorrência
                 if ($user->google_connected) {
                     try {
                         $gcal = app(GoogleCalendarService::class);
+
                         $eventId = $gcal->createEvent($user, [
                             'summary'     => "Sessão com {$nova->paciente->nome}",
                             'description' => $nova->observacoes ?? null,
@@ -653,6 +677,7 @@ class SessaoController extends Controller
                             'end'         => $fim,
                             'attendees'   => $nova->paciente->email ? [['email' => $nova->paciente->email]] : [],
                         ]);
+
                         $nova->update([
                             'google_event_id'    => $eventId,
                             'google_sync_status' => 'ok',
@@ -665,7 +690,6 @@ class SessaoController extends Controller
                         ]);
                     }
                 } else {
-                    // não conectado → deixa para os botões de sincronizar
                     $nova->update([
                         'google_sync_status' => 'pending',
                         'google_sync_error'  => null,
@@ -678,7 +702,8 @@ class SessaoController extends Controller
 
         AuditHelper::log('gerou_recorrencias', "Criou {$criadas} recorrências a partir da sessão ID {$sessaoOriginal->id}");
 
-        return redirect()->route('sessoes.index')->with('success', "{$criadas} sessão(ões) recorrente(s) criada(s) com sucesso!");
+        return redirect()->route('sessoes.index')
+            ->with('success', "{$criadas} sessão(ões) recorrente(s) criada(s) com sucesso!");
     }
 
     public function gerarRecorrenciasJson(Request $request)
@@ -704,9 +729,9 @@ class SessaoController extends Controller
         for ($i = 1; $i <= $semanas; $i++) {
             $novaDataHora = Carbon::parse($sessaoOriginal->data_hora)->addWeeks($i);
             $inicio = $novaDataHora->copy();
-            $fim    = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
+            $fim = $inicio->copy()->addMinutes($sessaoOriginal->duracao);
 
-            $conflito = Sessao::whereHas('paciente', fn($q) => $q->where('user_id', auth()->id()))
+            $conflito = Sessao::whereHas('paciente', fn ($q) => $q->where('user_id', auth()->id()))
                 ->where('data_hora', '<', $fim)
                 ->whereRaw("ADDTIME(data_hora, SEC_TO_TIME(duracao * 60)) > ?", [$inicio])
                 ->exists();
@@ -727,6 +752,7 @@ class SessaoController extends Controller
                 if ($user->google_connected) {
                     try {
                         $gcal = app(GoogleCalendarService::class);
+
                         $eventId = $gcal->createEvent($user, [
                             'summary'     => "Sessão com {$nova->paciente->nome}",
                             'description' => $nova->observacoes ?? null,
@@ -734,6 +760,7 @@ class SessaoController extends Controller
                             'end'         => $fim,
                             'attendees'   => $nova->paciente->email ? [['email' => $nova->paciente->email]] : [],
                         ]);
+
                         $nova->update([
                             'google_event_id'    => $eventId,
                             'google_sync_status' => 'ok',
@@ -754,7 +781,7 @@ class SessaoController extends Controller
         AuditHelper::log('gerou_recorrencias_json', "Criou {$criadas} recorrências via API para a sessão ID {$sessaoOriginal->id}");
 
         return response()->json([
-            'message' => "{$criadas} sessão(ões) recorrente(s) criada(s) com sucesso!"
+            'message' => "{$criadas} sessão(ões) recorrente(s) criada(s) com sucesso!",
         ], 201);
     }
 
@@ -775,13 +802,14 @@ class SessaoController extends Controller
             ->findOrFail($id);
 
         $meetUrl = null;
+
         if ($sessao->google_event_id && $request->user()?->google_connected) {
-            $gcal  = app(\App\Services\GoogleCalendarService::class);
+            $gcal = app(GoogleCalendarService::class);
+
             try {
-                $event   = $gcal->getEvent($request->user(), $sessao->google_event_id);
+                $event = $gcal->getEvent($request->user(), $sessao->google_event_id);
                 $meetUrl = $gcal->extractMeetUrl($event);
             } catch (\Throwable $e) {
-                // silencie/registre se quiser
             }
         }
 
@@ -794,17 +822,120 @@ class SessaoController extends Controller
             'valor'          => $sessao->valor,
             'duracao'        => (int) $sessao->duracao,
             'foi_pago'       => (bool) $sessao->foi_pago,
-            'moeda'          => $sessao->moeda, // <-- NOVO
+            'moeda'          => $sessao->moeda,
             'meet_url'       => $meetUrl,
         ]);
+    }
+
+    public function whatsappLink($id)
+    {
+        $sessao = Sessao::with('paciente')->findOrFail($id);
+
+        if (!$sessao->paciente || $sessao->paciente->user_id !== auth()->id()) {
+            abort(403, 'ACESSO NEGADO À SESSÃO.');
+        }
+
+        $telefone = $this->normalizarTelefoneWhatsapp($sessao->paciente->telefone ?? null);
+
+        if (!$telefone) {
+            return redirect()->back()->with('error', 'O paciente não possui um telefone válido para WhatsApp.');
+        }
+
+        $dataBase = $sessao->data_hora_original ?: $sessao->data_hora;
+
+        if (!$dataBase) {
+            return redirect()->back()->with('error', 'A sessão não possui data/hora definida para envio do lembrete.');
+        }
+
+        $dataSessao = Carbon::parse($dataBase, 'America/Sao_Paulo');
+
+        $mensagem = $this->montarMensagemWhatsapp($sessao, $dataSessao);
+        $url = 'https://wa.me/' . $telefone . '?text=' . urlencode($mensagem);
+
+        if ((int) $sessao->lembrete_enviado !== 1) {
+            $sessao->update([
+                'lembrete_enviado' => 1,
+            ]);
+        }
+
+        AuditHelper::log('whatsapp_lembrete_sessao', 'Abriu link de WhatsApp da sessão ID ' . $sessao->id);
+
+        return redirect()->away($url);
+    }
+
+    public function atualizarStatusConfirmacao(Request $request, $id)
+    {
+        $sessao = Sessao::with('paciente')->findOrFail($id);
+
+        if (!$sessao->paciente || $sessao->paciente->user_id !== auth()->id()) {
+            abort(403, 'ACESSO NEGADO À SESSÃO.');
+        }
+
+        $dados = $request->validate([
+            'status_confirmacao' => 'required|in:PENDENTE,CONFIRMADA,CANCELADA,REMARCAR',
+        ]);
+
+        $statusAntigo = $sessao->status_confirmacao;
+
+        $sessao->update([
+            'status_confirmacao' => $dados['status_confirmacao'],
+        ]);
+
+        if ($statusAntigo !== 'CONFIRMADA' && $sessao->status_confirmacao === 'CONFIRMADA') {
+            event(new \App\Events\SessaoConfirmada($sessao));
+        }
+
+        AuditHelper::log(
+            'updated_status_confirmacao_sessao',
+            'Atualizou status de confirmação da sessão ID ' . $sessao->id . ' para ' . $sessao->status_confirmacao
+        );
+
+        return redirect()->back()->with('success', 'Status de confirmação atualizado com sucesso.');
+    }
+
+    private function normalizarTelefoneWhatsapp(?string $telefone): ?string
+    {
+        if (!$telefone) {
+            return null;
+        }
+
+        $numero = preg_replace('/\D+/', '', $telefone);
+
+        if (!$numero) {
+            return null;
+        }
+
+        if (str_starts_with($numero, '0')) {
+            $numero = ltrim($numero, '0');
+        }
+
+        if (!str_starts_with($numero, '55')) {
+            $numero = '55' . $numero;
+        }
+
+        if (strlen($numero) < 12 || strlen($numero) > 13) {
+            return null;
+        }
+
+        return $numero;
+    }
+
+    private function montarMensagemWhatsapp(Sessao $sessao, Carbon $dataSessao): string
+    {
+        $nome = trim($sessao->paciente->nome ?? 'Paciente');
+        $dia = $dataSessao->format('d/m/Y');
+        $hora = $dataSessao->format('H:i');
+
+        return "Olá, {$nome}. Passando para lembrar da sua sessão agendada para o dia {$dia} às {$hora}. Caso precise remarcar, me avise por aqui.";
     }
 
     private function queryBaseSync($apenasFuturas = true)
     {
         $userId = auth()->id();
+
         $q = Sessao::with('paciente')
-            ->whereHas('paciente', fn($qq) => $qq->where('user_id', $userId))
-            ->whereIn('google_sync_status', ['pending','error'])
+            ->whereHas('paciente', fn ($qq) => $qq->where('user_id', $userId))
+            ->whereIn('google_sync_status', ['pending', 'error'])
             ->whereNotNull('data_hora');
 
         if ($apenasFuturas) {
@@ -817,39 +948,41 @@ class SessaoController extends Controller
     private function upsertEventoGoogle(\App\Models\Sessao $sessao, \App\Models\User $user): array
     {
         try {
-            $gcal = app(\App\Services\GoogleCalendarService::class);
+            $gcal = app(GoogleCalendarService::class);
 
-            // cancelada ou REMARCAR sem data → remover do Google e dar ok local
             $cancelada = $sessao->status_confirmacao === 'CANCELADA';
             $remarcarSemData = ($sessao->status_confirmacao === 'REMARCAR') && empty($sessao->data_hora);
+
             if ($cancelada || $remarcarSemData) {
                 if ($sessao->google_event_id) {
                     $gcal->deleteEvent($user, $sessao->google_event_id);
                     $sessao->google_event_id = null;
                 }
+
                 $sessao->google_sync_status = 'ok';
-                $sessao->google_sync_error  = null;
+                $sessao->google_sync_error = null;
                 $sessao->save();
+
                 return ['ok' => true, 'op' => $cancelada ? 'deleted_cancel' : 'skipped_no_date'];
             }
 
-            // sem data (qualquer outra situação) → nada para sincronizar
             if (!$sessao->data_hora) {
                 if ($sessao->google_event_id) {
                     $gcal->deleteEvent($user, $sessao->google_event_id);
                     $sessao->google_event_id = null;
                 }
+
                 $sessao->google_sync_status = 'ok';
-                $sessao->google_sync_error  = null;
+                $sessao->google_sync_error = null;
                 $sessao->save();
+
                 return ['ok' => true, 'op' => 'skipped_no_date'];
             }
 
-            $inicio = \Illuminate\Support\Carbon::parse($sessao->data_hora);
-            $fim    = $inicio->copy()->addMinutes((int) $sessao->duracao);
+            $inicio = Carbon::parse($sessao->data_hora);
+            $fim = $inicio->copy()->addMinutes((int) $sessao->duracao);
 
             if ($sessao->google_event_id) {
-                // update
                 $gcal->updateEvent($user, $sessao->google_event_id, [
                     'summary'     => "Sessão com {$sessao->paciente->nome}",
                     'description' => $sessao->observacoes ?? null,
@@ -857,47 +990,52 @@ class SessaoController extends Controller
                     'end'         => $fim,
                 ]);
             } else {
-                // create
                 $eventId = $gcal->createEvent($user, [
                     'summary'     => "Sessão com {$sessao->paciente->nome}",
                     'description' => $sessao->observacoes ?? null,
                     'start'       => $inicio,
                     'end'         => $fim,
-                    'attendees'   => $sessao->paciente->email ? [['email'=>$sessao->paciente->email]] : [],
+                    'attendees'   => $sessao->paciente->email ? [['email' => $sessao->paciente->email]] : [],
                     'conference'  => true,
                 ]);
+
                 $sessao->google_event_id = $eventId;
             }
 
             $sessao->google_sync_status = 'ok';
-            $sessao->google_sync_error  = null;
+            $sessao->google_sync_error = null;
             $sessao->save();
 
-            return ['ok' => true, 'op' => $sessao->wasChanged('google_event_id') ? 'created' : 'updated'];
-
-        } catch (\Google\Service\Exception $ge) {
+            return [
+                'ok' => true,
+                'op' => $sessao->wasChanged('google_event_id') ? 'created' : 'updated',
+            ];
+        } catch (GoogleServiceException $ge) {
             $code = $ge->getCode();
-            $msg  = substr($ge->getMessage() ?? 'Google error', 0, 500);
+            $msg = substr($ge->getMessage() ?? 'Google error', 0, 500);
+
             $sessao->update([
                 'google_sync_status' => 'error',
                 'google_sync_error'  => $msg,
             ]);
+
             if (in_array($code, [403, 429], true) && str_contains(strtolower($msg), 'rate')) {
                 return ['ok' => false, 'op' => 'rate_limit', 'msg' => $msg];
             }
-            return ['ok' => false, 'op' => 'error', 'msg' => $msg];
 
+            return ['ok' => false, 'op' => 'error', 'msg' => $msg];
         } catch (\Throwable $e) {
             $msg = substr($e->getMessage() ?? 'Erro', 0, 500);
+
             $sessao->update([
                 'google_sync_status' => 'error',
                 'google_sync_error'  => $msg,
             ]);
+
             return ['ok' => false, 'op' => 'error', 'msg' => $msg];
         }
     }
 
-    // --- endpoints WEB (redirect) ---
     public function syncFuturas(Request $request)
     {
         return $this->runSync($request, true, false);
@@ -908,7 +1046,6 @@ class SessaoController extends Controller
         return $this->runSync($request, false, false);
     }
 
-    // --- endpoints JSON (mantidos, mas sem alterações funcionais extras) ---
     public function syncFuturasJson(Request $request)
     {
         return $this->runSync($request, true, true);
@@ -919,48 +1056,73 @@ class SessaoController extends Controller
         return $this->runSync($request, false, true);
     }
 
-    // --- núcleo do processamento em lote ---
     private function runSync(Request $request, bool $apenasFuturas, bool $json)
     {
         $user = $request->user();
 
         if (!$user->google_connected) {
             $msg = 'Conecte sua conta do Google para sincronizar.';
+
             return $json
-                ? response()->json(['ok'=>false, 'synced'=>0, 'errors'=>[$msg]], 400)
+                ? response()->json(['ok' => false, 'synced' => 0, 'errors' => [$msg]], 400)
                 : back()->with('error', $msg);
         }
 
-        $synced = 0; $created = 0; $updated = 0; $deleted = 0; $skipped = 0;
-        $errors = []; $rateLimited = false;
+        $synced = 0;
+        $created = 0;
+        $updated = 0;
+        $deleted = 0;
+        $skipped = 0;
+        $errors = [];
+        $rateLimited = false;
 
-        $this->queryBaseSync($apenasFuturas)->chunkById(100, function($chunk) use ($user, &$synced,&$created,&$updated,&$deleted,&$skipped,&$errors,&$rateLimited) {
-            foreach ($chunk as $sessao) {
-                $res = $this->upsertEventoGoogle($sessao, $user);
-                if ($res['ok']) {
-                    $synced++;
-                    if ($res['op'] === 'created')  $created++;
-                    if ($res['op'] === 'updated')  $updated++;
-                    if ($res['op'] === 'deleted' || $res['op'] === 'deleted_cancel')  $deleted++;
-                    if ($res['op'] === 'skipped_no_date') $skipped++;
-                } else {
-                    $errors[] = "Sessão #{$sessao->id}: " . ($res['msg'] ?? 'erro');
-                    if (($res['op'] ?? '') === 'rate_limit') {
-                        $rateLimited = true;
-                        break;
+        $this->queryBaseSync($apenasFuturas)->chunkById(
+            100,
+            function ($chunk) use ($user, &$synced, &$created, &$updated, &$deleted, &$skipped, &$errors, &$rateLimited) {
+                foreach ($chunk as $sessao) {
+                    $res = $this->upsertEventoGoogle($sessao, $user);
+
+                    if ($res['ok']) {
+                        $synced++;
+
+                        if ($res['op'] === 'created') {
+                            $created++;
+                        }
+
+                        if ($res['op'] === 'updated') {
+                            $updated++;
+                        }
+
+                        if ($res['op'] === 'deleted' || $res['op'] === 'deleted_cancel') {
+                            $deleted++;
+                        }
+
+                        if ($res['op'] === 'skipped_no_date') {
+                            $skipped++;
+                        }
+                    } else {
+                        $errors[] = "Sessão #{$sessao->id}: " . ($res['msg'] ?? 'erro');
+
+                        if (($res['op'] ?? '') === 'rate_limit') {
+                            $rateLimited = true;
+                            break;
+                        }
                     }
                 }
+
+                return !$rateLimited;
             }
-            return !$rateLimited;
-        });
+        );
 
         $summary = "Sincronizadas: {$synced} (criadas {$created}, atualizadas {$updated}, deletadas {$deleted}, puladas {$skipped})";
+
         if ($rateLimited) {
             $errors[] = 'Limite de taxa do Google atingido. Tente novamente em alguns minutos.';
         }
 
         if ($json) {
             $status = ($synced > 0 || empty($errors)) ? 200 : 207;
+
             return response()->json([
                 'ok'      => empty($errors),
                 'synced'  => $synced,
