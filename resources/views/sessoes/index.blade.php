@@ -4,11 +4,13 @@
 
 @section('content')
 <div class="container">
-    <h2 class="mb-3">Sessões</h2>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <h2 class="mb-0">Sessões</h2>
 
-    <a href="{{ route('sessoes.create') }}" class="btn btn-primary mb-3 btn-nova-sessao">
-        Nova Sessão
-    </a>
+        <a href="{{ route('sessoes.create') }}" class="btn btn-primary btn-nova-sessao">
+            Nova Sessão
+        </a>
+    </div>
 
     {{-- Filtros --}}
     <div class="card p-3 mb-4 shadow-sm">
@@ -55,8 +57,13 @@
 
             <div class="col-12 col-md-2">
                 <label class="form-label small text-muted fw-semibold mb-1">Buscar</label>
-                <input type="text" name="busca" class="form-control form-control-sm"
-                    placeholder="Nome, CPF ou e-mail" value="{{ request('busca') }}">
+                <input
+                    type="text"
+                    name="busca"
+                    class="form-control form-control-sm"
+                    placeholder="Nome, CPF, telefone ou e-mail"
+                    value="{{ request('busca') }}"
+                >
             </div>
 
             <div class="col-12 col-md-2 d-flex gap-2">
@@ -69,31 +76,34 @@
     {{-- Exportações + Importação --}}
     <div class="mb-4 d-flex flex-wrap gap-2">
         <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'pdf'])) }}"
-        class="btn btn-danger shadow-sm no-spinner-on-download">
-        <i class="bi bi-file-earmark-pdf"></i> PDF
+           class="btn btn-danger shadow-sm no-spinner-on-download">
+            <i class="bi bi-file-earmark-pdf"></i> PDF
         </a>
+
         <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'excel'])) }}"
-        class="btn btn-success shadow-sm no-spinner-on-download">
-        <i class="bi bi-file-earmark-excel"></i> Excel
-        </a>
-        <a href="{{ route('sessoes.importar.view') }}" 
-        class="btn btn-outline-primary shadow-sm">
-        <i class="bi bi-upload"></i> Importar sessões em massa
+           class="btn btn-success shadow-sm no-spinner-on-download">
+            <i class="bi bi-file-earmark-excel"></i> Excel
         </a>
 
+        <a href="{{ route('sessoes.importar.view') }}"
+           class="btn btn-outline-primary shadow-sm">
+            <i class="bi bi-upload"></i> Importar sessões em massa
+        </a>
     </div>
-
 
     {{-- Badges de Filtros Ativos --}}
     @if(request()->filled('foi_pago') || request()->filled('status') || request()->filled('periodo') || request()->filled('busca'))
         <div class="mb-3">
             <span class="me-2">🔎 <strong>Filtros ativos:</strong></span>
+
             @if(request()->filled('foi_pago'))
                 <span class="badge bg-info text-dark me-1">💰 Pago: {{ request('foi_pago') }}</span>
             @endif
+
             @if(request()->filled('status') && request('status') !== 'Todos')
                 <span class="badge bg-warning text-dark me-1">📋 Status: {{ ucfirst(strtolower(request('status'))) }}</span>
             @endif
+
             @if(request()->filled('periodo'))
                 @php
                     $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
@@ -106,14 +116,36 @@
                 @endphp
                 <span class="badge bg-primary me-1">🕐 {{ $dataBadge }}</span>
             @endif
+
             @if(request()->filled('busca'))
-                <span class="badge bg-secondary me-1">🔍 Paciente: {{ request('busca') }}</span>
+                <span class="badge bg-secondary me-1">🔍 Busca: {{ request('busca') }}</span>
             @endif
         </div>
     @endif
 
+    {{-- Resumo rápido --}}
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="small text-muted fw-semibold">Sessões marcadas</div>
+                    <div class="fs-4 fw-bold">{{ $sessoesMarcadas->total() }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="small text-muted fw-semibold">Sessões realizadas</div>
+                    <div class="fs-4 fw-bold">{{ $sessoesRealizadas->total() }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Abas --}}
-    <ul class="nav nav-tabs flex-column flex-md-row mb-4">
+    <ul class="nav nav-tabs flex-column flex-md-row mb-4" id="abasSessoes">
         <li class="nav-item">
             <a class="nav-link active text-center" data-bs-toggle="tab" href="#futuras">📅 Sessões Marcadas</a>
         </li>
@@ -125,12 +157,15 @@
     <div class="tab-content">
         <div class="tab-pane fade show active" id="futuras">
             @include('sessoes.partials.tabela', ['sessoes' => $sessoesMarcadas])
+
             <div class="mt-3">
                 {{ $sessoesMarcadas->appends(request()->except('page'))->fragment('futuras')->links() }}
             </div>
         </div>
+
         <div class="tab-pane fade" id="realizadas">
             @include('sessoes.partials.tabela', ['sessoes' => $sessoesRealizadas])
+
             <div class="mt-3">
                 {{ $sessoesRealizadas->appends(request()->except('page'))->fragment('realizadas')->links() }}
             </div>
@@ -143,14 +178,24 @@
             <form method="POST" action="{{ route('sessoes.gerarRecorrencias') }}">
                 @csrf
                 <input type="hidden" name="sessao_id" id="inputSessaoId">
+
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalRecorrenciaLabel">Criar Sessões Recorrentes</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
+
                     <div class="modal-body">
                         <label for="semanas" class="form-label fw-bold">Quantas semanas deseja repetir?</label>
-                        <input type="number" name="semanas" id="semanas" class="form-control mb-3" min="1" required placeholder="Ex: 4">
+                        <input
+                            type="number"
+                            name="semanas"
+                            id="semanas"
+                            class="form-control mb-3"
+                            min="1"
+                            required
+                            placeholder="Ex: 4"
+                        >
 
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="foi_pago" id="foi_pago">
@@ -159,6 +204,7 @@
                             </label>
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Criar Recorrências</button>
@@ -177,62 +223,24 @@
         Swal.fire({
             icon: 'success',
             title: 'Sucesso!',
-            text: '{{ session('success') }}',
+            text: @json(session('success')),
             timer: 3000,
             showConfirmButton: false
         });
     @endif
 
-    // Confirmação preservando filtros e aba ativa
-    document.querySelectorAll('.form-excluir').forEach(form => {
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const abaAtiva = localStorage.getItem('abaAtivaSessao') || 'futuras';
-            const queryString = urlParams.toString();
-
-            let inputQuery = form.querySelector('input[name="query_string"]');
-            if (!inputQuery) {
-                inputQuery = document.createElement('input');
-                inputQuery.type = 'hidden';
-                inputQuery.name = 'query_string';
-                form.appendChild(inputQuery);
-            }
-            inputQuery.value = queryString;
-
-            let inputAba = form.querySelector('input[name="aba"]');
-            if (!inputAba) {
-                inputAba = document.createElement('input');
-                inputAba.type = 'hidden';
-                inputAba.name = 'aba';
-                form.appendChild(inputAba);
-            }
-            inputAba.value = abaAtiva.replace('#', '');
-
-            Swal.fire({
-                title: 'Tem certeza?',
-                text: "Essa ação não poderá ser desfeita.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sim, excluir!',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.close();
-                    setTimeout(() => {
-                        if (typeof showSpinner === 'function') showSpinner();
-                        form.submit();
-                    }, 300);
-                }
-            });
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Atenção',
+            text: @json(session('error')),
+            confirmButtonText: 'Ok'
         });
-    });
+    @endif
 
     document.addEventListener('DOMContentLoaded', function () {
         const modal = document.getElementById('modalRecorrencia');
+
         if (modal) {
             modal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
@@ -244,12 +252,99 @@
         const abaAtiva = localStorage.getItem('abaAtivaSessao');
         if (abaAtiva) {
             const aba = document.querySelector(`a[data-bs-toggle="tab"][href="${abaAtiva}"]`);
-            if (aba) new bootstrap.Tab(aba).show();
+            if (aba) {
+                new bootstrap.Tab(aba).show();
+            }
         }
 
         document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
             tab.addEventListener('shown.bs.tab', function (e) {
                 localStorage.setItem('abaAtivaSessao', e.target.getAttribute('href'));
+            });
+        });
+
+        document.querySelectorAll('.form-excluir').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const abaAtiva = localStorage.getItem('abaAtivaSessao') || '#futuras';
+                const queryString = urlParams.toString();
+
+                let inputQuery = form.querySelector('input[name="query_string"]');
+                if (!inputQuery) {
+                    inputQuery = document.createElement('input');
+                    inputQuery.type = 'hidden';
+                    inputQuery.name = 'query_string';
+                    form.appendChild(inputQuery);
+                }
+                inputQuery.value = queryString;
+
+                let inputAba = form.querySelector('input[name="aba"]');
+                if (!inputAba) {
+                    inputAba = document.createElement('input');
+                    inputAba.type = 'hidden';
+                    inputAba.name = 'aba';
+                    form.appendChild(inputAba);
+                }
+                inputAba.value = abaAtiva.replace('#', '');
+
+                Swal.fire({
+                    title: 'Tem certeza?',
+                    text: 'Essa ação não poderá ser desfeita.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sim, excluir!',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.close();
+
+                        setTimeout(() => {
+                            if (typeof showSpinner === 'function') {
+                                showSpinner();
+                            }
+                            form.submit();
+                        }, 300);
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.form-status-confirmacao').forEach(form => {
+            const select = form.querySelector('select[name="status_confirmacao"]');
+
+            if (!select) {
+                return;
+            }
+
+            select.addEventListener('change', function () {
+                const textoSelecionado = this.options[this.selectedIndex]?.text || 'novo status';
+
+                Swal.fire({
+                    title: 'Atualizar confirmação?',
+                    text: `Deseja alterar o status para "${textoSelecionado}"?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sim, atualizar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    } else {
+                        this.value = this.dataset.current || 'PENDENTE';
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.btn-whatsapp-lembrete').forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (typeof showSpinner === 'function') {
+                    showSpinner();
+                }
             });
         });
     });
