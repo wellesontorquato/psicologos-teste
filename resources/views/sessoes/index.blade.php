@@ -3,156 +3,211 @@
 @section('title', 'Sessões | PsiGestor')
 
 @section('content')
-<div class="container">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-        <h2 class="mb-0">Sessões</h2>
+<div class="container py-3 sessoes-page">
+    <div class="sessoes-hero card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 p-lg-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <span class="sessoes-kicker">Gestão clínica</span>
+                    <h1 class="sessoes-title mb-2">Sessões</h1>
+                    <p class="sessoes-subtitle mb-0">
+                        Organize atendimentos, acompanhe confirmações e envie lembretes com mais agilidade.
+                    </p>
+                </div>
 
-        <a href="{{ route('sessoes.create') }}" class="btn btn-primary btn-nova-sessao">
-            Nova Sessão
-        </a>
-    </div>
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <a href="{{ route('sessoes.importar.view') }}" class="btn btn-outline-primary shadow-sm">
+                        <i class="bi bi-upload me-1"></i> Importar
+                    </a>
 
-    {{-- Filtros --}}
-    <div class="card p-3 mb-4 shadow-sm">
-        <form method="GET" class="row g-3 align-items-end">
-
-            <div class="col-12 col-md-2">
-                <label class="form-label small text-muted fw-semibold mb-1">Pago?</label>
-                <select name="foi_pago" class="form-select form-select-sm">
-                    <option value="">Todos</option>
-                    <option value="Sim" {{ request('foi_pago') == 'Sim' ? 'selected' : '' }}>Sim</option>
-                    <option value="Não" {{ request('foi_pago') == 'Não' ? 'selected' : '' }}>Não</option>
-                </select>
+                    <a href="{{ route('sessoes.create') }}" class="btn btn-primary shadow-sm btn-nova-sessao">
+                        <i class="bi bi-plus-lg me-1"></i> Nova Sessão
+                    </a>
+                </div>
             </div>
-
-            <div class="col-12 col-md-2">
-                <label class="form-label small text-muted fw-semibold mb-1">Status</label>
-                <select name="status" class="form-select form-select-sm">
-                    <option value="Todos">Todos</option>
-                    <option value="CONFIRMADA" {{ request('status') == 'CONFIRMADA' ? 'selected' : '' }}>Confirmada</option>
-                    <option value="REMARCAR" {{ request('status') == 'REMARCAR' ? 'selected' : '' }}>Remarcar</option>
-                    <option value="REMARCADO" {{ request('status') == 'REMARCADO' ? 'selected' : '' }}>Remarcado</option>
-                    <option value="CANCELADA" {{ request('status') == 'CANCELADA' ? 'selected' : '' }}>Cancelada</option>
-                    <option value="PENDENTE" {{ request('status') == 'PENDENTE' ? 'selected' : '' }}>Pendente</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-md-2">
-                <label class="form-label small text-muted fw-semibold mb-1">Período</label>
-                <select name="periodo" class="form-select form-select-sm">
-                    <option value="">Todos</option>
-                    <option value="hoje" {{ request('periodo') == 'hoje' ? 'selected' : '' }}>Hoje</option>
-                    <option value="semana" {{ request('periodo') == 'semana' ? 'selected' : '' }}>Esta semana</option>
-                    <option value="proxima" {{ request('periodo') == 'proxima' ? 'selected' : '' }}>Próxima semana</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-md-2">
-                <label class="form-label small text-muted fw-semibold mb-1">Ordenar</label>
-                <select name="ordenar" class="form-select form-select-sm">
-                    <option value="mais_recente" {{ request('ordenar') == 'mais_recente' ? 'selected' : '' }}>Mais recente</option>
-                    <option value="mais_antigo" {{ request('ordenar') == 'mais_antigo' ? 'selected' : '' }}>Mais antigo</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-md-2">
-                <label class="form-label small text-muted fw-semibold mb-1">Buscar</label>
-                <input
-                    type="text"
-                    name="busca"
-                    class="form-control form-control-sm"
-                    placeholder="Nome, CPF, telefone ou e-mail"
-                    value="{{ request('busca') }}"
-                >
-            </div>
-
-            <div class="col-12 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-sm btn-outline-secondary w-100" title="Aplicar filtros">🔍</button>
-                <a href="{{ route('sessoes.index') }}" class="btn btn-sm btn-outline-dark w-100" title="Limpar filtros">❌</a>
-            </div>
-        </form>
-    </div>
-
-    {{-- Exportações + Importação --}}
-    <div class="mb-4 d-flex flex-wrap gap-2">
-        <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'pdf'])) }}"
-           class="btn btn-danger shadow-sm no-spinner-on-download">
-            <i class="bi bi-file-earmark-pdf"></i> PDF
-        </a>
-
-        <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'excel'])) }}"
-           class="btn btn-success shadow-sm no-spinner-on-download">
-            <i class="bi bi-file-earmark-excel"></i> Excel
-        </a>
-
-        <a href="{{ route('sessoes.importar.view') }}"
-           class="btn btn-outline-primary shadow-sm">
-            <i class="bi bi-upload"></i> Importar sessões em massa
-        </a>
-    </div>
-
-    {{-- Badges de Filtros Ativos --}}
-    @if(request()->filled('foi_pago') || request()->filled('status') || request()->filled('periodo') || request()->filled('busca'))
-        <div class="mb-3">
-            <span class="me-2">🔎 <strong>Filtros ativos:</strong></span>
-
-            @if(request()->filled('foi_pago'))
-                <span class="badge bg-info text-dark me-1">💰 Pago: {{ request('foi_pago') }}</span>
-            @endif
-
-            @if(request()->filled('status') && request('status') !== 'Todos')
-                <span class="badge bg-warning text-dark me-1">📋 Status: {{ ucfirst(strtolower(request('status'))) }}</span>
-            @endif
-
-            @if(request()->filled('periodo'))
-                @php
-                    $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
-                    $dataBadge = match(request('periodo')) {
-                        'hoje' => 'Hoje: ' . $hoje->format('d/m'),
-                        'semana' => 'Semana: ' . $hoje->copy()->startOfWeek()->format('d/m') . ' – ' . $hoje->copy()->endOfWeek()->format('d/m'),
-                        'proxima' => 'Próxima: ' . $hoje->copy()->addWeek()->startOfWeek()->format('d/m') . ' – ' . $hoje->copy()->addWeek()->endOfWeek()->format('d/m'),
-                        default => ucfirst(request('periodo')),
-                    };
-                @endphp
-                <span class="badge bg-primary me-1">🕐 {{ $dataBadge }}</span>
-            @endif
-
-            @if(request()->filled('busca'))
-                <span class="badge bg-secondary me-1">🔍 Busca: {{ request('busca') }}</span>
-            @endif
         </div>
-    @endif
+    </div>
 
     {{-- Resumo rápido --}}
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body py-3">
-                    <div class="small text-muted fw-semibold">Sessões marcadas</div>
-                    <div class="fs-4 fw-bold">{{ $sessoesMarcadas->total() }}</div>
+            <div class="card resumo-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="resumo-top">
+                        <span class="resumo-icon bg-primary-subtle text-primary">
+                            <i class="bi bi-calendar-check"></i>
+                        </span>
+                        <span class="resumo-label">Sessões marcadas</span>
+                    </div>
+                    <div class="resumo-value">{{ $sessoesMarcadas->total() }}</div>
+                    <div class="resumo-help">Próximos atendimentos e sessões pendentes.</div>
                 </div>
             </div>
         </div>
 
         <div class="col-12 col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body py-3">
-                    <div class="small text-muted fw-semibold">Sessões realizadas</div>
-                    <div class="fs-4 fw-bold">{{ $sessoesRealizadas->total() }}</div>
+            <div class="card resumo-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="resumo-top">
+                        <span class="resumo-icon bg-success-subtle text-success">
+                            <i class="bi bi-check2-circle"></i>
+                        </span>
+                        <span class="resumo-label">Sessões realizadas</span>
+                    </div>
+                    <div class="resumo-value">{{ $sessoesRealizadas->total() }}</div>
+                    <div class="resumo-help">Histórico dos atendimentos já ocorridos.</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Filtros --}}
+    <div class="card border-0 shadow-sm mb-4 filtros-card">
+        <div class="card-body p-3 p-lg-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div>
+                    <h2 class="filtros-title mb-1">Filtros</h2>
+                    <p class="filtros-subtitle mb-0">Refine a visualização das suas sessões.</p>
+                </div>
+            </div>
+
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label class="form-label small text-muted fw-semibold mb-1">Pago?</label>
+                    <select name="foi_pago" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        <option value="Sim" {{ request('foi_pago') == 'Sim' ? 'selected' : '' }}>Sim</option>
+                        <option value="Não" {{ request('foi_pago') == 'Não' ? 'selected' : '' }}>Não</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label class="form-label small text-muted fw-semibold mb-1">Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="Todos">Todos</option>
+                        <option value="CONFIRMADA" {{ request('status') == 'CONFIRMADA' ? 'selected' : '' }}>Confirmada</option>
+                        <option value="REMARCAR" {{ request('status') == 'REMARCAR' ? 'selected' : '' }}>Remarcar</option>
+                        <option value="REMARCADO" {{ request('status') == 'REMARCADO' ? 'selected' : '' }}>Remarcado</option>
+                        <option value="CANCELADA" {{ request('status') == 'CANCELADA' ? 'selected' : '' }}>Cancelada</option>
+                        <option value="PENDENTE" {{ request('status') == 'PENDENTE' ? 'selected' : '' }}>Pendente</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label class="form-label small text-muted fw-semibold mb-1">Período</label>
+                    <select name="periodo" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        <option value="hoje" {{ request('periodo') == 'hoje' ? 'selected' : '' }}>Hoje</option>
+                        <option value="semana" {{ request('periodo') == 'semana' ? 'selected' : '' }}>Esta semana</option>
+                        <option value="proxima" {{ request('periodo') == 'proxima' ? 'selected' : '' }}>Próxima semana</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label class="form-label small text-muted fw-semibold mb-1">Ordenar</label>
+                    <select name="ordenar" class="form-select form-select-sm">
+                        <option value="mais_recente" {{ request('ordenar') == 'mais_recente' ? 'selected' : '' }}>Mais recente</option>
+                        <option value="mais_antigo" {{ request('ordenar') == 'mais_antigo' ? 'selected' : '' }}>Mais antigo</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-lg-3">
+                    <label class="form-label small text-muted fw-semibold mb-1">Buscar</label>
+                    <input
+                        type="text"
+                        name="busca"
+                        class="form-control form-control-sm"
+                        placeholder="Nome, CPF, telefone ou e-mail"
+                        value="{{ request('busca') }}"
+                    >
+                </div>
+
+                <div class="col-12 col-lg-1 d-grid d-lg-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary w-100" title="Aplicar filtros">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <a href="{{ route('sessoes.index') }}" class="btn btn-sm btn-outline-secondary w-100" title="Limpar filtros">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </form>
+
+            {{-- Badges de filtros ativos --}}
+            @if(request()->filled('foi_pago') || request()->filled('status') || request()->filled('periodo') || request()->filled('busca'))
+                <div class="filtros-ativos mt-3">
+                    <span class="small text-muted fw-semibold me-2">Filtros ativos:</span>
+
+                    @if(request()->filled('foi_pago'))
+                        <span class="badge rounded-pill text-bg-info">Pago: {{ request('foi_pago') }}</span>
+                    @endif
+
+                    @if(request()->filled('status') && request('status') !== 'Todos')
+                        <span class="badge rounded-pill text-bg-warning">Status: {{ ucfirst(strtolower(request('status'))) }}</span>
+                    @endif
+
+                    @if(request()->filled('periodo'))
+                        @php
+                            $hoje = \Carbon\Carbon::now('America/Sao_Paulo')->startOfDay();
+                            $dataBadge = match(request('periodo')) {
+                                'hoje' => 'Hoje: ' . $hoje->format('d/m'),
+                                'semana' => 'Semana: ' . $hoje->copy()->startOfWeek()->format('d/m') . ' – ' . $hoje->copy()->endOfWeek()->format('d/m'),
+                                'proxima' => 'Próxima: ' . $hoje->copy()->addWeek()->startOfWeek()->format('d/m') . ' – ' . $hoje->copy()->addWeek()->endOfWeek()->format('d/m'),
+                                default => ucfirst(request('periodo')),
+                            };
+                        @endphp
+                        <span class="badge rounded-pill text-bg-primary">{{ $dataBadge }}</span>
+                    @endif
+
+                    @if(request()->filled('busca'))
+                        <span class="badge rounded-pill text-bg-secondary">Busca: {{ request('busca') }}</span>
+                    @endif
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Exportações --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <div>
+                <h3 class="acoes-title mb-1">Exportação e utilitários</h3>
+                <p class="acoes-subtitle mb-0">Baixe relatórios ou faça importação em massa.</p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'pdf'])) }}"
+                   class="btn btn-danger shadow-sm no-spinner-on-download">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+                </a>
+
+                <a href="{{ route('sessoes.export', array_merge(request()->all(), ['format' => 'excel'])) }}"
+                   class="btn btn-success shadow-sm no-spinner-on-download">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Excel
+                </a>
+
+                <a href="{{ route('sessoes.importar.view') }}"
+                   class="btn btn-outline-primary shadow-sm">
+                    <i class="bi bi-upload me-1"></i> Importar sessões em massa
+                </a>
             </div>
         </div>
     </div>
 
     {{-- Abas --}}
-    <ul class="nav nav-tabs flex-column flex-md-row mb-4" id="abasSessoes">
-        <li class="nav-item">
-            <a class="nav-link active text-center" data-bs-toggle="tab" href="#futuras">📅 Sessões Marcadas</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-center" data-bs-toggle="tab" href="#realizadas">✅ Sessões Realizadas</a>
-        </li>
-    </ul>
+    <div class="sessoes-tabs-wrapper mb-4">
+        <ul class="nav nav-pills sessoes-tabs" id="abasSessoes">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#futuras">
+                    <i class="bi bi-calendar-event me-1"></i> Sessões Marcadas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#realizadas">
+                    <i class="bi bi-check2-square me-1"></i> Sessões Realizadas
+                </a>
+            </li>
+        </ul>
+    </div>
 
     <div class="tab-content">
         <div class="tab-pane fade show active" id="futuras">
@@ -174,19 +229,22 @@
 
     {{-- Modal Recorrência --}}
     <div class="modal fade" id="modalRecorrencia" tabindex="-1" aria-labelledby="modalRecorrenciaLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <form method="POST" action="{{ route('sessoes.gerarRecorrencias') }}">
                 @csrf
                 <input type="hidden" name="sessao_id" id="inputSessaoId">
 
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalRecorrenciaLabel">Criar Sessões Recorrentes</h5>
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <div>
+                            <h5 class="modal-title" id="modalRecorrenciaLabel">Criar sessões recorrentes</h5>
+                            <p class="text-muted small mb-0">Repita a sessão selecionada pelas próximas semanas.</p>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
 
-                    <div class="modal-body">
-                        <label for="semanas" class="form-label fw-bold">Quantas semanas deseja repetir?</label>
+                    <div class="modal-body pt-3">
+                        <label for="semanas" class="form-label fw-semibold">Quantas semanas deseja repetir?</label>
                         <input
                             type="number"
                             name="semanas"
@@ -199,15 +257,15 @@
 
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="foi_pago" id="foi_pago">
-                            <label class="form-check-label fw-bold" for="foi_pago">
-                                Marcar sessões como pagas?
+                            <label class="form-check-label fw-semibold" for="foi_pago">
+                                Marcar sessões como pagas
                             </label>
                         </div>
                     </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Criar Recorrências</button>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Criar recorrências</button>
                     </div>
                 </div>
             </form>
@@ -295,7 +353,7 @@
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
+                    cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Sim, excluir!',
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
@@ -316,9 +374,7 @@
         document.querySelectorAll('.form-status-confirmacao').forEach(form => {
             const select = form.querySelector('select[name="status_confirmacao"]');
 
-            if (!select) {
-                return;
-            }
+            if (!select) return;
 
             select.addEventListener('change', function () {
                 const textoSelecionado = this.options[this.selectedIndex]?.text || 'novo status';
@@ -349,4 +405,151 @@
         });
     });
 </script>
+
+<style>
+    .sessoes-page {
+        --sessoes-border: #e9ecef;
+        --sessoes-muted: #6c757d;
+        --sessoes-bg-soft: #f8f9fa;
+    }
+
+    .sessoes-hero {
+        background:
+            radial-gradient(circle at top right, rgba(13, 110, 253, 0.10), transparent 30%),
+            linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .sessoes-kicker {
+        display: inline-block;
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #0d6efd;
+        margin-bottom: .5rem;
+    }
+
+    .sessoes-title {
+        font-size: clamp(1.7rem, 2vw, 2.25rem);
+        font-weight: 800;
+        color: #212529;
+    }
+
+    .sessoes-subtitle {
+        color: var(--sessoes-muted);
+        max-width: 680px;
+    }
+
+    .resumo-card {
+        border-radius: 1rem;
+    }
+
+    .resumo-top {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        margin-bottom: 1rem;
+    }
+
+    .resumo-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: .85rem;
+        font-size: 1.1rem;
+    }
+
+    .resumo-label {
+        font-size: .92rem;
+        font-weight: 700;
+        color: #495057;
+    }
+
+    .resumo-value {
+        font-size: clamp(1.8rem, 2.2vw, 2.3rem);
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: .4rem;
+        color: #212529;
+    }
+
+    .resumo-help {
+        color: var(--sessoes-muted);
+        font-size: .92rem;
+    }
+
+    .filtros-card,
+    .sessoes-hero,
+    .resumo-card {
+        border-radius: 1rem;
+    }
+
+    .filtros-title,
+    .acoes-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .filtros-subtitle,
+    .acoes-subtitle {
+        color: var(--sessoes-muted);
+        font-size: .92rem;
+    }
+
+    .filtros-ativos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        align-items: center;
+    }
+
+    .sessoes-tabs-wrapper {
+        overflow-x: auto;
+        padding-bottom: .25rem;
+    }
+
+    .sessoes-tabs {
+        gap: .75rem;
+        flex-wrap: nowrap;
+    }
+
+    .sessoes-tabs .nav-link {
+        border: 0;
+        border-radius: 999px;
+        background: #fff;
+        color: #495057;
+        font-weight: 600;
+        padding: .8rem 1.1rem;
+        box-shadow: 0 .125rem .5rem rgba(0,0,0,.04);
+        white-space: nowrap;
+    }
+
+    .sessoes-tabs .nav-link.active {
+        background: #0d6efd;
+        color: #fff;
+        box-shadow: 0 .4rem 1rem rgba(13,110,253,.22);
+    }
+
+    .filtros-card .form-control,
+    .filtros-card .form-select,
+    .modal-content .form-control {
+        border-radius: .75rem;
+    }
+
+    .filtros-card .btn,
+    .sessoes-hero .btn,
+    .modal-content .btn {
+        border-radius: .75rem;
+    }
+
+    @media (max-width: 991.98px) {
+        .sessoes-hero .card-body,
+        .filtros-card .card-body {
+            padding: 1rem !important;
+        }
+    }
+</style>
 @endsection
