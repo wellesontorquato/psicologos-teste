@@ -1,5 +1,50 @@
 <h3 class="card-title">Informações do Perfil</h3>
 
+<style>
+    .profile-help-tooltip {
+        width: 22px;
+        height: 22px;
+        border: 0;
+        border-radius: 999px;
+        background: #e0ecff;
+        color: #1d4ed8;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 22px;
+        text-align: center;
+        cursor: pointer;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .2s ease;
+    }
+
+    .profile-help-tooltip:hover {
+        background: #bfdbfe;
+        color: #1e40af;
+    }
+
+    .profile-label-with-help {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .profile-label-with-help label {
+        margin-bottom: 0;
+    }
+
+    .profile-field-help {
+        display: block;
+        margin-top: 6px;
+        color: #64748b;
+        font-size: .85rem;
+        line-height: 1.35;
+    }
+</style>
+
 @php
     $user = auth()->user();
 
@@ -106,7 +151,7 @@
                readonly
                disabled>
 
-        <small style="display:block; margin-top:6px; color:#64748b;">
+        <small class="profile-field-help">
             O CPF não pode ser alterado pelo perfil.
         </small>
     </div>
@@ -153,20 +198,33 @@
     </div>
 
     <div class="form-group" id="registro-profissional-wrapper">
-        <label for="registro_profissional" id="registro-profissional-label">
-            Registro profissional
-        </label>
+        <div class="profile-label-with-help">
+            <label for="registro_profissional" id="registro-profissional-label">
+                Registro profissional
+            </label>
+
+            <button type="button"
+                    class="profile-help-tooltip"
+                    aria-label="Ajuda sobre registro profissional"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-container="body"
+                    data-bs-html="true"
+                    title="Informe o registro profissional com números, letras e traços, se houver, conforme consta no conselho. Exemplo para CRM: 12345-SP. Para CRP, preencha conforme consta no conselho ou no Carnê-Leão.">
+                ?
+            </button>
+        </div>
 
         <input type="text"
                id="registro_profissional"
                name="registro_profissional"
                value="{{ old('registro_profissional', $user->registro_profissional) }}"
                class="input-style @error('registro_profissional') is-invalid @enderror"
-               placeholder="Ex: CRP 06/000000"
+               placeholder="Ex: 15/7179 ou conforme consta no conselho"
                maxlength="30">
 
-        <small id="registro-profissional-ajuda" style="display:block; margin-top:6px; color:#64748b;">
-            Para psicólogo, informe o CRP. Para psiquiatra, informe o CRM.
+        <small id="registro-profissional-ajuda" class="profile-field-help">
+            Informe o registro profissional exatamente como consta no conselho ou no cadastro do Carnê-Leão.
         </small>
 
         @error('registro_profissional')
@@ -195,13 +253,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (tipo === 'psicologo') {
             registroLabel.textContent = 'CRP';
-            registroInput.placeholder = 'Ex: CRP 06/000000';
-            registroAjuda.textContent = 'Informe o número do CRP do profissional.';
+            registroInput.placeholder = 'Ex: 15/7179 ou conforme consta no conselho';
+            registroAjuda.textContent = 'Informe o CRP conforme consta no conselho ou no cadastro do Carnê-Leão.';
             registroInput.required = true;
         } else if (tipo === 'psiquiatra') {
             registroLabel.textContent = 'CRM';
-            registroInput.placeholder = 'Ex: CRM/SP 000000';
-            registroAjuda.textContent = 'Informe o número do CRM do profissional.';
+            registroInput.placeholder = 'Ex: 12345-SP';
+            registroAjuda.textContent = 'Informe o CRM com número, traço e sigla do estado, conforme consta no conselho.';
             registroInput.required = true;
         } else if (tipo === 'psicanalista') {
             registroLabel.textContent = 'Registro profissional';
@@ -210,8 +268,8 @@ document.addEventListener('DOMContentLoaded', function () {
             registroInput.required = false;
         } else {
             registroLabel.textContent = 'Registro profissional';
-            registroInput.placeholder = 'Ex: CRP 06/000000';
-            registroAjuda.textContent = 'Para psicólogo, informe o CRP. Para psiquiatra, informe o CRM.';
+            registroInput.placeholder = 'Informe conforme consta no conselho';
+            registroAjuda.textContent = 'Informe o registro profissional exatamente como consta no conselho ou no cadastro do Carnê-Leão.';
             registroInput.required = false;
         }
     }
@@ -219,6 +277,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (tipoSelect) {
         tipoSelect.addEventListener('change', atualizarCampoRegistro);
         atualizarCampoRegistro();
+    }
+
+    if (window.bootstrap && typeof bootstrap.Tooltip === 'function') {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     }
 });
 </script>
