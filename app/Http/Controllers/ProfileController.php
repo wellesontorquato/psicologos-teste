@@ -24,31 +24,97 @@ class ProfileController extends Controller
     }
 
     /**
-     * Atualização dos dados gerais de perfil (nome, email, etc).
+     * Atualização dos dados gerais de perfil.
+     *
+     * Agora também salva:
+     * - CPF
+     * - Data de nascimento
+     * - Tipo profissional
+     * - Registro profissional: CRP, CRM ou outro
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
         $validated = $request->validated();
 
-        $user->fill($validated);
+        /*
+         * Não usamos apenas $user->fill($validated) aqui para evitar depender
+         * totalmente do $fillable do Model User. Assim garantimos que os campos
+         * profissionais sejam salvos corretamente.
+         */
+        $dadosPerfil = [
+            'name'  => $validated['name'],
+            'email' => $validated['email'],
+        ];
+
+        if (array_key_exists('genero', $validated)) {
+            $dadosPerfil['genero'] = $validated['genero'];
+        }
+
+        if (array_key_exists('cpf', $validated)) {
+            $dadosPerfil['cpf'] = $validated['cpf']
+                ? preg_replace('/\D/', '', $validated['cpf'])
+                : null;
+        }
+
+        if (array_key_exists('data_nascimento', $validated)) {
+            $dadosPerfil['data_nascimento'] = $validated['data_nascimento'] ?: null;
+        }
+
+        if (array_key_exists('tipo_profissional', $validated)) {
+            $dadosPerfil['tipo_profissional'] = $validated['tipo_profissional'] ?: null;
+        }
+
+        if (array_key_exists('registro_profissional', $validated)) {
+            $dadosPerfil['registro_profissional'] = $validated['registro_profissional']
+                ? mb_strtoupper(trim($validated['registro_profissional']), 'UTF-8')
+                : null;
+        }
+
+        foreach ($dadosPerfil as $campo => $valor) {
+            $user->{$campo} = $valor;
+        }
 
         $camposAlterados = [];
+
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
             $camposAlterados[] = 'e-mail';
         }
+
         if ($user->isDirty('name')) {
             $camposAlterados[] = 'nome';
         }
+
         if ($user->isDirty('genero')) {
             $camposAlterados[] = 'gênero';
+        }
+
+        if ($user->isDirty('cpf')) {
+            $camposAlterados[] = 'CPF';
+        }
+
+        if ($user->isDirty('data_nascimento')) {
+            $camposAlterados[] = 'data de nascimento';
+        }
+
+        if ($user->isDirty('tipo_profissional')) {
+            $camposAlterados[] = 'tipo profissional';
+        }
+
+        if ($user->isDirty('registro_profissional')) {
+            $camposAlterados[] = 'registro profissional';
         }
 
         $user->save();
 
         if (!empty($camposAlterados)) {
-            AuditLogger::log('updated_profile', get_class($user), $user->id, 'Atualizou: ' . implode(', ', $camposAlterados));
+            AuditLogger::log(
+                'updated_profile',
+                get_class($user),
+                $user->id,
+                'Atualizou: ' . implode(', ', $camposAlterados)
+            );
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
@@ -62,13 +128,13 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'slug'          => ['required', 'string', 'max:255', 'unique:users,slug,' . $user->id],
-            'bio'           => ['nullable', 'string', 'max:2000'],
-            'whatsapp'      => ['nullable', 'string', 'max:20'],
-            'link_principal'=> ['nullable', 'string', 'max:255'],
-            'link_extra1'   => ['nullable', 'string', 'max:255'],
-            'link_extra2'   => ['nullable', 'string', 'max:255'],
-            'areas'         => ['nullable', 'array'],
+            'slug'           => ['required', 'string', 'max:255', 'unique:users,slug,' . $user->id],
+            'bio'            => ['nullable', 'string', 'max:2000'],
+            'whatsapp'       => ['nullable', 'string', 'max:20'],
+            'link_principal' => ['nullable', 'string', 'max:255'],
+            'link_extra1'    => ['nullable', 'string', 'max:255'],
+            'link_extra2'    => ['nullable', 'string', 'max:255'],
+            'areas'          => ['nullable', 'array'],
         ]);
 
         $user->slug = $request->slug;
