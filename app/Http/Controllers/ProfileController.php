@@ -26,11 +26,16 @@ class ProfileController extends Controller
     /**
      * Atualização dos dados gerais de perfil.
      *
-     * Agora também salva:
-     * - CPF
+     * Atualiza:
+     * - Nome
+     * - Email
+     * - Gênero
      * - Data de nascimento
      * - Tipo profissional
      * - Registro profissional: CRP, CRM ou outro
+     *
+     * Importante:
+     * - O CPF NÃO é atualizado por esta tela.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
@@ -38,39 +43,34 @@ class ProfileController extends Controller
         $validated = $request->validated();
 
         /*
-         * Não usamos apenas $user->fill($validated) aqui para evitar depender
-         * totalmente do $fillable do Model User. Assim garantimos que os campos
-         * profissionais sejam salvos corretamente.
+         * Proteção extra:
+         * Mesmo que algum formulário antigo envie tipo_profissional vazio,
+         * evitamos salvar NULL no banco e causar erro 500.
          */
+        $tipoProfissional = $validated['tipo_profissional'] ?? $request->input('tipo_profissional');
+
+        if (!$tipoProfissional || trim((string) $tipoProfissional) === '') {
+            return Redirect::route('profile.edit')
+                ->withErrors([
+                    'tipo_profissional' => 'Selecione o tipo profissional.',
+                ])
+                ->withInput();
+        }
+
         $dadosPerfil = [
-            'name'  => $validated['name'],
-            'email' => $validated['email'],
+            'name'                  => $validated['name'],
+            'email'                 => $validated['email'],
+            'genero'                => $validated['genero'] ?? null,
+            'data_nascimento'       => $validated['data_nascimento'] ?? null,
+            'tipo_profissional'     => $tipoProfissional,
+            'registro_profissional' => $validated['registro_profissional'] ?? null,
         ];
 
-        if (array_key_exists('genero', $validated)) {
-            $dadosPerfil['genero'] = $validated['genero'];
-        }
-
-        if (array_key_exists('cpf', $validated)) {
-            $dadosPerfil['cpf'] = $validated['cpf']
-                ? preg_replace('/\D/', '', $validated['cpf'])
-                : null;
-        }
-
-        if (array_key_exists('data_nascimento', $validated)) {
-            $dadosPerfil['data_nascimento'] = $validated['data_nascimento'] ?: null;
-        }
-
-        if (array_key_exists('tipo_profissional', $validated)) {
-            $dadosPerfil['tipo_profissional'] = $validated['tipo_profissional'] ?: null;
-        }
-
-        if (array_key_exists('registro_profissional', $validated)) {
-            $dadosPerfil['registro_profissional'] = $validated['registro_profissional']
-                ? mb_strtoupper(trim($validated['registro_profissional']), 'UTF-8')
-                : null;
-        }
-
+        /*
+         * Não atualizamos CPF aqui.
+         * O CPF deve ser definido em outro fluxo controlado,
+         * como cadastro inicial, validação administrativa ou tela específica.
+         */
         foreach ($dadosPerfil as $campo => $valor) {
             $user->{$campo} = $valor;
         }
@@ -88,10 +88,6 @@ class ProfileController extends Controller
 
         if ($user->isDirty('genero')) {
             $camposAlterados[] = 'gênero';
-        }
-
-        if ($user->isDirty('cpf')) {
-            $camposAlterados[] = 'CPF';
         }
 
         if ($user->isDirty('data_nascimento')) {
@@ -157,7 +153,12 @@ class ProfileController extends Controller
 
         $user->save();
 
-        AuditLogger::log('updated_landing', get_class($user), $user->id, 'Atualizou a página pública');
+        AuditLogger::log(
+            'updated_landing',
+            get_class($user),
+            $user->id,
+            'Atualizou a página pública'
+        );
 
         return Redirect::route('profile.edit', ['tab' => 'pagina-publica'])
             ->with('status', 'landing-updated');
@@ -169,7 +170,12 @@ class ProfileController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        AuditLogger::log('updated_password', get_class($user), $user->id, 'Atualizou a senha');
+        AuditLogger::log(
+            'updated_password',
+            get_class($user),
+            $user->id,
+            'Atualizou a senha'
+        );
 
         return Redirect::route('profile.edit')->with('status', 'password-updated');
     }
@@ -179,7 +185,10 @@ class ProfileController extends Controller
      */
     public function updatePhoto(Request $request): JsonResponse
     {
-        $request->validate(['photo' => 'required|image|max:2048']);
+        $request->validate([
+            'photo' => 'required|image|max:2048',
+        ]);
+
         $user = $request->user();
 
         // Remove a foto antiga (ignora falhas para ser idempotente)
@@ -198,9 +207,9 @@ class ProfileController extends Controller
             'profile-photos',
             $uploaded->hashName(),
             [
-                'disk' => 's3',
+                'disk'       => 's3',
                 'visibility' => 'public',
-                'headers' => [
+                'headers'    => [
                     'Cache-Control' => 'public, max-age=31536000, immutable',
                     'Content-Type'  => $uploaded->getMimeType(),
                 ],
@@ -211,12 +220,17 @@ class ProfileController extends Controller
         $user->save();
         $user->refresh();
 
-        AuditLogger::log('updated_photo', get_class($user), $user->id, 'Atualizou a foto de perfil');
+        AuditLogger::log(
+            'updated_photo',
+            get_class($user),
+            $user->id,
+            'Atualizou a foto de perfil'
+        );
 
         return response()->json([
             'success' => true,
             'message' => 'Foto atualizada com sucesso!',
-            'url' => $user->profile_photo_url, // accessor monta CDN + prefixo
+            'url'     => $user->profile_photo_url,
         ], 200);
     }
 
@@ -236,7 +250,12 @@ class ProfileController extends Controller
             $user->profile_photo_path = null;
             $user->save();
 
-            AuditLogger::log('deleted_photo', get_class($user), $user->id, 'Removeu a foto de perfil');
+            AuditLogger::log(
+                'deleted_photo',
+                get_class($user),
+                $user->id,
+                'Removeu a foto de perfil'
+            );
         }
 
         return Redirect::route('profile.edit')->with('status', 'photo-deleted');
@@ -250,7 +269,12 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        AuditLogger::log('deleted_account', get_class($user), $user->id, 'Conta excluída');
+        AuditLogger::log(
+            'deleted_account',
+            get_class($user),
+            $user->id,
+            'Conta excluída'
+        );
 
         Auth::logout();
         $user->delete();

@@ -12,6 +12,19 @@
             $dataNascimento = $user->data_nascimento;
         }
     }
+
+    $cpfNumeros = $user->cpf ? preg_replace('/\D/', '', (string) $user->cpf) : null;
+
+    if ($cpfNumeros && strlen($cpfNumeros) === 11) {
+        $cpfVisual = substr($cpfNumeros, 0, 3) . '.' .
+                     substr($cpfNumeros, 3, 3) . '.' .
+                     substr($cpfNumeros, 6, 3) . '-' .
+                     substr($cpfNumeros, 9, 2);
+    } else {
+        $cpfVisual = $user->cpf;
+    }
+
+    $tipoProfissionalAtual = old('tipo_profissional', $user->tipo_profissional);
 @endphp
 
 <form method="post" action="{{ route('profile.update') }}" class="space-y-4">
@@ -54,15 +67,19 @@
             <option value="" disabled {{ old('genero', $user->genero) === null ? 'selected' : '' }}>
                 Selecione seu gênero
             </option>
+
             <option value="masculino" {{ old('genero', $user->genero) === 'masculino' ? 'selected' : '' }}>
                 Masculino
             </option>
+
             <option value="feminino" {{ old('genero', $user->genero) === 'feminino' ? 'selected' : '' }}>
                 Feminino
             </option>
+
             <option value="outro" {{ old('genero', $user->genero) === 'outro' ? 'selected' : '' }}>
                 Outro
             </option>
+
             <option value="prefiro não dizer" {{ old('genero', $user->genero) === 'prefiro não dizer' ? 'selected' : '' }}>
                 Prefiro não dizer
             </option>
@@ -80,19 +97,18 @@
     </h4>
 
     <div class="form-group">
-        <label for="cpf">CPF</label>
+        <label for="cpf_visual">CPF</label>
         <input type="text"
-               id="cpf"
-               name="cpf"
-               value="{{ old('cpf', $user->cpf) }}"
-               class="input-style @error('cpf') is-invalid @enderror"
-               placeholder="000.000.000-00"
-               maxlength="14"
-               inputmode="numeric">
+               id="cpf_visual"
+               value="{{ $cpfVisual }}"
+               class="input-style"
+               placeholder="CPF não cadastrado"
+               readonly
+               disabled>
 
-        @error('cpf')
-            <small class="invalid-feedback">{{ $message }}</small>
-        @enderror
+        <small style="display:block; margin-top:6px; color:#64748b;">
+            O CPF não pode ser alterado pelo perfil.
+        </small>
     </div>
 
     <div class="form-group">
@@ -112,20 +128,21 @@
         <label for="tipo_profissional">Tipo profissional</label>
         <select id="tipo_profissional"
                 name="tipo_profissional"
-                class="input-style @error('tipo_profissional') is-invalid @enderror">
-            <option value="" {{ old('tipo_profissional', $user->tipo_profissional) ? '' : 'selected' }}>
+                class="input-style @error('tipo_profissional') is-invalid @enderror"
+                required>
+            <option value="" disabled {{ $tipoProfissionalAtual ? '' : 'selected' }}>
                 Selecione o tipo profissional
             </option>
 
-            <option value="psicologo" {{ old('tipo_profissional', $user->tipo_profissional) === 'psicologo' ? 'selected' : '' }}>
+            <option value="psicologo" {{ $tipoProfissionalAtual === 'psicologo' ? 'selected' : '' }}>
                 Psicólogo(a)
             </option>
 
-            <option value="psiquiatra" {{ old('tipo_profissional', $user->tipo_profissional) === 'psiquiatra' ? 'selected' : '' }}>
+            <option value="psiquiatra" {{ $tipoProfissionalAtual === 'psiquiatra' ? 'selected' : '' }}>
                 Psiquiatra
             </option>
 
-            <option value="psicanalista" {{ old('tipo_profissional', $user->tipo_profissional) === 'psicanalista' ? 'selected' : '' }}>
+            <option value="psicanalista" {{ $tipoProfissionalAtual === 'psicanalista' ? 'selected' : '' }}>
                 Psicanalista
             </option>
         </select>
@@ -164,54 +181,39 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const cpfInput = document.getElementById('cpf');
     const tipoSelect = document.getElementById('tipo_profissional');
     const registroLabel = document.getElementById('registro-profissional-label');
     const registroInput = document.getElementById('registro_profissional');
     const registroAjuda = document.getElementById('registro-profissional-ajuda');
 
-    function aplicarMascaraCpf(valor) {
-        valor = valor.replace(/\D/g, '').slice(0, 11);
-
-        valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
-        valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
-        valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-
-        return valor;
-    }
-
     function atualizarCampoRegistro() {
+        if (!tipoSelect || !registroLabel || !registroInput || !registroAjuda) {
+            return;
+        }
+
         const tipo = tipoSelect.value;
 
         if (tipo === 'psicologo') {
             registroLabel.textContent = 'CRP';
             registroInput.placeholder = 'Ex: CRP 06/000000';
             registroAjuda.textContent = 'Informe o número do CRP do profissional.';
-            registroInput.disabled = false;
+            registroInput.required = true;
         } else if (tipo === 'psiquiatra') {
             registroLabel.textContent = 'CRM';
             registroInput.placeholder = 'Ex: CRM/SP 000000';
             registroAjuda.textContent = 'Informe o número do CRM do profissional.';
-            registroInput.disabled = false;
+            registroInput.required = true;
         } else if (tipo === 'psicanalista') {
             registroLabel.textContent = 'Registro profissional';
             registroInput.placeholder = 'Informe o registro, se houver';
             registroAjuda.textContent = 'Psicanalista pode usar o perfil, mas o Receita Saúde será liberado apenas para categorias compatíveis.';
-            registroInput.disabled = false;
+            registroInput.required = false;
         } else {
             registroLabel.textContent = 'Registro profissional';
             registroInput.placeholder = 'Ex: CRP 06/000000';
             registroAjuda.textContent = 'Para psicólogo, informe o CRP. Para psiquiatra, informe o CRM.';
-            registroInput.disabled = false;
+            registroInput.required = false;
         }
-    }
-
-    if (cpfInput) {
-        cpfInput.value = aplicarMascaraCpf(cpfInput.value);
-
-        cpfInput.addEventListener('input', function () {
-            this.value = aplicarMascaraCpf(this.value);
-        });
     }
 
     if (tipoSelect) {

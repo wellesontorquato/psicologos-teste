@@ -22,12 +22,8 @@ class ProfileUpdateRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'cpf' => $this->input('cpf')
-                ? preg_replace('/\D/', '', (string) $this->input('cpf'))
-                : null,
-
             'registro_profissional' => $this->input('registro_profissional')
-                ? mb_strtoupper(trim((string) $this->input('registro_profissional')))
+                ? mb_strtoupper(trim((string) $this->input('registro_profissional')), 'UTF-8')
                 : null,
         ]);
     }
@@ -55,20 +51,13 @@ class ProfileUpdateRequest extends FormRequest
                 'in:masculino,feminino,outro,prefiro não dizer',
             ],
 
-            'cpf' => [
-                'nullable',
-                'string',
-                'size:11',
-                Rule::unique(User::class, 'cpf')->ignore($this->user()->id),
-            ],
-
             'data_nascimento' => [
                 'nullable',
                 'date',
             ],
 
             'tipo_profissional' => [
-                'nullable',
+                'required',
                 'string',
                 Rule::in([
                     'psicologo',
@@ -108,14 +97,11 @@ class ProfileUpdateRequest extends FormRequest
 
             'genero.in' => 'O campo gênero deve ser Masculino, Feminino, Outro ou Prefiro não dizer.',
 
-            'cpf.string' => 'O CPF deve ser uma sequência de caracteres.',
-            'cpf.size'   => 'Informe um CPF válido com 11 números.',
-            'cpf.unique' => 'Este CPF já está sendo usado por outro usuário.',
-
             'data_nascimento.date' => 'Informe uma data de nascimento válida.',
 
-            'tipo_profissional.string' => 'O tipo profissional deve ser uma sequência de caracteres.',
-            'tipo_profissional.in'     => 'O tipo profissional deve ser Psicólogo(a), Psiquiatra ou Psicanalista.',
+            'tipo_profissional.required' => 'Selecione o tipo profissional.',
+            'tipo_profissional.string'   => 'O tipo profissional deve ser uma sequência de caracteres.',
+            'tipo_profissional.in'       => 'O tipo profissional deve ser Psicólogo(a), Psiquiatra ou Psicanalista.',
 
             'registro_profissional.required' => 'O registro profissional é obrigatório para psicólogo(a) e psiquiatra.',
             'registro_profissional.string'   => 'O registro profissional deve ser uma sequência de caracteres.',
