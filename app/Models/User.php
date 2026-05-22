@@ -140,4 +140,10 @@ class User extends Authenticatable
         return ($sub && in_array($sub->stripe_status, $valid, true))
             || $this->onTrial();
     }
+
+    public function receitaSaudeRecibos()
+    {
+        return $this->hasMany(ReceitaSaudeRecibo::class);
+    }
+
 }

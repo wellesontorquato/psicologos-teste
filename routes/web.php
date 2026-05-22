@@ -32,7 +32,8 @@ use App\Http\Controllers\{
     BlogController,
     LandingPageController,
     FileProxyController,
-    ClinicalCopilotController
+    ClinicalCopilotController,
+    ReceitaSaudeController
 };
 use App\Models\News;
 use App\Jobs\SyncUserCalendar;
@@ -188,6 +189,19 @@ Route::middleware(['auth', 'verified', CheckSubscription::class])->group(functio
 
     Route::get('/dashboard/pdf', [DashboardController::class, 'exportarPdf'])->name('dashboard.pdf');
     Route::get('/dashboard/excel', [DashboardController::class, 'exportarExcel'])->name('dashboard.excel');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Receita Saúde (geração de CSV oficial para importação no Carnê-Leão)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('receita-saude')->name('receita-saude.')->group(function () {
+        Route::get('/', [ReceitaSaudeController::class, 'index'])->name('index');
+        Route::post('/sincronizar', [ReceitaSaudeController::class, 'sincronizar'])->name('sincronizar');
+        Route::post('/exportar', [ReceitaSaudeController::class, 'exportar'])->name('exportar');
+        Route::patch('/recibos/{recibo}', [ReceitaSaudeController::class, 'atualizar'])->name('atualizar');
+        Route::delete('/recibos/{recibo}', [ReceitaSaudeController::class, 'excluir'])->name('excluir');
+    });
 
     Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');
     Route::get('/pacientes/{paciente}/historico/pdf', [PacienteController::class, 'exportarHistoricoPdf'])->name('pacientes.historico.pdf');

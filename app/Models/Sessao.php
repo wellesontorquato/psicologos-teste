@@ -50,4 +50,10 @@ class Sessao extends Model
     {
         return $this->hasMany(Evolucao::class, 'sessao_id');
     }
+
+    public function receitaSaudeRecibo()
+    {
+        return $this->hasOne(ReceitaSaudeRecibo::class);
+    }
+
 }

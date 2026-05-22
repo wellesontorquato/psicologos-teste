@@ -344,6 +344,9 @@
         <a href="{{ route('sessoes.index') }}" class="{{ request()->is('sessoes*') ? 'active' : '' }}">
             <i class="bi bi-calendar-check-fill"></i> <span>Sessões</span>
         </a>
+        <a href="{{ route('receita-saude.index') }}" class="{{ request()->is('receita-saude*') ? 'active' : '' }}">
+            <i class="bi bi-receipt-cutoff"></i> <span>Receita Saúde</span>
+        </a>
         <a href="{{ route('evolucoes.index') }}" class="{{ request()->is('evolucoes*') ? 'active' : '' }}">
             <i class="bi bi-journal-medical"></i> <span>Evoluções</span>
         </a>
