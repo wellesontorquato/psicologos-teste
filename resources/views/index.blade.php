@@ -18,7 +18,7 @@
             <div class="hero-chips" aria-label="Destaques do PsiGestor">
                 <div class="hero-chip">
                     <i class="bi bi-calendar-check"></i>
-                    <span>Agenda integrada ao Google Agenda</span>
+                    <span>Agenda do PsiGestor integrada ao Google Agenda</span>
                 </div>
 
                 <div class="hero-chip">
