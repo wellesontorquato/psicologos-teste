@@ -10,6 +10,7 @@
 
     .pac-content {
         width: 100%;
+        max-width: 100%;
     }
 
     .pac-header {
@@ -40,6 +41,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        white-space: nowrap;
     }
 
     .pac-card {
@@ -177,6 +179,7 @@
         color: #64748b;
         font-size: .84rem;
         margin-top: 3px;
+        word-break: break-word;
     }
 
     .pac-badge {
@@ -245,20 +248,30 @@
         align-items: center;
         justify-content: center;
         gap: 7px;
+        white-space: nowrap;
     }
 
     .pac-desktop-table {
         display: none;
     }
 
+    .pac-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 16px;
+    }
+
     .pac-table {
+        width: 100%;
+        min-width: 1120px;
         margin-bottom: 0;
+        table-layout: fixed;
     }
 
     .pac-table thead th {
         background: #f8fafc;
         color: #475569;
-        font-size: .78rem;
+        font-size: .76rem;
         text-transform: uppercase;
         letter-spacing: .04em;
         white-space: nowrap;
@@ -277,21 +290,77 @@
         background: #f8fafc;
     }
 
+    .pac-col-paciente {
+        width: 18%;
+    }
+
+    .pac-col-telefone {
+        width: 12%;
+    }
+
+    .pac-col-email {
+        width: 23%;
+    }
+
+    .pac-col-cpf {
+        width: 13%;
+    }
+
+    .pac-col-receita {
+        width: 12%;
+    }
+
+    .pac-col-acoes {
+        width: 22%;
+    }
+
     .pac-table-name {
         font-weight: 900;
         color: #0f172a;
+        line-height: 1.25;
+        word-break: normal;
+        overflow-wrap: anywhere;
     }
 
     .pac-table-sub {
         color: #64748b;
         font-size: .82rem;
+        margin-top: 3px;
+    }
+
+    .pac-nowrap {
+        white-space: nowrap;
+    }
+
+    .pac-ellipsis {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .pac-table-actions {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 6px;
         justify-content: flex-end;
+        align-items: center;
+    }
+
+    .pac-table-actions .btn {
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 6px 9px;
+        font-size: .78rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+    .pac-table-actions form {
+        margin: 0;
     }
 
     .pac-empty {
@@ -366,9 +435,14 @@
         }
     }
 
-    @media (min-width: 1200px) {
-        .pac-content {
-            max-width: 1180px;
+    @media (min-width: 1400px) {
+        .pac-table {
+            min-width: 100%;
+        }
+
+        .pac-table-actions .btn {
+            padding: 7px 10px;
+            font-size: .8rem;
         }
     }
 </style>
@@ -420,6 +494,8 @@
     $pacientesNestaPagina = method_exists($pacientes, 'count')
         ? $pacientes->count()
         : 0;
+
+    $pacientesReceitaSaude = $pacientes->where('exige_nota_fiscal', true)->count();
 
     $buscaAtual = request('busca');
 @endphp
@@ -494,9 +570,7 @@
 
             <div class="pac-stat">
                 <div class="pac-stat-label">Receita Saúde</div>
-                <p class="pac-stat-value">
-                    {{ $pacientes->where('exige_nota_fiscal', true)->count() }}
-                </p>
+                <p class="pac-stat-value">{{ $pacientesReceitaSaude }}</p>
                 <div class="pac-stat-help">Marcados nesta página.</div>
             </div>
         </div>
@@ -600,8 +674,17 @@
             </div>
 
             <div class="pac-desktop-table">
-                <div class="table-responsive">
+                <div class="pac-table-wrapper">
                     <table class="table pac-table align-middle">
+                        <colgroup>
+                            <col class="pac-col-paciente">
+                            <col class="pac-col-telefone">
+                            <col class="pac-col-email">
+                            <col class="pac-col-cpf">
+                            <col class="pac-col-receita">
+                            <col class="pac-col-acoes">
+                        </colgroup>
+
                         <thead>
                             <tr>
                                 <th>Paciente</th>
@@ -621,11 +704,23 @@
                                         <div class="pac-table-sub">ID #{{ $paciente->id }}</div>
                                     </td>
 
-                                    <td>{{ $formatarTelefone($paciente->telefone) }}</td>
+                                    <td>
+                                        <span class="pac-nowrap">
+                                            {{ $formatarTelefone($paciente->telefone) }}
+                                        </span>
+                                    </td>
 
-                                    <td>{{ $paciente->email ?: '—' }}</td>
+                                    <td>
+                                        <span class="pac-ellipsis" title="{{ $paciente->email ?: '—' }}">
+                                            {{ $paciente->email ?: '—' }}
+                                        </span>
+                                    </td>
 
-                                    <td>{{ $formatarCpf($paciente->cpf) }}</td>
+                                    <td>
+                                        <span class="pac-nowrap">
+                                            {{ $formatarCpf($paciente->cpf) }}
+                                        </span>
+                                    </td>
 
                                     <td>
                                         @if($paciente->exige_nota_fiscal)
