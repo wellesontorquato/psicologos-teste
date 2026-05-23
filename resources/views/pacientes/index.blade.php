@@ -701,7 +701,6 @@
                                 <tr>
                                     <td>
                                         <div class="pac-table-name">{{ $paciente->nome }}</div>
-                                        <div class="pac-table-sub">ID #{{ $paciente->id }}</div>
                                     </td>
 
                                     <td>
