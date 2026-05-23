@@ -65,11 +65,11 @@
                         'details_title' => 'Financeiro + Multimoedas',
                         'details_html' => '
                             <p>Controle recebimentos por paciente e por período, com visão clara de <strong>pagos</strong>, <strong>pendentes</strong> e <strong>atrasos</strong>.</p>
-                            <p>Envie notificações de sessões não pagas e acompanhe seu fluxo financeiro com praticidade.</p>
+                            <p>Acompanhe seu fluxo financeiro com praticidade e registre atendimentos de forma organizada.</p>
                             <p>Com <strong>multimoedas</strong>, registre atendimentos e recebimentos em diferentes moedas — ideal para pacientes de outros países.</p>
                             <ul>
                                 <li>Organização financeira por período</li>
-                                <li>Notificações de pendências</li>
+                                <li>Controle de pagamentos e pendências</li>
                                 <li>Recebimentos em moedas diferentes</li>
                             </ul>
                         '
@@ -92,19 +92,21 @@
                         '
                     ],
                     [
-                        'id'    => 'whatsapp',
-                        'icon'  => 'whatsapp',
-                        'title' => 'Confirmação por WhatsApp',
-                        'desc'  => 'Lembretes e confirmações automáticas.',
-                        'is_new'=> false,
-                        'details_title' => 'WhatsApp Automático',
+                        'id'    => 'receita-saude',
+                        'icon'  => 'file-invoice-dollar',
+                        'title' => 'Receita Saúde',
+                        'desc'  => 'Gere o arquivo oficial para importar no Carnê-Leão.',
+                        'is_new'=> true,
+                        'details_title' => 'Receita Saúde integrado ao PsiGestor',
                         'details_html' => '
-                            <p>Envie confirmações e lembretes automáticos, reduzindo faltas e melhorando a previsibilidade da agenda.</p>
-                            <p>Padronize mensagens e mantenha comunicação profissional sem depender de envio manual.</p>
+                            <p>Prepare recibos do <strong>Receita Saúde</strong> diretamente a partir das sessões pagas registradas no PsiGestor.</p>
+                            <p>O sistema organiza os dados do profissional, paciente, pagador, valor e data do pagamento para gerar o <strong>arquivo CSV de integração</strong>.</p>
+                            <p>A emissão oficial continua sendo concluída pelo profissional no <strong>Carnê-Leão Web/e-CAC</strong>, mas o PsiGestor reduz retrabalho e evita preenchimentos manuais repetitivos.</p>
                             <ul>
-                                <li>Menos faltas</li>
-                                <li>Comunicação padronizada</li>
-                                <li>Mais tempo para atender</li>
+                                <li>Geração de rascunhos a partir de sessões pagas</li>
+                                <li>Revisão de CPF do pagador e beneficiário</li>
+                                <li>Exportação de CSV compatível com o fluxo de importação</li>
+                                <li>Histórico de recibos exportados, emitidos ou cancelados</li>
                             </ul>
                         '
                     ],
