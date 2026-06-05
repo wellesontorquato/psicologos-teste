@@ -107,7 +107,15 @@ class User extends Authenticatable
 
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new CustomVerifyEmail);
+        try {
+            $this->notify(new CustomVerifyEmail);
+        } catch (\Throwable $e) {
+            \Log::error('Falha ao enviar e-mail de verificação', [
+                'user_id' => $this->id ?? null,
+                'email' => $this->email ?? null,
+                'erro' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
