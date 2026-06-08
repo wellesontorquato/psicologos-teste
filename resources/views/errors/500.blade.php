@@ -82,7 +82,7 @@
 </head>
 <body>
     <main class="container">
-        <img src="{{ asset('images/logo.png') }}" alt="PsiGestor" class="logo">
+        <img src="{{ asset('images/logo-psigestor.png') }}" alt="PsiGestor" class="logo">
 
         <div class="code">500</div>
 

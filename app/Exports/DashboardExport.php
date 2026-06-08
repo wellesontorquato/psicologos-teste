@@ -27,7 +27,6 @@ class DashboardExport implements WithEvents, WithTitle
                 /** @var Worksheet $sheet */
                 $sheet = $event->sheet->getDelegate();
 
-                // Logo (ajuste o caminho correto)
                 $drawing = new Drawing();
                 $drawing->setName('Logo');
                 $drawing->setDescription('Logo PsiGestor');
