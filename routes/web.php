@@ -325,6 +325,10 @@ Route::get('/ver-log-whatsapp', function () {
     return "<pre style='background:#111;color:#0f0;padding:20px;white-space:pre-wrap;'>" . e($logContent) . "</pre>";
 })->middleware('auth');
 
+Route::get('/teste-500', function () {
+    abort(500);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Landing Pages - deve ficar por último
