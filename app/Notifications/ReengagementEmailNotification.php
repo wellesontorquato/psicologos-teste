@@ -23,14 +23,11 @@ class ReengagementEmailNotification extends Notification
 
         return (new MailMessage)
             ->subject('Seu acesso ao PsiGestor está te esperando')
-            ->greeting('Olá!')
-            ->line('Vimos que você iniciou seu cadastro no PsiGestor e queremos te convidar a conhecer melhor a plataforma.')
-            ->line('O PsiGestor foi desenvolvido para facilitar a rotina de profissionais da saúde mental, ajudando na organização de agenda, pacientes, financeiro e gestão clínica em um só lugar.')
-            ->line('Você pode acessar sua conta e explorar os recursos disponíveis com tranquilidade, sem necessidade de cadastrar cartão de crédito neste período inicial.')
-            ->line('Além disso, se você recebeu este e-mail, foi selecionado para ganhar mais 10 dias gratuitos de teste, além do período que já havia sido disponibilizado no momento do cadastro.')
-            ->action('Reivindicar meus 10 dias extras', $whatsappUrl)
-            ->line('Para acessar sua conta, entre pelo link: ' . url('/login'))
-            ->line('Esperamos que o PsiGestor ajude a tornar sua rotina mais simples, organizada e leve.')
-            ->salutation('Atenciosamente, equipe PsiGestor');
+            ->view('emails.reengagement', [
+                'user' => $notifiable,
+                'loginUrl' => url('/login'),
+                'whatsappUrl' => $whatsappUrl,
+                'logoUrl' => asset('images/logo-psigestor.png'),
+            ]);
     }
 }
