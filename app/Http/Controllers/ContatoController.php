@@ -33,7 +33,7 @@ class ContatoController extends Controller
         }
 
         // Enviar email
-        Mail::to('psigestor@devtorquato.com.br')->send(new ContatoMail([
+        Mail::to('psigestor@agenciamundau.com.br')->send(new ContatoMail([
             'nome' => $request->nome,
             'email' => $request->email,
             'telefone' => $request->telefone,

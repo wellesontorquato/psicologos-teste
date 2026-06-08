@@ -173,7 +173,7 @@
 
         <div class="footer-column">
             <h4>Fale Conosco</h4>
-            <a href="mailto:psigestor@devtorquato.com.br">psigestor@devtorquato.com.br</a>
+            <a href="mailto:psigestor@agenciamundau.com.br">psigestor@agenciamundau.com.br</a>
             <a href="https://wa.me/5582991128022" target="_blank">(82) 99112-8022</a>
 
             <div class="social-icons">
