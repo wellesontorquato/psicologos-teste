@@ -52,367 +52,278 @@
         </div>
     @endif
 
-    <section class="psi-hero mb-4">
-        <div class="psi-hero-left">
-            <span class="psi-hero-kicker">Painel principal</span>
-            <h1>Olá, {{ $primeiroNome }}</h1>
-            <p>Hoje você tem uma visão clara da sua agenda, pendências e financeiro em um só lugar.</p>
-        </div>
-
-        <div class="psi-hero-right">
-            <a href="{{ route('agenda') }}" class="btn btn-success psi-hero-btn">
-                <i class="bi bi-calendar-week me-2"></i> Ver agenda do dia
-            </a>
-        </div>
-    </section>
-
-    <section class="row g-3 mb-4">
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="psi-stat-card">
-                <div class="psi-stat-icon bg-primary-subtle text-primary">
-                    <i class="bi bi-calendar-check"></i>
-                </div>
-                <div class="psi-stat-content">
-                    <span class="psi-stat-label">Sessões agendadas</span>
-                    <strong>{{ $sessoesHoje }}</strong>
-                    <small>para hoje</small>
-                </div>
+    <div class="psi-bento-grid">
+        
+        <div class="bento-item bento-hero">
+            <div class="psi-hero-left">
+                <span class="psi-hero-kicker">Painel principal</span>
+                <h1>Olá, {{ $primeiroNome }}</h1>
+                <p>Visão clara da sua agenda, pendências e financeiro em um só lugar.</p>
+            </div>
+            <div class="psi-hero-right">
+                <a href="{{ route('agenda') }}" class="btn btn-success psi-hero-btn">
+                    <i class="bi bi-calendar-week me-2"></i> Ver agenda do dia
+                </a>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="psi-stat-card">
-                <div class="psi-stat-icon bg-success-subtle text-success">
-                    <i class="bi bi-cash-stack"></i>
-                </div>
-                <div class="psi-stat-content">
-                    <span class="psi-stat-label">{{ $simbolo }} recebido</span>
-                    <strong>{{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
-                    <small>no período selecionado</small>
-                </div>
+        <div class="bento-item bento-stat">
+            <div class="psi-stat-icon bg-primary-subtle text-primary">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div class="psi-stat-content">
+                <span class="psi-stat-label">Sessões agendadas</span>
+                <strong>{{ $sessoesHoje }}</strong>
+                <small>para hoje</small>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="psi-stat-card">
-                <div class="psi-stat-icon bg-warning-subtle text-warning">
-                    <i class="bi bi-exclamation-circle"></i>
-                </div>
-                <div class="psi-stat-content">
-                    <span class="psi-stat-label">Sem confirmação</span>
-                    <strong>{{ $pendenciasSemConfirmacao }}</strong>
-                    <small>pacientes pendentes</small>
-                </div>
+        <div class="bento-item bento-stat">
+            <div class="psi-stat-icon bg-success-subtle text-success">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="psi-stat-content">
+                <span class="psi-stat-label">{{ $simbolo }} recebido</span>
+                <strong>{{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
+                <small>no período</small>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="psi-stat-card">
-                <div class="psi-stat-icon bg-danger-subtle text-danger">
-                    <i class="bi bi-shield-exclamation"></i>
-                </div>
-                <div class="psi-stat-content">
-                    <span class="psi-stat-label">Pendências</span>
-                    <strong>{{ $pendenciasTotal }}</strong>
-                    <small>itens que exigem atenção</small>
-                </div>
+        <div class="bento-item bento-stat">
+            <div class="psi-stat-icon bg-warning-subtle text-warning">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+            <div class="psi-stat-content">
+                <span class="psi-stat-label">Sem confirmação</span>
+                <strong>{{ $pendenciasSemConfirmacao }}</strong>
+                <small>pacientes</small>
             </div>
         </div>
-    </section>
 
-    <section class="row g-3 mb-4">
-        <div class="col-12 col-xl-8">
-            <div class="psi-panel psi-actions-panel">
-                <div class="psi-panel-header">
-                    <h3>Ações rápidas</h3>
-                    <span>atalhos do dia</span>
-                </div>
+        <div class="bento-item bento-stat">
+            <div class="psi-stat-icon bg-danger-subtle text-danger">
+                <i class="bi bi-shield-exclamation"></i>
+            </div>
+            <div class="psi-stat-content">
+                <span class="psi-stat-label">Pendências</span>
+                <strong>{{ $pendenciasTotal }}</strong>
+                <small>exigem atenção</small>
+            </div>
+        </div>
 
-                <div class="psi-quick-actions">
-                    <a href="{{ route('sessoes.create') }}" class="psi-action-btn psi-action-primary">
-                        <i class="bi bi-plus-lg"></i>
-                        <span>Nova Sessão</span>
-                    </a>
+        <div class="bento-item bento-actions">
+            <div class="bento-header">
+                <h3>Ações rápidas</h3>
+                <span>atalhos do dia</span>
+            </div>
+            <div class="bento-quick-actions">
+                <a href="{{ route('sessoes.create') }}" class="psi-action-btn psi-action-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Sessão</span>
+                </a>
+                <a href="{{ route('evolucoes.create') }}" class="psi-action-btn psi-action-purple">
+                    <i class="bi bi-journal-plus"></i>
+                    <span>Evolução</span>
+                </a>
+                <a href="{{ route('pacientes.create') }}" class="psi-action-btn psi-action-teal">
+                    <i class="bi bi-person-plus"></i>
+                    <span>Paciente</span>
+                </a>
+                <a href="{{ route('agenda') }}" class="psi-action-btn psi-action-light">
+                    <i class="bi bi-calendar3"></i>
+                    <span>Agenda</span>
+                </a>
+            </div>
+        </div>
 
-                    <a href="{{ route('evolucoes.create') }}" class="psi-action-btn psi-action-purple">
-                        <i class="bi bi-journal-plus"></i>
-                        <span>Nova Evolução</span>
-                    </a>
-
-                    <a href="{{ route('pacientes.create') }}" class="psi-action-btn psi-action-teal">
-                        <i class="bi bi-person-plus"></i>
-                        <span>Novo Paciente</span>
-                    </a>
-
-                    <a href="{{ route('agenda') }}" class="psi-action-btn psi-action-light">
-                        <i class="bi bi-calendar3"></i>
-                        <span>Ver Agenda</span>
-                    </a>
-                </div>
-
-                <div class="psi-inline-insights">
-                    <div class="psi-inline-insight-card">
-                        <div class="psi-inline-insight-icon text-success">
-                            <i class="bi bi-graph-up-arrow"></i>
-                        </div>
-                        <div class="psi-inline-insight-text">
-                            <span class="psi-inline-insight-label">Faturamento</span>
-                            <strong>
-                                @if(!is_null($insightCrescimento))
-                                    Mudou {{ $insightCrescimento }}% no período
-                                @else
-                                    Atualizado pelo período selecionado
-                                @endif
-                            </strong>
-                        </div>
+        <div class="bento-item bento-insights">
+            <div class="bento-header">
+                <h3>Insights</h3>
+                <span>resumo analítico</span>
+            </div>
+            <div class="psi-inline-insights">
+                <div class="psi-inline-insight-card">
+                    <div class="psi-inline-insight-icon text-success">
+                        <i class="bi bi-graph-up-arrow"></i>
                     </div>
-
-                    <div class="psi-inline-insight-card">
-                        <div class="psi-inline-insight-icon text-primary">
-                            <i class="bi bi-clipboard-pulse"></i>
-                        </div>
-                        <div class="psi-inline-insight-text">
-                            <span class="psi-inline-insight-label">Evoluções</span>
-                            <strong>{{ $sessoesSemEvolucao }} aguardando evolução clínica</strong>
-                        </div>
+                    <div class="psi-inline-insight-text">
+                        <span class="psi-inline-insight-label">Faturamento</span>
+                        <strong>
+                            @if(!is_null($insightCrescimento))
+                                Mudou {{ $insightCrescimento }}% no período
+                            @else
+                                Atualizado pelo período
+                            @endif
+                        </strong>
                     </div>
-
-                    <div class="psi-inline-insight-card">
-                        <div class="psi-inline-insight-icon text-warning">
-                            <i class="bi bi-person-exclamation"></i>
-                        </div>
-                        <div class="psi-inline-insight-text">
-                            <span class="psi-inline-insight-label">Financeiro</span>
-                            <strong>{{ $pacientesInadimplentes }} paciente(s) exigem acompanhamento</strong>
-                        </div>
+                </div>
+                <div class="psi-inline-insight-card">
+                    <div class="psi-inline-insight-icon text-primary">
+                        <i class="bi bi-clipboard-pulse"></i>
+                    </div>
+                    <div class="psi-inline-insight-text">
+                        <span class="psi-inline-insight-label">Evoluções</span>
+                        <strong>{{ $sessoesSemEvolucao }} pendentes</strong>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-xl-4">
-            <div class="psi-panel psi-filter-panel">
-                <div class="psi-panel-header">
-                    <h3>Período e moeda</h3>
-                    <span>{{ $dataInicial->format('d/m/Y') }} até {{ $dataFinal->format('d/m/Y') }}</span>
+        <div class="bento-item bento-filters">
+            <div class="bento-header">
+                <h3>Período</h3>
+                <span>{{ $dataInicial->format('d/m') }} a {{ $dataFinal->format('d/m/Y') }}</span>
+            </div>
+            <form method="GET" class="psi-filter-form">
+                <div class="mb-2">
+                    <select name="moeda" class="form-select form-select-sm" onchange="this.form.submit()">
+                        @php $moedas = ['BRL','USD','EUR','GBP','ARS','CLP','MXN','CAD','AUD']; @endphp
+                        @foreach($moedas as $m)
+                            <option value="{{ $m }}" {{ $moedaSelecionada === $m ? 'selected' : '' }}>Moeda: {{ $m }}</option>
+                        @endforeach
+                    </select>
                 </div>
-
-                <form method="GET" class="psi-filter-form">
-                    <div class="mb-2">
-                        <select name="moeda" class="form-select" onchange="this.form.submit()">
-                            @php
-                                $moedas = ['BRL','USD','EUR','GBP','ARS','CLP','MXN','CAD','AUD'];
-                            @endphp
-
-                            @foreach($moedas as $m)
-                                <option value="{{ $m }}" {{ $moedaSelecionada === $m ? 'selected' : '' }}>
-                                    Moeda: {{ $m }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
-                        <select name="periodo" class="form-select" onchange="this.form.submit()">
-                            <option value="">Período rápido...</option>
-                            <option value="7" {{ request('periodo') == '7' ? 'selected' : '' }}>Últimos 7 dias</option>
-                            <option value="15" {{ request('periodo') == '15' ? 'selected' : '' }}>Últimos 15 dias</option>
-                            <option value="30" {{ request('periodo') == '30' ? 'selected' : '' }}>Últimos 30 dias</option>
-                        </select>
-                    </div>
-
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <input type="date" name="de" value="{{ request('de') }}" class="form-control">
-                        </div>
-                        <div class="col-6">
-                            <input type="date" name="ate" value="{{ request('ate') }}" class="form-control">
-                        </div>
-                    </div>
-
-                    @foreach(request()->except(['moeda', 'de', 'ate', 'periodo']) as $campo => $valor)
-                        <input type="hidden" name="{{ $campo }}" value="{{ $valor }}">
-                    @endforeach
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-outline-primary">
-                            <i class="bi bi-search me-1"></i> Aplicar filtros
-                        </button>
-                    </div>
-                </form>
-
+                <div class="mb-2">
+                    <select name="periodo" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Período rápido...</option>
+                        <option value="7" {{ request('periodo') == '7' ? 'selected' : '' }}>Últimos 7 dias</option>
+                        <option value="15" {{ request('periodo') == '15' ? 'selected' : '' }}>Últimos 15 dias</option>
+                        <option value="30" {{ request('periodo') == '30' ? 'selected' : '' }}>Últimos 30 dias</option>
+                    </select>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><input type="date" name="de" value="{{ request('de') }}" class="form-control form-control-sm"></div>
+                    <div class="col-6"><input type="date" name="ate" value="{{ request('ate') }}" class="form-control form-control-sm"></div>
+                </div>
+                @foreach(request()->except(['moeda', 'de', 'ate', 'periodo']) as $campo => $valor)
+                    <input type="hidden" name="{{ $campo }}" value="{{ $valor }}">
+                @endforeach
                 <div class="psi-export-actions">
-                    <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-danger no-spinner-on-download">
-                        <i class="bi bi-file-earmark-pdf me-1"></i> PDF
-                    </a>
-                    <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-success no-spinner-on-download">
-                        <i class="bi bi-file-earmark-excel me-1"></i> Excel
-                    </a>
+                    <button type="submit" class="btn btn-sm btn-outline-primary flex-grow-1"><i class="bi bi-search"></i> Aplicar</button>
+                    <a href="{{ route('dashboard.pdf', request()->all()) }}" class="btn btn-sm btn-danger no-spinner-on-download"><i class="bi bi-file-earmark-pdf"></i></a>
+                    <a href="{{ route('dashboard.excel', request()->all()) }}" class="btn btn-sm btn-success no-spinner-on-download"><i class="bi bi-file-earmark-excel"></i></a>
                 </div>
-            </div>
+            </form>
         </div>
-    </section>
 
-    <section class="psi-main-grid mb-4">
-        <div class="psi-grid-card psi-grid-agenda">
-            <div class="psi-panel psi-agenda-panel">
-                <div class="psi-panel-header">
-                    <div>
-                        <h3>Agenda do dia</h3>
-                        <span>próximos atendimentos</span>
-                    </div>
-                </div>
-
-                @if(isset($agendaHoje) && $agendaHoje->count())
-                    <div class="psi-agenda-list">
-                        @foreach($agendaHoje->take(5) as $sessao)
-                            <div class="psi-agenda-item">
-                                <div class="psi-agenda-time">
-                                    {{ \Carbon\Carbon::parse($sessao->data_hora)->format('H:i') }}
-                                </div>
-
-                                <div class="psi-agenda-main">
-                                    <strong>{{ $sessao->paciente->nome ?? 'Paciente removido' }}</strong>
-                                    <small>{{ \Carbon\Carbon::parse($sessao->data_hora)->format('d/m/Y') }}</small>
-                                </div>
-
-                                <div class="psi-agenda-status">
-                                    <span class="badge rounded-pill bg-{{ $sessao->foi_pago ? 'success' : 'warning text-dark' }}">
-                                        {{ $sessao->foi_pago ? 'Pago' : 'Pendente' }}
-                                    </span>
-                                </div>
+        <div class="bento-item bento-agenda">
+            <div class="bento-header">
+                <h3>Agenda do dia</h3>
+                <span>próximos atendimentos</span>
+            </div>
+            @if(isset($agendaHoje) && $agendaHoje->count())
+                <div class="psi-agenda-list">
+                    @foreach($agendaHoje->take(4) as $sessao)
+                        <div class="psi-agenda-item">
+                            <div class="psi-agenda-time">{{ \Carbon\Carbon::parse($sessao->data_hora)->format('H:i') }}</div>
+                            <div class="psi-agenda-main">
+                                <strong>{{ $sessao->paciente->nome ?? 'Removido' }}</strong>
                             </div>
-                        @endforeach
-                    </div>
-
-                    <div class="mt-3">
-                        <a href="{{ route('agenda') }}" class="psi-link-more">
-                            Ver agenda completa <i class="bi bi-arrow-right-short"></i>
-                        </a>
-                    </div>
-                @else
-                    <div class="psi-empty-state psi-empty-state-compact">
-                        <i class="bi bi-calendar-x"></i>
-                        <p>Nenhuma sessão agendada para hoje.</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <div class="psi-grid-card psi-grid-finance">
-            <div class="psi-panel psi-finance-panel">
-                <div class="psi-panel-header mb-3">
-                    <div>
-                        <h3>Financeiro</h3>
-                        <span>resumo do período</span>
-                    </div>
-                </div>
-
-                <div class="psi-finance-list">
-                    <div class="psi-finance-item">
-                        <span>Recebido</span>
-                        <strong>{{ $simbolo }} {{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
-                    </div>
-
-                    <div class="psi-finance-item">
-                        <span>A receber</span>
-                        <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
-                    </div>
-
-                    <div class="psi-finance-item">
-                        <span>Inadimplente</span>
-                        <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
-                    </div>
-                </div>
-
-                <div class="psi-chart-mini">
-                    <h4>Evolução do faturamento</h4>
-                    <div class="psi-finance-chart-wrap">
-                        <canvas id="graficoValores"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="psi-grid-card psi-grid-alerts">
-            <div class="psi-panel">
-                <div class="psi-panel-header">
-                    <div>
-                        <h3>Atenção</h3>
-                        <span>o que precisa de ação</span>
-                    </div>
-                </div>
-
-                <div class="psi-alert-list">
-                    <div class="psi-alert-item">
-                        <i class="bi bi-x-circle-fill text-danger"></i>
-                        <span>{{ $sessoesSemEvolucao }} sessões não evoluídas</span>
-                    </div>
-
-                    <div class="psi-alert-item">
-                        <i class="bi bi-exclamation-diamond-fill text-warning"></i>
-                        <span>{{ $pacientesInadimplentes }} pacientes inadimplentes</span>
-                    </div>
-
-                    <div class="psi-alert-item">
-                        <i class="bi bi-cash-coin text-warning"></i>
-                        <span>{{ $sessoesSemPagamento }} sessão(ões) sem pagamento</span>
-                    </div>
-
-                    @if($pendenciasTotal > 0)
-                        <button class="btn btn-outline-danger btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalPendencias">
-                            Ver pendências
-                        </button>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="psi-grid-card psi-grid-chart">
-            <div class="psi-panel">
-                <div class="psi-panel-header">
-                    <div>
-                        <h3>Sessões por mês</h3>
-                        <span>volume de atendimentos</span>
-                    </div>
-                </div>
-                <div class="psi-chart-box">
-                    <canvas id="graficoSessoes" height="120"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="psi-grid-card psi-grid-files">
-            <div class="psi-panel">
-                <div class="psi-panel-header">
-                    <div>
-                        <h3>Últimos arquivos enviados</h3>
-                        <span>acesso rápido aos arquivos recentes</span>
-                    </div>
-                </div>
-
-                @if($ultimosArquivos->count())
-                    <div class="psi-file-list">
-                        @foreach($ultimosArquivos as $arquivo)
-                            <div class="psi-file-item">
-                                <div class="psi-file-main">
-                                    <i class="bi bi-file-earmark-text"></i>
-                                    <span>{{ $arquivo->nome }}</span>
-                                </div>
-                                <a href="{{ $arquivo->url }}" target="_blank" class="btn btn-sm btn-outline-primary">Abrir</a>
+                            <div class="psi-agenda-status">
+                                <span class="badge bg-{{ $sessao->foi_pago ? 'success' : 'warning text-dark' }}">
+                                    {{ $sessao->foi_pago ? 'Pago' : 'Pendente' }}
+                                </span>
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="psi-empty-state psi-empty-state-compact">
-                        <i class="bi bi-folder2-open"></i>
-                        <p>Nenhum arquivo recente encontrado.</p>
-                    </div>
-                @endif
+                        </div>
+                    @endforeach
+                </div>
+                <a href="{{ route('agenda') }}" class="psi-link-more mt-auto pt-3">Ver agenda completa <i class="bi bi-arrow-right-short"></i></a>
+            @else
+                <div class="psi-empty-state psi-empty-state-compact h-100">
+                    <i class="bi bi-calendar-x"></i>
+                    <p>Nenhuma sessão para hoje.</p>
+                </div>
+            @endif
+        </div>
+
+        <div class="bento-item bento-finance">
+            <div class="bento-header">
+                <h3>Financeiro</h3>
+                <span>resumo do período</span>
+            </div>
+            <div class="psi-finance-list">
+                <div class="psi-finance-item">
+                    <span>Recebido</span>
+                    <strong>{{ $simbolo }} {{ number_format($totalRecebidoPeriodo, 2, ',', '.') }}</strong>
+                </div>
+                <div class="psi-finance-item">
+                    <span>A receber</span>
+                    <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
+                </div>
+                <div class="psi-finance-item">
+                    <span>Inadimplente</span>
+                    <strong>{{ $simbolo }} {{ number_format($receberNoPeriodo, 2, ',', '.') }}</strong>
+                </div>
+            </div>
+            <div class="psi-chart-mini mt-auto">
+                <div class="psi-finance-chart-wrap">
+                    <canvas id="graficoValores"></canvas>
+                </div>
             </div>
         </div>
-    </section>
 
+        <div class="bento-item bento-alerts">
+            <div class="bento-header">
+                <h3>Atenção</h3>
+                <span>exigem ação</span>
+            </div>
+            <div class="psi-alert-list">
+                <div class="psi-alert-item">
+                    <i class="bi bi-x-circle-fill text-danger"></i>
+                    <span>{{ $sessoesSemEvolucao }} sessões não evoluídas</span>
+                </div>
+                <div class="psi-alert-item">
+                    <i class="bi bi-exclamation-diamond-fill text-warning"></i>
+                    <span>{{ $pacientesInadimplentes }} pacientes inadimplentes</span>
+                </div>
+                <div class="psi-alert-item">
+                    <i class="bi bi-cash-coin text-warning"></i>
+                    <span>{{ $sessoesSemPagamento }} sem pagamento</span>
+                </div>
+            </div>
+            @if($pendenciasTotal > 0)
+                <button class="btn btn-outline-danger btn-sm mt-auto w-100" data-bs-toggle="modal" data-bs-target="#modalPendencias">
+                    Resolver pendências
+                </button>
+            @endif
+        </div>
+
+        <div class="bento-item bento-files">
+            <div class="bento-header">
+                <h3>Arquivos</h3>
+                <span>recentes</span>
+            </div>
+            @if($ultimosArquivos->count())
+                <div class="psi-file-list">
+                    @foreach($ultimosArquivos->take(3) as $arquivo)
+                        <div class="psi-file-item">
+                            <div class="psi-file-main">
+                                <i class="bi bi-file-earmark-text text-primary"></i>
+                                <span>{{ $arquivo->nome }}</span>
+                            </div>
+                            <a href="{{ $arquivo->url }}" target="_blank" class="btn btn-sm btn-light"><i class="bi bi-box-arrow-up-right"></i></a>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="psi-empty-state psi-empty-state-compact h-100">
+                    <i class="bi bi-folder2-open"></i>
+                    <p>Nenhum arquivo recente.</p>
+                </div>
+            @endif
+        </div>
+
+        <div class="bento-item bento-chart">
+            <div class="bento-header">
+                <h3>Sessões por mês</h3>
+                <span>volume de atendimentos anuais</span>
+            </div>
+            <div class="psi-chart-box">
+                <canvas id="graficoSessoes"></canvas>
+            </div>
+        </div>
+
+    </div>
     <div class="modal fade" id="modalPendencias" tabindex="-1" aria-labelledby="modalPendenciasLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content shadow">
@@ -473,613 +384,206 @@
 
 @section('styles')
 <style>
+    /* =========================================
+       CONFIGURAÇÕES GERAIS (MOBILE POR PADRÃO)
+       ========================================= */
     .psi-dashboard {
         padding: 4px 2px 24px;
     }
 
     .psi-alert {
         border: 0;
-        border-radius: 18px;
+        border-radius: 20px;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        margin-bottom: 24px;
     }
 
-    .psi-hero {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        padding: 28px 30px;
-        border-radius: 28px;
-        background:
-            radial-gradient(circle at top left, rgba(59,130,246,0.16), transparent 34%),
-            linear-gradient(135deg, #ffffff 0%, #f7faff 100%);
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
-        border: 1px solid rgba(255,255,255,0.85);
-        margin-top: 8px;
+    /* Grid principal em 1 coluna para celular */
+    .psi-bento-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
-    .psi-hero-kicker {
-        display: inline-block;
-        font-size: .82rem;
-        font-weight: 700;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-        color: #3b82f6;
-        margin-bottom: 10px;
-    }
-
-    .psi-hero h1 {
-        font-size: 2.3rem;
-        line-height: 1.05;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 10px;
-    }
-
-    .psi-hero p {
-        font-size: 1rem;
-        color: #64748b;
-        margin: 0;
-        max-width: 620px;
-    }
-
-    .psi-hero-btn {
-        border-radius: 18px;
-        padding: 14px 22px;
-        font-weight: 700;
-        box-shadow: 0 16px 30px rgba(22, 163, 74, 0.18);
-    }
-
-    .psi-stat-card,
-    .psi-panel {
+    .bento-item {
         background: rgba(255, 255, 255, 0.88);
         border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 24px;
-        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.07);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
         backdrop-filter: blur(10px);
-    }
-
-    .psi-stat-card {
-        padding: 22px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        min-height: 118px;
-    }
-
-    .psi-stat-icon {
-        width: 58px;
-        height: 58px;
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.45rem;
-        flex-shrink: 0;
-    }
-
-    .psi-stat-content {
+        padding: 20px;
         display: flex;
         flex-direction: column;
-        line-height: 1.1;
-    }
-
-    .psi-stat-label {
-        color: #64748b;
-        font-size: .92rem;
-        margin-bottom: 6px;
-    }
-
-    .psi-stat-content strong {
-        font-size: 2rem;
-        color: #0f172a;
-        font-weight: 800;
-    }
-
-    .psi-stat-content small {
-        color: #94a3b8;
-        font-size: .86rem;
-    }
-
-    .psi-panel {
-        padding: 22px;
-        height: 100%;
-    }
-
-    .psi-panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 18px;
-    }
-
-    .psi-panel-header h3 {
-        margin: 0;
-        font-size: 1.55rem;
-        font-weight: 800;
-        color: #0f172a;
-    }
-
-    .psi-panel-header span {
-        color: #94a3b8;
-        font-size: .9rem;
-    }
-
-    .psi-actions-panel {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
         overflow: hidden;
     }
 
-    .psi-quick-actions {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 14px;
-        margin-bottom: 16px;
-    }
-
-    .psi-action-btn {
-        min-height: 70px;
-        border-radius: 18px;
-        padding: 14px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 1rem;
-        transition: .25s ease;
-        border: 1px solid transparent;
-    }
-
-    .psi-action-btn:hover {
+    .bento-item:hover {
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
         transform: translateY(-2px);
     }
 
-    .psi-action-btn i {
-        font-size: 1.1rem;
-    }
-
-    .psi-action-primary {
-        background: linear-gradient(135deg, #2563eb, #3b82f6);
-        color: #fff;
-        box-shadow: 0 16px 26px rgba(37, 99, 235, 0.22);
-    }
-
-    .psi-action-purple {
-        background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-        color: #fff;
-        box-shadow: 0 16px 26px rgba(139, 92, 246, 0.18);
-    }
-
-    .psi-action-teal {
-        background: linear-gradient(135deg, #14b8a6, #2dd4bf);
-        color: #fff;
-        box-shadow: 0 16px 26px rgba(20, 184, 166, 0.18);
-    }
-
-    .psi-action-light {
-        background: #f8fafc;
-        color: #475569;
-        border-color: #e2e8f0;
-    }
-
-    .psi-inline-insights {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 4px;
-    }
-
-    .psi-inline-insight-card {
+    .bento-header {
         display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 16px 18px;
-        border-radius: 18px;
-        background: #f8fbff;
-        border: 1px solid #e8eef8;
-        min-height: 96px;
-    }
-
-    .psi-inline-insight-icon {
-        flex-shrink: 0;
-        font-size: 1.15rem;
-        line-height: 1;
-        margin-top: 2px;
-    }
-
-    .psi-inline-insight-text {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        min-width: 0;
-    }
-
-    .psi-inline-insight-label {
-        font-size: .82rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        color: #94a3b8;
-    }
-
-    .psi-inline-insight-text strong {
-        font-size: 1rem;
-        line-height: 1.45;
-        color: #334155;
-        font-weight: 700;
-    }
-
-    .psi-filter-form .form-control,
-    .psi-filter-form .form-select {
-        min-height: 46px;
-        border-radius: 14px;
-        border-color: #dbe3ee;
-        box-shadow: none;
-    }
-
-    .psi-export-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 14px;
-    }
-
-    .psi-export-actions .btn {
-        flex: 1;
-        border-radius: 14px;
-        min-height: 44px;
-        font-weight: 700;
-    }
-
-    .psi-main-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 2fr) minmax(320px, .95fr) minmax(320px, .95fr);
-        gap: 16px;
-        align-items: start;
-    }
-
-    .psi-grid-card {
-        min-width: 0;
-    }
-
-    .psi-grid-agenda {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    .psi-grid-finance {
-        grid-column: 2;
-        grid-row: 1;
-    }
-
-    .psi-grid-alerts {
-        grid-column: 3;
-        grid-row: 1;
-    }
-
-    .psi-grid-chart {
-        grid-column: 1;
-        grid-row: 2;
-    }
-
-    .psi-grid-files {
-        grid-column: 2 / 4;
-        grid-row: 2;
-    }
-
-    .psi-agenda-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .psi-agenda-item {
-        display: grid;
-        grid-template-columns: 78px 1fr auto;
-        gap: 12px;
-        align-items: center;
-        padding: 16px;
-        border-radius: 18px;
-        background: #f8fbff;
-        border: 1px solid #e7eef8;
-    }
-
-    .psi-agenda-time {
-        font-size: 1.55rem;
-        font-weight: 800;
-        color: #334155;
-    }
-
-    .psi-agenda-main strong {
-        display: block;
-        color: #0f172a;
-        font-size: 1.02rem;
-        margin-bottom: 3px;
-    }
-
-    .psi-agenda-main small {
-        color: #94a3b8;
-    }
-
-    .psi-link-more {
-        text-decoration: none;
-        color: #2563eb;
-        font-weight: 700;
-    }
-
-    .psi-finance-panel {
-        padding-bottom: 18px;
-    }
-
-    .psi-finance-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 18px;
-    }
-
-    .psi-finance-item {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: center;
-        gap: 14px;
-        padding: 16px 18px;
-        border-radius: 16px;
-        background: #f8fbff;
-        border: 1px solid #e8eef8;
-    }
-
-    .psi-finance-item span {
-        color: #64748b;
-        font-weight: 700;
-        font-size: 1rem;
-    }
-
-    .psi-finance-item strong {
-        color: #0f172a;
-        font-size: 1.05rem;
-        font-weight: 800;
-        text-align: right;
-        white-space: nowrap;
-    }
-
-    .psi-chart-mini {
-        margin-top: 6px;
-    }
-
-    .psi-chart-mini h4 {
-        font-size: 0.98rem;
-        font-weight: 800;
-        margin-bottom: 12px;
-        color: #0f172a;
-    }
-
-    .psi-finance-chart-wrap {
-        height: 180px;
-        min-height: 180px;
-        max-height: 180px;
-        background: #fff;
-        border-radius: 18px;
-        padding: 12px;
-        border: 1px solid #e8eef8;
-        overflow: hidden;
-    }
-
-    .psi-finance-chart-wrap canvas {
-        width: 100% !important;
-        height: 100% !important;
-        background: transparent;
-        border-radius: 0;
-        padding: 0;
-    }
-
-    .psi-alert-list,
-    .psi-file-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .psi-alert-item,
-    .psi-file-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 14px 16px;
-        border-radius: 16px;
-        background: #f8fbff;
-        border: 1px solid #e8eef8;
-        color: #334155;
-    }
-
-    .psi-alert-item span {
-        font-weight: 500;
-    }
-
-    .psi-file-item {
         justify-content: space-between;
-    }
-
-    .psi-file-main {
-        display: flex;
-        align-items: center;
+        align-items: flex-end;
+        margin-bottom: 16px;
         gap: 10px;
-        min-width: 0;
     }
 
-    .psi-file-main span {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .psi-chart-box {
-        min-height: 250px;
-        height: 250px;
-    }
-
-    .psi-empty-state {
-        padding: 26px 20px;
-        border-radius: 18px;
-        background: #f8fbff;
-        border: 1px dashed #d7e3f1;
-        text-align: center;
-        color: #94a3b8;
-    }
-
-    .psi-empty-state-compact {
-        min-height: 108px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .psi-empty-state i {
-        font-size: 2rem;
-        display: block;
-        margin-bottom: 8px;
-    }
-
-    .psi-empty-state p {
+    .bento-header h3 {
         margin: 0;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.1;
     }
 
-    .psi-dashboard canvas {
-        background: #fff;
-        border-radius: 18px;
-        padding: 10px;
+    .bento-header span {
+        color: #94a3b8;
+        font-size: .85rem;
+        white-space: nowrap;
     }
 
-    @media (max-width: 1399.98px) {
-        .psi-inline-insights {
-            grid-template-columns: 1fr;
+    /* =========================================
+       COMPONENTES INTERNOS (MOBILE)
+       ========================================= */
+    
+    /* Hero */
+    .bento-hero {
+        background: radial-gradient(circle at top left, rgba(59,130,246,0.16), transparent 34%), linear-gradient(135deg, #ffffff 0%, #f7faff 100%);
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .psi-hero-kicker { display: inline-block; font-size: .82rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #3b82f6; margin-bottom: 8px; }
+    .psi-hero-left h1 { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0 0 8px; }
+    .psi-hero-left p { margin: 0; color: #64748b; font-size: 0.95rem; }
+    .psi-hero-btn { border-radius: 16px; padding: 12px 20px; font-weight: 700; box-shadow: 0 12px 24px rgba(22, 163, 74, 0.18); width: 100%; text-align: center; }
+
+    /* Stats */
+    .bento-stat { flex-direction: row; align-items: center; gap: 16px; }
+    .psi-stat-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .psi-stat-content { display: flex; flex-direction: column; line-height: 1.1; }
+    .psi-stat-label { color: #64748b; font-size: .85rem; margin-bottom: 4px; }
+    .psi-stat-content strong { font-size: 1.5rem; color: #0f172a; font-weight: 800; }
+    .psi-stat-content small { color: #94a3b8; font-size: .8rem; }
+
+    /* Ações Rápidas */
+    .bento-quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 100%; }
+    .psi-action-btn { border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: .95rem; transition: .2s ease; padding: 16px 10px; }
+    .psi-action-btn:hover { transform: scale(1.03); }
+    .psi-action-btn i { font-size: 1.4rem; }
+    .psi-action-primary { background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff; }
+    .psi-action-purple { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; }
+    .psi-action-teal { background: linear-gradient(135deg, #14b8a6, #2dd4bf); color: #fff; }
+    .psi-action-light { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* Insights */
+    .psi-inline-insights { display: flex; flex-direction: column; gap: 12px; height: 100%; justify-content: center; }
+    .psi-inline-insight-card { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 16px; background: #f8fbff; border: 1px solid #e8eef8; }
+    .psi-inline-insight-icon { font-size: 1.4rem; }
+    .psi-inline-insight-text { display: flex; flex-direction: column; gap: 2px; }
+    .psi-inline-insight-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; }
+    .psi-inline-insight-text strong { font-size: .95rem; color: #334155; font-weight: 700; }
+
+    /* Filtros */
+    .psi-filter-form { display: flex; flex-direction: column; height: 100%; }
+    .psi-filter-form .form-control, .psi-filter-form .form-select { border-radius: 12px; box-shadow: none; border-color: #dbe3ee;}
+    .psi-export-actions { display: flex; gap: 8px; margin-top: auto; flex-direction: column; }
+    .psi-export-actions .btn { border-radius: 12px; font-weight: 700; width: 100%; }
+
+    /* Agenda */
+    .psi-agenda-list { display: flex; flex-direction: column; gap: 10px; }
+    .psi-agenda-item { display: grid; grid-template-columns: 1fr; align-items: flex-start; gap: 8px; padding: 14px; border-radius: 16px; background: #f8fbff; border: 1px solid #e7eef8; }
+    .psi-agenda-time { font-size: 1.2rem; font-weight: 800; color: #334155; }
+    .psi-agenda-main strong { color: #0f172a; font-size: .95rem; }
+    .psi-link-more { text-decoration: none; color: #2563eb; font-weight: 700; font-size: .95rem; text-align: center; display: block; margin-top: 16px;}
+
+    /* Financeiro */
+    .psi-finance-list { display: flex; flex-direction: column; gap: 10px; }
+    .psi-finance-item { display: flex; flex-direction: column; align-items: flex-start; padding: 14px; border-radius: 14px; background: #f8fbff; border: 1px solid #e8eef8; gap: 4px;}
+    .psi-finance-item span { color: #64748b; font-weight: 600; font-size: .9rem; }
+    .psi-finance-item strong { color: #0f172a; font-size: 1.05rem; font-weight: 800; text-align: left;}
+    .psi-finance-chart-wrap { height: 160px; background: #fff; border-radius: 16px; padding: 10px; border: 1px solid #e8eef8; margin-top: 16px;}
+
+    /* Alertas e Arquivos */
+    .psi-alert-list, .psi-file-list { display: flex; flex-direction: column; gap: 10px; }
+    .psi-alert-item { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: #fff5f5; border: 1px solid #ffe3e3; font-weight: 600; font-size: .95rem; }
+    .psi-file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 14px; background: #f8fbff; border: 1px solid #e8eef8; font-weight: 600; }
+    .psi-file-main { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .psi-file-main span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .95rem; }
+
+    /* Empty States & Gráficos */
+    .psi-chart-box { min-height: 220px; height: 100%; }
+    .psi-empty-state { border-radius: 16px; background: #f8fbff; border: 1px dashed #d7e3f1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; text-align: center; min-height: 120px; }
+    .psi-empty-state i { font-size: 2rem; margin-bottom: 8px; }
+    .psi-empty-state p { margin: 0; font-weight: 500;}
+
+
+    /* =========================================
+       TABLETS E TELAS MÉDIAS (>= 768px)
+       ========================================= */
+    @media (min-width: 768px) {
+        .psi-bento-grid {
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
         }
 
-        .psi-main-grid {
-            grid-template-columns: 1.4fr .9fr .9fr;
+        .bento-item {
+            padding: 24px;
+            border-radius: 24px;
         }
+
+        /* Hero passa a ocupar a linha toda e flex row */
+        .bento-hero {
+            grid-column: span 12;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .psi-hero-left h1 { font-size: 2.3rem; }
+        .psi-hero-btn { width: auto; }
+
+        /* Stats dividem o espaço em 2 por linha */
+        .bento-stat { grid-column: span 6; }
+        
+        /* Outros painéis pegam meia tela ou tela inteira dependendo da necessidade */
+        .bento-actions, .bento-insights { grid-column: span 6; }
+        .bento-filters, .bento-agenda, .bento-finance, .bento-alerts, .bento-files { grid-column: span 12; }
+        .bento-chart { grid-column: span 12; }
+        
+        .psi-export-actions { flex-direction: row; }
+        .psi-finance-item { flex-direction: row; justify-content: space-between; align-items: center; }
+        .psi-finance-item strong { text-align: right; }
+        .psi-agenda-item { grid-template-columns: 60px 1fr auto; align-items: center; }
     }
 
-    @media (max-width: 1199.98px) {
-        .psi-quick-actions {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
 
-        .psi-finance-chart-wrap {
-            height: 220px;
-            min-height: 220px;
-            max-height: 220px;
-        }
+    /* =========================================
+       DESKTOP E TELAS GRANDES (>= 1200px)
+       ========================================= */
+    @media (min-width: 1200px) {
+        
+        /* Montagem do Bento Box avançado */
+        .bento-stat { grid-column: span 3; }
+        
+        .bento-actions { grid-column: span 4; }
+        .bento-insights { grid-column: span 4; }
+        .bento-filters { grid-column: span 4; }
+        
+        .bento-agenda { grid-column: span 4; grid-row: span 2; }
+        .bento-finance { grid-column: span 4; grid-row: span 2; }
+        
+        .bento-alerts { grid-column: span 4; }
+        .bento-files { grid-column: span 4; }
+        
+        .bento-chart { grid-column: span 12; }
 
-        .psi-main-grid {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .psi-grid-agenda {
-            grid-column: 1 / 3;
-            grid-row: auto;
-        }
-
-        .psi-grid-finance {
-            grid-column: 1;
-            grid-row: auto;
-        }
-
-        .psi-grid-alerts {
-            grid-column: 2;
-            grid-row: auto;
-        }
-
-        .psi-grid-chart {
-            grid-column: 1;
-            grid-row: auto;
-        }
-
-        .psi-grid-files {
-            grid-column: 2;
-            grid-row: auto;
-        }
-    }
-
-    @media (max-width: 991.98px) {
-        .psi-hero {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .psi-hero h1 {
-            font-size: 2rem;
-        }
-
-        .psi-inline-insights {
-            grid-template-columns: 1fr;
-        }
-
-        .psi-main-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .psi-grid-agenda,
-        .psi-grid-finance,
-        .psi-grid-alerts,
-        .psi-grid-chart,
-        .psi-grid-files {
-            grid-column: auto;
-            grid-row: auto;
-        }
-    }
-
-    @media (max-width: 767.98px) {
-        .psi-dashboard {
-            padding-top: 0;
-        }
-
-        .psi-hero {
-            padding: 22px 18px;
-            border-radius: 22px;
-        }
-
-        .psi-hero h1 {
-            font-size: 1.75rem;
-        }
-
-        .psi-panel,
-        .psi-stat-card {
-            border-radius: 20px;
-        }
-
-        .psi-quick-actions {
-            grid-template-columns: 1fr;
-        }
-
-        .psi-agenda-item {
-            grid-template-columns: 1fr;
-            align-items: flex-start;
-        }
-
-        .psi-agenda-time {
-            font-size: 1.2rem;
-        }
-
-        .psi-export-actions {
-            flex-direction: column;
-        }
-
-        .psi-finance-item {
-            grid-template-columns: 1fr;
-            align-items: flex-start;
-        }
-
-        .psi-finance-item strong {
-            text-align: left;
-        }
-
-        .psi-chart-box {
-            min-height: 220px;
-            height: 220px;
-        }
+        /* Ajustes finos para desktop */
+        .psi-stat-icon { width: 54px; height: 54px; font-size: 1.4rem; }
+        .psi-stat-content strong { font-size: 1.7rem; }
+        .psi-chart-box { min-height: 250px; }
+        .psi-finance-chart-wrap { height: 140px; margin-top: auto; }
     }
 </style>
 @endsection
@@ -1170,27 +674,16 @@
         options: {
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true,
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 8,
-                    }
-                }
+                legend: { display: false }
             },
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: {
-                        color: '#64748b',
-                        autoSkip: true,
-                        maxRotation: 0
-                    }
+                    ticks: { display: false }
                 },
                 y: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(148, 163, 184, 0.15)' },
-                    ticks: { color: '#64748b' }
+                    display: false,
+                    beginAtZero: true
                 }
             }
         }
