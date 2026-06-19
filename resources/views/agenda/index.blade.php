@@ -347,8 +347,10 @@
     </div>
 </div>
 
+<!-- Container do Popover (JS injeta o HTML interno) -->
 <div id="session-popover" class="session-popover" style="display:none;" role="dialog" aria-modal="true" aria-live="polite"></div>
 
+<!-- Modal Nova Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1" aria-labelledby="modalSessaoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form id="formSessao" class="modal-content border-0 rounded-4 shadow">
@@ -407,7 +409,6 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
@@ -555,7 +556,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     const meetUrl       = sessao?.meet_url || '';
     const pago          = !!sessao?.foi_pago;
     
-    // Cores premium para o dot e pill
     const corDot = pago ? '#22c55e' : '#ef4444';
     const pillClass = pago 
         ? 'background: #dcfce7; color: #166534; border-color: #bbf7d0;' 
@@ -734,11 +734,18 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
+  // ATENÇÃO: Aqui os plugins e o locale originais foram restaurados
   const calendar = new window.FullCalendar.Calendar(calendarEl, {
+    plugins: [
+        window.FullCalendar.dayGridPlugin,
+        window.FullCalendar.timeGridPlugin,
+        window.FullCalendar.interactionPlugin,
+        window.FullCalendar.bootstrap5Plugin
+    ],
     themeSystem: 'bootstrap5',
     timeZone: 'local',
     height: 700,
-    locale: 'pt-br',
+    locale: window.FullCalendar.ptBr,
     initialView: 'dayGridMonth',
     headerToolbar: false,
     events: '/api/sessoes',
