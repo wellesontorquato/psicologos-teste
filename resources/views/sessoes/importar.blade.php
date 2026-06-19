@@ -3,302 +3,446 @@
 @section('title', 'Importar Sessões em Massa | PsiGestor')
 
 @section('content')
-<div class="container my-4 my-md-5">
+<style>
+    .imp-page {
+        width: 100%;
+    }
 
-    {{-- Botão Voltar --}}
-    <a href="{{ route('sessoes.index') }}" class="btn btn-outline-secondary mb-3 btn-voltar-sessoes">
-        <i class="bi bi-arrow-left"></i> Voltar para lista de sessões
-    </a>
+    .imp-content {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
 
-    {{-- CABEÇALHO DA PÁGINA --}}
-    <div class="page-header text-center text-lg-start mb-4">
-        <h2 class="display-6 fw-bold">Importação de Sessões em Massa</h2>
-        <p class="text-muted lead">Envie sua planilha do Excel para adicionar múltiplas sessões de uma só vez.</p>
-    </div>
+    .imp-header {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
 
+    .imp-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
 
-    <div class="row g-4 g-lg-5">
+    .imp-subtitle {
+        color: #64748b;
+        margin: 4px 0 0;
+        font-size: .95rem;
+    }
 
-        {{-- COLUNA DA ESQUERDA (AÇÃO PRINCIPAL) --}}
-        <div class="col-lg-7">
-            <div class="card h-100 shadow-sm border-light">
-                <div class="card-body p-4 p-lg-5">
-                    
-                    {{-- PASSO 1 --}}
-                    <div class="step-box mb-4">
-                        <span class="step-number">1</span>
-                        <div>
-                            <h5 class="mb-1">Baixe a planilha modelo</h5>
-                            <p class="text-muted mb-2">Use nosso modelo para garantir que os dados estejam no formato correto.</p>
-                            <a href="{{ route('sessoes.modelo') }}" class="btn btn-outline-primary no-spinner">
-                                <i class="bi bi-download me-2"></i> Baixar Modelo (.xlsx)
-                            </a>
-                        </div>
-                    </div>
+    .imp-btn {
+        min-height: 44px;
+        border-radius: 14px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+        padding: 0 20px;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
 
-                    {{-- PASSO 2 --}}
-                    <div class="step-box">
-                        <span class="step-number">2</span>
-                        <div>
-                            <h5 class="mb-1">Envie o arquivo preenchido</h5>
-                            <p class="text-muted mb-3">Arraste e solte o arquivo na área abaixo ou clique para selecionar.</p>
-                            
-                            <form action="{{ route('sessoes.importar') }}" method="POST" enctype="multipart/form-data" id="import-form">
-                                @csrf
-                                <div class="file-drop-area mb-3">
-                                    <i class="bi bi-cloud-arrow-up display-4"></i>
-                                    <span class="file-message">Arraste e solte o arquivo aqui, ou <strong>clique para selecionar</strong>.</span>
-                                    <input type="file" name="arquivo" id="arquivo" class="file-input" required accept=".xlsx,.xls">
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-lg w-100" id="submit-button">
-                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                    <span class="button-text">Importar Sessões</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+    .imp-btn-outline {
+        background: transparent;
+        border: 2px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .imp-btn-outline:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+
+    .imp-btn-primary {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .imp-btn-primary:hover {
+        background: #1d4ed8;
+    }
+
+    .imp-btn-primary:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .imp-btn-outline-primary {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .imp-btn-outline-primary:hover {
+        background: #dbeafe;
+    }
+
+    .imp-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .imp-card {
+        background: rgba(255,255,255,.98);
+        border: 1px solid rgba(226,232,240,.95);
+        border-radius: 22px;
+        box-shadow: 0 14px 38px rgba(15,23,42,.06);
+        padding: 24px;
+    }
+
+    .imp-step {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .imp-step:last-child {
+        margin-bottom: 0;
+    }
+
+    .imp-step-num {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.1rem;
+    }
+
+    .imp-step-content {
+        flex: 1;
+    }
+
+    .imp-step-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 4px 0;
+    }
+
+    .imp-step-desc {
+        font-size: .95rem;
+        color: #64748b;
+        margin: 0 0 14px 0;
+        line-height: 1.5;
+    }
+
+    .imp-drop-area {
+        position: relative;
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        background: #f8fafc;
+        padding: 32px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 16px;
+    }
+
+    .imp-drop-area:hover, 
+    .imp-drop-area.is-dragover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .imp-drop-icon {
+        font-size: 2.5rem;
+        color: #94a3b8;
+        margin-bottom: 12px;
+        transition: color 0.2s;
+    }
+
+    .imp-drop-area:hover .imp-drop-icon,
+    .imp-drop-area.is-dragover .imp-drop-icon {
+        color: #3b82f6;
+    }
+
+    .imp-drop-msg {
+        display: block;
+        color: #475569;
+        font-size: .95rem;
+        font-weight: 600;
+    }
+
+    .imp-drop-msg strong {
+        color: #2563eb;
+    }
+
+    .imp-file-input {
+        display: none;
+    }
+
+    .imp-inst-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .imp-inst-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .imp-inst-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .imp-inst-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .imp-inst-icon {
+        color: #3b82f6;
+        font-size: 1.1rem;
+        margin-top: 2px;
+    }
+
+    .imp-inst-text {
+        font-size: .9rem;
+        color: #475569;
+        line-height: 1.5;
+    }
+
+    .imp-inst-text strong {
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    @media (min-width: 768px) {
+        .imp-header {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .imp-card {
+            padding: 32px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .imp-grid {
+            grid-template-columns: 1.5fr 1fr;
+        }
+    }
+</style>
+
+<div class="container-fluid py-4 imp-page">
+    <div class="imp-content">
+        
+        <div class="imp-header">
+            <div>
+                <h1 class="imp-title">Importação de Sessões em Massa</h1>
+                <p class="imp-subtitle">Envie sua planilha para adicionar múltiplos atendimentos de uma só vez.</p>
             </div>
+
+            <a href="{{ route('sessoes.index') }}" class="imp-btn imp-btn-outline">
+                <i class="bi bi-arrow-left"></i>
+                Voltar para lista
+            </a>
         </div>
 
-        {{-- COLUNA DA DIREITA (INSTRUÇÕES) --}}
-        <div class="col-lg-5">
-            <div class="card h-100 shadow-sm border-light">
-                <div class="card-header bg-light py-3">
-                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Instruções de Preenchimento</h5>
+        <div class="imp-grid">
+            
+            {{-- COLUNA ESQUERDA: AÇÕES --}}
+            <div class="imp-card">
+                
+                {{-- PASSO 1 --}}
+                <div class="imp-step">
+                    <div class="imp-step-num">1</div>
+                    <div class="imp-step-content">
+                        <h2 class="imp-step-title">Baixe a planilha modelo</h2>
+                        <p class="imp-step-desc">Utilize nosso modelo oficial para garantir que os dados sejam lidos perfeitamente pelo sistema.</p>
+                        <a href="{{ route('sessoes.modelo') }}" class="imp-btn imp-btn-outline-primary no-spinner">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Baixar Modelo (.xlsx)
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item">
-                            <i class="bi bi-person"></i>
-                            <div>
-                                <strong>Paciente:</strong> Nome idêntico ao cadastro no sistema(Aba Pacientes da planilha Modelo mostra uma lista dos seus pacientes cadastrados).
+
+                <hr class="text-muted opacity-25 my-4">
+
+                {{-- PASSO 2 --}}
+                <div class="imp-step">
+                    <div class="imp-step-num">2</div>
+                    <div class="imp-step-content">
+                        <h2 class="imp-step-title">Envie o arquivo preenchido</h2>
+                        <p class="imp-step-desc">Faça o upload da planilha com as sessões preenchidas nos formatos aceitos.</p>
+                        
+                        <form action="{{ route('sessoes.importar') }}" method="POST" enctype="multipart/form-data" id="import-form">
+                            @csrf
+                            
+                            <div class="imp-drop-area" id="drop-area">
+                                <i class="bi bi-cloud-arrow-up imp-drop-icon"></i>
+                                <span class="imp-drop-msg">Arraste e solte o arquivo aqui, ou <strong>clique para selecionar</strong>.</span>
+                                <input type="file" name="arquivo" id="arquivo" class="imp-file-input" required accept=".xlsx,.xls">
                             </div>
+
+                            <button type="submit" class="imp-btn imp-btn-primary w-100" id="submit-button">
+                                <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                                <span class="button-text"><i class="bi bi-upload"></i> Importar Sessões</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- COLUNA DIREITA: INSTRUÇÕES --}}
+            <div class="imp-card" style="height: fit-content;">
+                <div class="imp-inst-header">
+                    <i class="bi bi-info-circle text-primary fs-5"></i>
+                    <h3 class="imp-inst-title">Instruções de Preenchimento</h3>
+                </div>
+
+                <div class="imp-inst-list">
+                    <div class="imp-inst-item">
+                        <i class="bi bi-person imp-inst-icon"></i>
+                        <div class="imp-inst-text">
+                            <strong>Paciente:</strong> O nome deve estar idêntico ao cadastro no sistema (consulte a aba "Pacientes" na planilha modelo).
                         </div>
-                        <div class="list-group-item">
-                            <i class="bi bi-calendar-event"></i>
-                            <div>
-                                <strong>Data:</strong> Formato 'DD/MM/AAAA HH:MM'.
-                            </div>
+                    </div>
+
+                    <div class="imp-inst-item">
+                        <i class="bi bi-calendar3 imp-inst-icon"></i>
+                        <div class="imp-inst-text">
+                            <strong>Data e Hora:</strong> Utilize o formato exato <code>DD/MM/AAAA HH:MM</code>.
                         </div>
-                        <div class="list-group-item">
-                            <i class="bi bi-clock"></i>
-                            <div>
-                                <strong>Duração (Minutos):</strong> Apenas números (ex: '50').
-                            </div>
+                    </div>
+
+                    <div class="imp-inst-item">
+                        <i class="bi bi-clock-history imp-inst-icon"></i>
+                        <div class="imp-inst-text">
+                            <strong>Duração:</strong> Insira apenas os números em minutos (Ex: <code>50</code>).
                         </div>
-                         <div class="list-group-item">
-                            <i class="bi bi-cash-coin"></i>
-                            <div>
-                                <strong>Valor:</strong> Formato com vírgula (ex: '150,00').
-                            </div>
+                    </div>
+
+                    <div class="imp-inst-item">
+                        <i class="bi bi-currency-dollar imp-inst-icon"></i>
+                        <div class="imp-inst-text">
+                            <strong>Valor:</strong> Digite utilizando vírgula para os centavos (Ex: <code>150,00</code>).
                         </div>
-                        <div class="list-group-item">
-                            <i class="bi bi-check2-circle"></i>
-                            <div>
-                                <strong>Pago:</strong> Use 'Sim' ou 'Não'.
-                            </div>
+                    </div>
+
+                    <div class="imp-inst-item">
+                        <i class="bi bi-check-circle imp-inst-icon"></i>
+                        <div class="imp-inst-text">
+                            <strong>Foi Pago:</strong> Responda apenas com <code>Sim</code> ou <code>Não</code>.
                         </div>
-                        <div class="list-group-item">
-                            <i class="bi bi-bookmark-star"></i>
-                            <div>
-                                <strong>Status:</strong> 'Confirmada' se for sessões passadas ou 'Pendente' caso seja sessões futuras.
-                            </div>
+                    </div>
+
+                    <div class="imp-inst-item">
+                        <i class="bi bi-bookmark-star imp-inst-icon"></i>
+                        <div class="imp-inst-text">
+                            <strong>Status:</strong> Use <code>Confirmada</code> para sessões que já aconteceram, ou <code>Pendente</code> para futuras.
                         </div>
-                        <div class="list-group-item">
-                            <i class="bi bi-file-text"></i>
-                            <div>
-                                <strong>Evolução:</strong> Texto livre (obrigatório se a sessão já ocorreu).
-                            </div>
+                    </div>
+
+                    <div class="imp-inst-item">
+                        <i class="bi bi-journal-text imp-inst-icon"></i>
+                        <div class="imp-inst-text">
+                            <strong>Evolução:</strong> Texto de anotação clínica. É obrigatório caso a sessão já tenha ocorrido.
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 @endsection
 
-@push('styles')
-<style>
-    /* ---------------------------------- */
-    /* ESTILOS BASE (MOBILE-FIRST) E TEMA */
-    /* ---------------------------------- */
-    :root {
-        --psi-primary: #0077ff;
-        --psi-secondary: #00aaff;
-        --psi-light-bg: #f0f8ff;
-        --psi-text-muted: #6c757d;
-    }
-
-    .page-header h2 {
-        color: var(--psi-primary);
-    }
-
-    .step-box {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    .step-number {
-        flex-shrink: 0;
-        width: 35px;
-        height: 35px;
-        background-color: var(--psi-light-bg);
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: var(--psi-primary);
-        font-size: 1.1rem;
-    }
-
-    .file-drop-area {
-        position: relative;
-        border: 2px dashed #d0d0d0;
-        border-radius: .5rem;
-        padding: 1.5rem;
-        text-align: center;
-        cursor: pointer;
-        background-color: #fdfdfd;
-        transition: border-color .3s, background-color .3s;
-    }
-    .file-drop-area i {
-        color: #ced4da;
-    }
-    .file-drop-area:hover, .file-drop-area.is-dragover {
-        border-color: var(--psi-primary);
-        background-color: var(--psi-light-bg);
-    }
-    .file-input {
-        position: none;
-    }
-    .file-message {
-        display: block; margin-top: 0.5rem; color: var(--psi-text-muted); font-size: 0.9rem;
-    }
-    
-    .btn-primary {
-        background-color: var(--psi-primary);
-        border-color: var(--psi-primary);
-    }
-    .btn-primary:hover {
-        background-color: #005fcc; /* Um pouco mais escuro no hover */
-        border-color: #005fcc;
-    }
-    .btn-outline-primary {
-        color: var(--psi-primary);
-        border-color: var(--psi-primary);
-    }
-    .btn-outline-primary:hover {
-        background-color: var(--psi-primary);
-        color: white;
-    }
-    
-    .list-group-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 0.75rem 0;
-        background: none;
-        border: none;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .list-group-item:last-child {
-        border-bottom: none;
-    }
-    .list-group-item i {
-        margin-top: 2px;
-        color: var(--psi-primary);
-    }
-    
-    /* ------------------------------------------------------------------ */
-    /* MELHORIAS PARA DESKTOPS (LG e maiores - 992px ou mais) */
-    /* ------------------------------------------------------------------ */
-    @media (min-width: 992px) {
-        .step-box {
-            gap: 1.5rem;
-        }
-        .step-number {
-            width: 40px;
-            height: 40px;
-        }
-        .file-drop-area {
-            padding: 2.5rem;
-        }
-        .file-message {
-            font-size: 1rem;
-        }
-    }
-</style>
-@endpush
-
-@push('scripts')
+@section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const fileInput = document.getElementById('arquivo');
-  const dropArea = document.querySelector('.file-drop-area');
-  const fileMessage = dropArea.querySelector('.file-message');
-  const originalMessage = fileMessage.innerHTML;
-  const importForm = document.getElementById('import-form');
-  const submitButton = document.getElementById('submit-button');
+    const fileInput = document.getElementById('arquivo');
+    const dropArea = document.getElementById('drop-area');
+    const fileMessage = dropArea.querySelector('.imp-drop-msg');
+    const originalMessage = fileMessage.innerHTML;
+    const importForm = document.getElementById('import-form');
+    const submitButton = document.getElementById('submit-button');
 
-  // Abrir o seletor ao clicar na área
-  dropArea.addEventListener('click', () => fileInput.click());
+    // Abre o seletor ao clicar na área
+    dropArea.addEventListener('click', () => fileInput.click());
 
-  // Prevent default em todos os eventos de DnD
-  ['dragenter','dragover','dragleave','drop'].forEach(evtName => {
-    dropArea.addEventListener(evtName, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    // Previne comportamentos padrões de drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evtName => {
+        dropArea.addEventListener(evtName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
     });
-  });
 
-  dropArea.addEventListener('dragover', () => {
-    dropArea.classList.add('is-dragover');
-  });
-  dropArea.addEventListener('dragleave', () => {
-    dropArea.classList.remove('is-dragover');
-  });
-  dropArea.addEventListener('drop', (e) => {
-    dropArea.classList.remove('is-dragover');
-    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
-      fileInput.files = e.dataTransfer.files;
-      updateFileMessage();
+    dropArea.addEventListener('dragover', () => {
+        dropArea.classList.add('is-dragover');
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.classList.remove('is-dragover');
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+        dropArea.classList.remove('is-dragover');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            updateFileMessage();
+        }
+    });
+
+    fileInput.addEventListener('change', updateFileMessage);
+
+    function updateFileMessage() {
+        if (fileInput.files.length > 0) {
+            fileMessage.innerHTML = `
+                <i class="bi bi-file-earmark-excel-fill text-success fs-5 me-1"></i>
+                <strong class="text-dark">Arquivo selecionado:</strong> <br>
+                <span class="text-muted">${fileInput.files[0].name}</span>
+            `;
+        } else {
+            fileMessage.innerHTML = originalMessage;
+        }
     }
-  });
 
-  fileInput.addEventListener('change', updateFileMessage);
-
-  function updateFileMessage() {
-    if (fileInput.files.length > 0) {
-      fileMessage.innerHTML = `
-        <i class="bi bi-file-earmark-check-fill text-success"></i>
-        <strong>Arquivo selecionado:</strong> ${fileInput.files[0].name}
-      `; // ← AGORA vai interpolar corretamente (crases)
-    } else {
-      fileMessage.innerHTML = originalMessage;
+    if (importForm) {
+        importForm.addEventListener('submit', function () {
+            submitButton.disabled = true;
+            submitButton.querySelector('.spinner-border').classList.remove('d-none');
+            submitButton.querySelector('.button-text').textContent = 'Importando aguarde...';
+        });
     }
-  }
 
-  if (importForm) {
-    importForm.addEventListener('submit', function () {
-      submitButton.disabled = true;
-      submitButton.querySelector('.spinner-border').classList.remove('d-none');
-      submitButton.querySelector('.button-text').textContent = 'Importando...';
-    });
-  }
-
-  @if (session('resultado_importacao'))
-    Swal.fire({
-      title: 'Resultado da Importação',
-      html: '<ul class="text-start" style="padding-left:1.2rem; font-size: 0.95rem;">{!! implode('', array_map(fn($m) => "<li>{$m}</li>", session('resultado_importacao'))) !!}</ul>',
-      icon: '{{ str_contains(implode(" ", session("resultado_importacao")), "❌") ? "error" : "success" }}',
-      confirmButtonColor: 'var(--psi-primary)'
-    });
-  @endif
+    @if (session('resultado_importacao'))
+        Swal.fire({
+            title: 'Resultado da Importação',
+            html: '<ul class="text-start m-0" style="padding-left:1.2rem; font-size: 0.95rem; color: #475569;">{!! implode("", array_map(fn($m) => "<li>{$m}</li>", session("resultado_importacao"))) !!}</ul>',
+            icon: '{{ str_contains(implode(" ", session("resultado_importacao")), "❌") ? "error" : "success" }}',
+            confirmButtonColor: '#2563eb',
+            background: '#fff',
+            color: '#0f172a'
+        });
+    @endif
 });
-
 </script>
-@endpush
+@endsection
