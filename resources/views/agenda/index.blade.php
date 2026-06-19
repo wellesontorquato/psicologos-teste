@@ -27,34 +27,12 @@
         padding:14px;
         box-shadow:0 6px 18px rgba(10,20,30,.06);
     }
-
-    .calendar-header{
-        position:relative;
-        background:var(--pg-surface);
-        border:1px solid var(--pg-border);
-        border-radius:16px;
-        padding:12px;
-        margin-bottom:14px;
-        box-shadow:0 8px 28px rgba(10,20,30,.06);
-    }
-    .calendar-header:before{
-        content:"";
-        position:absolute; inset:0 0 auto 0;
-        height:4px;
-        border-radius:16px 16px 0 0;
-        background:linear-gradient(90deg,var(--pg-primary),#30d1d4);
+    
+    @media (min-width: 768px){
+        #calendar-card{ padding:18px; }
     }
 
-    .calendar-row{ display:grid; gap:10px; grid-template-columns:1fr; }
-
-    .cal-title{ display:flex; gap:8px; align-items:center; justify-content:center; text-align:center; }
-    .cal-icon{
-        width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
-        background:rgba(18,180,183,.10); color:var(--pg-primary); font-size:16px; flex:0 0 auto;
-    }
-    .cal-text .cal-head{ font-weight:800; letter-spacing:.2px; color:var(--pg-ink); line-height:1.1; font-size:1.05rem; }
-
-    /* chips */
+    /* chips utilizados na legenda */
     .pg-chip{
         display:inline-flex; align-items:center; gap:6px;
         border:1px solid #cfe7e8; background:rgba(18,180,183,.10); color:#0b7f83;
@@ -65,70 +43,142 @@
     .chip-success{ background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.35); color:#0e7a56; }
     .chip-warn{ background:rgba(234,88,12,.14); border-color:rgba(234,88,12,.35); color:#8e3a0d; }
 
-    /* ===== header (como o 2º print) ===== */
-    .cal-sub{ display:flex; flex-direction:column; gap:10px; }
-    .connect-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .sync-row{ display:flex; gap:12px; flex-wrap:wrap; }
-    .sync-row .btn-outline{
-        background:#fff; border:1px solid var(--pg-primary); color:var(--pg-primary);
-        border-radius:12px; font-weight:800; padding:10px 14px; min-height:44px; min-width:230px;
-    }
-
     .legend{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; }
     .legend .pg-chip{ padding:5px 8px; font-weight:700; font-size:.78rem; }
     .legend .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8; }
     .dot-paid{ background:#28a745 } .dot-pending{ background:#dc3545 } .dot-late{ background:#00c4ff }
 
-    .cal-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .spacer { flex:1; }
-    .btn-group-clean{ display:flex; gap:8px; align-items:center; }
-    .btn-ghost,.btn-brand,.btn-outline{
-        display:inline-flex; align-items:center; justify-content:center; gap:6px;
-        border-radius:12px; font-weight:800; letter-spacing:.2px;
-        padding:10px 14px; font-size:.92rem; min-height:44px; transition:.15s;
-        width:100%;
+    /* ===== NOVO CABEÇALHO PREMIUM ===== */
+    .agnd-header-card {
+        background: rgba(255,255,255,.98);
+        border: 1px solid var(--pg-border);
+        border-radius: 22px;
+        box-shadow: 0 10px 30px rgba(10,20,30,.06);
+        padding: 24px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
     }
-    .btn-ghost{ background:#eef5f6; border:1px solid #cfe7e8; color:#184146; }
-    .btn-ghost:hover{ transform:translateY(-1px); box-shadow:0 6px 14px rgba(10,20,30,.10) }
-    .btn-brand{ background:var(--pg-primary); border:1px solid var(--pg-primary-700); color:#fff; box-shadow:0 8px 18px rgba(18,180,183,.28); }
-    .btn-brand:hover{ transform:translateY(-1px); }
-    .nav-switch,.view-switch{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-    .view-switch .vbtn,.nav-switch .nbtn{
-        border:1px solid #cfe7e8; background:#fff; color:#1f2a33; border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem; min-height:44px;
+    .agnd-header-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--pg-primary), #30d1d4);
     }
-    .view-switch .vbtn.active{ background:linear-gradient(180deg,#fff,#f0feff); border-color:var(--pg-primary); box-shadow:0 8px 18px rgba(18,180,183,.22); color:var(--pg-primary); }
-
-    .cal-right{ display:flex; justify-content:flex-end; align-items:center; }
-
-    @media (max-width:767.98px){
-    .cal-title{ justify-content:center; text-align:center; }
-    .cal-sub{ align-items:center; }
-    .connect-row, .sync-row{ justify-content:center; }   /* chips e botões de sync centralizados */
-
-    .cal-right{ justify-content:center; }                /* área dos controles à direita */
-    .cal-actions{ justify-content:center; align-items:center; }
-    .nav-switch, .view-switch, .cal-actions .btn-group-clean{ justify-content:center; }
-    .spacer{ display:none; }                             /* remove o “empurra” no mobile */
-
-    /* nos controles da direita, os botões não ocupam 100% no mobile */
-    .cal-actions .btn-ghost,
-    .cal-actions .btn-brand,
-    .cal-actions .btn-outline,
-    .cal-actions .vbtn,
-    .cal-actions .nbtn{ width:auto; } /* empilha bem no mobile */ 
-}
-
-    @media (min-width: 768px){
-        #calendar-card{ padding:18px; }
-        .calendar-row{ grid-template-columns:1fr auto; align-items:center; }
-        .cal-title{ justify-content:flex-start; text-align:left; }
-        .cal-text .cal-head{ font-size:1.25rem; }
-        .cal-actions{ flex-wrap:nowrap; }
-        .nav-switch,.view-switch{ display:flex; }
-        .nav-switch .nbtn,.view-switch .vbtn{ min-width:auto; }
-        .btn-ghost,.btn-brand,.btn-outline{ width:auto; }
+    .agnd-header-top {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 20px;
     }
-    @media (min-width: 992px){ .cal-text .cal-head{ font-size:1.35rem; } }
+    .agnd-title-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .agnd-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(18,180,183,.10);
+        color: var(--pg-primary);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .agnd-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--pg-ink);
+        margin: 0 0 6px 0;
+        line-height: 1.2;
+    }
+    .agnd-sync-area {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    .agnd-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+    .agnd-badge-success { background: rgba(16,185,129,.14); color: #0e7a56; border-color: rgba(16,185,129,.35); }
+    .agnd-badge-warning { background: rgba(234,88,12,.14); color: #8e3a0d; border-color: rgba(234,88,12,.35); }
+    .agnd-badge-outline { background: #f8fafc; color: #475569; border-color: #e2e8f0; cursor: pointer; }
+    .agnd-badge-outline:hover { background: #f1f5f9; color: #0f172a; }
+    .agnd-main-actions {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+    .agnd-btn {
+        min-height: 44px;
+        border-radius: 12px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 18px;
+        font-size: .9rem;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+    }
+    .agnd-btn-primary { background: var(--pg-primary); color: #fff; box-shadow: 0 4px 12px rgba(18,180,183,.25); }
+    .agnd-btn-primary:hover { background: var(--pg-primary-700); transform: translateY(-1px); }
+    .agnd-btn-outline { background: #fff; border: 2px solid var(--pg-border); color: #475569; }
+    .agnd-btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+    .agnd-header-bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-top: 16px;
+        border-top: 1px solid var(--pg-border);
+    }
+    .agnd-nav-group {
+        display: flex;
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 4px;
+        width: 100%;
+    }
+    .agnd-nav-btn {
+        flex: 1;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        color: #64748b;
+        font-weight: 700;
+        font-size: .85rem;
+        padding: 8px 12px;
+        transition: all 0.2s;
+    }
+    .agnd-nav-btn:hover { color: #0f172a; }
+    .agnd-nav-btn.active { background: #fff; color: var(--pg-primary); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+
+    @media (min-width: 768px) {
+        .agnd-header-top { flex-direction: row; justify-content: space-between; align-items: flex-start; }
+        .agnd-main-actions { width: auto; }
+        .agnd-btn { width: auto; }
+        .agnd-header-bottom { flex-direction: row; justify-content: space-between; align-items: center; }
+        .agnd-nav-group { width: auto; }
+    }
+    /* ===== FIM NOVO CABEÇALHO ===== */
 
     /* ===== FullCalendar ===== */
     .fc .fc-day-sat, .fc .fc-day-sun{ background: var(--pg-weekend); }
@@ -227,7 +277,6 @@
     .session-popover .pill{
     background:#f5f7fa; border:1px solid #e5e7eb; padding:6px 10px; border-radius:999px; font-size:.85rem;
     }
-
 </style>
 @endsection
 
@@ -246,82 +295,69 @@
         </div>
     @endif
 
-    <div class="calendar-header">
-        <div class="calendar-row">
-            <div class="cal-left">
-                <div class="cal-title">
-                    <div class="cal-icon"><i class="bi bi-calendar3-event"></i></div>
-                    <div class="cal-text">
-                        <div class="cal-head"><span id="calendarTitle">Minha Agenda</span></div>
-
-                        <div class="cal-sub mt-2">
-                            @if(auth()->user()?->google_connected)
-                                <!-- linha 1: status + desconectar -->
-                                <div class="connect-row">
-                                    <span class="pg-chip chip-success">
-                                        <i class="bi bi-google"></i> Google Agenda conectado
-                                    </span>
-                                    <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="pg-chip" title="Desconectar Google">
-                                            <i class="bi bi-x-circle"></i> Desconectar
-                                        </button>
-                                    </form>
-                                </div>
-
-                                <!-- linha 2: botões lado-a-lado -->
-                                <div class="sync-row">
-                                    <form action="{{ route('sessoes.sync.futuras') }}" method="POST" class="d-inline">@csrf
-                                        <button type="submit" class="btn-outline">
-                                            <i class="bi bi-arrow-repeat me-1"></i> Sincronizar futuras
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('sessoes.sync.todas') }}" method="POST" class="d-inline">@csrf
-                                        <button type="submit" class="btn-outline">
-                                            <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas
-                                        </button>
-                                    </form>
-                                </div>
-                            @else
-                                <div class="connect-row">
-                                    <span class="pg-chip chip-warn">
-                                        <i class="bi bi-exclamation-triangle"></i> Google não conectado
-                                    </span>
-                                    <a href="{{ route('google.connect') }}" class="pg-chip">
-                                        <i class="bi bi-google me-1"></i> Conectar ao Google
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
+    <div class="agnd-header-card">
+        <div class="agnd-header-top">
+            <div class="agnd-title-group">
+                <div class="agnd-icon"><i class="bi bi-calendar3-event"></i></div>
+                <div>
+                    <h1 class="agnd-title" id="calendarTitle">Minha Agenda</h1>
+                    
+                    <div class="agnd-sync-area">
+                        @if(auth()->user()?->google_connected)
+                            <span class="agnd-badge agnd-badge-success">
+                                <i class="bi bi-google"></i> Conectado
+                            </span>
+                            <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline m-0 p-0">
+                                @csrf
+                                <button type="submit" class="agnd-badge agnd-badge-outline" title="Desconectar">
+                                    Desconectar
+                                </button>
+                            </form>
+                            <form action="{{ route('sessoes.sync.futuras') }}" method="POST" class="d-inline m-0 p-0">
+                                @csrf
+                                <button type="submit" class="agnd-badge agnd-badge-outline">
+                                    <i class="bi bi-arrow-repeat"></i> Sync Futuras
+                                </button>
+                            </form>
+                            <form action="{{ route('sessoes.sync.todas') }}" method="POST" class="d-inline m-0 p-0">
+                                @csrf
+                                <button type="submit" class="agnd-badge agnd-badge-outline">
+                                    <i class="bi bi-cloud-arrow-up"></i> Sync Todas
+                                </button>
+                            </form>
+                        @else
+                            <span class="agnd-badge agnd-badge-warning">
+                                <i class="bi bi-exclamation-triangle"></i> Google não conectado
+                            </span>
+                            <a href="{{ route('google.connect') }}" class="agnd-badge agnd-badge-outline">
+                                <i class="bi bi-google"></i> Conectar
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
 
-            <div class="cal-right">
-                <div class="cal-actions">
-                    <div class="btn-group-clean nav-switch">
-                        <button id="prevBtn" class="nbtn btn-ghost" aria-label="Mês anterior">←</button>
-                        <button id="todayBtn" class="nbtn btn-ghost">Hoje</button>
-                        <button id="nextBtn" class="nbtn btn-ghost" aria-label="Próximo mês">→</button>
-                    </div>
+            <div class="agnd-main-actions">
+                <button class="agnd-btn agnd-btn-outline" onclick="window.location.href='{{ route('sessoes.index') }}'">
+                    <i class="bi bi-list-ul"></i> Lista
+                </button>
+                <button class="agnd-btn agnd-btn-primary" data-bs-toggle="modal" data-bs-target="#modalSessao">
+                    <i class="bi bi-plus-lg"></i> Nova Sessão
+                </button>
+            </div>
+        </div>
 
-                    <div class="btn-group-clean view-switch">
-                        <button id="monthBtn" class="vbtn active">Mês</button>
-                        <button id="weekBtn" class="vbtn">Semana</button>
-                        <button id="dayBtn" class="vbtn">Dia</button>
-                    </div>
+        <div class="agnd-header-bottom">
+            <div class="agnd-nav-group">
+                <button id="prevBtn" class="agnd-nav-btn" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+                <button id="todayBtn" class="agnd-nav-btn">Hoje</button>
+                <button id="nextBtn" class="agnd-nav-btn" aria-label="Próximo"><i class="bi bi-chevron-right"></i></button>
+            </div>
 
-                    <div class="spacer"></div>
-
-                    <div class="btn-group-clean">
-                        <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'">
-                            <i class="bi bi-list-ul me-1"></i> Lista
-                        </button>
-                        <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao">
-                            <i class="bi bi-plus-lg me-1"></i> Nova sessão
-                        </button>
-                    </div>
-                </div>
+            <div class="agnd-nav-group view-switch">
+                <button id="monthBtn" class="agnd-nav-btn vbtn active">Mês</button>
+                <button id="weekBtn" class="agnd-nav-btn vbtn">Semana</button>
+                <button id="dayBtn" class="agnd-nav-btn vbtn">Dia</button>
             </div>
         </div>
     </div>
@@ -335,10 +371,8 @@
     </div>
 </div>
 
-<!-- Container para o popup de sessão (inicialmente vazio) -->
 <div id="session-popover" class="session-popover" style="display:none;" role="dialog" aria-modal="true" aria-live="polite"></div>
 
-<!-- Modal Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1" aria-labelledby="modalSessaoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form id="formSessao" class="modal-content shadow-sm">
