@@ -4,410 +4,391 @@
 
 @section('styles')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
 
 <style>
-    :root {
-        --pg-primary: #12B4B7;
-        --pg-primary-600: #0ea2a5;
-        --pg-primary-700: #0b7f83;
-        --pg-ink: #0f172a;
-        --pg-muted: #64748b;
-        --pg-border: #e2e8f0;
-        --pg-surface: #ffffff;
-        --pg-weekend: #f8fafc;
-        --pg-holiday: #eff6ff;
-        --pg-holiday-border: #bfdbfe;
+    :root{
+        --pg-primary:#12B4B7;
+        --pg-primary-600:#0ea2a5;
+        --pg-primary-700:#0b7f83;
+        --pg-ink:#15181f;
+        --pg-muted:#6c7685;
+        --pg-border:#e6eaef;
+        --pg-surface:#ffffff;
+
+        --pg-weekend:#FFF6EA;
+        --pg-holiday:#ECF7FF;
+        --pg-holiday-border:#BEE3FF;
     }
 
-    /* Layout Base */
-    .agnd-page {
-        width: 100%;
+    #calendar-card{
+        border:1px solid var(--pg-border);
+        border-radius:16px;
+        background:var(--pg-surface);
+        padding:14px;
+        box-shadow:0 6px 18px rgba(10,20,30,.06);
     }
 
-    .agnd-content {
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
+    .calendar-header{
+        position:relative;
+        background:var(--pg-surface);
+        border:1px solid var(--pg-border);
+        border-radius:16px;
+        padding:12px;
+        margin-bottom:14px;
+        box-shadow:0 8px 28px rgba(10,20,30,.06);
+    }
+    .calendar-header:before{
+        content:"";
+        position:absolute; inset:0 0 auto 0;
+        height:4px;
+        border-radius:16px 16px 0 0;
+        background:linear-gradient(90deg,var(--pg-primary),#30d1d4);
     }
 
-    /* Cabeçalho Premium */
-    .agnd-header-card {
-        background: rgba(255,255,255,.98);
-        border: 1px solid rgba(226,232,240,.95);
-        border-radius: 22px;
-        box-shadow: 0 10px 30px rgba(15,23,42,.04);
-        padding: 24px;
-        margin-bottom: 20px;
-        position: relative;
-        overflow: hidden;
+    .calendar-row{ display:grid; gap:10px; grid-template-columns:1fr; }
+
+    .cal-title{ display:flex; gap:8px; align-items:center; justify-content:center; text-align:center; }
+    .cal-icon{
+        width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
+        background:rgba(18,180,183,.10); color:var(--pg-primary); font-size:16px; flex:0 0 auto;
+    }
+    .cal-text .cal-head{ font-weight:800; letter-spacing:.2px; color:var(--pg-ink); line-height:1.1; font-size:1.05rem; }
+
+    /* chips */
+    .pg-chip{
+        display:inline-flex; align-items:center; gap:6px;
+        border:1px solid #cfe7e8; background:rgba(18,180,183,.10); color:#0b7f83;
+        padding:5px 10px; border-radius:999px; font-weight:700; font-size:.8rem; line-height:1; text-decoration:none; white-space:nowrap;
+    }
+    .pg-chip:hover{ background:rgba(18,180,183,.14) }
+    .pg-chip i{font-size:.95rem}
+    .chip-success{ background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.35); color:#0e7a56; }
+    .chip-warn{ background:rgba(234,88,12,.14); border-color:rgba(234,88,12,.35); color:#8e3a0d; }
+
+    /* ===== header (como o 2º print) ===== */
+    .cal-sub{ display:flex; flex-direction:column; gap:10px; }
+    .connect-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .sync-row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .sync-row .btn-outline{
+        background:#fff; border:1px solid var(--pg-primary); color:var(--pg-primary);
+        border-radius:12px; font-weight:800; padding:10px 14px; min-height:44px; min-width:230px;
     }
 
-    .agnd-header-card::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--pg-primary), #30d1d4);
+    .legend{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; }
+    .legend .pg-chip{ padding:5px 8px; font-weight:700; font-size:.78rem; }
+    .legend .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; box-shadow:0 0 0 2px #fff, 0 0 0 3px #cfe7e8; }
+    .dot-paid{ background:#28a745 } .dot-pending{ background:#dc3545 } .dot-late{ background:#00c4ff }
+
+    .cal-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .spacer { flex:1; }
+    .btn-group-clean{ display:flex; gap:8px; align-items:center; }
+    .btn-ghost,.btn-brand,.btn-outline{
+        display:inline-flex; align-items:center; justify-content:center; gap:6px;
+        border-radius:12px; font-weight:800; letter-spacing:.2px;
+        padding:10px 14px; font-size:.92rem; min-height:44px; transition:.15s;
+        width:100%;
+    }
+    .btn-ghost{ background:#eef5f6; border:1px solid #cfe7e8; color:#184146; }
+    .btn-ghost:hover{ transform:translateY(-1px); box-shadow:0 6px 14px rgba(10,20,30,.10) }
+    .btn-brand{ background:var(--pg-primary); border:1px solid var(--pg-primary-700); color:#fff; box-shadow:0 8px 18px rgba(18,180,183,.28); }
+    .btn-brand:hover{ transform:translateY(-1px); }
+    .nav-switch,.view-switch{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .view-switch .vbtn,.nav-switch .nbtn{
+        border:1px solid #cfe7e8; background:#fff; color:#1f2a33; border-radius:12px; padding:9px 12px; font-weight:800; font-size:.92rem; min-height:44px;
+    }
+    .view-switch .vbtn.active{ background:linear-gradient(180deg,#fff,#f0feff); border-color:var(--pg-primary); box-shadow:0 8px 18px rgba(18,180,183,.22); color:var(--pg-primary); }
+
+    .cal-right{ display:flex; justify-content:flex-end; align-items:center; }
+
+    @media (max-width:767.98px){
+    .cal-title{ justify-content:center; text-align:center; }
+    .cal-sub{ align-items:center; }
+    .connect-row, .sync-row{ justify-content:center; }   /* chips e botões de sync centralizados */
+
+    .cal-right{ justify-content:center; }                /* área dos controles à direita */
+    .cal-actions{ justify-content:center; align-items:center; }
+    .nav-switch, .view-switch, .cal-actions .btn-group-clean{ justify-content:center; }
+    .spacer{ display:none; }                             /* remove o “empurra” no mobile */
+
+    /* nos controles da direita, os botões não ocupam 100% no mobile */
+    .cal-actions .btn-ghost,
+    .cal-actions .btn-brand,
+    .cal-actions .btn-outline,
+    .cal-actions .vbtn,
+    .cal-actions .nbtn{ width:auto; } /* empilha bem no mobile */ 
+}
+
+    @media (min-width: 768px){
+        #calendar-card{ padding:18px; }
+        .calendar-row{ grid-template-columns:1fr auto; align-items:center; }
+        .cal-title{ justify-content:flex-start; text-align:left; }
+        .cal-text .cal-head{ font-size:1.25rem; }
+        .cal-actions{ flex-wrap:nowrap; }
+        .nav-switch,.view-switch{ display:flex; }
+        .nav-switch .nbtn,.view-switch .vbtn{ min-width:auto; }
+        .btn-ghost,.btn-brand,.btn-outline{ width:auto; }
+    }
+    @media (min-width: 992px){ .cal-text .cal-head{ font-size:1.35rem; } }
+
+    /* ===== FullCalendar ===== */
+    .fc .fc-day-sat, .fc .fc-day-sun{ background: var(--pg-weekend); }
+    .fc .pg-feriado{ background: var(--pg-holiday) !important; box-shadow: inset 0 0 0 1px var(--pg-holiday-border); }
+    .fc-daygrid-day.pg-feriado .fc-daygrid-day-number::after{
+        content: "Feriado"; display:inline-block; margin-left:6px; padding:2px 6px;
+        font-size:.65rem; font-weight:700; color:#0b6aa8; background:#dff1ff;
+        border:1px solid var(--pg-holiday-border); border-radius:999px; vertical-align:middle;
+    }
+    .fc-event{ border-radius:6px !important; padding:4px !important; font-size:.9rem !important; }
+    .fc .fc-event.evento-pago{
+        background:linear-gradient(90deg,#28a745,#218838)!important;border:none!important;color:#fff!important;font-weight:700!important;
+    }
+    .fc .fc-event.evento-pendente{
+        background:linear-gradient(90deg,#dc3545,#a71d2a)!important;border:none!important;color:#fff!important;font-weight:700!important;
+    }
+    .fc .fc-event.evento-apos-meia-noite{
+        background:#e3f7ff!important;border:1px dashed #00c4ff!important;color:#006f99!important;font-weight:700!important;
+    }
+    .fc-daygrid-event-dot{ display:none!important; }
+
+    /* ===== Popup de sessão (card flutuante) ===== */
+    .session-popover {
+    position: absolute;
+    z-index: 1060; /* acima do calendário e abaixo do modal */
+    width: 320px;
+    max-width: calc(100vw - 24px);
+    background: #fff;
+    border: 1px solid var(--pg-border);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(10,20,30,.18);
+    overflow: hidden;
+
+    /* --- animação / estados --- */
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+    visibility: hidden;
+    pointer-events: none;
+    will-change: opacity, transform;
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease,
+        box-shadow 0.22s ease;
     }
 
-    .agnd-header-top {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        margin-bottom: 20px;
+    /* Estado visível (abre suave) */
+    .session-popover.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+    pointer-events: auto;
     }
 
-    .agnd-title-group {
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
+    /* Estado de saída (fecha suave) */
+    .session-popover.hiding {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+    pointer-events: none;
     }
 
-    .agnd-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        background: rgba(18,180,183,.10);
-        color: var(--pg-primary);
-        font-size: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+    /* Acessibilidade: reduz movimento se o usuário preferir */
+    @media (prefers-reduced-motion: reduce) {
+    .session-popover,
+    .session-popover.show,
+    .session-popover.hiding {
+        transition: none !important;
+        transform: none !important;
+    }
     }
 
-    .agnd-title {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--pg-ink);
-        margin: 0 0 6px 0;
-        line-height: 1.2;
+    /* Cabeçalho / conteúdo */
+    .session-popover .sp-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px; padding:10px 12px; border-bottom:1px solid var(--pg-border);
+    }
+    .session-popover .sp-title{
+    display:flex; align-items:center; gap:8px; font-weight:700; color:#111; margin:0;
+    }
+    .session-popover .sp-title .dot{
+    width:10px; height:10px; border-radius:999px; display:inline-block;
+    }
+    .session-popover .sp-actions{ display:flex; gap:6px; }
+    .session-popover .icon-btn{
+    border:none; background:transparent; padding:6px; border-radius:8px; cursor:pointer;
+    }
+    .session-popover .icon-btn:hover{ background:#f3f6f8; }
+    .session-popover .sp-body{ padding:10px 12px; display:grid; gap:10px; }
+    .session-popover .row-line{ display:flex; align-items:center; gap:10px; }
+    .session-popover .row-line i{ font-size:1rem; color:#555; }
+    .session-popover .muted{ color:#6b7280; font-size:.92rem; }
+    .session-popover .link-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid #e5e7eb; padding:8px 10px; border-radius:10px; text-decoration:none;
+    }
+    .session-popover .sp-footer{ padding:10px 12px; border-top:1px solid var(--pg-border); display:flex; gap:8px; flex-wrap:wrap; }
+    .session-popover .pill{
+    background:#f5f7fa; border:1px solid #e5e7eb; padding:6px 10px; border-radius:999px; font-size:.85rem;
     }
 
-    /* Chips e Google Sync */
-    .agnd-sync-area {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .agnd-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        font-size: .8rem;
-        font-weight: 700;
-        text-decoration: none;
-        white-space: nowrap;
-        border: 1px solid transparent;
-        transition: all 0.2s;
-    }
-
-    .agnd-badge-success { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
-    .agnd-badge-warning { background: #fef3c7; color: #92400e; border-color: #fde68a; }
-    .agnd-badge-outline { background: #f8fafc; color: #475569; border-color: #e2e8f0; cursor: pointer; }
-    .agnd-badge-outline:hover { background: #f1f5f9; color: #0f172a; }
-
-    .agnd-main-actions {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-    }
-
-    /* Botões Gerais */
-    .agnd-btn {
-        min-height: 44px;
-        border-radius: 12px;
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 0 18px;
-        font-size: .9rem;
-        transition: all 0.2s ease;
-        border: none;
-        cursor: pointer;
-        width: 100%;
-    }
-
-    .agnd-btn-primary { background: var(--pg-primary); color: #fff; box-shadow: 0 4px 12px rgba(18,180,183,.25); }
-    .agnd-btn-primary:hover { background: var(--pg-primary-700); transform: translateY(-1px); }
-    .agnd-btn-outline { background: #fff; border: 2px solid #e2e8f0; color: #475569; }
-    .agnd-btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
-
-    /* Controles do Calendário (Mês, Semana, Dia) */
-    .agnd-header-bottom {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding-top: 16px;
-        border-top: 1px solid var(--pg-border);
-    }
-
-    .agnd-nav-group {
-        display: flex;
-        background: #f1f5f9;
-        border-radius: 12px;
-        padding: 4px;
-        width: 100%;
-    }
-
-    .agnd-nav-btn {
-        flex: 1;
-        background: transparent;
-        border: none;
-        border-radius: 8px;
-        color: #64748b;
-        font-weight: 700;
-        font-size: .85rem;
-        padding: 8px 12px;
-        transition: all 0.2s;
-    }
-
-    .agnd-nav-btn:hover { color: #0f172a; }
-    .agnd-nav-btn.active { background: #fff; color: var(--pg-primary); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
-
-    /* Container do FullCalendar */
-    #calendar-card {
-        background: rgba(255,255,255,.98);
-        border: 1px solid var(--pg-border);
-        border-radius: 22px;
-        box-shadow: 0 10px 30px rgba(15,23,42,.04);
-        padding: 16px;
-        overflow: hidden;
-    }
-
-    /* Legenda */
-    .agnd-legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-        justify-content: center;
-        margin-top: 20px;
-        background: #fff;
-        padding: 12px 20px;
-        border-radius: 16px;
-        border: 1px solid var(--pg-border);
-        box-shadow: 0 4px 12px rgba(15,23,42,.02);
-    }
-
-    .agnd-legend-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: .85rem;
-        font-weight: 700;
-        color: #475569;
-    }
-
-    .agnd-legend-dot {
-        width: 12px; height: 12px; border-radius: 50%;
-    }
-
-    /* Customizações do FullCalendar */
-    .fc { font-family: inherit; }
-    .fc .fc-day-sat, .fc .fc-day-sun { background: var(--pg-weekend); }
-    .fc .pg-feriado { background: var(--pg-holiday) !important; box-shadow: inset 0 0 0 1px var(--pg-holiday-border); }
-    .fc-daygrid-day.pg-feriado .fc-daygrid-day-number::after {
-        content: "Feriado"; display: inline-block; margin-left: 6px; padding: 2px 8px;
-        font-size: .65rem; font-weight: 800; color: #1e3a8a; background: #dbeafe;
-        border: 1px solid var(--pg-holiday-border); border-radius: 999px; vertical-align: middle;
-    }
-    .fc-event { border-radius: 6px !important; padding: 4px 6px !important; font-size: .85rem !important; border: none !important; }
-    .fc .fc-event.evento-pago { background: #22c55e !important; color: #fff !important; font-weight: 700 !important; }
-    .fc .fc-event.evento-pendente { background: #ef4444 !important; color: #fff !important; font-weight: 700 !important; }
-    .fc .fc-event.evento-apos-meia-noite { background: #f0f9ff !important; border: 1px dashed #3b82f6 !important; color: #1d4ed8 !important; font-weight: 700 !important; }
-    .fc-daygrid-event-dot { display: none !important; }
-
-    /* Modal Form Fields */
-    .agnd-field label { font-size: .86rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
-    .agnd-field .form-control, .agnd-field .form-select {
-        min-height: 48px; border-radius: 12px; border-color: #e2e8f0; font-size: .95rem; background: #f8fafc;
-    }
-    .agnd-field .form-control:focus, .agnd-field .form-select:focus {
-        border-color: var(--pg-primary); background: #fff; box-shadow: 0 0 0 .25rem rgba(18,180,183,.15);
-    }
-
-    @media (min-width: 768px) {
-        .agnd-header-top { flex-direction: row; justify-content: space-between; align-items: flex-start; }
-        .agnd-main-actions { width: auto; }
-        .agnd-btn { width: auto; }
-        .agnd-header-bottom { flex-direction: row; justify-content: space-between; align-items: center; }
-        .agnd-nav-group { width: auto; }
-        #calendar-card { padding: 24px; }
-    }
 </style>
 @endsection
 
 @section('content')
-<div class="container-fluid py-2 agnd-page">
-    <div class="agnd-content">
-        
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
-                <i class="bi bi-exclamation-circle-fill me-2"></i>{{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+<div class="container">
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-        <div class="agnd-header-card">
-            <div class="agnd-header-top">
-                <div class="agnd-title-group">
-                    <div class="agnd-icon"><i class="bi bi-calendar3-event"></i></div>
-                    <div>
-                        <h1 class="agnd-title" id="calendarTitle">Minha Agenda</h1>
-                        
-                        <div class="agnd-sync-area">
+    <div class="calendar-header">
+        <div class="calendar-row">
+            <div class="cal-left">
+                <div class="cal-title">
+                    <div class="cal-icon"><i class="bi bi-calendar3-event"></i></div>
+                    <div class="cal-text">
+                        <div class="cal-head"><span id="calendarTitle">Minha Agenda</span></div>
+
+                        <div class="cal-sub mt-2">
                             @if(auth()->user()?->google_connected)
-                                <span class="agnd-badge agnd-badge-success">
-                                    <i class="bi bi-google"></i> Conectado
-                                </span>
-                                <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline m-0 p-0">
-                                    @csrf
-                                    <button type="submit" class="agnd-badge agnd-badge-outline" title="Desconectar">
-                                        Desconectar
-                                    </button>
-                                </form>
-                                <form action="{{ route('sessoes.sync.futuras') }}" method="POST" class="d-inline m-0 p-0">
-                                    @csrf
-                                    <button type="submit" class="agnd-badge agnd-badge-outline">
-                                        <i class="bi bi-arrow-repeat"></i> Sync Futuras
-                                    </button>
-                                </form>
-                                <form action="{{ route('sessoes.sync.todas') }}" method="POST" class="d-inline m-0 p-0">
-                                    @csrf
-                                    <button type="submit" class="agnd-badge agnd-badge-outline">
-                                        <i class="bi bi-cloud-arrow-up"></i> Sync Todas
-                                    </button>
-                                </form>
+                                <!-- linha 1: status + desconectar -->
+                                <div class="connect-row">
+                                    <span class="pg-chip chip-success">
+                                        <i class="bi bi-google"></i> Google Agenda conectado
+                                    </span>
+                                    <form action="{{ route('google.disconnect') }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="pg-chip" title="Desconectar Google">
+                                            <i class="bi bi-x-circle"></i> Desconectar
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- linha 2: botões lado-a-lado -->
+                                <div class="sync-row">
+                                    <form action="{{ route('sessoes.sync.futuras') }}" method="POST" class="d-inline">@csrf
+                                        <button type="submit" class="btn-outline">
+                                            <i class="bi bi-arrow-repeat me-1"></i> Sincronizar futuras
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('sessoes.sync.todas') }}" method="POST" class="d-inline">@csrf
+                                        <button type="submit" class="btn-outline">
+                                            <i class="bi bi-cloud-arrow-up me-1"></i> Sincronizar todas
+                                        </button>
+                                    </form>
+                                </div>
                             @else
-                                <span class="agnd-badge agnd-badge-warning">
-                                    <i class="bi bi-exclamation-triangle"></i> Google não conectado
-                                </span>
-                                <a href="{{ route('google.connect') }}" class="agnd-badge agnd-badge-outline">
-                                    <i class="bi bi-google"></i> Conectar
-                                </a>
+                                <div class="connect-row">
+                                    <span class="pg-chip chip-warn">
+                                        <i class="bi bi-exclamation-triangle"></i> Google não conectado
+                                    </span>
+                                    <a href="{{ route('google.connect') }}" class="pg-chip">
+                                        <i class="bi bi-google me-1"></i> Conectar ao Google
+                                    </a>
+                                </div>
                             @endif
                         </div>
                     </div>
                 </div>
-
-                <div class="agnd-main-actions">
-                    <button class="agnd-btn agnd-btn-outline" onclick="window.location.href='{{ route('sessoes.index') }}'">
-                        <i class="bi bi-list-ul"></i> Lista
-                    </button>
-                    <button class="agnd-btn agnd-btn-primary" data-bs-toggle="modal" data-bs-target="#modalSessao">
-                        <i class="bi bi-plus-lg"></i> Nova Sessão
-                    </button>
-                </div>
             </div>
 
-            <div class="agnd-header-bottom">
-                <div class="agnd-nav-group">
-                    <button id="prevBtn" class="agnd-nav-btn" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
-                    <button id="todayBtn" class="agnd-nav-btn">Hoje</button>
-                    <button id="nextBtn" class="agnd-nav-btn" aria-label="Próximo"><i class="bi bi-chevron-right"></i></button>
-                </div>
+            <div class="cal-right">
+                <div class="cal-actions">
+                    <div class="btn-group-clean nav-switch">
+                        <button id="prevBtn" class="nbtn btn-ghost" aria-label="Mês anterior">←</button>
+                        <button id="todayBtn" class="nbtn btn-ghost">Hoje</button>
+                        <button id="nextBtn" class="nbtn btn-ghost" aria-label="Próximo mês">→</button>
+                    </div>
 
-                <div class="agnd-nav-group view-switch">
-                    <button id="monthBtn" class="agnd-nav-btn vbtn active">Mês</button>
-                    <button id="weekBtn" class="agnd-nav-btn vbtn">Semana</button>
-                    <button id="dayBtn" class="agnd-nav-btn vbtn">Dia</button>
+                    <div class="btn-group-clean view-switch">
+                        <button id="monthBtn" class="vbtn active">Mês</button>
+                        <button id="weekBtn" class="vbtn">Semana</button>
+                        <button id="dayBtn" class="vbtn">Dia</button>
+                    </div>
+
+                    <div class="spacer"></div>
+
+                    <div class="btn-group-clean">
+                        <button class="btn-ghost" onclick="window.location.href='{{ route('sessoes.index') }}'">
+                            <i class="bi bi-list-ul me-1"></i> Lista
+                        </button>
+                        <button class="btn-brand" data-bs-toggle="modal" data-bs-target="#modalSessao">
+                            <i class="bi bi-plus-lg me-1"></i> Nova sessão
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div id="calendar-card">
-            <div id="calendar"></div>
-        </div>
+    <div id="calendar-card"><div id="calendar"></div></div>
 
-        <div class="agnd-legend">
-            <div class="agnd-legend-item">
-                <div class="agnd-legend-dot" style="background: #22c55e;"></div> Pago
-            </div>
-            <div class="agnd-legend-item">
-                <div class="agnd-legend-dot" style="background: #ef4444;"></div> Pendente
-            </div>
-            <div class="agnd-legend-item text-primary">
-                <i class="bi bi-moon-stars-fill"></i> Após 00:00
-            </div>
-        </div>
+    <div class="legend mt-3">
+        <span class="pg-chip"><span class="dot dot-paid"></span> Pago</span>
+        <span class="pg-chip"><span class="dot dot-pending"></span> Pendente</span>
+        <span class="pg-chip"><i class="bi bi-moon-fill text-warning"></i> Após 00:00</span>
     </div>
 </div>
 
+<!-- Container para o popup de sessão (inicialmente vazio) -->
 <div id="session-popover" class="session-popover" style="display:none;" role="dialog" aria-modal="true" aria-live="polite"></div>
 
+<!-- Modal Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1" aria-labelledby="modalSessaoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form id="formSessao" class="modal-content border-0 rounded-4 shadow">
-            @csrf
-            <input type="hidden" name="id" id="sessao_id">
-            
-            <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold fs-5 text-dark" id="modalTitulo">Nova Sessão</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <div class="modal-dialog modal-dialog-centered">
+    <form id="formSessao" class="modal-content shadow-sm">
+      @csrf
+      <input type="hidden" name="id" id="sessao_id">
+      <div class="modal-header">
+        <h5 class="modal-title fw-semibold" id="modalTitulo">Nova Sessão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label small text-muted fw-semibold">Paciente</label>
+                <select name="paciente_id" id="paciente_id" class="form-select form-select-sm shadow-sm" required>
+                    @foreach(\App\Models\Paciente::where('user_id', auth()->id())->get() as $paciente)
+                        <option value="{{ $paciente->id }}">{{ $paciente->nome }}</option>
+                    @endforeach
+                </select>
             </div>
-            
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12 agnd-field">
-                        <label for="paciente_id">Paciente</label>
-                        <select name="paciente_id" id="paciente_id" class="form-select" required>
-                            @foreach(\App\Models\Paciente::where('user_id', auth()->id())->get() as $paciente)
-                                <option value="{{ $paciente->id }}">{{ $paciente->nome }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="col-12 agnd-field">
-                        <label for="data_hora">Data e Hora</label>
-                        <input type="datetime-local" name="data_hora" id="data_hora" class="form-control" required>
-                    </div>
-                    
-                    <div class="col-6 agnd-field">
-                        <label for="valor">Valor (R$)</label>
-                        <input type="number" step="0.01" name="valor" id="valor" class="form-control" placeholder="0,00" required>
-                    </div>
-                    
-                    <div class="col-6 agnd-field">
-                        <label for="duracao">Duração (min)</label>
-                        <input type="number" name="duracao" id="duracao" class="form-control" value="50" required>
-                    </div>
-                    
-                    <div class="col-12 mt-3">
-                        <div class="form-check d-flex align-items-center gap-2 bg-light p-3 rounded-3 border">
-                            <input type="checkbox" name="foi_pago" id="foi_pago" class="form-check-input m-0" style="width: 20px; height: 20px; cursor: pointer;">
-                            <label class="form-check-label fw-bold text-dark m-0" for="foi_pago" style="cursor: pointer;">O paciente já realizou o pagamento</label>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-12">
+                <label class="form-label small text-muted fw-semibold">Data e Hora</label>
+                <input type="datetime-local" name="data_hora" id="data_hora" class="form-control form-control-sm shadow-sm" required>
             </div>
-            
-            <div class="modal-footer border-top-0 pt-0 d-flex flex-column flex-md-row gap-2">
-                <button type="button" class="agnd-btn agnd-btn-outline w-100 w-md-auto m-0" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="agnd-btn agnd-btn-primary w-100 w-md-auto m-0">Salvar</button>
+            <div class="col-6">
+                <label class="form-label small text-muted fw-semibold">Valor (R$)</label>
+                <input type="number" step="0.01" name="valor" id="valor" class="form-control form-control-sm shadow-sm" required>
             </div>
-        </form>
-    </div>
+            <div class="col-6">
+                <label class="form-label small text-muted fw-semibold">Duração (min)</label>
+                <input type="number" name="duracao" id="duracao" class="form-control form-control-sm shadow-sm" value="50" required>
+            </div>
+            <div class="col-12 form-check">
+                <input type="checkbox" name="foi_pago" id="foi_pago" class="form-check-input">
+                <label class="form-check-label small fw-semibold" for="foi_pago">Foi Pago?</label>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex flex-column flex-md-row gap-2">
+        <button type="button" class="btn btn-secondary w-100 w-md-auto" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-success w-100 w-md-auto">Salvar</button>
+      </div>
+    </form>
+  </div>
 </div>
 @endsection
 
 @section('scripts')
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
@@ -416,17 +397,18 @@ document.addEventListener('DOMContentLoaded', async function () {
   const modal      = new bootstrap.Modal(document.getElementById('modalSessao'));
 
   const campos = {
-    id: document.getElementById('sessao_id'),
-    paciente: document.getElementById('paciente_id'),
-    data_hora: document.getElementById('data_hora'),
-    valor: document.getElementById('valor'),
-    duracao: document.getElementById('duracao'),
-    foi_pago: document.getElementById('foi_pago'),
-    titulo: document.getElementById('modalTitulo'),
+    id:document.getElementById('sessao_id'),
+    paciente:document.getElementById('paciente_id'),
+    data_hora:document.getElementById('data_hora'),
+    valor:document.getElementById('valor'),
+    duracao:document.getElementById('duracao'),
+    foi_pago:document.getElementById('foi_pago'),
+    titulo:document.getElementById('modalTitulo'),
   };
 
   if (!window.FullCalendar || !calendarEl) return;
 
+  /** ===== Helper: pede reconexão do Google quando necessário ===== */
   function promptReconnectIfNeeded(message, status){
     const needs = /Reconecte sua conta do Google|conexão com o Google expirou|tokens? do Google inválidos/i.test(message || '')
                || (status === 401 || status === 403);
@@ -441,12 +423,16 @@ document.addEventListener('DOMContentLoaded', async function () {
     return true;
   }
 
+  /* ===================== POPUP (card flutuante) ===================== */
   let sessionPopover = document.getElementById('session-popover');
   if (!sessionPopover) {
     sessionPopover = document.createElement('div');
     sessionPopover.id = 'session-popover';
     sessionPopover.className = 'session-popover';
-    sessionPopover.style.cssText = 'display:none;position:absolute;z-index:1060;width:320px;max-width:calc(100vw - 24px);background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 14px 38px rgba(15,23,42,.12);overflow:hidden';
+    // base (sem animação; as transições virão via <style> abaixo)
+    sessionPopover.style.cssText =
+      'display:none;position:absolute;z-index:1060;width:320px;max-width:calc(100vw - 24px);background:#fff;border:1px solid #e6eaef;border-radius:14px;box-shadow:0 12px 28px rgba(10,20,30,.18);overflow:hidden';
+    // Acessibilidade
     sessionPopover.setAttribute('role','dialog');
     sessionPopover.setAttribute('aria-modal','true');
     sessionPopover.setAttribute('aria-live','polite');
@@ -455,21 +441,27 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   let hideTimer = null;
 
-  function closeSessionPopover(){
-    if (sessionPopover.style.display === 'none') return;
-    sessionPopover.classList.remove('show');
-    sessionPopover.classList.add('hiding');
+function closeSessionPopover(){
+  // se já está escondido, não faz nada
+  if (sessionPopover.style.display === 'none') return;
 
-    const finish = () => {
-      sessionPopover.style.display = 'none';
-      sessionPopover.classList.remove('hiding');
-      sessionPopover.innerHTML = '';
-    };
+  // inicia animação de saída
+  sessionPopover.classList.remove('show');
+  sessionPopover.classList.add('hiding');
 
-    sessionPopover.addEventListener('transitionend', finish, { once:true });
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(finish, 300);
-  }
+  const finish = () => {
+    sessionPopover.style.display = 'none';
+    sessionPopover.classList.remove('hiding'); // <- IMPORTANTÍSSIMO
+    sessionPopover.innerHTML = '';
+  };
+
+  // tenta ouvir o fim da transição...
+  sessionPopover.addEventListener('transitionend', finish, { once:true });
+
+  // ...mas garante com fallback, caso 'transitionend' não dispare
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(finish, 300); // >= ao tempo da sua transition (0.22s)
+}
 
   function two(n){ return String(n).padStart(2,'0'); }
   function fmtHora(d){ return two(d.getHours()) + ':' + two(d.getMinutes()); }
@@ -490,45 +482,66 @@ document.addEventListener('DOMContentLoaded', async function () {
     sessionPopover.style.top  = top  + 'px';
   }
 
+  // Fecha com ESC
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSessionPopover(); });
+  // Fecha ao clicar fora; impede fechar ao clicar dentro
   document.addEventListener('click', (e)=>{
-    if (sessionPopover.style.display !== 'none' && !sessionPopover.contains(e.target) && !e.target.closest('.fc-event')) {
+    if (sessionPopover.style.display !== 'none' &&
+        !sessionPopover.contains(e.target) &&
+        !e.target.closest('.fc-event')) {
       closeSessionPopover();
     }
   });
+  // evita “fechar fora” se clicar dentro do popover
   sessionPopover.addEventListener('click', (e)=>{ e.stopPropagation(); });
+  // fecha ao rolar (evita ficar mal posicionado)
   window.addEventListener('scroll', closeSessionPopover, { passive: true });
 
+  // Estilos do popup + ANIMAÇÃO
   const popupCSS = document.createElement('style');
   popupCSS.textContent = `
-    .session-popover { opacity:0; transform:translateY(-8px) scale(0.985); visibility:hidden; pointer-events:none; will-change:opacity,transform; transition: opacity .22s ease, transform .22s ease, box-shadow .22s ease; }
-    .session-popover.show { opacity:1; transform:translateY(0) scale(1); visibility:visible; pointer-events:auto; }
-    .session-popover.hiding { opacity:0; transform:translateY(-6px) scale(0.985); pointer-events:none; }
-    @media (prefers-reduced-motion: reduce){ .session-popover, .session-popover.show, .session-popover.hiding{ transition:none !important; transform:none !important; } }
-    .session-popover .sp-head { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:14px 16px; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
-    .session-popover .sp-title { display:flex; align-items:center; gap:10px; font-weight:800; color:#0f172a; margin:0; font-size:1.05rem; }
-    .session-popover .sp-title .dot { width:12px; height:12px; border-radius:50%; display:inline-block; }
-    .session-popover .sp-actions { display:flex; gap:6px; }
-    .session-popover .icon-btn { border:none; background:transparent; padding:6px 8px; border-radius:8px; cursor:pointer; color:#64748b; transition:all .2s; }
-    .session-popover .icon-btn:hover { background:#e2e8f0; color:#0f172a; }
-    .session-popover .sp-body { padding:16px; display:grid; gap:14px; }
-    .session-popover .row-line { display:flex; align-items:flex-start; gap:12px; }
-    .session-popover .row-line i { font-size:1.1rem; color:#94a3b8; margin-top:2px; }
-    .session-popover .muted { color:#64748b; font-size:.9rem; margin-top:2px; }
-    .session-popover .link-btn { display:inline-flex; align-items:center; gap:8px; border:1px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; font-weight:700; padding:10px 14px; border-radius:10px; text-decoration:none; font-size:.9rem; transition:all .2s;}
-    .session-popover .link-btn:hover { background:#dbeafe; }
-    .session-popover .sp-footer { padding:14px 16px; border-top:1px solid #e2e8f0; display:flex; gap:8px; background:#fafafa; }
-    .session-popover .pill { padding:6px 12px; border-radius:999px; font-size:.8rem; font-weight:800; border:1px solid transparent; }
+    .session-popover{
+      opacity:0; transform:translateY(-8px) scale(0.985);
+      visibility:hidden; pointer-events:none;
+      will-change:opacity,transform;
+      transition: opacity .22s ease, transform .22s ease, box-shadow .22s ease;
+    }
+    .session-popover.show{
+      opacity:1; transform:translateY(0) scale(1);
+      visibility:visible; pointer-events:auto;
+    }
+    .session-popover.hiding{
+      opacity:0; transform:translateY(-6px) scale(0.985);
+      pointer-events:none;
+    }
+    @media (prefers-reduced-motion: reduce){
+      .session-popover, .session-popover.show, .session-popover.hiding{ transition:none !important; transform:none !important; }
+    }
+    .session-popover .sp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid #e6eaef}
+    .session-popover .sp-title{display:flex;align-items:center;gap:8px;font-weight:700;color:#111;margin:0}
+    .session-popover .sp-title .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+    .session-popover .sp-actions{display:flex;gap:6px}
+    .session-popover .icon-btn{border:none;background:transparent;padding:6px;border-radius:8px;cursor:pointer}
+    .session-popover .icon-btn:hover{background:#f3f6f8}
+    .session-popover .sp-body{padding:10px 12px;display:grid;gap:10px}
+    .session-popover .row-line{display:flex;align-items:center;gap:10px}
+    .session-popover .row-line i{font-size:1rem;color:#555}
+    .session-popover .muted{color:#6b7280;font-size:.92rem}
+    .session-popover .link-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid #e5e7eb;padding:8px 10px;border-radius:10px;text-decoration:none}
+    .session-popover .sp-footer{padding:10px 12px;border-top:1px solid #e6eaef;display:flex;gap:8px;flex-wrap:wrap}
+    .session-popover .pill{background:#f5f7fa;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-size:.85rem}
   `;
   document.head.appendChild(popupCSS);
 
   async function abrirPopupSessao(info, clickX, clickY){
+    // garante que não há estado "hiding" preso de um fechamento anterior
     clearTimeout(hideTimer);
     sessionPopover.classList.remove('hiding');
 
     const id = info.event.id;
-    let sessao = null;
 
+    // Busca dados completos no backend
+    let sessao = null;
     try{
       const r = await fetch(`/sessoes-json/${id}`, {
         headers: { 'Accept':'application/json', 'X-Requested-With':'XMLHttpRequest' }
@@ -552,14 +565,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const pacienteNome  = sessao?.paciente_nome ?? info.event.title ?? 'Paciente';
     const pacienteEmail = sessao?.paciente_email ?? '';
-    const meetUrl       = sessao?.meet_url || '';
+    const meetUrl       = sessao?.meet_url || ''; // apenas do backend
     const pago          = !!sessao?.foi_pago;
-    
-    // Cores premium para o dot e pill
-    const corDot = pago ? '#22c55e' : '#ef4444';
-    const pillClass = pago 
-        ? 'background: #dcfce7; color: #166534; border-color: #bbf7d0;' 
-        : 'background: #fee2e2; color: #b91c1c; border-color: #fecaca;';
+    const corDot        = pago ? '#28a745' : '#dc3545';
 
     const dataLonga = fmtDataLonga(start);
     const horaIni   = fmtHora(start);
@@ -569,47 +577,44 @@ document.addEventListener('DOMContentLoaded', async function () {
       <div class="sp-head">
         <h6 class="sp-title">
           <span class="dot" style="background:${corDot}"></span>
-          <span class="text-truncate" style="max-width: 190px;">${pacienteNome}</span>
+          <span>Sessão com ${pacienteNome}</span>
         </h6>
         <div class="sp-actions">
-          <button class="icon-btn" id="sp-edit" title="Editar"><i class="bi bi-pencil-square"></i></button>
-          <button class="icon-btn text-danger" id="sp-delete" title="Excluir"><i class="bi bi-trash3"></i></button>
+          <button class="icon-btn" id="sp-edit" title="Editar"><i class="bi bi-pencil"></i></button>
+          <button class="icon-btn" id="sp-delete" title="Excluir"><i class="bi bi-trash"></i></button>
           <button class="icon-btn" id="sp-close" title="Fechar"><i class="bi bi-x-lg"></i></button>
         </div>
       </div>
 
       <div class="sp-body">
-        <div class="row-line">
-          <i class="bi bi-calendar3"></i>
+        <div class="row-line"><i class="bi bi-calendar-event"></i>
           <div>
-            <div style="color: #0f172a; font-weight: 700;">${dataLonga}</div>
-            <div class="muted">${horaIni} – ${horaFim} (BRT)</div>
+            <div><strong>${dataLonga}</strong></div>
+            <div class="muted">${horaIni} – ${horaFim}</div>
           </div>
         </div>
 
         ${meetUrl ? `
           <div class="row-line">
-            <i class="bi bi-camera-video text-primary"></i>
-            <div class="d-flex align-items-center gap-2 w-100">
-                <a class="link-btn flex-grow-1 justify-content-center" href="${meetUrl}" target="_blank" rel="noopener">
-                <i class="bi bi-google"></i> Google Meet
-                </a>
-                <button class="icon-btn border" style="padding: 9px 12px; background: #fff;" id="sp-copy-meet" title="Copiar link"><i class="bi bi-link-45deg fs-5"></i></button>
-            </div>
+            <i class="bi bi-camera-video"></i>
+            <a class="link-btn" href="${meetUrl}" target="_blank" rel="noopener">
+              <i class="bi bi-google"></i> Entrar com o Google Meet
+            </a>
+            <button class="icon-btn" id="sp-copy-meet" title="Copiar link"><i class="bi bi-clipboard"></i></button>
           </div>
         ` : ''}
 
         <div class="row-line">
-          <i class="bi bi-person"></i>
+          <i class="bi bi-people"></i>
           <div>
-            <div style="color: #0f172a; font-weight: 700;">Detalhes do Paciente</div>
-            ${pacienteEmail ? `<div class="muted">${pacienteEmail}</div>` : `<div class="muted">E-mail não cadastrado</div>`}
+            <div class="muted">1 convidado • pendente</div>
+            ${pacienteEmail ? `<div>${pacienteEmail}</div>` : ``}
           </div>
         </div>
       </div>
 
       <div class="sp-footer">
-        <span class="pill" style="${pillClass}">${pago ? '<i class="bi bi-check-circle me-1"></i> Pago' : '<i class="bi bi-exclamation-circle me-1"></i> Pagamento Pendente'}</span>
+        <span class="pill">${pago ? 'Pago' : 'Pendente'}</span>
       </div>
     `;
 
@@ -625,11 +630,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         e.stopPropagation();
         try{
           await navigator.clipboard.writeText(meetUrl);
-          Swal.fire({ icon:'success', title:'Link copiado', timer:1200, showConfirmButton:false, toast: true, position: 'top-end' });
+          Swal.fire({ icon:'success', title:'Link copiado', timer:1200, showConfirmButton:false });
         }catch(_){}
       });
     }
 
+    // Editar
     document.getElementById('sp-edit')?.addEventListener('click', async (e)=>{
       e.stopPropagation();
       try{
@@ -647,12 +653,13 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
     });
 
+    // Excluir (robusto: 204/200/JSON, 419 CSRF, 401/403 reconexão)
     document.getElementById('sp-delete')?.addEventListener('click', async (e)=>{
       e.stopPropagation();
       const ok = await Swal.fire({
         icon:'warning', title:'Excluir sessão?', text:'Esta ação não pode ser desfeita.',
         showCancelButton:true, confirmButtonText:'Excluir', cancelButtonText:'Cancelar',
-        confirmButtonColor:'#dc2626'
+        confirmButtonColor:'#dc3545'
       }).then(r=>r.isConfirmed);
       if(!ok) return;
 
@@ -669,13 +676,14 @@ document.addEventListener('DOMContentLoaded', async function () {
           }
         });
 
+        // Pode vir 204 sem corpo, 200 com JSON, ou 4xx com JSON/HTML
         let body = {};
         const text = await res.text();
         try { body = text ? JSON.parse(text) : {}; } catch(_) { body = {}; }
 
         if(!res.ok){
           if (promptReconnectIfNeeded(body?.message, res.status)) return;
-          if (res.status === 419){
+          if (res.status === 419){ // CSRF
             Swal.fire('Sessão expirada', 'Atualize a página e tente novamente.', 'warning');
             return;
           }
@@ -684,7 +692,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         closeSessionPopover();
         calendar.refetchEvents();
-        Swal.fire({ icon:'success', title:'Sessão excluída', timer:1400, showConfirmButton:false, toast:true, position:'top-end' });
+        Swal.fire({ icon:'success', title:'Sessão excluída', timer:1400, showConfirmButton:false });
       }catch(e){
         if (!promptReconnectIfNeeded(e?.message)) {
           Swal.fire('Erro', e?.message || 'Falha ao excluir a sessão.', 'error');
@@ -692,7 +700,9 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
     });
   }
+  /* =================== /POPUP =================== */
 
+  /* =================== FERIADOS =================== */
   const feriadosDatasCache  = {};
   const feriadosNomesCache  = {};
 
@@ -731,14 +741,21 @@ document.addEventListener('DOMContentLoaded', async function () {
   function nomeFeriado(dateObj){ const y=dateObj.getFullYear(); const ymd=toYMDLocal(dateObj); const map=feriadosNomesCache[y]; return map ? map.get(ymd) : undefined; }
 
   await carregarFeriadosAno(new Date().getFullYear());
+  /* =================== /FERIADOS =================== */
 
   const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
   const calendar = new window.FullCalendar.Calendar(calendarEl, {
+    plugins: [
+      window.FullCalendar.dayGridPlugin,
+      window.FullCalendar.timeGridPlugin,
+      window.FullCalendar.interactionPlugin,
+      window.FullCalendar.bootstrap5Plugin
+    ],
     themeSystem: 'bootstrap5',
     timeZone: 'local',
-    height: 700,
-    locale: 'pt-br',
+    height: 650,
+    locale: window.FullCalendar.ptBr,
     initialView: 'dayGridMonth',
     headerToolbar: false,
     events: '/api/sessoes',
@@ -775,8 +792,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       const hf = event.end ? fmt(event.end) : '';
       const t  = event.title;
       return (viewType === 'dayGridMonth')
-        ? { html: `<div class="text-truncate"><i class="bi bi-clock me-1 opacity-75"></i>${hi} - ${t}</div>` }
-        : { html: `<div class="fw-bold opacity-75 mb-1">${hi} - ${hf}</div><div class="text-truncate">${t}</div>` };
+        ? { html: `<div>${hi} - ${t}</div>` }
+        : { html: `<div>${hi} - ${hf}</div><div>${t}</div>` };
     },
 
     dateClick: async function(info) {
@@ -787,11 +804,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         const { isConfirmed } = await Swal.fire({
           icon: 'info',
           title: nome ? `Feriado: ${nome}` : 'Feriado',
-          text: 'Deseja continuar e agendar uma sessão para este dia?',
+          text: 'Deseja continuar e criar uma sessão para este dia?',
           showCancelButton: true,
-          confirmButtonText: 'Sim, agendar',
+          confirmButtonText: 'Continuar',
           cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#2563eb'
+          confirmButtonColor: '#12B4B7'
         });
         if (!isConfirmed) return;
       }
@@ -881,9 +898,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (response.status === 419){
           Swal.fire('Sessão expirada', 'Atualize a página e tente novamente.', 'warning');
         } else if (resData?.message?.includes("Conflito de horário")) {
-          Swal.fire({ icon:'error', title:'Conflito de Horário', text:resData.message, confirmButtonColor:'#2563eb' });
+          Swal.fire({ icon:'error', title:'Conflito de Horário', text:resData.message, confirmButtonColor:'#3085d6' });
         } else {
-            Swal.fire('Erro', resData?.message || 'Erro ao salvar a sessão.', 'error');
+          Swal.fire('Erro', resData?.message || 'Erro ao salvar a sessão.', 'error');
         }
         if (typeof hideSpinner === 'function') hideSpinner();
         return;
@@ -892,16 +909,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       modal.hide();
       closeSessionPopover();
       calendar.refetchEvents();
-      
-      Swal.fire({ 
-          icon:'success', 
-          title:'Sucesso!', 
-          text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!', 
-          timer:1800, 
-          showConfirmButton:false,
-          toast: true,
-          position: 'top-end'
-      }).then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
+      Swal.fire({ icon:'success', title:'Sucesso!', text: id ? 'Sessão atualizada com sucesso!' : 'Sessão criada com sucesso!', timer:1800, showConfirmButton:false })
+        .then(() => { if (typeof hideSpinner === 'function') hideSpinner(); });
 
     } catch (error) {
       if (!promptReconnectIfNeeded(error?.message)) {
