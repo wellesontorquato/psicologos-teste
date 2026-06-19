@@ -413,12 +413,7 @@
 document.addEventListener('DOMContentLoaded', async function () {
   const calendarEl = document.getElementById('calendar');
   const calendarH1 = document.getElementById('calendarTitle');
-  const modalEl    = document.getElementById('modalSessao');
-  
-  // Obtém a instância do Modal de forma segura e limpa (Evita travamentos do BS5)
-  function getSessaoModal() {
-      return bootstrap.Modal.getOrCreateInstance(modalEl);
-  }
+  const modal      = new bootstrap.Modal(document.getElementById('modalSessao'));
 
   const campos = {
     id: document.getElementById('sessao_id'),
@@ -483,19 +478,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     const opt = { weekday:'long', day:'2-digit', month:'long' };
     return d.toLocaleDateString('pt-BR', opt);
   }
-
   function positionPopover(x, y){
-    sessionPopover.style.display = 'block';
-    const W = sessionPopover.offsetWidth || 320;
-    const H = sessionPopover.offsetHeight || 260;
+    const W = sessionPopover.offsetWidth || 320, H = sessionPopover.offsetHeight || 260;
     const vw = window.innerWidth, vh = window.innerHeight, sy = window.scrollY, sx = window.scrollX;
-    
     let left = x + 12 + sx, top = y + 12 + sy;
     if (left + W > vw + sx) left = vw - W - 12 + sx;
     if (top + H > vh + sy)  top  = vh - H - 12 + sy;
     if (left < 12 + sx) left = 12 + sx;
     if (top  < 12 + sy) top  = 12 + sy;
-    
     sessionPopover.style.left = left + 'px';
     sessionPopover.style.top  = top  + 'px';
   }
@@ -565,6 +555,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const meetUrl       = sessao?.meet_url || '';
     const pago          = !!sessao?.foi_pago;
     
+    // Cores premium para o dot e pill
     const corDot = pago ? '#22c55e' : '#ef4444';
     const pillClass = pago 
         ? 'background: #dcfce7; color: #166534; border-color: #bbf7d0;' 
@@ -622,6 +613,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       </div>
     `;
 
+    sessionPopover.style.display = 'block';
+    void sessionPopover.offsetWidth; 
     positionPopover(clickX, clickY);
     requestAnimationFrame(() => sessionPopover.classList.add('show'));
 
@@ -637,34 +630,20 @@ document.addEventListener('DOMContentLoaded', async function () {
       });
     }
 
-    // --- CORREÇÃO DO BOTÃO EDITAR ---
     document.getElementById('sp-edit')?.addEventListener('click', async (e)=>{
       e.stopPropagation();
-      try {
+      try{
         campos.id.value        = sessao.id;
         campos.paciente.value  = sessao.paciente_id;
-        
-        // CORREÇÃO CRÍTICA: datetime-local EXIGE que a string contenha um "T" e tenha no max 16 caracteres.
-        let dtForm = sessao.data_hora || '';
-        if(dtForm && dtForm.includes(' ')) {
-            dtForm = dtForm.replace(' ', 'T');
-        }
-        if(dtForm.length > 16) {
-            dtForm = dtForm.substring(0, 16);
-        }
-        campos.data_hora.value = dtForm;
-        
+        campos.data_hora.value = sessao.data_hora;
         campos.valor.value     = sessao.valor;
         campos.duracao.value   = sessao.duracao ?? 50;
         campos.foi_pago.checked= !!sessao.foi_pago;
         campos.titulo.innerText= "Editar Sessão";
-        
         closeSessionPopover();
-        getSessaoModal().show(); // Abre o modal em segurança
-
-      } catch (err) {
-        console.error(err); // Se falhar de novo, ficará registrado no Console para você
-        Swal.fire('Erro', 'Não foi possível carregar o modal de edição.', 'error');
+        modal.show();
+      }catch{
+        Swal.fire('Erro', 'Não foi possível carregar a sessão para edição.', 'error');
       }
     });
 
@@ -756,16 +735,10 @@ document.addEventListener('DOMContentLoaded', async function () {
   const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
   const calendar = new window.FullCalendar.Calendar(calendarEl, {
-    plugins: [
-        window.FullCalendar.dayGridPlugin,
-        window.FullCalendar.timeGridPlugin,
-        window.FullCalendar.interactionPlugin,
-        window.FullCalendar.bootstrap5Plugin
-    ],
     themeSystem: 'bootstrap5',
     timeZone: 'local',
     height: 700,
-    locale: window.FullCalendar.ptBr,
+    locale: 'pt-br',
     initialView: 'dayGridMonth',
     headerToolbar: false,
     events: '/api/sessoes',
@@ -828,12 +801,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     eventClick: function(info){
       info.jsEvent.preventDefault();
       closeSessionPopover();
-      
-      // Coleta o clique via info.jsEvent e caso esteja indefinido busca um valor genérico do elemento alvo
-      const clickX = info.jsEvent.clientX || info.el.getBoundingClientRect().left;
-      const clickY = info.jsEvent.clientY || info.el.getBoundingClientRect().top;
-      
-      abrirPopupSessao(info, clickX, clickY);
+      const { clientX, clientY } = info.jsEvent;
+      abrirPopupSessao(info, clientX, clientY);
     },
 
     eventDidMount(info){
@@ -875,7 +844,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     campos.duracao.value = 50;
     campos.foi_pago.checked = false;
     campos.titulo.innerText = "Nova Sessão";
-    getSessaoModal().show();
+    modal.show();
   }
 
   document.getElementById('formSessao').addEventListener('submit', async function (e) {
@@ -920,7 +889,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         return;
       }
 
-      getSessaoModal().hide();
+      modal.hide();
       closeSessionPopover();
       calendar.refetchEvents();
       
