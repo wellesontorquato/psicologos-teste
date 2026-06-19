@@ -9,16 +9,13 @@
 
     <title>@yield('title', config('app.name', 'Sistema de Psicólogos/Psicanalistas/Psiquiatras'))</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Vite -->
     {{ Vite::useBuildDirectory('build')->withEntryPoints(['resources/css/app.css', 'resources/js/app.js']) }}
     @yield('styles')
     @stack('styles')
 
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -230,7 +227,6 @@
         }
     }
 </style>
-    <!-- Facebook Meta Pixel -->
     <script>
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -246,8 +242,7 @@
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1112759344219140&ev=PageView&noscript=1"
     /></noscript>
-    <!-- End Facebook Meta Pixel -->
-     @include('layouts.partials.ga')
+    @include('layouts.partials.ga')
 </head>
 <body class="font-sans antialiased">
     <div class="sidebar">
@@ -763,8 +758,7 @@
         });
 </script>
 
-<!-- Spinner Global (Tailwind) -->
-    <div id="global-spinner" class="hidden fixed inset-0 bg-white/70 z-[9999] flex items-center justify-center">
+<div id="global-spinner" class="hidden fixed inset-0 bg-white/70 z-[9999] flex items-center justify-center">
         <svg class="animate-spin h-16 w-16 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
@@ -779,6 +773,11 @@
         document.getElementById('global-spinner')?.classList.add('hidden');
     };
 
+    // CORREÇÃO: Garante que o spinner desapareça se a página for restaurada do BFCache (botão Voltar do navegador)
+    window.addEventListener('pageshow', function (event) {
+        hideSpinner();
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('form:not(.no-spinner)').forEach(form => {
             form.addEventListener('submit', function() {
@@ -786,6 +785,7 @@
             });
         });
     });
+    
     document.addEventListener('click', function (e) {
         const link = e.target.closest('a');
 
