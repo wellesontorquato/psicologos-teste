@@ -347,10 +347,8 @@
     </div>
 </div>
 
-<!-- Container do Popover (JS injeta o HTML interno) -->
 <div id="session-popover" class="session-popover" style="display:none;" role="dialog" aria-modal="true" aria-live="polite"></div>
 
-<!-- Modal Nova Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1" aria-labelledby="modalSessaoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form id="formSessao" class="modal-content border-0 rounded-4 shadow">
@@ -409,12 +407,18 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
   const calendarEl = document.getElementById('calendar');
   const calendarH1 = document.getElementById('calendarTitle');
-  const modal      = new bootstrap.Modal(document.getElementById('modalSessao'));
+  const modalEl    = document.getElementById('modalSessao');
+  
+  // Obtém a instância do Modal de forma segura e limpa (Evita travamentos do BS5)
+  function getSessaoModal() {
+      return bootstrap.Modal.getOrCreateInstance(modalEl);
+  }
 
   const campos = {
     id: document.getElementById('sessao_id'),
@@ -479,14 +483,19 @@ document.addEventListener('DOMContentLoaded', async function () {
     const opt = { weekday:'long', day:'2-digit', month:'long' };
     return d.toLocaleDateString('pt-BR', opt);
   }
+
   function positionPopover(x, y){
-    const W = sessionPopover.offsetWidth || 320, H = sessionPopover.offsetHeight || 260;
+    sessionPopover.style.display = 'block';
+    const W = sessionPopover.offsetWidth || 320;
+    const H = sessionPopover.offsetHeight || 260;
     const vw = window.innerWidth, vh = window.innerHeight, sy = window.scrollY, sx = window.scrollX;
+    
     let left = x + 12 + sx, top = y + 12 + sy;
     if (left + W > vw + sx) left = vw - W - 12 + sx;
     if (top + H > vh + sy)  top  = vh - H - 12 + sy;
     if (left < 12 + sx) left = 12 + sx;
     if (top  < 12 + sy) top  = 12 + sy;
+    
     sessionPopover.style.left = left + 'px';
     sessionPopover.style.top  = top  + 'px';
   }
@@ -613,8 +622,6 @@ document.addEventListener('DOMContentLoaded', async function () {
       </div>
     `;
 
-    sessionPopover.style.display = 'block';
-    void sessionPopover.offsetWidth; 
     positionPopover(clickX, clickY);
     requestAnimationFrame(() => sessionPopover.classList.add('show'));
 
@@ -630,20 +637,34 @@ document.addEventListener('DOMContentLoaded', async function () {
       });
     }
 
+    // --- CORREÇÃO DO BOTÃO EDITAR ---
     document.getElementById('sp-edit')?.addEventListener('click', async (e)=>{
       e.stopPropagation();
-      try{
+      try {
         campos.id.value        = sessao.id;
         campos.paciente.value  = sessao.paciente_id;
-        campos.data_hora.value = sessao.data_hora;
+        
+        // CORREÇÃO CRÍTICA: datetime-local EXIGE que a string contenha um "T" e tenha no max 16 caracteres.
+        let dtForm = sessao.data_hora || '';
+        if(dtForm && dtForm.includes(' ')) {
+            dtForm = dtForm.replace(' ', 'T');
+        }
+        if(dtForm.length > 16) {
+            dtForm = dtForm.substring(0, 16);
+        }
+        campos.data_hora.value = dtForm;
+        
         campos.valor.value     = sessao.valor;
         campos.duracao.value   = sessao.duracao ?? 50;
         campos.foi_pago.checked= !!sessao.foi_pago;
         campos.titulo.innerText= "Editar Sessão";
+        
         closeSessionPopover();
-        modal.show();
-      }catch{
-        Swal.fire('Erro', 'Não foi possível carregar a sessão para edição.', 'error');
+        getSessaoModal().show(); // Abre o modal em segurança
+
+      } catch (err) {
+        console.error(err); // Se falhar de novo, ficará registrado no Console para você
+        Swal.fire('Erro', 'Não foi possível carregar o modal de edição.', 'error');
       }
     });
 
@@ -734,7 +755,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   const prettyTitle = (t) => t.replace(/ de /g, ' · ');
 
-  // ATENÇÃO: Aqui os plugins e o locale originais foram restaurados
   const calendar = new window.FullCalendar.Calendar(calendarEl, {
     plugins: [
         window.FullCalendar.dayGridPlugin,
@@ -808,8 +828,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     eventClick: function(info){
       info.jsEvent.preventDefault();
       closeSessionPopover();
-      const { clientX, clientY } = info.jsEvent;
-      abrirPopupSessao(info, clientX, clientY);
+      
+      // Coleta o clique via info.jsEvent e caso esteja indefinido busca um valor genérico do elemento alvo
+      const clickX = info.jsEvent.clientX || info.el.getBoundingClientRect().left;
+      const clickY = info.jsEvent.clientY || info.el.getBoundingClientRect().top;
+      
+      abrirPopupSessao(info, clickX, clickY);
     },
 
     eventDidMount(info){
@@ -851,7 +875,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     campos.duracao.value = 50;
     campos.foi_pago.checked = false;
     campos.titulo.innerText = "Nova Sessão";
-    modal.show();
+    getSessaoModal().show();
   }
 
   document.getElementById('formSessao').addEventListener('submit', async function (e) {
@@ -896,7 +920,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         return;
       }
 
-      modal.hide();
+      getSessaoModal().hide();
       closeSessionPopover();
       calendar.refetchEvents();
       
