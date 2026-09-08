@@ -29,6 +29,18 @@
       "assets/index-CSeRcSTU.css"
     ]
   },
+  "resources/js/public-pages/contato/index.jsx": {
+    "file": "assets/index-C3AKVBVg.js",
+    "name": "index",
+    "src": "resources/js/public-pages/contato/index.jsx",
+    "isEntry": true,
+    "imports": [
+      "_react-fQdqZm5Z.js"
+    ],
+    "css": [
+      "assets/index-CGLaMMv1.css"
+    ]
+  },
   "resources/js/public-pages/funcionalidades/index.jsx": {
     "file": "assets/index-G2rNMab0.js",
     "name": "index",

@@ -1,0 +1,2082 @@
+:root {
+    --pgct-navy: #102f4d;
+    --pgct-navy-deep: #08253e;
+    --pgct-ink: #163449;
+    --pgct-muted: #617b8d;
+    --pgct-cyan: #18a9df;
+    --pgct-cyan-deep: #078ec7;
+    --pgct-cyan-soft: #dff5fd;
+    --pgct-line: #dceaf1;
+    --pgct-surface: #f5fafc;
+    --pgct-green: #138b69;
+    --pgct-green-soft: #e7f7f1;
+    --pgct-red: #c24b5a;
+    --pgct-red-soft: #fff0f2;
+    --pgct-shadow:
+        0 26px 80px
+        rgba(18, 63, 91, 0.11);
+}
+
+.pgct-page {
+    width: 100%;
+    overflow-x: clip;
+    color: var(--pgct-ink);
+    background: #fff;
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+.pgct-page *,
+.pgct-page *::before,
+.pgct-page *::after {
+    box-sizing: border-box;
+}
+
+.pgct-page a {
+    color: inherit;
+}
+
+.pgct-shell {
+    width: min(
+        1180px,
+        calc(100% - 48px)
+    );
+    margin: 0 auto;
+}
+
+/* ==================================================
+   HERO
+   ================================================== */
+
+.pgct-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 108px 0 105px;
+    background:
+        radial-gradient(
+            circle at 10% 8%,
+            rgba(27, 176, 224, 0.14),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 92% 30%,
+            rgba(47, 185, 222, 0.11),
+            transparent 30%
+        ),
+        linear-gradient(
+            180deg,
+            #f8fcfe 0%,
+            #ffffff 100%
+        );
+}
+
+.pgct-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #dcebf1 20%,
+            #dcebf1 80%,
+            transparent
+        );
+}
+
+.pgct-hero-orb {
+    position: absolute;
+    z-index: -1;
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.pgct-hero-orb-one {
+    left: -135px;
+    top: 100px;
+    width: 330px;
+    height: 330px;
+    border:
+        1px solid
+        rgba(24, 169, 223, 0.14);
+}
+
+.pgct-hero-orb-two {
+    right: -170px;
+    bottom: -170px;
+    width: 440px;
+    height: 440px;
+    border:
+        1px solid
+        rgba(16, 47, 77, 0.08);
+}
+
+.pgct-hero-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 0.92fr)
+        minmax(500px, 1.08fr);
+    gap: 74px;
+    align-items: center;
+}
+
+/* ==================================================
+   INTRO
+   ================================================== */
+
+.pgct-intro {
+    max-width: 600px;
+}
+
+.pgct-eyebrow,
+.pgct-section-kicker,
+.pgct-form-kicker {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 30px;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: var(--pgct-cyan-deep);
+    background:
+        rgba(24, 169, 223, 0.09);
+    border:
+        1px solid
+        rgba(24, 169, 223, 0.13);
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pgct-eyebrow {
+    margin-bottom: 22px;
+}
+
+.pgct-intro h1 {
+    margin: 0;
+    color: var(--pgct-navy);
+    font-size:
+        clamp(
+            3.2rem,
+            5.3vw,
+            5.2rem
+        );
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+    font-weight: 780;
+}
+
+.pgct-intro h1 span {
+    display: block;
+    color: var(--pgct-cyan-deep);
+}
+
+.pgct-intro-description {
+    max-width: 570px;
+    margin: 27px 0 0;
+    color: var(--pgct-muted);
+    font-size: 1.03rem;
+    line-height: 1.72;
+}
+
+.pgct-reason-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.pgct-reason {
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    padding: 13px 15px;
+    border-radius: 15px;
+    border: 1px solid #e0edf2;
+    background:
+        rgba(255,255,255,0.77);
+}
+
+.pgct-reason-icon {
+    display: grid;
+    flex: 0 0 39px;
+    width: 39px;
+    height: 39px;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--pgct-cyan-deep);
+    background: var(--pgct-cyan-soft);
+}
+
+.pgct-reason strong {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--pgct-navy);
+    font-size: 0.84rem;
+}
+
+.pgct-reason p {
+    margin: 0;
+    color: #718797;
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.pgct-direct {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+    margin-top: 23px;
+}
+
+.pgct-direct-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--pgct-green);
+    background: var(--pgct-green-soft);
+}
+
+.pgct-direct span {
+    display: block;
+    margin-bottom: 2px;
+    color: #7890a0;
+    font-size: 0.71rem;
+}
+
+.pgct-direct a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--pgct-green) !important;
+    font-size: 0.79rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pgct-direct a:hover {
+    text-decoration: underline;
+}
+
+/* ==================================================
+   FORM
+   ================================================== */
+
+.pgct-form-card {
+    padding: 32px;
+    border-radius: 27px;
+    border: 1px solid
+        rgba(180, 210, 223, 0.72);
+    background:
+        rgba(255,255,255,0.96);
+    box-shadow: var(--pgct-shadow);
+}
+
+.pgct-form-head {
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid
+        var(--pgct-line);
+}
+
+.pgct-form-kicker {
+    margin-bottom: 14px;
+}
+
+.pgct-form-head h2 {
+    margin: 0;
+    color: var(--pgct-navy);
+    font-size:
+        clamp(
+            1.8rem,
+            3vw,
+            2.55rem
+        );
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    font-weight: 780;
+}
+
+.pgct-form-head h2 span {
+    display: block;
+    color: var(--pgct-cyan-deep);
+}
+
+.pgct-form-head p {
+    margin: 15px 0 0;
+    color: var(--pgct-muted);
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+.pgct-form {
+    display: grid;
+    gap: 18px;
+}
+
+.pgct-form-row {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+    gap: 14px;
+}
+
+.pgct-field {
+    display: grid;
+    gap: 7px;
+}
+
+.pgct-field label {
+    color: #29495f;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.pgct-field label > span {
+    color: var(--pgct-cyan-deep);
+}
+
+.pgct-field label > small {
+    margin-left: 4px;
+    color: #8ca0ad;
+    font-size: 0.67rem;
+    font-weight: 650;
+}
+
+.pgct-field input,
+.pgct-field select,
+.pgct-field textarea {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid #cfdee6;
+    border-radius: 12px;
+    color: #18394f;
+    background: #fbfdfe;
+    outline: none;
+    font: inherit;
+    font-size: 0.81rem;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        background 160ms ease;
+}
+
+.pgct-field textarea {
+    min-height: 124px;
+    padding-top: 13px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.pgct-field input::placeholder,
+.pgct-field textarea::placeholder {
+    color: #9aaeb9;
+}
+
+.pgct-field input:focus,
+.pgct-field select:focus,
+.pgct-field textarea:focus {
+    border-color: #57bfe4;
+    background: #fff;
+    box-shadow:
+        0 0 0 4px
+        rgba(24,169,223,0.1);
+}
+
+.pgct-field input.is-invalid,
+.pgct-field select.is-invalid,
+.pgct-field textarea.is-invalid {
+    border-color: #df8792;
+    background: #fffafa;
+}
+
+.pgct-select-wrap {
+    position: relative;
+}
+
+.pgct-select-wrap select {
+    padding-right: 40px;
+    appearance: none;
+    cursor: pointer;
+}
+
+.pgct-select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: #7690a1;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.pgct-field-error {
+    color: var(--pgct-red);
+    font-size: 0.68rem;
+    line-height: 1.4;
+}
+
+.pgct-alert {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px 15px;
+    border-radius: 13px;
+}
+
+.pgct-alert-icon {
+    display: grid;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 999px;
+    font-weight: 900;
+}
+
+.pgct-alert strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.8rem;
+}
+
+.pgct-alert p {
+    margin: 0;
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+
+.pgct-alert-success {
+    color: #176d57;
+    background: var(--pgct-green-soft);
+    border: 1px solid #cdece1;
+}
+
+.pgct-alert-success
+.pgct-alert-icon {
+    color: #fff;
+    background: var(--pgct-green);
+}
+
+.pgct-alert-error {
+    color: #99414c;
+    background: var(--pgct-red-soft);
+    border: 1px solid #f0d1d6;
+}
+
+.pgct-alert-error
+.pgct-alert-icon {
+    color: #fff;
+    background: var(--pgct-red);
+}
+
+.pgct-recaptcha {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    min-height: 80px;
+    padding: 3px 0 0;
+}
+
+.pgct-recaptcha
+.g-recaptcha {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+.pgct-submit {
+    display: inline-flex;
+    width: 100%;
+    min-height: 51px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0 18px;
+    border: 1px solid
+        var(--pgct-cyan-deep);
+    border-radius: 13px;
+    color: #fff;
+    background: var(--pgct-cyan-deep);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 850;
+    transition:
+        transform 170ms ease,
+        background 170ms ease,
+        box-shadow 170ms ease;
+}
+
+.pgct-submit:hover {
+    transform: translateY(-2px);
+    background: #087dad;
+    box-shadow:
+        0 13px 28px
+        rgba(7,142,199,0.2);
+}
+
+.pgct-form-note {
+    margin: -6px 0 0;
+    color: #91a4af;
+    text-align: center;
+    font-size: 0.66rem;
+}
+
+/* ==================================================
+   FLOW
+   ================================================== */
+
+.pgct-flow-section {
+    padding: 105px 0 110px;
+    background:
+        linear-gradient(
+            180deg,
+            #f6fbfd 0%,
+            #fbfdfe 100%
+        );
+    border-bottom: 1px solid #e8f1f5;
+}
+
+.pgct-flow-heading {
+    max-width: 720px;
+    margin: 0 auto 48px;
+    text-align: center;
+}
+
+.pgct-section-kicker {
+    margin-bottom: 17px;
+}
+
+.pgct-flow-heading h2 {
+    margin: 0;
+    color: var(--pgct-navy);
+    font-size:
+        clamp(
+            2.25rem,
+            4.2vw,
+            3.65rem
+        );
+    line-height: 1.04;
+    letter-spacing: -0.046em;
+    font-weight: 780;
+}
+
+.pgct-flow-heading h2 span {
+    display: block;
+    color: var(--pgct-cyan-deep);
+}
+
+.pgct-flow-heading > p {
+    max-width: 620px;
+    margin: 21px auto 0;
+    color: var(--pgct-muted);
+    font-size: 0.94rem;
+    line-height: 1.7;
+}
+
+.pgct-step-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+    gap: 16px;
+}
+
+.pgct-step-card {
+    min-height: 220px;
+    padding: 26px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid var(--pgct-line);
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        border-color 180ms ease;
+}
+
+.pgct-step-card:hover {
+    transform: translateY(-3px);
+    border-color: #bfdeea;
+    box-shadow:
+        0 17px 44px
+        rgba(17,62,91,0.07);
+}
+
+.pgct-step-number {
+    display: inline-flex;
+    margin-bottom: 31px;
+    color: var(--pgct-cyan-deep);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.pgct-step-card h3 {
+    margin: 0 0 10px;
+    color: var(--pgct-navy);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.pgct-step-card p {
+    margin: 0;
+    color: #6b8393;
+    font-size: 0.8rem;
+    line-height: 1.65;
+}
+
+.pgct-flow-cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-top: 18px;
+    padding: 22px 24px;
+    border-radius: 18px;
+    color: #d8edf5;
+    background:
+        linear-gradient(
+            135deg,
+            #123752,
+            #092941
+        );
+}
+
+.pgct-flow-cta > div {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.pgct-flow-cta-icon {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 13px;
+    color: #85def5;
+    background:
+        rgba(89,203,233,0.1);
+}
+
+.pgct-flow-cta strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #fff;
+    font-size: 0.84rem;
+}
+
+.pgct-flow-cta p {
+    margin: 0;
+    color: #9ebdcb;
+    font-size: 0.73rem;
+}
+
+.pgct-flow-cta > a {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 0 15px;
+    border-radius: 11px;
+    color: var(--pgct-navy) !important;
+    background: #e0f6fd;
+    font-size: 0.75rem;
+    font-weight: 850;
+    text-decoration: none;
+    transition:
+        transform 170ms ease,
+        background 170ms ease;
+}
+
+.pgct-flow-cta > a:hover {
+    transform: translateY(-2px);
+    background: #fff;
+}
+
+/* ==================================================
+   WHATSAPP
+   ================================================== */
+
+.pgct-whatsapp {
+    position: fixed;
+    z-index: 50;
+    right: 22px;
+    bottom: 22px;
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    gap: 9px;
+    padding: 0 15px;
+    border-radius: 999px;
+    color: #fff !important;
+    background: #168e65;
+    box-shadow:
+        0 12px 32px
+        rgba(20,94,71,0.23);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+        transform 170ms ease,
+        background 170ms ease;
+}
+
+.pgct-whatsapp:hover {
+    transform: translateY(-2px);
+    background: #117b57;
+}
+
+.pgct-whatsapp-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #8af0c2;
+    box-shadow:
+        0 0 0 4px
+        rgba(138,240,194,0.12);
+}
+
+/* ==================================================
+   RESPONSIVO
+   ================================================== */
+
+@media (max-width: 1040px) {
+    .pgct-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 54px;
+    }
+
+    .pgct-intro {
+        max-width: 750px;
+    }
+
+    .pgct-form-wrap {
+        max-width: 760px;
+    }
+}
+
+@media (max-width: 720px) {
+    .pgct-shell {
+        width: min(
+            100% - 30px,
+            1180px
+        );
+    }
+
+    .pgct-hero {
+        padding:
+            82px
+            0
+            76px;
+    }
+
+    .pgct-intro h1 {
+        font-size:
+            clamp(
+                2.7rem,
+                13vw,
+                4.3rem
+            );
+    }
+
+    .pgct-form-card {
+        padding: 23px 19px;
+        border-radius: 22px;
+    }
+
+    .pgct-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .pgct-flow-section {
+        padding:
+            82px
+            0
+            86px;
+    }
+
+    .pgct-step-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pgct-step-card {
+        min-height: 0;
+    }
+
+    .pgct-flow-cta {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pgct-flow-cta > a {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pgct-whatsapp {
+        right: 14px;
+        bottom: 14px;
+        width: 46px;
+        height: 46px;
+        min-height: 46px;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .pgct-whatsapp span:last-child {
+        display: none;
+    }
+}
+
+@media (max-width: 360px) {
+    .pgct-recaptcha {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .pgct-recaptcha
+    .g-recaptcha {
+        transform:
+            scale(0.88);
+        transform-origin:
+            center top;
+        margin-bottom: -8px;
+    }
+}
+
+@media (
+    prefers-reduced-motion:
+    reduce
+) {
+    .pgct-page *,
+    .pgct-page *::before,
+    .pgct-page *::after {
+        animation-duration:
+            0.001ms !important;
+        transition-duration:
+            0.001ms !important;
+    }
+}
+/* ==================================================
+   PSIGESTOR CONTACT MODERN FOOTER START
+   Footer publico aprovado reutilizado.
+   ================================================== */
+
+/* ==================================================
+    PSIGESTOR PLANS MODERN FOOTER START
+    Reutilizado do footer público aprovado.
+    ================================================== */
+
+/* =================================================
+   HOME FOOTER
+================================================= */
+
+.pghf-footer {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    margin: 0;
+
+    color:
+        rgba(
+            218,
+            233,
+            243,
+            0.67
+        );
+
+    background:
+        linear-gradient(
+            180deg,
+            #0a2136 0%,
+            #071a2c 100%
+        );
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.055
+        );
+}
+
+.pghf-footer *,
+.pghf-footer *::before,
+.pghf-footer *::after {
+    box-sizing: border-box;
+}
+
+.pghf-container {
+    position: relative;
+    z-index: 3;
+
+    width:
+        min(
+            100%,
+            1340px
+        );
+
+    margin:
+        0
+        auto;
+
+    padding:
+        64px
+        24px
+        24px;
+}
+
+.pghf-glow {
+    position: absolute;
+    z-index: -2;
+
+    border-radius: 999px;
+
+    pointer-events: none;
+}
+
+.pghf-glow-one {
+    width: 500px;
+    height: 500px;
+
+    top: -340px;
+    left: -240px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(
+                54,
+                192,
+                253,
+                0.1
+            ),
+            transparent 70%
+        );
+}
+
+.pghf-glow-two {
+    width: 430px;
+    height: 430px;
+
+    right: -270px;
+    bottom: -290px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(
+                8,
+                120,
+                237,
+                0.08
+            ),
+            transparent 70%
+        );
+}
+
+/* =================================================
+   FOOTER MAIN
+================================================= */
+
+.pghf-main {
+    display: grid;
+
+    grid-template-columns:
+        minmax(280px, 1.25fr)
+        minmax(145px, 0.62fr)
+        minmax(190px, 0.78fr)
+        minmax(270px, 1fr);
+
+    gap: 55px;
+
+    padding-bottom: 49px;
+}
+
+.pghf-brand {
+    max-width: 330px;
+}
+
+.pghf-logo {
+    width: fit-content;
+
+    display: block;
+
+    text-decoration: none;
+}
+
+.pghf-logo img {
+    width: 166px;
+    height: auto;
+
+    display: block;
+}
+
+.pghf-brand > p {
+    max-width: 300px;
+
+    margin:
+        20px
+        0
+        0;
+
+    color:
+        rgba(
+            202,
+            222,
+            235,
+            0.55
+        );
+
+    font-size: 0.72rem;
+
+    line-height: 1.65;
+}
+
+/* SOCIAL */
+
+.pghf-social {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 22px;
+}
+
+.pghf-social a {
+    width: 37px;
+    height: 37px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    border-radius: 11px;
+
+    color:
+        rgba(
+            224,
+            238,
+            247,
+            0.62
+        );
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.035
+        );
+
+    font-size: 0.75rem;
+
+    text-decoration: none;
+
+    transition:
+        transform 180ms ease,
+        color 180ms ease,
+        border-color 180ms ease,
+        background 180ms ease;
+}
+
+.pghf-social a:hover {
+    transform:
+        translateY(-2px);
+
+    color: #60caff;
+
+    border-color:
+        rgba(
+            90,
+            199,
+            255,
+            0.18
+        );
+
+    background:
+        rgba(
+            73,
+            194,
+            253,
+            0.07
+        );
+}
+
+/* =================================================
+   FOOTER COLUMNS
+================================================= */
+
+.pghf-column {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+}
+
+.pghf-title {
+    display: block;
+
+    margin-bottom: 18px;
+
+    color: #f2f8fc;
+
+    font-size: 0.67rem;
+    font-weight: 750;
+
+    letter-spacing:
+        0.01em;
+}
+
+.pghf-column > a {
+    display: inline-flex;
+
+    align-items: center;
+
+    margin-bottom: 10px;
+
+    color:
+        rgba(
+            205,
+            225,
+            237,
+            0.57
+        );
+
+    font-size: 0.61rem;
+
+    line-height: 1.45;
+
+    text-decoration: none;
+
+    transition:
+        color 180ms ease,
+        transform 180ms ease;
+}
+
+.pghf-column > a:hover {
+    color: #60caff;
+
+    transform:
+        translateX(2px);
+}
+
+/* CONTACT */
+
+.pghf-contact > a {
+    max-width: 100%;
+
+    gap: 9px;
+}
+
+.pghf-contact-icon {
+    width: 30px;
+    height: 30px;
+
+    flex:
+        0
+        0
+        30px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
+
+    border-radius: 9px;
+
+    color: #58c8ff;
+
+    background:
+        rgba(
+            64,
+            191,
+            251,
+            0.055
+        );
+
+    font-size: 0.65rem;
+}
+
+/* =================================================
+   FOOTER BOTTOM
+================================================= */
+
+.pghf-bottom {
+    min-height: 69px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.065
+        );
+
+    color:
+        rgba(
+            195,
+            217,
+            231,
+            0.39
+        );
+
+    font-size: 0.5rem;
+    font-weight: 550;
+}
+
+.pghf-legal {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.pghf-legal a {
+    color:
+        rgba(
+            205,
+            225,
+            237,
+            0.5
+        );
+
+    text-decoration: none;
+
+    transition:
+        color 180ms ease;
+}
+
+.pghf-legal a:hover {
+    color: #5fc9ff;
+}
+
+.pghf-legal > span {
+    width: 3px;
+    height: 3px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.17
+        );
+}
+
+/* =================================================
+   CTA RESPONSIVE
+================================================= */
+
+@media (max-width: 1100px) {
+
+    .pgcta-card {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(360px, 0.8fr);
+
+        gap: 36px;
+
+        padding:
+            48px
+            42px;
+    }
+
+    .pghf-main {
+        grid-template-columns:
+            1.2fr
+            0.8fr
+            0.9fr;
+
+        gap: 42px;
+    }
+
+    .pghf-contact {
+        grid-column:
+            2 / -1;
+    }
+}
+
+@media (max-width: 850px) {
+
+    .pgcta-section {
+        padding:
+            60px
+            20px
+            62px;
+    }
+
+    .pgcta-card {
+        grid-template-columns: 1fr;
+
+        gap: 38px;
+
+        padding:
+            43px
+            38px;
+    }
+
+    .pgcta-product {
+        width: 100%;
+    }
+
+    .pghf-main {
+        grid-template-columns:
+            1fr
+            1fr;
+
+        gap:
+            38px
+            45px;
+    }
+
+    .pghf-brand {
+        grid-column:
+            1 / -1;
+    }
+
+    .pghf-contact {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 620px) {
+
+    .pgcta-section {
+        padding:
+            48px
+            16px
+            50px;
+    }
+
+    .pgcta-card {
+        min-height: 0;
+
+        padding:
+            31px
+            22px
+            25px;
+
+        border-radius: 25px;
+    }
+
+    .pgcta-copy h2 {
+        font-size:
+            clamp(
+                2.18rem,
+                10.4vw,
+                2.9rem
+            );
+    }
+
+    .pgcta-copy > p {
+        font-size: 0.85rem;
+    }
+
+    .pgcta-actions {
+        align-items: stretch;
+
+        flex-direction: column;
+
+        margin-top: 25px;
+    }
+
+    .pgcta-primary {
+        width: 100%;
+
+        justify-content: space-between;
+    }
+
+    .pgcta-login {
+        width: fit-content;
+    }
+
+    .pgcta-trust {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+    .pgcta-product {
+        padding:
+            20px
+            16px
+            17px;
+
+        border-radius: 20px;
+    }
+
+    .pgcta-benefit {
+        min-height: 62px;
+    }
+
+    .pghf-container {
+        padding:
+            49px
+            20px
+            20px;
+    }
+
+    .pghf-main {
+        grid-template-columns: 1fr;
+
+        gap: 34px;
+
+        padding-bottom: 37px;
+    }
+
+    .pghf-brand,
+    .pghf-contact {
+        grid-column: auto;
+    }
+
+    .pghf-bottom {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 13px;
+
+        padding:
+            20px
+            0;
+    }
+
+    .pghf-legal {
+        flex-wrap: wrap;
+    }
+}
+
+@media (
+    prefers-reduced-motion:
+    reduce
+) {
+
+    .pgcta-primary,
+    .pgcta-login i,
+    .pghf-social a,
+    .pghf-column > a,
+    .pghf-legal a {
+        transition: none;
+    }
+}
+
+/* === PSIGESTOR FINAL CTA FOOTER V1 END === */
+
+/* === PSIGESTOR FINAL POLISH V2 START === */
+
+/*
+|--------------------------------------------------------------------------
+| TRANSIÇÃO: BLOG → CTA
+|--------------------------------------------------------------------------
+*/
+
+/*
+Evita aquele grande "vazio duplo":
+padding final do blog + padding inicial do CTA.
+*/
+
+.pgn-section {
+    padding-bottom: 48px;
+}
+
+.pgcta-section {
+    padding:
+        38px
+        24px
+        42px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CTA — PROPORÇÃO GERAL
+|--------------------------------------------------------------------------
+*/
+
+.pgcta-card {
+    min-height: 445px;
+
+    padding:
+        50px
+        56px;
+
+    gap: 50px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CTA — TEXTO PRINCIPAL
+|--------------------------------------------------------------------------
+*/
+
+.pgcta-copy > p {
+    max-width: 640px;
+
+    font-size: 0.95rem;
+
+    line-height: 1.68;
+}
+
+.pgcta-actions {
+    margin-top: 27px;
+}
+
+.pgcta-trust {
+    margin-top: 21px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CTA — INFORMAÇÕES MENORES
+|--------------------------------------------------------------------------
+*/
+
+.pgcta-trust > span {
+    font-size: 0.56rem;
+}
+
+.pgcta-login {
+    font-size: 0.63rem;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CTA — PAINEL DO PRODUTO
+|--------------------------------------------------------------------------
+*/
+
+.pgcta-product {
+    padding:
+        25px
+        23px
+        20px;
+}
+
+.pgcta-product-header strong {
+    font-size: 0.98rem;
+
+    line-height: 1.32;
+}
+
+.pgcta-product-header small {
+    font-size: 0.5rem;
+}
+
+.pgcta-benefit {
+    min-height: 67px;
+
+    grid-template-columns:
+        40px
+        minmax(0, 1fr)
+        29px;
+
+    gap: 12px;
+
+    padding:
+        10px
+        12px;
+}
+
+.pgcta-benefit-icon {
+    width: 40px;
+    height: 40px;
+
+    font-size: 0.79rem;
+}
+
+.pgcta-benefit-copy strong {
+    font-size: 0.7rem;
+}
+
+.pgcta-benefit-copy small {
+    margin-top: 4px;
+
+    font-size: 0.5rem;
+}
+
+.pgcta-benefit-check {
+    width: 29px;
+    height: 29px;
+}
+
+.pgcta-product-footer {
+    font-size: 0.51rem;
+}
+
+.pgcta-product-footer strong {
+    font-size: 0.52rem;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER — MENOS DISTÂNCIA DO CTA
+|--------------------------------------------------------------------------
+*/
+
+.pghf-container {
+    padding:
+        54px
+        24px
+        22px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER — ESTRUTURA
+|--------------------------------------------------------------------------
+*/
+
+.pghf-main {
+    grid-template-columns:
+        minmax(290px, 1.22fr)
+        minmax(150px, 0.62fr)
+        minmax(210px, 0.82fr)
+        minmax(290px, 1fr);
+
+    gap: 50px;
+
+    padding-bottom: 44px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER — MARCA
+|--------------------------------------------------------------------------
+*/
+
+.pghf-logo img {
+    width: 174px;
+}
+
+.pghf-brand > p {
+    max-width: 315px;
+
+    margin-top: 19px;
+
+    font-size: 0.78rem;
+
+    line-height: 1.65;
+}
+
+.pghf-social {
+    margin-top: 21px;
+}
+
+.pghf-social a {
+    width: 40px;
+    height: 40px;
+
+    font-size: 0.8rem;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER — TÍTULOS
+|--------------------------------------------------------------------------
+*/
+
+.pghf-title {
+    margin-bottom: 19px;
+
+    font-size: 0.76rem;
+
+    font-weight: 750;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER — LINKS
+|--------------------------------------------------------------------------
+*/
+
+.pghf-column > a {
+    margin-bottom: 11px;
+
+    font-size: 0.68rem;
+
+    line-height: 1.48;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER — CONTATO
+|--------------------------------------------------------------------------
+*/
+
+.pghf-contact > a {
+    gap: 10px;
+}
+
+.pghf-contact-icon {
+    width: 33px;
+    height: 33px;
+
+    flex-basis: 33px;
+
+    font-size: 0.69rem;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER — BASE
+|--------------------------------------------------------------------------
+*/
+
+.pghf-bottom {
+    min-height: 67px;
+
+    font-size: 0.56rem;
+}
+
+.pghf-legal {
+    gap: 11px;
+}
+
+.pghf-legal a {
+    font-size: 0.56rem;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ÂNCORAS + NAVBAR STICKY
+|--------------------------------------------------------------------------
+*/
+
+#funcionalidades,
+#conteudos,
+#psigestor-home-social,
+#psigestor-home-cta {
+    scroll-margin-top: 88px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DESKTOP MÉDIO
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 1100px) {
+
+    .pgcta-section {
+        padding:
+            36px
+            20px
+            38px;
+    }
+
+    .pgcta-card {
+        padding:
+            45px
+            40px;
+
+        gap: 36px;
+    }
+
+    .pghf-main {
+        grid-template-columns:
+            1.15fr
+            0.8fr
+            0.9fr;
+
+        gap: 40px;
+    }
+
+    .pghf-contact {
+        grid-column:
+            2 / -1;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TABLET
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 850px) {
+
+    .pgn-section {
+        padding-bottom: 38px;
+    }
+
+    .pgcta-section {
+        padding:
+            30px
+            20px
+            34px;
+    }
+
+    .pgcta-card {
+        padding:
+            40px
+            36px;
+
+        gap: 36px;
+    }
+
+    .pghf-container {
+        padding:
+            48px
+            22px
+            20px;
+    }
+
+    .pghf-main {
+        grid-template-columns:
+            1fr
+            1fr;
+
+        gap:
+            36px
+            44px;
+    }
+
+    .pghf-brand {
+        grid-column:
+            1 / -1;
+    }
+
+    .pghf-contact {
+        grid-column: auto;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MOBILE
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 620px) {
+
+    .pgn-section {
+        padding-bottom: 28px;
+    }
+
+    .pgcta-section {
+        padding:
+            22px
+            16px
+            28px;
+    }
+
+    .pgcta-card {
+        padding:
+            30px
+            21px
+            24px;
+
+        gap: 32px;
+    }
+
+    .pgcta-product-header strong {
+        font-size: 0.9rem;
+    }
+
+    .pgcta-benefit-copy strong {
+        font-size: 0.67rem;
+    }
+
+    .pgcta-benefit-copy small {
+        font-size: 0.48rem;
+    }
+
+    .pghf-container {
+        padding:
+            44px
+            20px
+            18px;
+    }
+
+    .pghf-main {
+        grid-template-columns: 1fr;
+
+        gap: 31px;
+
+        padding-bottom: 34px;
+    }
+
+    .pghf-brand,
+    .pghf-contact {
+        grid-column: auto;
+    }
+
+    .pghf-title {
+        font-size: 0.75rem;
+    }
+
+    .pghf-column > a {
+        font-size: 0.7rem;
+    }
+
+    .pghf-brand > p {
+        font-size: 0.75rem;
+    }
+
+    .pghf-bottom {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 12px;
+
+        padding:
+            19px
+            0;
+
+        font-size: 0.57rem;
+    }
+}
+
+/* === PSIGESTOR FINAL POLISH V2 END === */
+
+ /* ==================================================
+    PSIGESTOR PLANS MODERN FOOTER END
+    ================================================== */
+
+/* ==================================================
+   PSIGESTOR CONTACT MODERN FOOTER END
+   ================================================== */
+
+/* ==================================================
+   PSIGESTOR CONTACT LOCAL CAPTCHA STYLE
+   Somente representacao visual no host local.
+   O reCAPTCHA verdadeiro permanece em producao.
+   ================================================== */
+
+.pgct-captcha-local {
+    display: flex;
+    width: min(100%, 304px);
+    min-height: 76px;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 16px;
+    border: 1px solid #d4e5ec;
+    border-radius: 12px;
+    background:
+        linear-gradient(
+            180deg,
+            #fbfdfe 0%,
+            #f5fafc 100%
+        );
+    box-shadow:
+        0 5px 15px
+        rgba(19, 64, 90, 0.04);
+}
+
+.pgct-captcha-local-icon {
+    display: grid;
+    flex: 0 0 35px;
+    width: 35px;
+    height: 35px;
+    place-items: center;
+    border-radius: 999px;
+    color: #ffffff;
+    background: #178e6b;
+    font-size: 0.86rem;
+    font-weight: 900;
+}
+
+.pgct-captcha-local > div {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.pgct-captcha-local strong {
+    color: #173b51;
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+
+.pgct-captcha-local span:not(.pgct-captcha-local-icon) {
+    color: #78909e;
+    font-size: 0.66rem;
+    line-height: 1.4;
+}
+
+/* ==================================================
+   PSIGESTOR CONTACT MOBILE POLISH START
+   O formulario e a prioridade no mobile.
+   Os links de WhatsApp continuam disponiveis
+   dentro do conteudo da pagina.
+   ================================================== */
+
+@media (max-width: 720px) {
+    .pgct-whatsapp {
+        display: none;
+    }
+}
+
+/* ==================================================
+   PSIGESTOR CONTACT MOBILE POLISH END
+   ================================================== */

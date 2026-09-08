@@ -2,179 +2,387 @@
 
 @section('title', 'Fale Conosco | PsiGestor')
 
-@section('content')
-
-{{-- Título --}}
-<section style="background: linear-gradient(to right, #00aaff, #00c4ff); padding: 60px 20px; margin-top: 85px;">
-    <h1 style="text-align: center; color: white; font-size: 2.2rem; margin: 0;">
-        Fale Conosco
-    </h1>
-</section>
-
-{{-- Formulário --}}
-<section style="padding: 30px 20px;">
-    <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.07);">
-        <p style="font-size: 1rem; color: #555; margin-bottom: 25px; text-align: center;">
-            Estamos aqui para ajudar você! Preencha o formulário abaixo e nossa equipe entrará em contato o mais breve possível.
-        </p>
-
-        {{-- Mensagens de sucesso/erro --}}
-        @if (session('success'))
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Mensagem enviada!',
-                        text: @json(session('success')),
-                        confirmButtonColor: '#00aaff'
-                    });
-                });
-            </script>
-        @endif
-
-        @if (session('error'))
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Ops...',
-                        text: @json(session('error')),
-                        confirmButtonColor: '#00aaff'
-                    });
-                });
-            </script>
-        @endif
-
-        <form action="{{ route('contato.enviar') }}" method="POST">
-            @csrf
-
-            {{-- Nome --}}
-            <div class="form-group">
-                <input type="text" name="nome" placeholder="Nome Completo *" required class="input-field">
-            </div>
-
-            {{-- Email --}}
-            <div class="form-group">
-                <input type="email" name="email" placeholder="E-mail *" required class="input-field">
-            </div>
-
-            {{-- Telefone --}}
-            <div class="form-group">
-                <input type="text" name="telefone" placeholder="Telefone (opcional)" class="input-field">
-            </div>
-
-            {{-- Assunto --}}
-            <div class="form-group">
-            <select name="assunto" required class="input-field">
-                <option value="">Selecione um assunto *</option>
-                <option value="Agendar demonstração">Gostaria de agendar uma demonstração do sistema</option>
-                <option value="Suporte técnico">Preciso de suporte técnico</option>
-                <option value="Dúvida geral">Tenho uma dúvida</option>
-                <option value="Sugestão de melhoria">Gostaria de enviar uma sugestão</option>
-                <option value="Problemas com pagamento">Estou com problemas no pagamento</option>
-                <option value="Ajuda com cadastro">Preciso de ajuda para me cadastrar</option>
-                <option value="Interesse em parceria">Tenho interesse em parcerias</option>
-                <option value="Outro assunto">Outro assunto</option>
-            </select>
-            </div>
-
-            {{-- Mensagem --}}
-            <div class="form-group">
-                <textarea name="mensagem" placeholder="Mensagem *" rows="4" required class="input-field"></textarea>
-            </div>
-
-            {{-- reCAPTCHA --}}
-            <div class="form-group" style="text-align: center;">
-                <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
-            </div>
-
-            {{-- Botão --}}
-            <div style="text-align: center; margin-top: 20px;">
-                <button type="submit" class="submit-btn">
-                    Enviar Mensagem
-                </button>
-            </div>
-        </form>
-    </div>
-</section>
-
-{{-- BOTÃO WHATSAPP FLOTANTE --}}
-<a href="https://wa.me/5582991128022?text=Ol%C3%A1%2C%20tenho%20interesse%20no%20PsiGestor%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20planos!" target="_blank" style="
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #25d366;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    text-decoration: none;
-    font-weight: bold;
-    transition: all 0.3s ease;
-" onmouseover="this.style.background='#1ebd5a';" onmouseout="this.style.background='#25d366';">
-    <img src="https://psicologos-teste-production.up.railway.app/images/whatsapp.png" alt="WhatsApp" style="width: 24px; height: 24px;">
-    (82) 99112-8022
-</a>
-
-@push('styles')
-<style>
-    .form-group {
-        margin-bottom: 18px;
-    }
-
-    .input-field {
-        width: 100%;
-        padding: 14px 16px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-        box-sizing: border-box;
-    }
-
-    .input-field:focus {
-        border-color: #00aaff;
-        box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.15);
-        outline: none;
-    }
-
-    select.input-field {
-        background: #fff;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-    }
-
-    .submit-btn {
-        background: #00aaff;
-        color: #fff;
-        border: none;
-        padding: 14px 30px;
-        border-radius: 8px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .submit-btn:hover {
-        background: #0095d8;
-    }
-
-    /* 👇 CENTRALIZAÇÃO do reCAPTCHA */
-    .g-recaptcha {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-        margin: 0 auto !important;
-    }
-</style>
-@endpush
+{{-- PSIGESTOR CONTACT LOCAL CAPTCHA --}}
+@php
+    $isLocalContactHost = in_array(
+        request()->getHost(),
+        ['127.0.0.1', 'localhost'],
+        true
+    );
+@endphp
 
 @push('scripts')
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @vite('resources/js/public-pages/contato/index.jsx')
+    @unless($isLocalContactHost)
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @endunless
 @endpush
+
+@section('content')
+    <main class="pgct-page">
+        <section class="pgct-hero">
+            <div
+                class="pgct-hero-orb pgct-hero-orb-one"
+                aria-hidden="true"
+            ></div>
+
+            <div
+                class="pgct-hero-orb pgct-hero-orb-two"
+                aria-hidden="true"
+            ></div>
+
+            <div class="pgct-shell pgct-hero-grid">
+                <div
+                    id="psigestor-contact-intro"
+                    data-whatsapp-url="https://wa.me/5582991128022?text=Ol%C3%A1%2C%20tenho%20interesse%20no%20PsiGestor%20e%20gostaria%20de%20saber%20mais!"
+                ></div>
+
+                <div class="pgct-form-wrap">
+                    <div class="pgct-form-card">
+                        <div class="pgct-form-head">
+                            <span class="pgct-form-kicker">
+                                Envie sua mensagem
+                            </span>
+
+                            <h2>
+                                Conte um pouco
+                                <span>do que você precisa.</span>
+                            </h2>
+
+                            <p>
+                                Escolha o assunto e compartilhe o contexto
+                                para que sua mensagem chegue com as
+                                informações necessárias.
+                            </p>
+                        </div>
+
+                        @if (session('success'))
+                            <div
+                                class="pgct-alert pgct-alert-success"
+                                role="status"
+                            >
+                                <span class="pgct-alert-icon">
+                                    ✓
+                                </span>
+
+                                <div>
+                                    <strong>Mensagem enviada.</strong>
+                                    <p>{{ session('success') }}</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if (session('error'))
+                            <div
+                                class="pgct-alert pgct-alert-error"
+                                role="alert"
+                            >
+                                <span class="pgct-alert-icon">
+                                    !
+                                </span>
+
+                                <div>
+                                    <strong>Não foi possível enviar.</strong>
+                                    <p>{{ session('error') }}</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($errors->any())
+                            <div
+                                class="pgct-alert pgct-alert-error"
+                                role="alert"
+                            >
+                                <span class="pgct-alert-icon">
+                                    !
+                                </span>
+
+                                <div>
+                                    <strong>Revise os campos.</strong>
+                                    <p>
+                                        Há informações obrigatórias que
+                                        precisam ser corrigidas antes do envio.
+                                    </p>
+                                </div>
+                            </div>
+                        @endif
+
+                        <form
+                            action="{{ route('contato.enviar') }}"
+                            method="POST"
+                            class="pgct-form"
+                        >
+                            @csrf
+
+                            <div class="pgct-field">
+                                <label for="pgct-nome">
+                                    Nome completo
+                                    <span>*</span>
+                                </label>
+
+                                <input
+                                    id="pgct-nome"
+                                    type="text"
+                                    name="nome"
+                                    value="{{ old('nome') }}"
+                                    autocomplete="name"
+                                    required
+                                    class="@error('nome') is-invalid @enderror"
+                                    placeholder="Como podemos chamar você?"
+                                >
+
+                                @error('nome')
+                                    <small class="pgct-field-error">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+
+                            <div class="pgct-form-row">
+                                <div class="pgct-field">
+                                    <label for="pgct-email">
+                                        E-mail
+                                        <span>*</span>
+                                    </label>
+
+                                    <input
+                                        id="pgct-email"
+                                        type="email"
+                                        name="email"
+                                        value="{{ old('email') }}"
+                                        autocomplete="email"
+                                        required
+                                        class="@error('email') is-invalid @enderror"
+                                        placeholder="voce@email.com"
+                                    >
+
+                                    @error('email')
+                                        <small class="pgct-field-error">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
+
+                                <div class="pgct-field">
+                                    <label for="pgct-telefone">
+                                        Telefone
+                                        <small>opcional</small>
+                                    </label>
+
+                                    <input
+                                        id="pgct-telefone"
+                                        type="text"
+                                        name="telefone"
+                                        value="{{ old('telefone') }}"
+                                        autocomplete="tel"
+                                        maxlength="20"
+                                        class="@error('telefone') is-invalid @enderror"
+                                        placeholder="(00) 00000-0000"
+                                    >
+
+                                    @error('telefone')
+                                        <small class="pgct-field-error">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="pgct-field">
+                                <label for="pgct-assunto">
+                                    Assunto
+                                    <span>*</span>
+                                </label>
+
+                                <div class="pgct-select-wrap">
+                                    <select
+                                        id="pgct-assunto"
+                                        name="assunto"
+                                        required
+                                        class="@error('assunto') is-invalid @enderror"
+                                    >
+                                        <option value="">
+                                            Selecione o motivo do contato
+                                        </option>
+
+                                        <option
+                                            value="Agendar demonstração"
+                                            @selected(old('assunto') === 'Agendar demonstração')
+                                        >
+                                            Gostaria de agendar uma demonstração do sistema
+                                        </option>
+
+                                        <option
+                                            value="Suporte técnico"
+                                            @selected(old('assunto') === 'Suporte técnico')
+                                        >
+                                            Preciso de suporte técnico
+                                        </option>
+
+                                        <option
+                                            value="Dúvida geral"
+                                            @selected(old('assunto') === 'Dúvida geral')
+                                        >
+                                            Tenho uma dúvida
+                                        </option>
+
+                                        <option
+                                            value="Sugestão de melhoria"
+                                            @selected(old('assunto') === 'Sugestão de melhoria')
+                                        >
+                                            Gostaria de enviar uma sugestão
+                                        </option>
+
+                                        <option
+                                            value="Problemas com pagamento"
+                                            @selected(old('assunto') === 'Problemas com pagamento')
+                                        >
+                                            Estou com problemas no pagamento
+                                        </option>
+
+                                        <option
+                                            value="Ajuda com cadastro"
+                                            @selected(old('assunto') === 'Ajuda com cadastro')
+                                        >
+                                            Preciso de ajuda para me cadastrar
+                                        </option>
+
+                                        <option
+                                            value="Interesse em parceria"
+                                            @selected(old('assunto') === 'Interesse em parceria')
+                                        >
+                                            Tenho interesse em parcerias
+                                        </option>
+
+                                        <option
+                                            value="Outro assunto"
+                                            @selected(old('assunto') === 'Outro assunto')
+                                        >
+                                            Outro assunto
+                                        </option>
+                                    </select>
+
+                                    <span
+                                        class="pgct-select-arrow"
+                                        aria-hidden="true"
+                                    >
+                                        ↓
+                                    </span>
+                                </div>
+
+                                @error('assunto')
+                                    <small class="pgct-field-error">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+
+                            <div class="pgct-field">
+                                <label for="pgct-mensagem">
+                                    Mensagem
+                                    <span>*</span>
+                                </label>
+
+                                <textarea
+                                    id="pgct-mensagem"
+                                    name="mensagem"
+                                    rows="5"
+                                    required
+                                    class="@error('mensagem') is-invalid @enderror"
+                                    placeholder="Conte o contexto, sua dúvida ou o que está acontecendo..."
+                                >{{ old('mensagem') }}</textarea>
+
+                                @error('mensagem')
+                                    <small class="pgct-field-error">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+
+                            <div class="pgct-recaptcha">
+                                @if($isLocalContactHost)
+                                    <div
+                                        class="pgct-captcha-local"
+                                        role="note"
+                                    >
+                                        <span
+                                            class="pgct-captcha-local-icon"
+                                            aria-hidden="true"
+                                        >
+                                            ✓
+                                        </span>
+
+                                        <div>
+                                            <strong>
+                                                Proteção reCAPTCHA ativa
+                                            </strong>
+
+                                            <span>
+                                                O widget real é exibido no domínio autorizado.
+                                            </span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div
+                                        class="g-recaptcha"
+                                        data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"
+                                    ></div>
+                                @endif
+
+                                @error('g-recaptcha-response')
+                                    <small class="pgct-field-error">
+                                        Confirme que você não é um robô.
+                                    </small>
+                                @enderror
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="pgct-submit"
+                            >
+                                <span>Enviar mensagem</span>
+
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M5 12h14"></path>
+                                    <path d="m14 7 5 5-5 5"></path>
+                                </svg>
+                            </button>
+
+                            <p class="pgct-form-note">
+                                Os campos com * são obrigatórios.
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pgct-flow-section">
+            <div
+                id="psigestor-contact-flow"
+                data-whatsapp-url="https://wa.me/5582991128022?text=Ol%C3%A1%2C%20tenho%20interesse%20no%20PsiGestor%20e%20gostaria%20de%20saber%20mais!"
+            ></div>
+        </section>
+
+        <a
+            href="https://wa.me/5582991128022?text=Ol%C3%A1%2C%20tenho%20interesse%20no%20PsiGestor%20e%20gostaria%20de%20saber%20mais!"
+            target="_blank"
+            rel="noreferrer"
+            class="pgct-whatsapp"
+            aria-label="Conversar com o PsiGestor pelo WhatsApp"
+        >
+            <span class="pgct-whatsapp-dot"></span>
+            <span>WhatsApp</span>
+        </a>
+    </main>
+@endsection

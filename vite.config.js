@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/js/homepage/index.jsx',
                 'resources/js/public-pages/funcionalidades/index.jsx',
                 'resources/js/public-pages/planos/index.jsx',
+                'resources/js/public-pages/contato/index.jsx',
             ],
             refresh: true,
             buildDirectory: 'build',
