@@ -8,6 +8,7 @@
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/vite": "^4.1.4",
+        "@vitejs/plugin-react": "^4.3.4",
         "alpinejs": "^3.14.9",
         "autoprefixer": "^10.4.21",
         "axios": "^1.8.2",
@@ -24,7 +25,10 @@
         "@fullcalendar/interaction": "^6.1.17",
         "@fullcalendar/timegrid": "^6.1.17",
         "bootstrap": "^5.3.5",
+        "motion": "^13.2.0",
         "node-cron": "^3.0.0",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
         "shelljs": "^0.8.5"
     }
 }

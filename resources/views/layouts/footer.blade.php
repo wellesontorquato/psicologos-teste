@@ -1,3 +1,201 @@
+{{-- PSIGESTOR HOME FOOTER V1 START --}}
+
+@if(request()->is('/'))
+
+<footer class="pghf-footer">
+
+    <div
+        class="pghf-glow pghf-glow-one"
+        aria-hidden="true"
+    ></div>
+
+    <div
+        class="pghf-glow pghf-glow-two"
+        aria-hidden="true"
+    ></div>
+
+    <div class="pghf-container">
+
+        <div class="pghf-main">
+
+            {{-- MARCA --}}
+
+            <div class="pghf-brand">
+
+                <a
+                    href="{{ url('/') }}"
+                    class="pghf-logo"
+                    aria-label="PsiGestor - Página inicial"
+                >
+                    <img
+                        src="{{ asset('images/logo-psigestor-branca.png') }}"
+                        alt="PsiGestor"
+                    >
+                </a>
+
+                <p>
+                    Tecnologia para uma rotina clínica
+                    mais organizada, conectada e leve.
+                </p>
+
+                <div class="pghf-social">
+
+                    <a
+                        href="https://instagram.com/psigestor"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Instagram do PsiGestor"
+                    >
+                        <i class="bi bi-instagram"></i>
+                    </a>
+
+                    <a
+                        href="https://linkedin.com/company/psigestor"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="LinkedIn do PsiGestor"
+                    >
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+
+                    <a
+                        href="https://wa.me/5582991128022"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="WhatsApp do PsiGestor"
+                    >
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+            {{-- PRODUTO --}}
+
+            <div class="pghf-column">
+
+                <span class="pghf-title">
+                    Produto
+                </span>
+
+                <a href="{{ url('/') }}">
+                    Início
+                </a>
+
+                <a href="{{ url('/#funcionalidades') }}">
+                    Funcionalidades
+                </a>
+
+                <a href="{{ url('/planos') }}">
+                    Planos
+                </a>
+
+                <a href="{{ route('blog.index') }}">
+                    Blog
+                </a>
+
+            </div>
+
+            {{-- INSTITUCIONAL --}}
+
+            <div class="pghf-column">
+
+                <span class="pghf-title">
+                    Institucional
+                </span>
+
+                <a href="{{ route('quem-somos') }}">
+                    Quem somos
+                </a>
+
+                <a href="{{ route('politica-de-privacidade') }}">
+                    Política de Privacidade
+                </a>
+
+                <a href="{{ route('termos-de-uso') }}">
+                    Termos de Uso
+                </a>
+
+                <a href="{{ route('cookies') }}">
+                    Política de Cookies
+                </a>
+
+            </div>
+
+            {{-- CONTATO --}}
+
+            <div class="pghf-column pghf-contact">
+
+                <span class="pghf-title">
+                    Fale conosco
+                </span>
+
+                <a
+                    href="mailto:psigestor@agenciamundau.com.br"
+                >
+                    <span class="pghf-contact-icon">
+                        <i class="bi bi-envelope"></i>
+                    </span>
+
+                    <span>
+                        psigestor@agenciamundau.com.br
+                    </span>
+                </a>
+
+                <a
+                    href="https://wa.me/5582991128022"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <span class="pghf-contact-icon">
+                        <i class="bi bi-whatsapp"></i>
+                    </span>
+
+                    <span>
+                        (82) 99112-8022
+                    </span>
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="pghf-bottom">
+
+            <span>
+                &copy; {{ date('Y') }} PsiGestor.
+                Todos os direitos reservados.
+            </span>
+
+            <div class="pghf-legal">
+
+                <a href="{{ route('politica-de-privacidade') }}">
+                    Privacidade
+                </a>
+
+                <span></span>
+
+                <a href="{{ route('termos-de-uso') }}">
+                    Termos
+                </a>
+
+                <span></span>
+
+                <a href="{{ route('cookies') }}">
+                    Cookies
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+
+@else
+
 {{-- RODAPÉ BONITO E MODERNO (com tema Ano Novo sazonal) --}}
 <style>
     footer {
@@ -191,3 +389,7 @@
         &copy; {{ date('Y') }} PsiGestor. Todos os direitos reservados.
     </div>
 </footer>
+
+@endif
+
+{{-- PSIGESTOR HOME FOOTER V1 END --}}

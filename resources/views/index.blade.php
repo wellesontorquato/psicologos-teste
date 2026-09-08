@@ -2,119 +2,79 @@
 
 @section('content')
 
-{{-- HERO SECTION --}}
-<section class="hero" id="inicio">
-    <div class="hero-container">
-        
-        {{-- COLUNA DE TEXTO --}}
-        <div class="hero-text" data-aos="fade-right">
-            <h1>A sua prática clínica, <br><strong>organizada e humanizada.</strong></h1>
-            <p class="subtitle">
-                PsiGestor é a plataforma completa para psicólogos, psicanalistas e psiquiatras.
-                Concentre-se no que realmente importa: o cuidado com seus pacientes.
+{{-- HERO SECTION — React + Motion --}}
+<div
+    id="psigestor-home-hero"
+    data-register-url="{{ route('register') }}"
+    data-login-url="{{ route('login') }}"
+></div>
+
+<noscript>
+    <section style="
+        padding: 80px 20px;
+        text-align: center;
+        background: #f7fbff;
+    ">
+        <div style="
+            max-width: 760px;
+            margin: 0 auto;
+        ">
+            <h1 style="
+                color: #15283f;
+                font-size: clamp(2.2rem, 6vw, 4rem);
+                font-weight: 700;
+            ">
+                Mais tempo para cuidar.
+                Menos tempo organizando.
+            </h1>
+
+            <p style="
+                color: #62748a;
+                line-height: 1.7;
+                margin: 24px auto;
+            ">
+                Agenda, pacientes, evoluções e financeiro
+                em um só lugar.
             </p>
 
-            {{-- Chips --}}
-            <div class="hero-chips" aria-label="Destaques do PsiGestor">
-                <div class="hero-chip">
-                    <i class="bi bi-calendar-check"></i>
-                    <span>Agenda do PsiGestor integrada ao Google Agenda</span>
-                </div>
-
-                <div class="hero-chip">
-                    <i class="bi bi-shield-check"></i>
-                    <span>Prontuário seguro</span>
-                </div>
-
-                <div class="hero-chip">
-                    <i class="bi bi-graph-up"></i>
-                    <span>Financeiro organizado</span>
-                </div>
-            </div>
-
-            <!-- {{-- Barra destaque --}}
-            <div class="hero-highlight" role="note" aria-label="Mensagem sazonal de ano novo">
-                <span class="hero-highlight-dot" aria-hidden="true"></span>
-                <span>Comece o ano com a rotina clínica em dia — sem complicação.</span>
-            </div> -->
-
-            <div class="hero-cta-group">
-                <a href="{{ route('register') }}" class="btn-hero-main">
-                    Comece seu teste grátis
-                </a>
-                <div class="trial-box">
-                    <strong>🎁 10 dias grátis</strong>
-                    <strong><small>✅ Sem cartão de crédito</small></strong>
-                    <strong><small>✅ Acesso imediato</small></strong>
-                </div>
-            </div>
+            <a
+                href="{{ route('register') }}"
+                style="
+                    display: inline-block;
+                    padding: 14px 24px;
+                    border-radius: 14px;
+                    background: #00aaff;
+                    color: white;
+                    font-weight: 700;
+                    text-decoration: none;
+                "
+            >
+                Começar 10 dias grátis
+            </a>
         </div>
-
-        {{-- COLUNA DA IMAGEM/CARROSSEL --}}
-        <div class="hero-image-wrapper" data-aos="fade-left" data-aos-delay="200">
-            <h3 class="carousel-title">Veja como é a interface do PsiGestor</h3>
-
-            {{-- dica de clique --}}
-            <div class="carousel-hint">
-                <i class="bi bi-arrows-fullscreen"></i>
-                <span>Clique para ampliar</span>
-            </div>
-
-            <div class="carousel-tilt" id="carouselTilt">
-                <div id="carouselPicture" class="carousel-clickable" role="button" aria-label="Abrir galeria de imagens" tabindex="0">
-                    {{-- O conteúdo será preenchido pelo JavaScript --}}
-                </div>
-                <div class="carousel-dots" id="carouselDots">
-                    {{-- Dots serão gerados pelo JavaScript --}}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ✅ Modal Galeria (Bootstrap) --}}
-    <div class="modal fade" id="heroGalleryModal" tabindex="-1" aria-labelledby="heroGalleryTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content hero-gallery-modal">
-                <div class="modal-header hero-gallery-header">
-                    <div class="d-flex flex-column">
-                        <h5 class="modal-title" id="heroGalleryTitle" style="margin:0; font-weight:900;">Galeria PsiGestor</h5>
-                        <small class="hero-gallery-subtitle">Use ← → para navegar</small>
-                    </div>
-
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-
-                <div class="modal-body hero-gallery-body">
-                    <button type="button" class="hero-gallery-nav hero-gallery-prev" id="heroGalleryPrev" aria-label="Imagem anterior">
-                        <i class="bi bi-chevron-left"></i>
-                    </button>
-
-                    <figure class="hero-gallery-figure">
-                        <img id="heroGalleryImg" src="" alt="Imagem ampliada do PsiGestor" loading="lazy">
-                    </figure>
-
-                    <button type="button" class="hero-gallery-nav hero-gallery-next" id="heroGalleryNext" aria-label="Próxima imagem">
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
-                </div>
-
-                <div class="modal-footer hero-gallery-footer">
-                    <span id="heroGalleryCounter" class="hero-gallery-counter">1 / 3</span>
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 900;">
-                        Fechar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+    </section>
+</noscript>
 
 {{-- OUTRAS SEÇÕES --}}
-@include('components.funcionalidades')
+<div
+    id="psigestor-home-features"
+    data-features-url="{{ route('funcionalidades') }}"
+></div>
 <div class="section-divider"></div>
-@include('components.depoimentos')
+<div
+    id="psigestor-home-social"
+></div>
 <div class="section-divider"></div>
-@include('components.noticias')
+<div
+    id="psigestor-home-news"
+    data-endpoint="{{ route('home.news') }}"
+    data-blog-url="{{ route('blog.index') }}"
+></div>
+<div
+    id="psigestor-home-cta"
+    data-register-url="{{ route('register') }}"
+    data-login-url="{{ route('login') }}"
+></div>
 
 {{-- BOTÃO WHATSAPP FLUTUANTE --}}
 <a href="https://wa.me/5582991128022?text=Olá,%20tenho%20interesse%20no%20PsiGestor!"
@@ -128,6 +88,9 @@
 @endsection
 
 @push('styles')
+@viteReactRefresh
+@vite('resources/js/homepage/index.jsx')
+
 <style>
 /* HERO SECTION */
 .hero {
@@ -776,571 +739,4 @@
 }
 </style>
 @endpush
-
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const mobileImages = [
-        { webp: 'demo4.webp', fallback: 'demo4.png' },
-        { webp: 'demo5.webp', fallback: 'demo5.png' },
-        { webp: 'demo6.webp', fallback: 'demo6.png' }
-    ];
-
-    const desktopImages = [
-        { webp: 'demo1_resized.webp', fallback: 'demo1.png' },
-        { webp: 'demo2_resized.webp', fallback: 'demo2.png' },
-        { webp: 'demo3_resized.webp', fallback: 'demo3.png' }
-    ];
-
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
-
-    // ✅ listas resolvidas (URL completa) para usar no modal conforme contexto
-    const mobileImagesResolved = mobileImages.map(img => ({
-        webp: `{{ asset('images/') }}/${img.webp}`,
-        fallback: `{{ asset('images/') }}/${img.fallback}`
-    }));
-
-    const desktopImagesResolved = desktopImages.map(img => ({
-        webp: `{{ asset('images/') }}/${img.webp}`,
-        fallback: `{{ asset('images/') }}/${img.fallback}`
-    }));
-
-    let images = getCurrentImages(); // carrossel usa a lista “do breakpoint”
-    let currentIndex = 0;
-    let carouselInterval;
-
-    const pictureEl = document.getElementById('carouselPicture');
-    const dotsContainer = document.getElementById('carouselDots');
-
-    if (!pictureEl || !dotsContainer) {
-        console.error("Elementos do carrossel não encontrados!");
-        return;
-    }
-
-    // deixa o carrossel focável/clicável (pra abrir modal)
-    pictureEl.classList.add('carousel-clickable');
-    pictureEl.setAttribute('tabindex', '0');
-    pictureEl.setAttribute('role', 'button');
-    pictureEl.setAttribute('aria-label', 'Abrir galeria de imagens do PsiGestor');
-
-    function getCurrentImages() {
-        return mediaQuery.matches ? mobileImagesResolved : desktopImagesResolved;
-    }
-
-    // ✅ modal abre “mobile no mobile” e “desktop no desktop”
-    function bestModalSrc(idx) {
-        const list = mediaQuery.matches ? mobileImagesResolved : desktopImagesResolved;
-        return list[idx]?.fallback || '';
-    }
-
-    function showImage(index) {
-        if (pictureEl.querySelector(`[data-index="${index}"]`)) return;
-
-        const oldPicture = pictureEl.querySelector('picture');
-        currentIndex = index;
-
-        const newPicture = document.createElement('picture');
-        newPicture.dataset.index = index;
-        newPicture.style.position = 'absolute';
-        newPicture.style.top = '0';
-        newPicture.style.left = '0';
-        newPicture.style.width = '100%';
-        newPicture.style.height = '100%';
-
-        const source = document.createElement('source');
-        const img = document.createElement('img');
-
-        source.srcset = images[index].webp;
-        source.type = 'image/webp';
-
-        img.src = images[index].fallback;
-        img.alt = `Mockup PsiGestor ${index + 1}`;
-        img.style.opacity = '0';
-        img.style.transition = 'opacity 0.6s ease-in-out';
-
-        newPicture.appendChild(source);
-        newPicture.appendChild(img);
-        pictureEl.appendChild(newPicture);
-
-        img.onload = () => {
-            requestAnimationFrame(() => img.style.opacity = '1');
-            if (oldPicture) {
-                const oldImg = oldPicture.querySelector('img');
-                if (oldImg) oldImg.style.opacity = '0';
-                setTimeout(() => oldPicture.remove(), 600);
-            }
-        };
-
-        img.onerror = () => {
-            console.error(`Erro ao carregar: ${img.src}`);
-            newPicture.remove();
-        };
-
-        document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
-        const activeDot = document.querySelector(`.dot[data-index="${index}"]`);
-        if (activeDot) activeDot.classList.add('active');
-    }
-
-    function startCarousel() {
-        stopCarousel();
-        carouselInterval = setInterval(() => {
-            showImage((currentIndex + 1) % images.length);
-        }, 5000);
-    }
-
-    function stopCarousel() {
-        clearInterval(carouselInterval);
-    }
-
-    function setupDots() {
-        dotsContainer.innerHTML = '';
-        images.forEach((_, i) => {
-            const dot = document.createElement('span');
-            dot.classList.add('dot');
-            dot.dataset.index = i;
-            dot.addEventListener('click', () => {
-                stopCarousel();
-                showImage(i);
-                startCarousel();
-            });
-            dotsContainer.appendChild(dot);
-        });
-    }
-
-    // ====== Galeria (Modal) - requer HTML do modal no blade ======
-    const modalEl = document.getElementById('heroGalleryModal');
-    let modalInstance = null;
-
-    // estado do pan/zoom (pan funciona mesmo em 100% e com folga)
-    let stageEl, imgEl, prevBtn, nextBtn, counterEl, thumbsEl;
-    let zoomInBtn, zoomOutBtn, zoomResetBtn;
-
-    let scale = 1;
-    const minScale = 1;
-    const maxScale = 4;
-
-    let tx = 0;
-    let ty = 0;
-
-    let isPanning = false;
-    let panStartX = 0;
-    let panStartY = 0;
-    let stageRect = null;
-
-    // touch pinch
-    let touchMode = null; // 'pan' | 'pinch'
-    let pinchStartDist = 0;
-    let pinchStartScale = 1;
-    let pinchMid = { x: 0, y: 0 };
-
-    // swipe
-    let swipeStartX = 0;
-    let swipeStartY = 0;
-    let swipeActive = false;
-
-    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-
-    function applyTransform(){
-        if (!imgEl) return;
-        imgEl.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`;
-    }
-
-    // ✅ pan com “slack” em 1x e limites maiores com zoom
-    function limitPan(){
-        if (!stageRect) return;
-
-        const stageW = stageRect.width;
-        const stageH = stageRect.height;
-
-        const baseSlack = Math.min(90, stageW * 0.12); // folga maior para não “cortar”
-        const maxX = ((stageW * (scale - 1)) / 2) + baseSlack;
-        const maxY = ((stageH * (scale - 1)) / 2) + baseSlack;
-
-        tx = clamp(tx, -maxX, maxX);
-        ty = clamp(ty, -maxY, maxY);
-    }
-
-    function updateResetLabel(){
-        if (!zoomResetBtn) return;
-        zoomResetBtn.textContent = `${Math.round(scale * 100)}%`;
-    }
-
-    function resetZoom(){
-        scale = 1;
-        tx = 0;
-        ty = 0;
-        applyTransform();
-        updateResetLabel();
-    }
-
-    function setScale(nextScale, anchorX = null, anchorY = null){
-        const prevScale = scale;
-        scale = clamp(nextScale, minScale, maxScale);
-
-        if (anchorX != null && anchorY != null && stageRect) {
-            const ax = anchorX - stageRect.left - stageRect.width / 2;
-            const ay = anchorY - stageRect.top  - stageRect.height / 2;
-            const ratio = scale / prevScale;
-
-            tx = (tx + ax) * ratio - ax;
-            ty = (ty + ay) * ratio - ay;
-        }
-
-        limitPan();
-        applyTransform();
-        updateResetLabel();
-    }
-
-    function dist(t1, t2){
-        const dx = t2.clientX - t1.clientX;
-        const dy = t2.clientY - t1.clientY;
-        return Math.hypot(dx, dy);
-    }
-
-    function midpoint(t1, t2){
-        return { x: (t1.clientX + t2.clientX)/2, y: (t1.clientY + t2.clientY)/2 };
-    }
-
-    function ensureGalleryMarkup(){
-        if (!modalEl) return;
-
-        const body = modalEl.querySelector('.modal-body');
-        const footer = modalEl.querySelector('.modal-footer');
-        const title = modalEl.querySelector('#heroGalleryTitle');
-
-        if (!body || body.querySelector('.hero-gallery-stage')) return;
-
-        body.classList.add('hero-gallery-body');
-        body.innerHTML = `
-            <div class="hero-gallery-toolbar">
-                <span id="heroGalleryCounter" class="hero-gallery-counter">1 / ${images.length}</span>
-                <div class="hero-gallery-actions">
-                    <button type="button" class="hero-gallery-btn" id="heroZoomOut" aria-label="Diminuir zoom">−</button>
-                    <button type="button" class="hero-gallery-btn" id="heroZoomReset" aria-label="Resetar zoom">100%</button>
-                    <button type="button" class="hero-gallery-btn" id="heroZoomIn" aria-label="Aumentar zoom">+</button>
-                </div>
-            </div>
-
-            <div class="hero-gallery-stage" id="heroGalleryStage" aria-label="Área de zoom e navegação">
-                <button type="button" class="hero-gallery-nav hero-gallery-prev" id="heroGalleryPrev" aria-label="Imagem anterior">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-
-                <img id="heroGalleryImg" src="" alt="Imagem ampliada do PsiGestor" loading="lazy"/>
-
-                <button type="button" class="hero-gallery-nav hero-gallery-next" id="heroGalleryNext" aria-label="Próxima imagem">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
-            </div>
-
-            <div class="hero-gallery-thumbs" id="heroGalleryThumbs" aria-label="Miniaturas"></div>
-        `;
-
-        if (footer) footer.classList.add('hero-gallery-footer');
-
-        if (title) {
-            const small = modalEl.querySelector('.hero-gallery-subtitle');
-            if (!small) {
-                const wrap = title.parentElement;
-                if (wrap) {
-                    const s = document.createElement('div');
-                    s.className = 'hero-gallery-subtitle';
-                    s.textContent = 'Pinch para zoom • Arraste para mover • Swipe para trocar';
-                    wrap.appendChild(s);
-                }
-            }
-        }
-    }
-
-    function getGalleryEls(){
-        stageEl = modalEl.querySelector('#heroGalleryStage');
-        imgEl   = modalEl.querySelector('#heroGalleryImg');
-        prevBtn = modalEl.querySelector('#heroGalleryPrev');
-        nextBtn = modalEl.querySelector('#heroGalleryNext');
-        counterEl = modalEl.querySelector('#heroGalleryCounter');
-        thumbsEl  = modalEl.querySelector('#heroGalleryThumbs');
-
-        zoomInBtn = modalEl.querySelector('#heroZoomIn');
-        zoomOutBtn = modalEl.querySelector('#heroZoomOut');
-        zoomResetBtn = modalEl.querySelector('#heroZoomReset');
-
-        stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
-    }
-
-    function syncThumbs(){
-        if (!thumbsEl) return;
-        const children = Array.from(thumbsEl.children);
-        children.forEach((el, i) => el.classList.toggle('is-active', i === currentIndex));
-        const active = children[currentIndex];
-        if (active && active.scrollIntoView) {
-            active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        }
-    }
-
-    // ✅ thumbs agora seguem “mobile no mobile / desktop no desktop”
-    function buildThumbs(){
-        if (!thumbsEl) return;
-        thumbsEl.innerHTML = '';
-
-        const list = mediaQuery.matches ? mobileImagesResolved : desktopImagesResolved;
-
-        list.forEach((img, i) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'hero-thumb';
-            btn.setAttribute('aria-label', `Abrir imagem ${i+1}`);
-
-            const im = document.createElement('img');
-            im.src = img.fallback;
-            im.alt = `Miniatura ${i+1}`;
-
-            btn.appendChild(im);
-            btn.addEventListener('click', () => setGalleryIndex(i));
-            thumbsEl.appendChild(btn);
-        });
-
-        syncThumbs();
-    }
-
-    function setGalleryIndex(idx){
-        currentIndex = (idx + images.length) % images.length;
-        getGalleryEls();
-
-        if (imgEl) {
-            imgEl.src = bestModalSrc(currentIndex);
-            imgEl.alt = `Mockup PsiGestor ${currentIndex + 1}`;
-        }
-        if (counterEl) counterEl.textContent = `${currentIndex + 1} / ${images.length}`;
-
-        syncThumbs();
-        resetZoom();
-    }
-
-    function goPrev(){ setGalleryIndex(currentIndex - 1); }
-    function goNext(){ setGalleryIndex(currentIndex + 1); }
-
-    function openGallery(idx){
-        if (!modalEl) return;
-        ensureGalleryMarkup();
-        if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl, { keyboard: true });
-        setGalleryIndex(idx);
-        modalInstance.show();
-    }
-
-    // clique no carrossel abre
-    pictureEl.addEventListener('click', () => openGallery(currentIndex));
-    pictureEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openGallery(currentIndex);
-        }
-    });
-
-    function bindGalleryEvents(){
-        if (!modalEl) return;
-        getGalleryEls();
-        if (!stageEl || !imgEl) return;
-
-        buildThumbs();
-
-        // nav
-        prevBtn && prevBtn.addEventListener('click', goPrev);
-        nextBtn && nextBtn.addEventListener('click', goNext);
-
-        // zoom buttons
-        zoomInBtn && zoomInBtn.addEventListener('click', () => {
-            stageRect = stageEl.getBoundingClientRect();
-            setScale(scale * 1.2, stageRect.left + stageRect.width/2, stageRect.top + stageRect.height/2);
-        });
-
-        zoomOutBtn && zoomOutBtn.addEventListener('click', () => {
-            stageRect = stageEl.getBoundingClientRect();
-            setScale(scale * 0.85, stageRect.left + stageRect.width/2, stageRect.top + stageRect.height/2);
-        });
-
-        zoomResetBtn && zoomResetBtn.addEventListener('click', resetZoom);
-
-        // wheel zoom desktop
-        stageEl.addEventListener('wheel', (e) => {
-            stageRect = stageEl.getBoundingClientRect();
-            const delta = -e.deltaY;
-            const factor = delta > 0 ? 1.12 : 0.90;
-            setScale(scale * factor, e.clientX, e.clientY);
-            e.preventDefault();
-        }, { passive: false });
-
-        // mouse pan (sempre)
-        stageEl.addEventListener('mousedown', (e) => {
-            isPanning = true;
-            stageRect = stageEl.getBoundingClientRect();
-            panStartX = e.clientX - tx;
-            panStartY = e.clientY - ty;
-            e.preventDefault();
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isPanning) return;
-            tx = e.clientX - panStartX;
-            ty = e.clientY - panStartY;
-            limitPan();
-            applyTransform();
-        });
-
-        window.addEventListener('mouseup', () => { isPanning = false; });
-
-        // touch
-        stageEl.addEventListener('touchstart', (e) => {
-            stageRect = stageEl.getBoundingClientRect();
-            const touches = e.touches;
-
-            swipeActive = true;
-            swipeStartX = touches[0].clientX;
-            swipeStartY = touches[0].clientY;
-
-            if (touches.length === 1) {
-                touchMode = 'pan';
-                panStartX = touches[0].clientX - tx;
-                panStartY = touches[0].clientY - ty;
-            } else if (touches.length === 2) {
-                touchMode = 'pinch';
-                pinchStartDist = dist(touches[0], touches[1]);
-                pinchStartScale = scale;
-                pinchMid = midpoint(touches[0], touches[1]);
-            }
-
-            e.preventDefault();
-        }, { passive: false });
-
-        stageEl.addEventListener('touchmove', (e) => {
-            stageRect = stageEl.getBoundingClientRect();
-            const touches = e.touches;
-
-            if (touches.length === 1 && touchMode === 'pan') {
-                const x = touches[0].clientX;
-                const y = touches[0].clientY;
-
-                tx = x - panStartX;
-                ty = y - panStartY;
-                limitPan();
-                applyTransform();
-            } else if (touches.length === 2 && touchMode === 'pinch') {
-                const d = dist(touches[0], touches[1]);
-                const ratio = d / pinchStartDist;
-                const next = pinchStartScale * ratio;
-                setScale(next, pinchMid.x, pinchMid.y);
-            }
-
-            e.preventDefault();
-        }, { passive: false });
-
-        stageEl.addEventListener('touchend', (e) => {
-            // swipe só quando estiver em 100% (ou quase)
-            if (swipeActive && scale <= 1.02) {
-                const endTouch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
-                if (endTouch) {
-                    const dx = endTouch.clientX - swipeStartX;
-                    const dy = endTouch.clientY - swipeStartY;
-
-                    if (Math.abs(dx) > 55 && Math.abs(dy) < 45) {
-                        if (dx < 0) goNext();
-                        else goPrev();
-                    }
-                }
-            }
-
-            swipeActive = false;
-            touchMode = null;
-        }, { passive: false });
-
-        // double click/tap: alterna zoom
-        let lastTap = 0;
-        stageEl.addEventListener('click', (e) => {
-            const now = Date.now();
-            if (now - lastTap < 280) {
-                stageRect = stageEl.getBoundingClientRect();
-                if (scale <= 1.05) setScale(2.0, e.clientX, e.clientY);
-                else resetZoom();
-            }
-            lastTap = now;
-        });
-
-        // teclado no modal
-        modalEl.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft')  { e.preventDefault(); goPrev(); }
-            if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
-        });
-
-        window.addEventListener('resize', () => {
-            if (!stageEl) return;
-            stageRect = stageEl.getBoundingClientRect();
-            limitPan();
-            applyTransform();
-        });
-    }
-
-    // pausa/retoma carrossel ao abrir/fechar modal
-    if (modalEl) {
-        modalEl.addEventListener('show.bs.modal', () => stopCarousel());
-        modalEl.addEventListener('shown.bs.modal', () => {
-            if (!modalEl.dataset.bound) {
-                bindGalleryEvents();
-                modalEl.dataset.bound = '1';
-            }
-            setGalleryIndex(currentIndex);
-        });
-        modalEl.addEventListener('hidden.bs.modal', () => {
-            startCarousel();
-            resetZoom();
-        });
-    }
-
-    // ====== Inicializa tudo ======
-    setupDots();
-    showImage(0);
-    startCarousel();
-
-    // ✅ breakpoint: atualiza carrossel + (se modal aberto) atualiza thumbs e imagem do modal
-    mediaQuery.addEventListener('change', () => {
-        images = getCurrentImages();
-
-        currentIndex = 0;
-        setupDots();
-        showImage(0);
-
-        if (modalEl && modalEl.classList.contains('show')) {
-            buildThumbs();
-            setGalleryIndex(currentIndex);
-        }
-    });
-
-    // Efeito tilt 3D
-    const tiltElement = document.getElementById('carouselTilt');
-    if (tiltElement) {
-        tiltElement.addEventListener('mousemove', (e) => {
-            const { left, top, width, height } = tiltElement.getBoundingClientRect();
-            const x = (e.clientX - left) / width - 0.5;
-            const y = (e.clientY - top) / height - 0.5;
-            const rotateX = y * -12;
-            const rotateY = x * 12;
-            tiltElement.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05,1.05,1.05)`;
-        });
-
-        tiltElement.addEventListener('mouseleave', () => {
-            tiltElement.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1,1,1)';
-        });
-    }
-
-    // Facebook Pixel (opcional)
-    const cta = document.querySelector('.btn-hero-main');
-    if (cta) {
-        cta.addEventListener('click', () => {
-            if (typeof fbq === 'function') fbq('track', 'Lead');
-        });
-    }
-});
-</script>
-@endpush
-
-
 
