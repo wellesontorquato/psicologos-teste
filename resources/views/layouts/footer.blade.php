@@ -1,6 +1,6 @@
 {{-- PSIGESTOR HOME FOOTER V1 START --}}
 
-@if(request()->routeIs('home', 'funcionalidades'))
+@if(request()->routeIs('home', 'funcionalidades', 'planos'))
 
 <footer class="pghf-footer">
 

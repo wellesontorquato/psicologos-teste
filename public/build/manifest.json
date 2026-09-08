@@ -40,5 +40,17 @@
     "css": [
       "assets/index-C-1WJL4N.css"
     ]
+  },
+  "resources/js/public-pages/planos/index.jsx": {
+    "file": "assets/index-1tiQZ6Bp.js",
+    "name": "index",
+    "src": "resources/js/public-pages/planos/index.jsx",
+    "isEntry": true,
+    "imports": [
+      "_react-fQdqZm5Z.js"
+    ],
+    "css": [
+      "assets/index-caC-iueU.css"
+    ]
   }
 }
