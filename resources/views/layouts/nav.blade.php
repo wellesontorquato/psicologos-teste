@@ -1,7 +1,7 @@
 {{-- resources/views/layouts/nav.blade.php --}}
 
 @php
-    $isModernHome = request()->routeIs('home');
+    $isModernPublic = request()->routeIs('home', 'funcionalidades');
 @endphp
 
 <style>
@@ -514,7 +514,7 @@
 </style>
 
 <header
-    class="top-nav{{ $isModernHome ? ' top-nav--home' : '' }}"
+    class="top-nav{{ $isModernPublic ? ' top-nav--home' : '' }}"
 >
     <div class="nav-container">
 
@@ -531,7 +531,7 @@
         </a>
 
         {{-- HOMEPAGE MODERNA --}}
-        @if($isModernHome)
+        @if($isModernPublic)
 
             <nav
                 id="main-nav-links"
@@ -539,13 +539,16 @@
             >
                 <div class="pg-nav-center">
                     <a
-                        href="#inicio"
-                        aria-current="page"
+                        href="{{ request()->routeIs('home') ? '#inicio' : route('home') }}"
+                        @if(request()->routeIs('home')) aria-current="page" @endif
                     >
                         Início
                     </a>
 
-                    <a href="{{ route('funcionalidades') }}">
+                    <a
+                        href="{{ route('funcionalidades') }}"
+                        @if(request()->routeIs('funcionalidades')) aria-current="page" @endif
+                    >
                         Funcionalidades
                     </a>
 
@@ -592,9 +595,12 @@
                     Início
                 </a>
 
-                <a href="{{ route('funcionalidades') }}">
-                    Funcionalidades
-                </a>
+                <a
+                        href="{{ route('funcionalidades') }}"
+                        @if(request()->routeIs('funcionalidades')) aria-current="page" @endif
+                    >
+                        Funcionalidades
+                    </a>
 
                 <a href="{{ route('planos') }}">
                     Nossos Planos

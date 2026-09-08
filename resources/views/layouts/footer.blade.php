@@ -1,6 +1,6 @@
 {{-- PSIGESTOR HOME FOOTER V1 START --}}
 
-@if(request()->is('/'))
+@if(request()->routeIs('home', 'funcionalidades'))
 
 <footer class="pghf-footer">
 
@@ -83,7 +83,7 @@
                     Início
                 </a>
 
-                <a href="{{ url('/#funcionalidades') }}">
+                <a href="{{ route('funcionalidades') }}">
                     Funcionalidades
                 </a>
 

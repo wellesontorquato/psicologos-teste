@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/homepage/index.jsx',
+                'resources/js/public-pages/funcionalidades/index.jsx',
             ],
             refresh: true,
             buildDirectory: 'build',

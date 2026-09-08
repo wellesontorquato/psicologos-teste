@@ -1,4 +1,8 @@
 {
+  "_react-fQdqZm5Z.js": {
+    "file": "assets/react-fQdqZm5Z.js",
+    "name": "react"
+  },
   "resources/css/app.css": {
     "file": "assets/app-C3fW50M3.css",
     "src": "resources/css/app.css",
@@ -14,12 +18,27 @@
     ]
   },
   "resources/js/homepage/index.jsx": {
-    "file": "assets/index-CiLYItcO.js",
+    "file": "assets/index-BYiPYY8C.js",
     "name": "index",
     "src": "resources/js/homepage/index.jsx",
     "isEntry": true,
+    "imports": [
+      "_react-fQdqZm5Z.js"
+    ],
     "css": [
       "assets/index-CSeRcSTU.css"
+    ]
+  },
+  "resources/js/public-pages/funcionalidades/index.jsx": {
+    "file": "assets/index-G2rNMab0.js",
+    "name": "index",
+    "src": "resources/js/public-pages/funcionalidades/index.jsx",
+    "isEntry": true,
+    "imports": [
+      "_react-fQdqZm5Z.js"
+    ],
+    "css": [
+      "assets/index-C-1WJL4N.css"
     ]
   }
 }
