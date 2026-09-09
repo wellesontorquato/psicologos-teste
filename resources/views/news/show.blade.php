@@ -2,553 +2,696 @@
 
 @section('title', $news->title . ' | PsiGestor')
 
-@section('content')
-<section class="article-page">
-    {{-- HERO (quando existe imagem) --}}
-    @if ($news->image)
-        <header class="hero">
-            <div class="hero-media hero-skeleton">
-                <picture>
-                    {{-- WebP otimizado (se existir e não for igual ao fallback) --}}
-                    @if(!empty($news->image_webp_url) && $news->image_webp_url !== $news->image_url)
-                        <source srcset="{{ $news->image_webp_url }}" type="image/webp">
-                    @endif
-
-                    {{-- Fallback JPG/PNG/legado --}}
-                    <img
-                        src="{{ $news->image_url }}"
-                        alt="{{ $news->title }}"
-                        class="hero-img"
-                        loading="lazy"
-                        decoding="async"
-                        fetchpriority="high"
-                    >
-                </picture>
-
-                {{-- Overlay editorial --}}
-                <div class="hero-overlay">
-                    <div class="hero-inner">
-                        @if ($news->category)
-                            <p class="hero-category">
-                                <i class="bi bi-tag-fill"></i> {{ $news->category }}
-                            </p>
-                        @endif
-
-                        <h1 class="hero-title">{{ $news->title }}</h1>
-
-                        @if ($news->subtitle)
-                            <p class="hero-subtitle">{{ $news->subtitle }}</p>
-                        @endif
-
-                        <p class="hero-meta">
-                            <span><i class="bi bi-person"></i> Por <strong>{{ $news->author_name ?? 'Equipe PsiGestor' }}</strong></span>
-                            <span class="hero-dot">•</span>
-                            <span><i class="bi bi-calendar"></i> {{ $news->created_at->format('d/m/Y \à\s H:i') }}</span>
-
-                            @if ($news->updated_at && $news->updated_at->gt($news->created_at))
-                                <span class="hero-dot">•</span>
-                                <span><i class="bi bi-clock-history"></i> Atualizado {{ $news->updated_at->diffForHumans() }}</span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </header>
-    @endif
-
-    {{-- CONTEÚDO (container alinhado) --}}
-    <div class="article-container">
-        {{-- Fallback do cabeçalho caso NÃO tenha imagem --}}
-        @if (!$news->image)
-            @if ($news->category)
-                <p class="plain-category">
-                    <i class="bi bi-tag-fill"></i> {{ $news->category }}
-                </p>
-            @endif
-
-            <h1 class="plain-title">{{ $news->title }}</h1>
-
-            @if ($news->subtitle)
-                <p class="plain-subtitle">{{ $news->subtitle }}</p>
-            @endif
-
-            <p class="plain-meta">
-                <i class="bi bi-person"></i> Por <strong>{{ $news->author_name ?? 'Equipe PsiGestor' }}</strong><br>
-                <i class="bi bi-calendar"></i> Publicado em {{ $news->created_at->format('d/m/Y \à\s H:i') }}
-                @if ($news->updated_at && $news->updated_at->gt($news->created_at))
-                    <br><i class="bi bi-clock-history"></i> Atualizado {{ $news->updated_at->diffForHumans() }}
-                @endif
-            </p>
-        @endif
-
-        {{-- Conteúdo --}}
-        <div class="noticia-conteudo">
-            {!! $news->content !!}
-        </div>
-
-        @php
-            $shareUrl = urlencode(route('blog.show', $news->slug));
-            $shareTitle = urlencode($news->title);
-        @endphp
-
-        {{-- Compartilhamento --}}
-        <div class="mt-5 mb-4">
-            <p class="fw-bold mb-2 text-dark">Compartilhe:</p>
-
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <a href="https://wa.me/?text={{ $shareTitle }}%0A{{ $shareUrl }}" target="_blank" class="share-btn whatsapp" title="Compartilhar no WhatsApp">
-                    <i class="bi bi-whatsapp"></i>
-                </a>
-
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ $shareUrl }}" target="_blank" class="share-btn facebook" title="Compartilhar no Facebook">
-                    <i class="bi bi-facebook"></i>
-                </a>
-
-                <a href="https://twitter.com/intent/tweet?text={{ $shareTitle }}&url={{ $shareUrl }}" target="_blank" class="share-btn twitter" title="Compartilhar no Twitter">
-                    <i class="bi bi-twitter-x"></i>
-                </a>
-
-                <button onclick="copiarLinkInstagram('{{ route('blog.show', $news->slug) }}')" class="share-btn instagram" title="Copiar link">
-                    <i class="bi bi-instagram"></i>
-                </button>
-            </div>
-        </div>
-
-        {{-- Notícias Relacionadas --}}
-        @if ($related->count())
-            <div class="related-wrap">
-                <h3 class="related-title">Leia também</h3>
-
-                <div class="related-list">
-                    @foreach ($related as $item)
-                        <a href="{{ route('blog.show', $item->slug) }}" class="related-card">
-                            @if ($item->image)
-                                <img src="{{ $item->image_url }}" alt="{{ $item->title }}" class="related-thumb" loading="lazy" decoding="async">
-                            @endif
-
-                            <div class="related-content">
-                                <h4 class="related-h">{{ $item->title }}</h4>
-                                <p class="related-p">{!! $item->excerpt !!}</p>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        {{-- Voltar --}}
-        <div class="back-wrap">
-            <a href="{{ route('blog.index') }}" class="back-btn"
-               onmouseover="this.style.background='#008ecc'"
-               onmouseout="this.style.background='#00aaff'">
-                ← Voltar ao blog
-            </a>
-        </div>
-    </div>
-</section>
-@endsection
-
 @push('styles')
-<style>
-    /* ===== Base ===== */
-    .article-page {
-        padding: 24px 0 40px;
-        background: #fff;
-    }
-
-    .article-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-
-    /* ===== HERO (mobile-first) ===== */
-    .hero { margin-bottom: 18px; }
-
-    /* ✅ FIX DO “RESPIRO” NO MOBILE:
-       em vez de margin (que pode ficar parecendo assimétrico dependendo do layout),
-       usamos padding no wrapper e deixamos a hero ocupar 100% desse espaço. */
-    .hero {
-        padding: 0 20px; /* mesmo respiro de ambos lados */
-    }
-
-    .hero-media {
-        position: relative;
-        width: 100%;
-        overflow: hidden;
-        background: #f3f3f3;
-        border-radius: 14px;
-
-        /* ✅ altura adaptativa no mobile */
-        height: clamp(300px, 52vh, 420px);
-
-        /* ✅ remove margin lateral anterior (evita “colar” em um lado) */
-        margin: 0;
-    }
-
-    /* imagem inicia com blur + invisível */
-    .hero-img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-
-        opacity: 0;
-        filter: blur(18px);
-        transform: scale(1.02);
-        transition: opacity .45s ease, filter .45s ease, transform .45s ease;
-    }
-
-    /* quando carregar: remove blur e mostra */
-    .hero-media.is-loaded .hero-img {
-        opacity: 1;
-        filter: blur(0);
-        transform: scale(1);
-    }
-
-    /* Skeleton shimmer enquanto não carrega */
-    .hero-skeleton::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(90deg, rgba(0,0,0,0.04), rgba(0,0,0,0.10), rgba(0,0,0,0.04));
-        background-size: 240% 100%;
-        animation: shimmer 1.25s infinite linear;
-        z-index: 1;
-    }
-
-    .hero-media.is-loaded.hero-skeleton::before {
-        display: none;
-    }
-
-    @keyframes shimmer {
-        0% { background-position: 0% 0; }
-        100% { background-position: 200% 0; }
-    }
-
-    /* Overlay editorial */
-    .hero-overlay {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        display: flex;
-        align-items: flex-end;
-
-        padding: 14px;
-        background: linear-gradient(to top, rgba(0,0,0,.68), rgba(0,0,0,.22), rgba(0,0,0,0));
-    }
-
-    .hero-inner {
-        width: 100%;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .hero-category {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #bfeaff;
-        margin: 0 0 8px;
-    }
-
-    .hero-title {
-        font-size: clamp(1.25rem, 4.8vw, 2.2rem);
-        font-weight: 900;
-        color: #fff;
-        margin: 0 0 8px;
-        line-height: 1.12;
-        text-shadow: 0 10px 28px rgba(0,0,0,.35);
-
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .hero-subtitle {
-        font-size: clamp(0.98rem, 2.8vw, 1.15rem);
-        color: rgba(255,255,255,.92);
-        margin: 0 0 10px;
-        line-height: 1.35;
-        max-width: 62ch;
-
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .hero-meta {
-        color: rgba(255,255,255,.9);
-        font-size: 0.90rem;
-        margin: 0;
-
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .hero-dot { opacity: .85; }
-
-    /* ===== Desktop: Full-bleed NYTimes ===== */
-    @media (min-width: 992px) {
-        /* no desktop não queremos padding lateral, é full-bleed */
-        .hero {
-            padding: 0;
-        }
-
-        .hero-media {
-            width: 100vw;
-            margin-left: calc(50% - 50vw);
-            margin-right: calc(50% - 50vw);
-            border-radius: 0;
-            height: min(62vh, 520px);
-        }
-
-        .hero-overlay {
-            padding: 34px 20px;
-            background: linear-gradient(to top, rgba(0,0,0,.62), rgba(0,0,0,.18), rgba(0,0,0,0));
-        }
-
-        .hero-inner {
-            max-width: 900px;
-        }
-
-        .article-container {
-            padding-top: 6px;
-        }
-
-        .hero-title { -webkit-line-clamp: 4; }
-        .hero-subtitle { -webkit-line-clamp: 4; }
-        .hero-meta { -webkit-line-clamp: 2; }
-    }
-
-    /* ===== Fallback header sem imagem ===== */
-    .plain-category {
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: #00aaff;
-        letter-spacing: 1px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-left: 4px solid #00aaff;
-        padding-left: 10px;
-        margin-bottom: 12px;
-    }
-
-    .plain-title {
-        font-size: 2rem;
-        font-weight: 900;
-        margin: 0 0 10px;
-        color: #111;
-        line-height: 1.15;
-    }
-
-    .plain-subtitle {
-        font-size: 1.15rem;
-        color: #444;
-        margin: -2px 0 16px;
-        line-height: 1.35;
-    }
-
-    .plain-meta {
-        color: #666;
-        font-size: 0.92rem;
-        margin-bottom: 18px;
-    }
-
-    /* ===== Conteúdo ===== */
-    .noticia-conteudo {
-        line-height: 1.7;
-        font-size: 1.05rem;
-        color: #333;
-        overflow: hidden;
-    }
-
-    .noticia-conteudo a {
-        color: #00aaff;
-        font-weight: 500;
-        text-decoration: underline;
-        transition: color 0.3s ease;
-    }
-
-    .noticia-conteudo a:hover {
-        color: #008ecc;
-    }
-
-    .noticia-conteudo img {
-        max-width: 280px;
-        border-radius: 10px;
-        object-fit: cover;
-        height: auto;
-    }
-
-    @media (max-width: 768px) {
-        .noticia-conteudo img {
-            float: none !important;
-            display: block;
-            margin: 0 auto 20px auto !important;
-            width: 100%;
-            max-width: 100%;
-        }
-    }
-
-    /* ===== Share ===== */
-    .share-btn {
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        color: #fff !important;
-        font-size: 1.4rem;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .share-btn:hover {
-        transform: scale(1.12);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.22);
-    }
-
-    .share-btn.whatsapp { background-color: #25D366; }
-    .share-btn.facebook { background-color: #1877F2; }
-    .share-btn.twitter  { background-color: #000; }
-    .share-btn.instagram {
-        background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
-    }
-
-    /* ===== Relacionadas ===== */
-    .related-wrap { margin-top: 56px; }
-
-    .related-title {
-        font-size: 1.35rem;
-        font-weight: 900;
-        margin: 0 0 18px;
-        color: #111;
-    }
-
-    .related-list {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-    }
-
-    .related-card {
-        display: flex;
-        gap: 16px;
-        align-items: flex-start;
-        background: #f9f9f9;
-        padding: 12px;
-        border-radius: 10px;
-        text-decoration: none;
-        color: inherit;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        transition: box-shadow 0.25s ease, transform 0.25s ease;
-    }
-
-    .related-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        transform: translateY(-1px);
-    }
-
-    .related-thumb {
-        width: 110px;
-        height: 82px;
-        object-fit: cover;
-        border-radius: 8px;
-        flex-shrink: 0;
-        background: #eee;
-    }
-
-    .related-content { flex: 1; }
-
-    .related-h {
-        font-size: 1rem;
-        font-weight: 800;
-        color: #222;
-        margin: 0 0 6px;
-        line-height: 1.2;
-    }
-
-    .related-p {
-        font-size: 0.92rem;
-        color: #555;
-        line-height: 1.4;
-        max-height: 2.8em;
-        overflow: hidden;
-        margin: 0;
-    }
-
-    /* ===== Voltar ===== */
-    .back-wrap { margin-top: 40px; }
-
-    .back-btn {
-        display: inline-block;
-        background: #00aaff;
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 30px;
-        font-weight: 500;
-        text-decoration: none;
-        transition: background 0.3s ease;
-    }
-</style>
+    @vite(['resources/js/public-pages/blog-article/index.jsx'])
 @endpush
 
+@section('content')
+
+<section class="pga-article">
+
+    <div
+        id="pg-article-motion-root"
+        aria-hidden="true"
+    ></div>
+
+        {{-- ============================================================
+         HERO EDITORIAL / PORTAL
+         ============================================================ --}}
+
+    @if($news->image)
+
+        <header
+            class="pga-story-hero hero-media hero-skeleton"
+            data-pga-reveal
+        >
+
+            <picture class="pga-story-hero-picture">
+
+                @if(
+                    !empty($news->image_webp_url) &&
+                    $news->image_webp_url !== $news->image_url
+                )
+                    <source
+                        srcset="{{ $news->image_webp_url }}"
+                        type="image/webp"
+                    >
+                @endif
+
+                <img
+                    src="{{ $news->image_url }}"
+                    alt="{{ $news->title }}"
+                    class="pga-story-hero-image hero-img"
+                    loading="eager"
+                    decoding="async"
+                    fetchpriority="high"
+                >
+
+            </picture>
+
+            <div
+                class="pga-story-hero-overlay"
+                aria-hidden="true"
+            ></div>
+
+            <div class="pga-story-hero-content pga-shell">
+
+                <div class="pga-story-hero-copy">
+
+                    <div class="pga-story-hero-meta">
+
+                        @if($news->category)
+
+                            <span class="pga-story-hero-category">
+                                {{ $news->category }}
+                            </span>
+
+                            <span
+                                class="pga-story-hero-dot"
+                                aria-hidden="true"
+                            >
+                                •
+                            </span>
+
+                        @endif
+
+                        <time
+                            datetime="{{ $news->created_at->toIso8601String() }}"
+                        >
+                            {{ $news->created_at->format('d/m/Y') }}
+                        </time>
+
+                    </div>
+
+                    <h1 class="pga-story-hero-title">
+                        {{ $news->title }}
+                    </h1>
+
+                    @if($news->subtitle)
+
+                        <p class="pga-story-hero-subtitle">
+                            {{ $news->subtitle }}
+                        </p>
+
+                    @endif
+
+                    <div class="pga-story-hero-byline">
+
+                        <span>
+                            Por
+                            <strong>
+                                {{ $news->author_name ?? 'Equipe PsiGestor' }}
+                            </strong>
+                        </span>
+
+                        <span
+                            class="pga-story-hero-separator"
+                            aria-hidden="true"
+                        >
+                            •
+                        </span>
+
+                        <time
+                            datetime="{{ $news->created_at->toIso8601String() }}"
+                        >
+                            {{ $news->created_at->format('d/m/Y \à\s H:i') }}
+                        </time>
+
+                        @if(
+                            $news->updated_at &&
+                            $news->updated_at->gt($news->created_at)
+                        )
+
+                            <span
+                                class="pga-story-hero-separator"
+                                aria-hidden="true"
+                            >
+                                •
+                            </span>
+
+                            <span>
+                                Atualizado
+                                {{ $news->updated_at->diffForHumans() }}
+                            </span>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+    @else
+
+        {{-- Artigos antigos ou futuros sem capa continuam validos. --}}
+        <header
+            class="pga-masthead pga-masthead--no-image"
+            data-pga-reveal
+        >
+
+            <div class="pga-shell">
+
+                <nav
+                    class="pga-breadcrumb"
+                    aria-label="Navegação do artigo"
+                >
+
+                    <a href="{{ route('blog.index') }}">
+                        Blog
+                    </a>
+
+                    @if($news->category)
+
+                        <span aria-hidden="true">
+                            /
+                        </span>
+
+                        <span>
+                            {{ $news->category }}
+                        </span>
+
+                    @endif
+
+                </nav>
+
+                <p class="pga-kicker">
+                    Publicação PsiGestor
+                </p>
+
+                <div class="pga-publication-line">
+
+                    @if($news->category)
+
+                        <span class="pga-category">
+                            {{ $news->category }}
+                        </span>
+
+                        <span
+                            class="pga-publication-dot"
+                            aria-hidden="true"
+                        >
+                            •
+                        </span>
+
+                    @endif
+
+                    <time
+                        datetime="{{ $news->created_at->toIso8601String() }}"
+                    >
+                        {{ $news->created_at->format('d/m/Y') }}
+                    </time>
+
+                </div>
+
+                <h1 class="pga-title">
+                    {{ $news->title }}
+                </h1>
+
+                @if($news->subtitle)
+
+                    <p class="pga-subtitle">
+                        {{ $news->subtitle }}
+                    </p>
+
+                @endif
+
+                <div class="pga-byline">
+
+                    <span>
+                        Por
+                        <strong>
+                            {{ $news->author_name ?? 'Equipe PsiGestor' }}
+                        </strong>
+                    </span>
+
+                    <span
+                        class="pga-byline-separator"
+                        aria-hidden="true"
+                    >
+                        •
+                    </span>
+
+                    <time
+                        datetime="{{ $news->created_at->toIso8601String() }}"
+                    >
+                        {{ $news->created_at->format('d/m/Y \à\s H:i') }}
+                    </time>
+
+                    @if(
+                        $news->updated_at &&
+                        $news->updated_at->gt($news->created_at)
+                    )
+
+                        <span
+                            class="pga-byline-separator"
+                            aria-hidden="true"
+                        >
+                            •
+                        </span>
+
+                        <span>
+                            Atualizado
+                            {{ $news->updated_at->diffForHumans() }}
+                        </span>
+
+                    @endif
+
+                </div>
+
+            </div>
+
+        </header>
+
+    @endif
+@php
+        $shareUrl = urlencode(
+            route(
+                'blog.show',
+                $news->slug
+            )
+        );
+
+        $shareTitle =
+            urlencode(
+                $news->title
+            );
+    @endphp
+
+    {{-- ============================================================
+         LEITURA
+         ============================================================ --}}
+    <div class="pga-shell pga-reading-layout">
+
+        {{-- Compartilhamento lateral no desktop.
+             No mobile, o CSS leva este bloco para depois do texto. --}}
+        <aside
+            class="pga-share-rail"
+            aria-label="Compartilhar publicação"
+        >
+            <div class="pga-share-sticky">
+
+                <p class="pga-share-label">
+                    Compartilhar
+                </p>
+
+                <div class="pga-share-buttons">
+
+                    <a
+                        href="https://wa.me/?text={{ $shareTitle }}%0A{{ $shareUrl }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="pga-share-button"
+                        title="Compartilhar no WhatsApp"
+                        aria-label="Compartilhar no WhatsApp"
+                    >
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+
+                    <a
+                        href="https://www.facebook.com/sharer/sharer.php?u={{ $shareUrl }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="pga-share-button"
+                        title="Compartilhar no Facebook"
+                        aria-label="Compartilhar no Facebook"
+                    >
+                        <i class="bi bi-facebook"></i>
+                    </a>
+
+                    <a
+                        href="https://twitter.com/intent/tweet?text={{ $shareTitle }}&url={{ $shareUrl }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="pga-share-button"
+                        title="Compartilhar no X"
+                        aria-label="Compartilhar no X"
+                    >
+                        <i class="bi bi-twitter-x"></i>
+                    </a>
+
+                    <button
+                        type="button"
+                        onclick="copiarLinkInstagram('{{ route('blog.show', $news->slug) }}')"
+                        class="pga-share-button"
+                        title="Copiar link para compartilhar no Instagram"
+                        aria-label="Copiar link para compartilhar no Instagram"
+                    >
+                        <i class="bi bi-instagram"></i>
+                    </button>
+
+                </div>
+
+            </div>
+        </aside>
+
+        <article
+            class="pga-reading-column"
+            data-pga-reveal
+        >
+
+            <div class="noticia-conteudo">
+                {!! $news->content !!}
+            </div>
+
+        </article>
+
+        <div
+            class="pga-reading-balance"
+            aria-hidden="true"
+        ></div>
+
+    </div>
+
+    {{-- ============================================================
+         RELACIONADOS
+         ============================================================ --}}
+    @if($related->count())
+
+        <section
+            class="pga-related pga-shell"
+            aria-labelledby="pga-related-title"
+            data-pga-reveal
+        >
+
+            <div class="pga-related-heading">
+
+                <div>
+                    <p class="pga-related-kicker">
+                        Continue lendo
+                    </p>
+
+                    <h2 id="pga-related-title">
+                        Mais para ler
+                    </h2>
+                </div>
+
+                <a
+                    href="{{ route('blog.index') }}"
+                    class="pga-related-all"
+                >
+                    Ver todas
+                    <span aria-hidden="true">→</span>
+                </a>
+
+            </div>
+
+            <div class="pga-related-grid">
+
+                @foreach($related as $item)
+
+                    <a
+                        href="{{ route('blog.show', $item->slug) }}"
+                        class="pga-related-card"
+                    >
+
+                        @if($item->image)
+
+                            <div class="pga-related-media">
+
+                                <img
+                                    src="{{ $item->image_url }}"
+                                    alt="{{ $item->title }}"
+                                    loading="lazy"
+                                    decoding="async"
+                                >
+
+                            </div>
+
+                        @else
+
+                            <div
+                                class="pga-related-media pga-related-media--empty"
+                                aria-hidden="true"
+                            >
+                                PsiGestor
+                            </div>
+
+                        @endif
+
+                        <div class="pga-related-meta">
+
+                            @if($item->category)
+                                <span>
+                                    {{ $item->category }}
+                                </span>
+
+                                <i aria-hidden="true">•</i>
+                            @endif
+
+                            <time
+                                datetime="{{ $item->created_at->toIso8601String() }}"
+                            >
+                                {{ $item->created_at->format('d/m/Y') }}
+                            </time>
+
+                        </div>
+
+                        <h3>
+                            {{ $item->title }}
+                        </h3>
+
+                        <div class="pga-related-excerpt">
+                            {!! $item->excerpt !!}
+                        </div>
+
+                        <span class="pga-related-action">
+                            Ler publicação
+                            <span aria-hidden="true">↗</span>
+                        </span>
+
+                    </a>
+
+                @endforeach
+
+            </div>
+
+        </section>
+
+    @endif
+
+    {{-- ============================================================
+         RETORNO
+         ============================================================ --}}
+    <div
+        class="pga-shell pga-back-section"
+        data-pga-reveal
+    >
+
+        <a
+            href="{{ route('blog.index') }}"
+            class="pga-back-link"
+        >
+            <span aria-hidden="true">←</span>
+            Todas as publicações
+        </a>
+
+    </div>
+
+</section>
+
+@endsection
+
 @push('scripts')
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Links do conteúdo em nova aba
-        const content = document.querySelector('.noticia-conteudo');
+
+        /*
+         * Links criados dentro do conteudo editorial continuam
+         * abrindo em nova aba.
+         */
+        const content =
+            document.querySelector(
+                '.noticia-conteudo'
+            );
+
         if (content) {
-            content.querySelectorAll('a').forEach(link => {
-                link.setAttribute('target', '_blank');
-                link.setAttribute('rel', 'noopener noreferrer');
-            });
+
+            content
+                .querySelectorAll('a')
+                .forEach(link => {
+
+                    link.setAttribute(
+                        'target',
+                        '_blank'
+                    );
+
+                    link.setAttribute(
+                        'rel',
+                        'noopener noreferrer'
+                    );
+                });
+
+            /*
+             * Preserva o comportamento existente:
+             * imagens internas alternam esquerda/direita
+             * no desktop.
+             */
+            content
+                .querySelectorAll('img')
+                .forEach((img, index) => {
+
+                    /*
+                     * Mantem o comportamento editorial legado
+                     * no desktop.
+                     */
+                    img.style.maxWidth =
+                        '280px';
+
+                    img.style.borderRadius =
+                        '10px';
+
+                    img.style.objectFit =
+                        'cover';
+
+                    img.style.margin =
+                        '0 20px 20px 0';
+
+                    img.style.float =
+                        (index % 2 === 0)
+                            ? 'left'
+                            : 'right';
+
+                    /*
+                     * Imagens de artigos antigos podem apontar
+                     * para hosts externos que deixaram de existir.
+                     *
+                     * Nesse caso nao exibimos o icone quebrado
+                     * nem reservamos espaco visual para a imagem.
+                     *
+                     * O conteudo textual permanece intacto.
+                     */
+                    const hideBrokenImage = () => {
+
+                        img.style.setProperty(
+                            'display',
+                            'none',
+                            'important'
+                        );
+
+                        img.style.setProperty(
+                            'width',
+                            '0',
+                            'important'
+                        );
+
+                        img.style.setProperty(
+                            'height',
+                            '0',
+                            'important'
+                        );
+
+                        img.style.setProperty(
+                            'margin',
+                            '0',
+                            'important'
+                        );
+
+                        img.style.setProperty(
+                            'padding',
+                            '0',
+                            'important'
+                        );
+
+                        img.style.setProperty(
+                            'float',
+                            'none',
+                            'important'
+                        );
+
+                        img.setAttribute(
+                            'aria-hidden',
+                            'true'
+                        );
+
+                        img.dataset.pgaBrokenImage =
+                            'true';
+                    };
+
+                    img.addEventListener(
+                        'error',
+                        hideBrokenImage,
+                        {
+                            once: true
+                        }
+                    );
+
+                    /*
+                     * Quando o erro ocorreu antes de o listener
+                     * ser registrado, complete sera true e
+                     * naturalWidth sera zero.
+                     */
+                    if (
+                        img.complete &&
+                        img.naturalWidth === 0
+                    ) {
+                        hideBrokenImage();
+                    }
+                });
         }
 
-        // Capa: quando carregar, remove skeleton + blur
-        const heroMedia = document.querySelector('.hero-media');
-        const heroImg = document.querySelector('.hero-img');
+        /*
+         * Preserva skeleton / carregamento da capa.
+         */
+        const heroMedia =
+            document.querySelector(
+                '.hero-media'
+            );
 
-        if (heroMedia && heroImg) {
-            const markLoaded = () => heroMedia.classList.add('is-loaded');
+        const heroImg =
+            document.querySelector(
+                '.hero-img'
+            );
 
-            if (heroImg.complete && heroImg.naturalWidth > 0) {
+        if (
+            heroMedia &&
+            heroImg
+        ) {
+
+            const markLoaded = () => {
+                heroMedia.classList.add(
+                    'is-loaded'
+                );
+            };
+
+            if (heroImg.complete) {
                 markLoaded();
-            } else {
-                heroImg.addEventListener('load', markLoaded, { once: true });
-                heroImg.addEventListener('error', markLoaded, { once: true });
+            }
+            else {
+
+                heroImg.addEventListener(
+                    'load',
+                    markLoaded,
+                    {
+                        once: true
+                    }
+                );
+
+                heroImg.addEventListener(
+                    'error',
+                    markLoaded,
+                    {
+                        once: true
+                    }
+                );
             }
         }
-
-        // Mantém seu padrão de imagens no corpo (alternando left/right)
-        document.querySelectorAll('.noticia-conteudo img').forEach((img, index) => {
-            img.style.maxWidth = '280px';
-            img.style.borderRadius = '10px';
-            img.style.objectFit = 'cover';
-            img.style.margin = '0 20px 20px 0';
-            img.style.float = (index % 2 === 0) ? 'left' : 'right';
-        });
     });
 
     function copiarLinkInstagram(url) {
-        navigator.clipboard.writeText(url).then(() => {
-            alert('Link copiado! Agora é só colar no seu story ou feed do Instagram.');
-        });
+
+        navigator.clipboard
+            .writeText(url)
+            .then(() => {
+
+                alert(
+                    'Link copiado! Agora é só colar no seu story ou feed do Instagram.'
+                );
+            });
     }
 </script>
+
 @endpush

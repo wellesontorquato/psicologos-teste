@@ -1,17 +1,25 @@
 {
-  "_react-BdjspBP_.js": {
-    "file": "assets/react-BdjspBP_.js",
+  "_react-Chrhlovi.js": {
+    "file": "assets/react-Chrhlovi.js",
     "name": "react",
     "imports": [
-      "_single-value-ayjDR9Qd.js"
+      "_single-value-DdCqZTTO.js"
     ]
   },
-  "_single-value-ayjDR9Qd.js": {
-    "file": "assets/single-value-ayjDR9Qd.js",
+  "_single-value-DdCqZTTO.js": {
+    "file": "assets/single-value-DdCqZTTO.js",
     "name": "single-value"
   },
+  "_use-spring-BZR56Rpx.js": {
+    "file": "assets/use-spring-BZR56Rpx.js",
+    "name": "use-spring",
+    "imports": [
+      "_single-value-DdCqZTTO.js",
+      "_react-Chrhlovi.js"
+    ]
+  },
   "resources/css/app.css": {
-    "file": "assets/app-C3fW50M3.css",
+    "file": "assets/app-CTDXA_1J.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -25,64 +33,79 @@
     ]
   },
   "resources/js/homepage/index.jsx": {
-    "file": "assets/index-BJLrPTSB.js",
+    "file": "assets/index-B5JHHRmn.js",
     "name": "index",
     "src": "resources/js/homepage/index.jsx",
     "isEntry": true,
     "imports": [
-      "_single-value-ayjDR9Qd.js",
-      "_react-BdjspBP_.js"
+      "_single-value-DdCqZTTO.js",
+      "_react-Chrhlovi.js",
+      "_use-spring-BZR56Rpx.js"
     ],
     "css": [
       "assets/index-CSeRcSTU.css"
     ]
   },
+  "resources/js/public-pages/blog-article/index.jsx": {
+    "file": "assets/index-BH-p1sAE.js",
+    "name": "index",
+    "src": "resources/js/public-pages/blog-article/index.jsx",
+    "isEntry": true,
+    "imports": [
+      "_single-value-DdCqZTTO.js",
+      "_react-Chrhlovi.js",
+      "_use-spring-BZR56Rpx.js"
+    ],
+    "css": [
+      "assets/index-Ca3rSiR1.css"
+    ]
+  },
   "resources/js/public-pages/blog/index.jsx": {
-    "file": "assets/index-gW6B4Pw8.js",
+    "file": "assets/index-DvY8OjQn.js",
     "name": "index",
     "src": "resources/js/public-pages/blog/index.jsx",
     "isEntry": true,
     "imports": [
-      "_single-value-ayjDR9Qd.js"
+      "_single-value-DdCqZTTO.js"
     ],
     "css": [
       "assets/index-Bk4m6usT.css"
     ]
   },
   "resources/js/public-pages/contato/index.jsx": {
-    "file": "assets/index-mYIde8TK.js",
+    "file": "assets/index-Z-vc55UZ.js",
     "name": "index",
     "src": "resources/js/public-pages/contato/index.jsx",
     "isEntry": true,
     "imports": [
-      "_single-value-ayjDR9Qd.js",
-      "_react-BdjspBP_.js"
+      "_single-value-DdCqZTTO.js",
+      "_react-Chrhlovi.js"
     ],
     "css": [
       "assets/index-CGLaMMv1.css"
     ]
   },
   "resources/js/public-pages/funcionalidades/index.jsx": {
-    "file": "assets/index-BFyysotZ.js",
+    "file": "assets/index-BEGzEVMK.js",
     "name": "index",
     "src": "resources/js/public-pages/funcionalidades/index.jsx",
     "isEntry": true,
     "imports": [
-      "_single-value-ayjDR9Qd.js",
-      "_react-BdjspBP_.js"
+      "_single-value-DdCqZTTO.js",
+      "_react-Chrhlovi.js"
     ],
     "css": [
       "assets/index-C-1WJL4N.css"
     ]
   },
   "resources/js/public-pages/planos/index.jsx": {
-    "file": "assets/index-DTE2KaEY.js",
+    "file": "assets/index-CPf7x2hf.js",
     "name": "index",
     "src": "resources/js/public-pages/planos/index.jsx",
     "isEntry": true,
     "imports": [
-      "_single-value-ayjDR9Qd.js",
-      "_react-BdjspBP_.js"
+      "_single-value-DdCqZTTO.js",
+      "_react-Chrhlovi.js"
     ],
     "css": [
       "assets/index-caC-iueU.css"

@@ -13,6 +13,7 @@ export default defineConfig({
                 'resources/js/public-pages/planos/index.jsx',
                 'resources/js/public-pages/contato/index.jsx',
                 'resources/js/public-pages/blog/index.jsx',
+                'resources/js/public-pages/blog-article/index.jsx',
             ],
             refresh: true,
             buildDirectory: 'build',
