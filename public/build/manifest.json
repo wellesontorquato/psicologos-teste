@@ -1,7 +1,14 @@
 {
-  "_react-fQdqZm5Z.js": {
-    "file": "assets/react-fQdqZm5Z.js",
-    "name": "react"
+  "_react-BdjspBP_.js": {
+    "file": "assets/react-BdjspBP_.js",
+    "name": "react",
+    "imports": [
+      "_single-value-ayjDR9Qd.js"
+    ]
+  },
+  "_single-value-ayjDR9Qd.js": {
+    "file": "assets/single-value-ayjDR9Qd.js",
+    "name": "single-value"
   },
   "resources/css/app.css": {
     "file": "assets/app-C3fW50M3.css",
@@ -18,48 +25,64 @@
     ]
   },
   "resources/js/homepage/index.jsx": {
-    "file": "assets/index-BYiPYY8C.js",
+    "file": "assets/index-BJLrPTSB.js",
     "name": "index",
     "src": "resources/js/homepage/index.jsx",
     "isEntry": true,
     "imports": [
-      "_react-fQdqZm5Z.js"
+      "_single-value-ayjDR9Qd.js",
+      "_react-BdjspBP_.js"
     ],
     "css": [
       "assets/index-CSeRcSTU.css"
     ]
   },
+  "resources/js/public-pages/blog/index.jsx": {
+    "file": "assets/index-gW6B4Pw8.js",
+    "name": "index",
+    "src": "resources/js/public-pages/blog/index.jsx",
+    "isEntry": true,
+    "imports": [
+      "_single-value-ayjDR9Qd.js"
+    ],
+    "css": [
+      "assets/index-Bk4m6usT.css"
+    ]
+  },
   "resources/js/public-pages/contato/index.jsx": {
-    "file": "assets/index-C3AKVBVg.js",
+    "file": "assets/index-mYIde8TK.js",
     "name": "index",
     "src": "resources/js/public-pages/contato/index.jsx",
     "isEntry": true,
     "imports": [
-      "_react-fQdqZm5Z.js"
+      "_single-value-ayjDR9Qd.js",
+      "_react-BdjspBP_.js"
     ],
     "css": [
       "assets/index-CGLaMMv1.css"
     ]
   },
   "resources/js/public-pages/funcionalidades/index.jsx": {
-    "file": "assets/index-G2rNMab0.js",
+    "file": "assets/index-BFyysotZ.js",
     "name": "index",
     "src": "resources/js/public-pages/funcionalidades/index.jsx",
     "isEntry": true,
     "imports": [
-      "_react-fQdqZm5Z.js"
+      "_single-value-ayjDR9Qd.js",
+      "_react-BdjspBP_.js"
     ],
     "css": [
       "assets/index-C-1WJL4N.css"
     ]
   },
   "resources/js/public-pages/planos/index.jsx": {
-    "file": "assets/index-1tiQZ6Bp.js",
+    "file": "assets/index-DTE2KaEY.js",
     "name": "index",
     "src": "resources/js/public-pages/planos/index.jsx",
     "isEntry": true,
     "imports": [
-      "_react-fQdqZm5Z.js"
+      "_single-value-ayjDR9Qd.js",
+      "_react-BdjspBP_.js"
     ],
     "css": [
       "assets/index-caC-iueU.css"

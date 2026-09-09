@@ -1,7 +1,7 @@
 {{-- resources/views/layouts/nav.blade.php --}}
 
 @php
-    $isModernPublic = request()->routeIs('home', 'funcionalidades', 'planos', 'contato');
+    $isModernPublic = request()->routeIs('home', 'funcionalidades', 'planos', 'contato', 'blog.index');
 @endphp
 
 <style>
@@ -556,7 +556,7 @@
                         Planos
                     </a>
 
-                    <a href="{{ route('blog.index') }}">
+                    <a href="{{ route('blog.index') }}" @if(request()->routeIs('blog.index')) aria-current="page" @endif>
                         Blog
                     </a>
 
@@ -610,7 +610,7 @@
                     Contato
                 </a>
 
-                <a href="{{ route('blog.index') }}">
+                <a href="{{ route('blog.index') }}" @if(request()->routeIs('blog.index')) aria-current="page" @endif>
                     Blog
                 </a>
 
